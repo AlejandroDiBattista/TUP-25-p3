@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("tup-25-p3#")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+de457be24798c8ef6944dc928700c9c480b6324c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ffb09c11d404b16ba4789f81c97af765d63ce18b")]
 [assembly: System.Reflection.AssemblyProductAttribute("tup-25-p3#")]
 [assembly: System.Reflection.AssemblyTitleAttribute("tup-25-p3#")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

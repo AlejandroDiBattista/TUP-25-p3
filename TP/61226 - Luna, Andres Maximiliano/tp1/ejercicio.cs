@@ -125,13 +125,27 @@ class menuContactos
         Console.WriteLine("A continuacion se mostraran los campos a modificar, dejar en blanco si no se desea modificar: ");
         Console.WriteLine($"Nombre actual: {contacto.Nombre}");
         Console.WriteLine("Ingrese el nuevo nombre: ");
-        contacto.Nombre = Console.ReadLine() ?? string.Empty;
+        string nuevoNombre = Console.ReadLine() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(nuevoNombre))
+        {
+            contacto.Nombre = nuevoNombre;
+        }
+
         Console.WriteLine($"Telefono actual: {contacto.Telefono}");
         Console.WriteLine("Ingrese el nuevo telefono: ");
-        contacto.Telefono = Console.ReadLine() ?? string.Empty;
+        string nuevoTelefono = Console.ReadLine() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(nuevoTelefono))
+        {
+            contacto.Telefono = nuevoTelefono;
+        }
+        
         Console.WriteLine($"Email actual: {contacto.Email}");
         Console.WriteLine("Ingrese el nuevo email: ");
-        contacto.Email = Console.ReadLine() ?? string.Empty;
+        string nuevoEmail = Console.ReadLine() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(nuevoEmail))
+        {
+            contacto.Email = nuevoEmail;
+        }
 
         contactos[id - 1] = contacto;
         Console.WriteLine("Contacto modificado correctamente. Presione una tecla para continuar.");
