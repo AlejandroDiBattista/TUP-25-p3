@@ -1,0 +1,15 @@
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\bin\Debug\net8.0\tp1.exe
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\bin\Debug\net8.0\tp1.deps.json
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\bin\Debug\net8.0\tp1.runtimeconfig.json
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\bin\Debug\net8.0\tp1.dll
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\bin\Debug\net8.0\tp1.pdb
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.AssemblyInfoInputs.cache
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.AssemblyInfo.cs
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.csproj.CoreCompileInputs.cache
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.sourcelink.json
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.dll
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\refint\tp1.dll
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.pdb
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\tp1.genruntimeconfig.cache
+C:\Users\mario\Documents\GitHub\TP\61328 - Moussa Cancino, Mario Matias\tp1\obj\Debug\net8.0\ref\tp1.dll
