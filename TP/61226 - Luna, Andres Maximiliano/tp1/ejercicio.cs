@@ -50,8 +50,8 @@ class menuContactos
         Console.WriteLine("6. Salir");
         Console.WriteLine("------Seleccione una opcion------");
         
-        string opcion = Console.ReadLine();
-        switch (opcion)
+        string caso = Console.ReadLine() ?? string.Empty;
+        switch (caso)
         {
             case "1":
                 agregarContacto();
@@ -69,6 +69,7 @@ class menuContactos
                 buscarContacto();
                 break;
             case "6":
+                salirAplicacion();
                 return;
             default:
                 Console.WriteLine("Opcion invalida, seleccione una correcta.");
@@ -78,60 +79,84 @@ class menuContactos
         }
         static void agregarContacto(){
             if (cantidadContactos <= 50){
-                Console.WriteLine("No se pueden agregar mas contactos, la agenda esta llena. Presione una tecla para continuar.");
-                Console.ReadKey();
-                return;
-            }
-            
-            Contacto nuevoContacto;            
+                Contacto nuevoContacto;            
             nuevoContacto.Id = cantidadContactos + 1;
             Console.WriteLine("Ingrese el nombre del contacto: ");
-            nuevoContacto.Nombre = Console.ReadLine();
+            nuevoContacto.Nombre = Console.ReadLine() ?? string.Empty;
             Console.WriteLine("Ingrese el telefono del contacto: ");
-            nuevoContacto.Telefono = Console.ReadLine();
+            nuevoContacto.Telefono = Console.ReadLine() ?? string.Empty;
             Console.WriteLine("Ingrese el email del contacto: ");
-            nuevoContacto.Email = Console.ReadLine();
+            nuevoContacto.Email = Console.ReadLine() ?? string.Empty;
 
             contactos[cantidadContactos] = nuevoContacto;
             cantidadContactos++;
             Console.WriteLine("Contacto agregado correctamente. Presione una tecla para continuar.");
             Console.ReadKey();
+            mostrarMenu();
+            }else{
+                Console.WriteLine("No se pueden agregar mas contactos. Presione una tecla para continuar.");
+                Console.ReadKey();
+                mostrarMenu();
+            }
+            
+            
 
 
     }
     static void modificarContacto(){
         Console.WriteLine("Ingrese el ID del contacto a modificar: ");
-        int id = int.Parse(Console.ReadLine());
-        if (id > cantidadContactos || id < 1){
+        string? input = Console.ReadLine();
+        if (string.IsNullOrEmpty(input) || !int.TryParse(input, out int id))
+        {
+            Console.WriteLine("Entrada inválida. Presione una tecla para continuar.");
+            Console.ReadKey();
+            Console.Clear();
+            mostrarMenu();
+            return;
+        }
+        if (id < 1 || id > cantidadContactos){
             Console.WriteLine("ID invalido. Presione una tecla para continuar.");
             Console.ReadKey();
-            return;
+            Console.Clear();
+            mostrarMenu();
+                        
         }
         Contacto contacto = contactos[id - 1];
         Console.WriteLine("A continuacion se mostraran los campos a modificar, dejar en blanco si no se desea modificar: ");
         Console.WriteLine($"Nombre actual: {contacto.Nombre}");
         Console.WriteLine("Ingrese el nuevo nombre: ");
-        contacto.Nombre = Console.ReadLine();
+        contacto.Nombre = Console.ReadLine() ?? string.Empty;
         Console.WriteLine($"Telefono actual: {contacto.Telefono}");
         Console.WriteLine("Ingrese el nuevo telefono: ");
-        contacto.Telefono = Console.ReadLine();
+        contacto.Telefono = Console.ReadLine() ?? string.Empty;
         Console.WriteLine($"Email actual: {contacto.Email}");
         Console.WriteLine("Ingrese el nuevo email: ");
-        contacto.Email = Console.ReadLine();
+        contacto.Email = Console.ReadLine() ?? string.Empty;
 
         contactos[id - 1] = contacto;
         Console.WriteLine("Contacto modificado correctamente. Presione una tecla para continuar.");
         Console.ReadKey();
-        return;
+        Console.Clear();
+        mostrarMenu();
         
     
     }
     static void eliminarContacto(){
                 Console.WriteLine("Ingrese el ID del contacto a borrar: ");
-                int id = int.Parse(Console.ReadLine());
+                string? input = Console.ReadLine();
+                if (string.IsNullOrEmpty(input) || !int.TryParse(input, out int id))
+                {
+                    Console.WriteLine("Entrada inválida. Presione una tecla para continuar.");
+                    Console.ReadKey();
+                    Console.Clear();
+                    mostrarMenu();
+                    return;
+                }
                 if (id > cantidadContactos || id < 1){
                 Console.WriteLine("ID invalido. Presione una tecla para continuar.");
                 Console.ReadKey();
+                Console.Clear();
+                mostrarMenu();
                 return;
             }
             for (int i = id - 1; i < cantidadContactos - 1; i++){
@@ -140,6 +165,8 @@ class menuContactos
             cantidadContactos--;
             Console.WriteLine("Contacto borrado correctamente. Presione una tecla para continuar.");
             Console.ReadKey();
+            Console.Clear();
+            mostrarMenu();
             return;
     }
     static void listarContactos(){
@@ -149,23 +176,47 @@ class menuContactos
         }
         Console.WriteLine("Presione una tecla para continuar.");
         Console.ReadKey();
+        Console.Clear();
+        mostrarMenu();
         return;
     }
     static void buscarContacto(){
         Console.WriteLine("Ingrese el ID del contacto a buscar: ");
-        int id = int.Parse(Console.ReadLine());
+        string? input = Console.ReadLine();
+        if (string.IsNullOrEmpty(input) || !int.TryParse(input, out int id))
+        {
+            Console.WriteLine("Entrada inválida. Presione una tecla para continuar.");
+            Console.ReadKey();
+            Console.Clear();
+            mostrarMenu();
+            return;
+        }
         if (id > cantidadContactos || id < 1){
             Console.WriteLine("ID invalido. Presione una tecla para continuar.");
             Console.ReadKey();
+            Console.Clear();
+            mostrarMenu();
             return;
         }
         contactos[id - 1].mostrarContacto();
         Console.WriteLine("Presione una tecla para continuar.");
         Console.ReadKey();
+        Console.Clear();
+        mostrarMenu();
         return;
     }
 }
+static void salirAplicacion(){
+    Console.WriteLine("Saliendo de la aplicacion...");
+    return;
+}
+
+        static void Main(string[] args)
+        {
+            Console.Clear();
+            Console.WriteLine("Bienvenido a la agenda de contactos.");
+            Console.WriteLine("Presione una tecla para continuar.");
+            Console.ReadKey();
+            mostrarMenu();
+        }
     }
-
-
-

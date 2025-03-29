@@ -1,0 +1,5 @@
+C:\Users\Usuario\Documents\GitHub\tup-25-p3#\obj\Debug\net9.0\tup-25-p3#.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Usuario\Documents\GitHub\tup-25-p3#\obj\Debug\net9.0\tup-25-p3#.AssemblyInfoInputs.cache
+C:\Users\Usuario\Documents\GitHub\tup-25-p3#\obj\Debug\net9.0\tup-25-p3#.AssemblyInfo.cs
+C:\Users\Usuario\Documents\GitHub\tup-25-p3#\obj\Debug\net9.0\tup-25-p3#.csproj.CoreCompileInputs.cache
+C:\Users\Usuario\Documents\GitHub\tup-25-p3#\obj\Debug\net9.0\tup-25-p3#.sourcelink.json
