@@ -255,3 +255,4 @@ tup.Registrar(new Pago("10005", 400));
 // Informe final
 nac.Informe();
 tup.Informe();
+
