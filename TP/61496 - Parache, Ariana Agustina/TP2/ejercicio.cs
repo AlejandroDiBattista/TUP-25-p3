@@ -1,69 +1,260 @@
 ﻿using System;
+using System.Collections.Generic;
 
-class CuentaBancaria
+class Program
 {
-    public string NumeroCuenta { get; private set; }
-    public string Titular { get; private set; }
-    public decimal Saldo { get; private set; }
-
-    public CuentaBancaria(string numeroCuenta, string titular, decimal saldoInicial = 0)
+    static void Main(string[] args)
     {
-        NumeroCuenta = numeroCuenta;
-        Titular = titular;
-        Saldo = saldoInicial;
-    }
+        Banco banco = new Banco();
 
-    public void Depositar(decimal monto)
-    {
-        if (monto <= 0)
-            throw new ArgumentException("Monto inválido.");
-        Saldo += monto;
-        Console.WriteLine($"[{Titular}] Depósito: {monto:C}. Nuevo saldo: {Saldo:C}");
-    }
+        Cliente cliente1 = new Cliente("nombre");
 
-    public void Retirar(decimal monto)
-    {
-        if (monto <= 0)
-            throw new ArgumentException("Monto inválido.");
-        if (monto > Saldo)
-            throw new InvalidOperationException("Saldo insuficiente.");
-        Saldo -= monto;
-        Console.WriteLine($"[{Titular}] Retiro: {monto:C}. Nuevo saldo: {Saldo:C}");
-    }
+        Cuenta cuentaOro = new CuentaOro("númerocuenta");
+        cliente1.AgregarCuentas(cuentaOro);
+        banco.AgregarCliente(cliente1);
 
-    public void Transferir(CuentaBancaria destino, decimal monto)
-    {
-        Retirar(monto);
-        destino.Depositar(monto);
-        Console.WriteLine($"[{Titular}] transfirió {monto:C} a [{destino.Titular}]");
-    }
+        Deposito deposito = new Deposito(1000, cuentaOro);
+        deposito.Ejecutar();
+        cliente1.RegistrarOperación(deposito);
+        banco.RegistrarOperación(deposito);
 
-    public void Pagar(decimal monto, string concepto)
-    {
-        Retirar(monto);
-        Console.WriteLine($"[{Titular}] pagó {monto:C} por {concepto}. Saldo restante: {Saldo:C}");
-    }
+        Pago pago = new Pago(300, cuentaOro);
+        pago.Ejecutar();
+        cliente1.RegistrarOperación(pago);
+        banco.RegistrarOperación(pago);
 
-    public void Mostrar()
-    {
-        Console.WriteLine($"Cuenta: {NumeroCuenta}, Titular: {Titular}, Saldo: {Saldo:C}");
+        Retiro retiro = new Retiro(200, cuentaOro);
+        retiro.Ejecutar();
+        cliente1.RegistrarOperación(retiro);
+        banco.RegistrarOperación(retiro);
+
+        banco.GererarInforme();
     }
 }
 
-class Programa
+public class Banco
 {
-    static void Main()
+    public List<Cliente> Clientes { get; set; }
+    public List<Operación> HistorialOperacionesGlobal { get; set; }
+    public Banco()
     {
-        var cuenta1 = new CuentaBancaria("2001", "María Torres", 2000);
-        var cuenta2 = new CuentaBancaria("2002", "Luis Ramírez", 1200);
+        Clientes = new List<Cliente>();
+        HistorialOperacionesGlobal = new List<Operación>();
+    }
 
-        cuenta1.Retirar(500);                 
-        cuenta2.Depositar(300);                
-        cuenta2.Transferir(cuenta1, 400);     
-        cuenta1.Pagar(250, "Gimnasio");        
+    public void AgregarCliente(Cliente cliente)
+    {
+        Clientes.Add(cliente);
+    }
 
-        Console.WriteLine("\nResumen de cuentas:");
-        cuenta1.Mostrar();
-        cuenta2.Mostrar();
+    public void RegistrarOperación(Operación operación)
+    {
+        HistorialOperacionesGlobal.Add(operación);
+    }
+
+    public void GererarInforme()
+    {
+        Console.WriteLine("Informe Global de operaciónes:")
+        foreach (var operación in HistorialOperacionesGlobal)
+        {
+           Console.WriteLine(operación);
+        }
+
+        Console.WriteLine("Estado final de cuentas:");  
+        foreach (var cliente in Clientes)  
+        {  
+           foreach (var cuenta in cliente.Cuentas)  
+          {  
+            Console.WriteLine($"Cuenta {cuenta.NúmeroCuenta} Saldo {cuenta.Saldo} Puntos {cuenta.PuntosAcumulados}");  
+          }  
+        }  
+      
+        foreach (var cliente in Clientes)  
+        {  
+           Console.WriteLine($"historial de operaciones de {clientes.Nombre}:");  
+           foreach (var operaciónes in cliente.HistorialOperaciones)  
+           {  
+            Console.WriteLine(operación)  
+           }
+        }
+    }  
+}
+public class Cliente
+{
+    public string Nombre { get; set; }
+    public List<Cuenta> Cuentas { get; set; }
+    public List<Operación> HistorialOperaciones { get; set; }
+
+    public Cliente(string nombre)
+    {
+        Nombre = nombre;
+        Cuentas = new List<Cuenta>();
+        HistorialOperaciones = new List<Operación>();
+    }
+
+    public void AgregarCuentas(Cuenta cuenta)
+    {
+        Cuentas.Add(cuenta);
+    }
+
+    public void RegistrarOperación(Operación operación)
+    {
+        HistorialOperaciones.Add(operación);
+    }
+}
+
+public abstract class Cuenta
+{
+   public string NúmeroCuenta { get; set; }
+   public decimal Saldo { get; set; }
+   public decimal PuntosAcumulados { get; set; }
+
+   public Cuenta(string numeroCuenta)
+   {
+    NúmeroCuenta = numeroCuenta;
+    Saldo = 0;
+    PuntosAcumulados = 0;
+   }  
+
+   public abstract void ProcesarPago(decimal monto);  
+   public abstract void AcumularPuntos(decimal monto);  
+   public virtual void Depositar(decimal monto);  
+   {
+    Saldo += monto;
+   }
+
+
+   public virtual bool Extraer(decimal monto)
+   {
+        if (Saldo >= monto)
+        {
+            Saldo -= monto;
+            return true;
+        }
+        return false;
+    }
+}
+
+public class CuentaOro : Cuenta
+{
+   public CuentaOro(string numeroCuenta) : base(numeroCuenta)
+   public override void ProcesarPago(decimal monto)  
+    {  
+      Saldo -= monto;  
+      AcumularPuntos(monto);  
+    }
+
+    public override void AcumularPuntos(decimal monto)
+    {
+        PuntosAcumulados += monto > 1000 ? monto * 0.05m : monto * 0.03m;
+    }
+}
+
+public class CuentaPlata : Cuenta
+{
+    public CuentaPlata(string numeroCuenta) : base(numeroCuenta)
+    public override void ProcesarPago(decimal monto)
+    {
+        Saldo -= monto;
+        AcumularPuntos(monto);
+    }
+    public override void AcumularPuntos(decimal monto)
+    {
+        PuntosAcumulados += monto * 0.02m;
+    }
+}
+
+public class CuentaBronce : Cuenta
+{
+    public CuentaBronce(string numeroCuenta) : base(numeroCuenta) 
+    public override void ProcesarPago(decimal monto)
+    {
+        Saldo -= monto;
+        AcumularPuntos(monto);
+    }
+    public override void AcumularPuntos(decimal monto)
+    {
+        PuntosAcumulados += monto * 0.01m;
+    }
+}
+
+public abstract class Operación
+
+{
+    public decimal Monto { get; set; }
+    public Cuenta CuentaOrigen { get; set; }
+    public Cuenta CuentaDestino { get; set; }
+
+    public Operación(decimal monto, Cuenta cuentaOrigen, Cuenta cuentaDestino = null)
+    {
+    Monto = monto;
+    CuentaOrigen = cuentaOrigen;
+    CuentaDestino = cuentaDestino;
+    }
+
+    public abstract void Ejecutar();
+}
+
+public class Deposito : Operación
+{
+    public Deposito(decimal monto, Cuenta cuentaOrigen) : base(monto, cuentaOrigen)
+    public override void Ejecutar()
+    {
+        CuentaOrigen.Depositar(Monto);
+    }  
+    public override string ToString()  
+    {  
+        return $"Deposito de {Monto} en la cuenta {CuentaOrigen.NúmeroCuenta}";  
+    }
+}
+public class Retiro : Operación
+{
+    public Retiro(decimal monto, Cuenta CuentaOrigen) : base(monto, CuentaOrigen)
+    public override void Ejecutar()
+    {
+        if (CuentaOrigen.Extraer(Monto))
+        {
+            Console.WriteLine("Fondos insuficientes para la operación de retiro..");
+        }
+    }
+
+    public override string ToString()
+    {
+        return $"Retiro de {Monto} de la cuenta {CuentaOrigen.NúmeroCuenta}";
+    }
+}
+
+public class Pago : Operación
+{
+    public Pago(decimal monto, Cuenta cuentaOrigen) : base(monto, cuentaOrigen)
+    public override void Ejecutar()
+    {
+        CuentaOrigen.ProcesarPago(Monto);
+    }
+    public override string ToString()
+    {
+        return $"Pago de {Monto} dede la cuenta {CuentaOrigen.NúmeroCuenta}";
+    }  
+}
+
+public class Transferencia : Operación
+{
+    public Transferencia(decimal monto, Cuenta cuentaOrigen, Cuenta cuentaDestino) : base(monto, cuentaOrigen, cuentaDestino)
+    public override void Ejecutar()
+    {
+        if (CuentaOrigen.Extraer(Monto))
+        {
+            CuentaDestino.Depositar(Monto);
+        }
+        else
+        {
+            console.WriteLine("Forndos insuficientes para realizar la transferencia..");
+        }
+    }
+
+    public override string ToString()
+    {
+        return $"Transferencia de {Monto} desde la cuenta {CuentaOrigen.NúmeroCuenta} hacia la {CuentaDestino.NúmeroCuenta}";
+
     }
 }
