@@ -3,7 +3,17 @@ using System.Collections.Generic;
 
 
 class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    private List<int> elementos;
+
+    public ListaOrdenada(){
+        elementos = new List<int>();
+    }
+    public void Agregar(int elemento){
+        if (!elementos.Contains(elemento)){
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
 }
 
 class Contacto {
