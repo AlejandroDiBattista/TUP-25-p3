@@ -1,16 +1,92 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> _items;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada()
+    {
+        _items = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> collection)
+    {
+        _items = collection.OrderBy(x => x).ToList();
+    }
+
+    public int Cantidad => _items.Count;
+
+    public T this[int index] => _items[index];
+
+    public void Agregar(T item)
+    {
+        if (!_items.Contains(item))
+        {
+            _items.Add(item);
+            _items.Sort();
+        }
+    }
+
+    public void Eliminar(T item)
+    {
+        _items.Remove(item);
+    }
+
+    public bool Contiene(T item)
+    {
+        return _items.Contains(item);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado)
+    {
+        return new ListaOrdenada<T>(_items.Where(predicado).ToList());
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return string.Compare(this.Nombre, other.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto)
+        {
+            var other = (Contacto)obj;
+            return this.Nombre == other.Nombre && this.Telefono == other.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return (Nombre + Telefono).GetHashCode();
+    }
 }
+
+public static class Program
+{
+    public static void Assert<T>(T real, T esperado, string mensaje)
+    {
+        if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
+        Console.WriteLine($"[OK] {mensaje}");
+    }
+
+    public static void Main()
+    {
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
@@ -140,3 +216,5 @@ Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar un elemento i
 Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
 Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
 Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
+    }
+}
