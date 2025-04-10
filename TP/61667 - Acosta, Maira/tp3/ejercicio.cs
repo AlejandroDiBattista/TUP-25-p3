@@ -1,16 +1,98 @@
 using System;
 using System.Collections.Generic;
 
+public class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    // Constructor que permite inicializar la lista con una colección de elementos
+    public ListaOrdenada(IEnumerable<T> elementosIniciales)
+    {
+        foreach (var elemento in elementosIniciales)
+        {
+            Agregar(elemento);
+        }
+    }
+
+    // Constructor por defecto
+    public ListaOrdenada() { }
+
+    // Agregar un elemento de forma ordenada sin duplicados
+    public void Agregar(T elemento)
+    {
+        if (!elementos.Contains(elemento))
+        {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    // Verifica si un elemento está en la lista
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    // Elimina un elemento de la lista
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    // Obtiene la cantidad de elementos en la lista
+    public int Cantidad => elementos.Count;
+
+    // Indexador para acceder a elementos por posición
+    public T this[int index] => elementos[index];
+
+    // Filtrar elementos según una condición dada
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        ListaOrdenada<T> nuevaLista = new ListaOrdenada<T>();
+        foreach (var elemento in elementos)
+        {
+            if (condicion(elemento))
+            {
+                nuevaLista.Agregar(elemento);
+            }
+        }
+        return nuevaLista;
+    }
 }
 
-class Contacto {
+public class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto? otro)
+    {
+        if (otro == null) return 1; 
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Contacto contacto && Nombre == contacto.Nombre;
+    }
+
+    public override int GetHashCode()
+    {
+        return Nombre.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return $"{Nombre}: {Telefono}";
+    }
 }
+
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
@@ -28,7 +110,8 @@ public static void Assert<T>(T real, T esperado, string mensaje){
 
 
 /// Pruebas de lista ordenada (con enteros)
-
+static void Main()
+{    
 var lista = new ListaOrdenada<int>();
 lista.Agregar(5);
 lista.Agregar(1);
@@ -140,3 +223,4 @@ Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar un elemento i
 Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
 Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
 Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
+  }
