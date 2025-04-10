@@ -2,14 +2,98 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
+
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0)
+        {
+            i++;
+        }
+        elementos.Insert(i, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        foreach (var item in elementos)
+        {
+            if (item.Equals(elemento))
+                return true;
+        }
+        return false;
+    }
+
+    public void Eliminar(T elemento)
+    {
+        for (int i = 0; i < elementos.Count; i++)
+        {
+            if (elementos[i].Equals(elemento))
+            {
+                elementos.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
+    {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+        {
+            if (condicion(item))
+                resultado.Agregar(item);
+        }
+        return resultado;
+    }
 }
 
 class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null || !(obj is Contacto)) return false;
+        var otro = (Contacto)obj;
+        return Nombre == otro.Nombre && Telefono == otro.Telefono;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
