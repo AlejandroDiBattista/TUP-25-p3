@@ -1,15 +1,73 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion) {
+        foreach (var elem in coleccion) {
+            Agregar(elem);
+        }
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public bool Contiene(T elemento) {
+        return elementos.Contains(elemento);
+    }
+
+    public void Agregar(T elemento) {
+        if (Contiene(elemento)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0) {
+            i++;
+        }
+        elementos.Insert(i, elemento);
+    }
+
+    public void Eliminar(T elemento) {
+        elementos.Remove(elemento);
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion) {
+        var nuevaLista = new ListaOrdenada<T>();
+        foreach (var elem in elementos) {
+            if (condicion(elem)) {
+                nuevaLista.Agregar(elem);
+            }
+        }
+        return nuevaLista;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro) {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj) {
+        if (obj is Contacto otro) {
+            return Nombre == otro.Nombre && Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
