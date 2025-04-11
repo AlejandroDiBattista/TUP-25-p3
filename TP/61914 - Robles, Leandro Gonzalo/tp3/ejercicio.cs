@@ -1,16 +1,132 @@
 using System;
 using System.Collections.Generic;
 
-
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
-}
-
-class Contacto {
+public class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return string.Compare(this.Nombre, other.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+            return this.Nombre.Equals(otro.Nombre, StringComparison.OrdinalIgnoreCase);
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return this.Nombre.ToLower().GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return $"{Nombre} - {Telefono}";
+    }
 }
+
+public class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
+
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var elemento in coleccion)
+        {
+            Agregar(elemento);
+        }
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice]
+    {
+        get
+        {
+            if (indice < 0 || indice >= elementos.Count)
+                throw new IndexOutOfRangeException("Índice fuera de rango.");
+            return elementos[indice];
+        }
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.BinarySearch(elemento) >= 0;
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento))
+            return;
+
+        int index = elementos.BinarySearch(elemento);
+        if (index < 0)
+            index = ~index;
+        elementos.Insert(index, elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        int index = elementos.BinarySearch(elemento);
+        if (index >= 0)
+            elementos.RemoveAt(index);
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+        {
+            if (condicion(item))
+                resultado.Agregar(item);
+        }
+        return resultado;
+    }
+
+    public void Mostrar()
+    {
+        foreach (var item in elementos)
+            Console.WriteLine(item);
+    }
+}
+
+var contactosApp = new ListaOrdenada<Contacto>();
+
+contactosApp.Agregar(new Contacto("Juan", "1234"));
+contactosApp.Agregar(new Contacto("Ana", "5678"));
+contactosApp.Agregar(new Contacto("Carlos", "9012"));
+contactosApp.Agregar(new Contacto("Ana", "1111")); // Ignorado por ser duplicado por nombre
+
+Console.WriteLine("Lista de contactos:");
+contactosApp.Mostrar();
+
+Console.WriteLine($"\nCantidad de contactos: {contactosApp.Cantidad}");
+
+Console.WriteLine("\nContacto en la posición 1:");
+Console.WriteLine(contactosApp[1]);
+
+Console.WriteLine("\n¿Contiene a Carlos?");
+Console.WriteLine(contactosApp.Contiene(new Contacto("Carlos", "")) ? "Sí" : "No");
+
+contactosApp.Eliminar(new Contacto("Carlos", ""));
+Console.WriteLine("\nDespués de eliminar a Carlos:");
+contactosApp.Mostrar();
+
+Console.WriteLine("\nFiltrar contactos que empiecen con 'J':");
+var filtrados = contactosApp.Filtrar(c => c.Nombre.StartsWith("J", StringComparison.OrdinalIgnoreCase));
+filtrados.Mostrar();
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
