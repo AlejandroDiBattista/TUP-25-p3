@@ -4,12 +4,84 @@ using System.Collections.Generic;
 
 class ListaOrdenada{
     // Implementar acá la clase ListaOrdenada
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
+
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var item in coleccion)
+            Agregar(item);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int index = elementos.BinarySearch(elemento);
+        if (index < 0) index = ~index;
+        elementos.Insert(index, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.BinarySearch(elemento) >= 0;
+    }
+
+    public void Eliminar(T elemento)
+    {
+        int index = elementos.BinarySearch(elemento);
+        if (index >= 0) elementos.RemoveAt(index);
+    }
+
+    public T this[int indice]
+    {
+        get => elementos[indice];
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var nueva = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+        {
+            if (condicion(item))
+                nueva.Agregar(item);
+        }
+        return nueva;
+    }
 }
 
 class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
     // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return string.Compare(Nombre, other.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Contacto otro && Nombre.Equals(otro.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override int GetHashCode()
+    {
+        return Nombre.ToLowerInvariant().GetHashCode();
+    }
 }
 
 /// --------------------------------------------------------///
@@ -139,4 +211,4 @@ contactos.Eliminar(otro);
 Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar un elemento inexistente");
 Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
 Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
-Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
+Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
