@@ -174,12 +174,12 @@ public class CuentaBronce : Cuenta
 public abstract class Operacion
 {
     public double Monto { get; protected set; }
-    public Cuenta CuentaOrigen { get; protected set; }
-    public Cuenta CuentaDestino { get; protected set; }
-    public Cliente ClienteOrigen => CuentaOrigen.Titular;
-    public Cliente ClienteDestino => CuentaDestino?.Titular;
+    public Cuenta? CuentaOrigen { get; protected set; }
+    public Cuenta? CuentaDestino { get; protected set; }
+    public Cliente? ClienteOrigen => CuentaOrigen?.Titular;
+    public Cliente? ClienteDestino => CuentaDestino?.Titular;
 
-    protected Operacion(double monto, Cuenta cuentaOrigen, Cuenta cuentaDestino = null)
+    protected Operacion(double monto, Cuenta? cuentaOrigen, Cuenta? cuentaDestino = null)
     {
         Monto = monto;
         CuentaOrigen = cuentaOrigen;
@@ -196,12 +196,12 @@ public class Deposito : Operacion
 
     public override void Ejecutar()
     {
-        CuentaDestino.Depositar(Monto);
+        CuentaDestino!.Depositar(Monto);
     }
 
     public override void MostrarDetalles()
     {
-        Console.WriteLine($"Depósito: Monto: {Monto}, Cuenta destino: {CuentaDestino.NumeroCuenta}");
+        Console.WriteLine($"Depósito: Monto: {Monto}, Cuenta destino: {CuentaDestino!.NumeroCuenta}");
     }
 }
 
@@ -211,7 +211,7 @@ public class Retiro : Operacion
 
     public override void Ejecutar()
     {
-        if (!CuentaOrigen.Extraer(Monto))
+        if (!CuentaOrigen!.Extraer(Monto))
         {
             Console.WriteLine("Error: Fondos insuficientes.");
         }
@@ -219,7 +219,7 @@ public class Retiro : Operacion
 
     public override void MostrarDetalles()
     {
-        Console.WriteLine($"Retiro: Monto: {Monto}, Cuenta origen: {CuentaOrigen.NumeroCuenta}");
+        Console.WriteLine($"Retiro: Monto: {Monto}, Cuenta origen: {CuentaOrigen!.NumeroCuenta}");
     }
 }
 
@@ -229,12 +229,12 @@ public class Pago : Operacion
 
     public override void Ejecutar()
     {
-        CuentaOrigen.Pagar(Monto);
+        CuentaOrigen!.Pagar(Monto);
     }
 
     public override void MostrarDetalles()
     {
-        Console.WriteLine($"Pago: Monto: {Monto}, Cuenta origen: {CuentaOrigen.NumeroCuenta}");
+        Console.WriteLine($"Pago: Monto: {Monto}, Cuenta origen: {CuentaOrigen!.NumeroCuenta}");
     }
 }
 
@@ -245,9 +245,9 @@ public class Transferencia : Operacion
 
     public override void Ejecutar()
     {
-        if (CuentaOrigen.Extraer(Monto))
+        if (CuentaOrigen!.Extraer(Monto))
         {
-            CuentaDestino.Depositar(Monto);
+            CuentaDestino!.Depositar(Monto);
         }
         else
         {
@@ -257,6 +257,33 @@ public class Transferencia : Operacion
 
     public override void MostrarDetalles()
     {
-        Console.WriteLine($"Transferencia: Monto: {Monto}, Cuenta origen: {CuentaOrigen.NumeroCuenta}, Cuenta destino: {CuentaDestino.NumeroCuenta}");
+        Console.WriteLine($"Transferencia: Monto: {Monto}, Cuenta origen: {CuentaOrigen!.NumeroCuenta}, Cuenta destino: {CuentaDestino!.NumeroCuenta}");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        Banco banco = new Banco();
+
+        Cliente cliente1 = new Cliente("Ana");
+        Cliente cliente2 = new Cliente("Luis");
+
+        Cuenta cuenta1 = new CuentaOro("001", cliente1);
+        Cuenta cuenta2 = new CuentaPlata("002", cliente2);
+
+        cliente1.AgregarCuenta(cuenta1);
+        cliente2.AgregarCuenta(cuenta2);
+
+        banco.RegistrarCliente(cliente1);
+        banco.RegistrarCliente(cliente2);
+
+        banco.RealizarOperacion(new Deposito(2000, cuenta1));
+        banco.RealizarOperacion(new Pago(500, cuenta1));
+        banco.RealizarOperacion(new Transferencia(300, cuenta1, cuenta2));
+        banco.RealizarOperacion(new Retiro(100, cuenta2));
+
+        banco.ImprimirInforme();
     }
 }
