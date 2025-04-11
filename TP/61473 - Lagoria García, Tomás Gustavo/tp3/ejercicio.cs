@@ -4,6 +4,14 @@ using System.Collections.Generic;
 
 public class ListaOrdenada<T> where T : IComparable<T> {
     private List<T> elementos = new List<T>();
+        public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
     public void Agregar(T elemento) {
         if (!elementos.Contains(elemento)) {
             elementos.Add(elemento);
@@ -67,6 +75,10 @@ class Contacto: IComparable<Contacto> {
     public static bool operator <(Contacto a, Contacto b) {
         return a.CompareTo(b) < 0;
     }
+    public static bool operator >(Contacto a, Contacto b) {
+    return a.CompareTo(b) > 0;
+}
+
     // Implementar acá la clase Contacto
 }
 
