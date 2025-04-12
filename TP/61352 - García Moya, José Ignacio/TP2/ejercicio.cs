@@ -1,60 +1,185 @@
-// TP2: Sistema de Cuentas Bancarias
-//
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-// Implementar un sistema de cuentas bancarias que permita realizar operaciones como depósitos, retiros, transferencias y pagos.
+// Clase Banco
+public class Banco
+{
+    public string Nombre { get; private set; }
+    private List<Cliente> clientes = new List<Cliente>();
+    private List<Operacion> operaciones = new List<Operacion>();
 
-class Banco{}
-class Cliente{}
+    public Banco(string nombre)
+    {
+        Nombre = nombre;
+    }
 
-abstract class Cuenta{}
-class CuentaOro: Cuenta{}
-class CuentaPlata: Cuenta{}
-class CuentaBronce: Cuenta{}
+    public void Agregar(Cliente cliente)
+    {
+        clientes.Add(cliente);
+    }
 
-abstract class Operacion{}
-class Deposito: Operacion{}
-class Retiro: Operacion{}
-class Transferencia: Operacion{}
-class Pago: Operacion{}
+    public void Registrar(Operacion operacion)
+    {
+        if (clientes.Any(c => c.PoseeCuenta(operacion.CuentaOrigen)))
+        {
+            operacion.Ejecutar();
+            operaciones.Add(operacion);
+        }
+        else
+        {
+            Console.WriteLine("Error: La cuenta origen no pertenece a este banco.");
+        }
+    }
 
+    public void Informe()
+    {
+        Console.WriteLine($"Banco: {Nombre} | Clientes: {clientes.Count}");
+        foreach (var cliente in clientes)
+        {
+            cliente.MostrarInforme();
+        }
+    }
+}
 
-/// EJEMPLO DE USO ///
+// Clase Cliente
+public class Cliente
+{
+    public string Nombre { get; private set; }
+    private List<Cuenta> cuentas = new List<Cuenta>();
+    private List<Operacion> historialOperaciones = new List<Operacion>();
 
-// Definiciones 
+    public Cliente(string nombre)
+    {
+        Nombre = nombre;
+    }
 
-var raul = new Cliente("Raul Perez");
-    raul.Agregar(new CuentaOro("10001", 1000));
-    raul.Agregar(new CuentaPlata("10002", 2000));
+    public void Agregar(Cuenta cuenta)
+    {
+        cuentas.Add(cuenta);
+    }
 
-var sara = new Cliente("Sara Lopez");
-    sara.Agregar(new CuentaPlata("10003", 3000));
-    sara.Agregar(new CuentaPlata("10004", 4000));
+    public bool PoseeCuenta(string numero)
+    {
+        return cuentas.Any(c => c.Numero == numero);
+    }
 
-var luis = new Cliente("Luis Gomez");
-    luis.Agregar(new CuentaBronce("10005", 5000));
+    public void RegistrarOperacion(Operacion operacion)
+    {
+        historialOperaciones.Add(operacion);
+    }
 
-var nac = new Banco("Banco Nac");
-nac.Agregar(raul);
-nac.Agregar(sara);
+    public void MostrarInforme()
+    {
+        Console.WriteLine($"  Cliente: {Nombre} | Saldo Total: ${cuentas.Sum(c => c.Saldo)},00 | Puntos Total: ${cuentas.Sum(c => c.Puntos)},00");
+        foreach (var cuenta in cuentas)
+        {
+            cuenta.MostrarInforme();
+        }
+    }
+}
 
-var tup = new Banco("Banco TUP");
-tup.Agregar(luis);
+// Clase abstracta Cuenta
+public abstract class Cuenta
+{
+    public string Numero { get; private set; }
+    public decimal Saldo { get; protected set; }
+    public decimal Puntos { get; protected set; }
 
+    public Cuenta(string numero, decimal saldoInicial)
+    {
+        Numero = numero;
+        Saldo = saldoInicial;
+    }
 
-// Registrar Operaciones
-nac.Registrar(new Deposito("10001", 100));
-nac.Registrar(new Retiro("10002", 200));
-nac.Registrar(new Transferencia("10001", "10002", 300));
-nac.Registrar(new Transferencia("10003", "10004", 500));
-nac.Registrar(new Pago("10002", 400));
+    public abstract void AcumularPuntos(decimal monto);
+    
+    public void MostrarInforme()
+    {
+        Console.WriteLine($"    Cuenta: {Numero} | Saldo: ${Saldo},00 | Puntos: ${Puntos},00");
+    }
+}
 
-tup.Registrar(new Deposito("10005", 100));
-tup.Registrar(new Retiro("10005", 200));
-tup.Registrar(new Transferencia("10005", "10002", 300));
-tup.Registrar(new Pago("10005", 400));
+public class CuentaOro : Cuenta
+{
+    public CuentaOro(string numero, decimal saldo) : base(numero, saldo) { }
+    public override void AcumularPuntos(decimal monto)
+    {
+        Puntos += monto > 1000 ? monto * 0.05m : monto * 0.03m;
+    }
+}
 
+public class CuentaPlata : Cuenta
+{
+    public CuentaPlata(string numero, decimal saldo) : base(numero, saldo) { }
+    public override void AcumularPuntos(decimal monto)
+    {
+        Puntos += monto * 0.02m;
+    }
+}
 
-// Informe final
-nac.Informe();
-tup.Informe();
+public class CuentaBronce : Cuenta
+{
+    public CuentaBronce(string numero, decimal saldo) : base(numero, saldo) { }
+    public override void AcumularPuntos(decimal monto)
+    {
+        Puntos += monto * 0.01m;
+    }
+}
 
+// Clase abstracta Operacion
+public abstract class Operacion
+{
+    public string CuentaOrigen { get; protected set; }
+    public decimal Monto { get; protected set; }
+
+    protected Operacion(string cuentaOrigen, decimal monto)
+    {
+        CuentaOrigen = cuentaOrigen;
+        Monto = monto;
+    }
+
+    public abstract void Ejecutar();
+}
+
+public class Deposito : Operacion
+{
+    public Deposito(string cuenta, decimal monto) : base(cuenta, monto) { }
+    public override void Ejecutar()
+    {
+        // Implementar lógica de depósito
+    }
+}
+
+public class Retiro : Operacion
+{
+    public Retiro(string cuenta, decimal monto) : base(cuenta, monto) { }
+    public override void Ejecutar()
+    {
+        // Implementar lógica de retiro
+    }
+}
+
+public class Pago : Operacion
+{
+    public Pago(string cuenta, decimal monto) : base(cuenta, monto) { }
+    public override void Ejecutar()
+    {
+        // Implementar lógica de pago
+    }
+}
+
+public class Transferencia : Operacion
+{
+    public string CuentaDestino { get; private set; }
+
+    public Transferencia(string cuentaOrigen, string cuentaDestino, decimal monto) : base(cuentaOrigen, monto)
+    {
+        CuentaDestino = cuentaDestino;
+    }
+
+    public override void Ejecutar()
+    {
+        // Implementar lógica de transferencia
+    }
+}
