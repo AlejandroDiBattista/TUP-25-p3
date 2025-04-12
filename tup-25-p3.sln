@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "datos", "datos\datos.csproj", "{BB35B401-4EF4-989E-18E9-C126B008FEAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB35B401-4EF4-989E-18E9-C126B008FEAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB35B401-4EF4-989E-18E9-C126B008FEAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB35B401-4EF4-989E-18E9-C126B008FEAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB35B401-4EF4-989E-18E9-C126B008FEAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {179A2E9C-0E11-41D0-9E26-C0ADE80365DA}
+	EndGlobalSection
+EndGlobal

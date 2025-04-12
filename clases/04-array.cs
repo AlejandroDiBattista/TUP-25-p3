@@ -1,5 +1,6 @@
 using static System.Console; // Importa funciones de la consola
 
+
 // Funciones básicas de la consola.
 void demoConsola(){
     Clear();                    // Limpia la consola
@@ -16,6 +17,8 @@ void demoConsola(){
     ReadKey();                  // Espera a que el usuario presione una tecla
     WriteLine($"Valor: {valor}");
 }
+
+// Ejercicio 1: Leer nombres y mostrarlos en orden inverso //
 
 // Leer 5 nombres de la consola y mostrarlos en orden inverso
 void demoIngresarNombres(){

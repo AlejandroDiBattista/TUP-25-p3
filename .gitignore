@@ -1,1 +1,16 @@
-/.vscode
+# Archivos de Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Binarios y objetos compilados
+datos/bin/
+datos/obj/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Carpetas del proyecto que no querés subir
+fechas/

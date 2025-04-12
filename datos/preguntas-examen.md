@@ -768,10 +768,7 @@ c) `'h'`
 ---
 
 ### 75
-
-
-    
-¿Qué devuelve `"123".Replace("2", "9")`?**
+¿Qué devuelve `"123".Replace("2", "9")`?
 
 a) `"193"`  
 b) `"129"`  
@@ -781,256 +778,253 @@ c) `"1932"`
 
 ### 76
 ¿Cuál de las siguientes opciones representa correctamente una variable de tipo `char` en C#?  
-A) `char letra = "A";`  
-B) `char letra = 'A';`  
-C) `char letra = A;`
+a) `char letra = "A";`  
+b) `char letra = 'A';`  
+c) `char letra = A;`
 
 ---
 
 ### 77
 ¿Cuál es la principal diferencia entre `char` y `string` en C#?  
-A) `char` puede almacenar varios caracteres, mientras que `string` solo uno.  
-B) `string` es un valor primitivo y `char` es una clase.  
-C) `char` representa un único carácter, mientras que `string` puede contener una secuencia de caracteres.
+a) `char` puede almacenar varios caracteres, mientras que `string` solo uno.  
+b) `string` es un valor primitivo y `char` es una clase.  
+c) `char` representa un único carácter, mientras que `string` puede contener una secuencia de caracteres.
 
 ---
 
 ### 78
 ¿Qué instrucción convierte correctamente un `char` en un `string`?  
-A) `char letra = 'X'; string texto = letra.ToString();`  
-B) `char letra = 'X'; string texto = (string)letra;`  
-C) `char letra = 'X'; string texto = letra + letra;`
+a) `char letra = 'X'; string texto = letra.ToString();`  
+b) `char letra = 'X'; string texto = (string)letra;`  
+c) `char letra = 'X'; string texto = letra + letra;`
 
 ---
 
 ### 79
 ¿Cuál de las siguientes expresiones evalúa si una variable `char` llamada `letra` es igual al carácter 'a'?  
-A) `if (letra == "a")`  
-B) `if (letra == 'a')`  
-C) `if (letra.Equals("a"))`
+a) `if (letra == "a")`  
+b) `if (letra == 'a')`  
+c) `if (letra.Equals("a"))`
 
 ---
 
 ### 80
 ¿Qué sucede si intentamos asignar una cadena de texto a una variable `char`?  
-A) El código compila, pero da error en tiempo de ejecución.  
-B) Se produce un error de compilación, ya que `char` solo puede contener un carácter.  
-C) El compilador convierte automáticamente la cadena a un solo carácter.
+a) El código compila, pero da error en tiempo de ejecución.  
+b) Se produce un error de compilación, ya que `char` solo puede contener un carácter.  
+c) El compilador convierte automáticamente la cadena a un solo carácter.
 
 ---
 
 ### 81
 ¿Cuál de las siguientes opciones representa correctamente una variable de tipo `char` en C#?  
-A) `char letra = "A";`  
-B) `char letra = 'A';`  
-C) `char letra = A;`
+a) `char letra = "A";`  
+b) `char letra = 'A';`  
+c) `char letra = A;`
 
 ---
 
 ### 82
 ¿Cuál es la principal diferencia entre `char` y `string` en C#?  
-A) `char` puede almacenar varios caracteres, mientras que `string` solo uno.  
-B) `string` es un valor primitivo y `char` es una clase.  
-C) `char` representa un único carácter, mientras que `string` puede contener una secuencia de caracteres.
+a) `char` puede almacenar varios caracteres, mientras que `string` solo uno.  
+b) `string` es un valor primitivo y `char` es una clase.  
+c) `char` representa un único carácter, mientras que `string` puede contener una secuencia de caracteres.
 
 ---
 
 ### 83
 ¿Qué instrucción convierte correctamente un `char` en un `string`?  
-A) `char letra = 'X'; string texto = letra.ToString();`  
-B) `char letra = 'X'; string texto = (string)letra;`  
-C) `char letra = 'X'; string texto = letra + letra;`
+a) `char letra = 'X'; string texto = letra.ToString();`  
+b) `char letra = 'X'; string texto = (string)letra;`  
+c) `char letra = 'X'; string texto = letra + letra;`
 
 ---
 
 ### 84
 ¿Cuál de las siguientes expresiones evalúa si una variable `char` llamada `letra` es igual al carácter 'a'?  
-A) `if (letra == "a")`  
-B) `if (letra == 'a')`  
-C) `if (letra.Equals("a"))`
+a) `if (letra == "a")`  
+b) `if (letra == 'a')`  
+c) `if (letra.Equals("a"))`
 
 ---
 
 ### 85
 ¿Qué sucede si intentamos asignar una cadena de texto a una variable `char`?  
-A) El código compila, pero da error en tiempo de ejecución.  
-B) Se produce un error de compilación, ya que `char` solo puede contener un carácter.  
-C) El compilador convierte automáticamente la cadena a un solo carácter.
+a) El código compila, pero da error en tiempo de ejecución.  
+b) Se produce un error de compilación, ya que `char` solo puede contener un carácter.  
+c) El compilador convierte automáticamente la cadena a un solo carácter.
 
 ---
 
 ### 86
 ¿Qué valor devuelve `char.IsDigit('5')`?  
-A) `true`  
-B) `false`  
-C) `'5'`
+a) `true`  
+b) `false`  
+c) `'5'`
 
 ---
 
 ### 87
 ¿Cuál de las siguientes llamadas devuelve `false`?  
-A) `char.IsDigit('9')`  
-B) `char.IsDigit('a')`  
-C) `char.IsDigit('3')`
+a) `char.IsDigit('9')`  
+b) `char.IsDigit('a')`  
+c) `char.IsDigit('3')`
 
 ---
 
 ### 88
 ¿Qué función se puede usar para verificar si un carácter es una letra del alfabeto?  
-A) `char.IsNumber()`  
-B) `char.IsLetter()`  
-C) `char.IsDigit()`
+a) `char.IsNumber()`  
+b) `char.IsLetter()`  
+c) `char.IsDigit()`
 
 ---
 
 ### 89
 ¿Cuál es el resultado de `char.IsLetterOrDigit('%')`?  
-A) `true`  
-B) `false`  
-C) `'%'`
+a) `true`  
+b) `false`  
+c) `'%'`
 
 ---
 
 ### 90
 ¿Qué función devuelve `true` para un carácter como el espacio en blanco `' '`?  
-A) `char.IsWhiteSpace(' ')`  
-B) `char.IsDigit(' ')`  
-C) `char.IsControl(' ')`
+a) `char.IsWhiteSpace(' ')`  
+b) `char.IsDigit(' ')`  
+c) `char.IsControl(' ')`
 
 ---
 
 ### 91
 ¿Cuál de las siguientes es una forma válida de declarar un arreglo de enteros en C#?  
-A) `int[] numeros;`  
-B) `array<int> numeros;`  
-C) `int numeros[];`
+a) `int[] numeros;`  
+b) `array<int> numeros;`  
+c) `int numeros[];`
 
 ---
 
 ### 92
 ¿Cuál de las siguientes declaraciones crea un arreglo de 5 elementos enteros, todos inicializados a cero?  
-A) `int[] arreglo = new int[5];`  
-B) `int[5] arreglo = new int[];`  
-C) `int arreglo = new int[5];`
+a) `int[] arreglo = new int[5];`  
+b) `int[5] arreglo = new int[];`  
+c) `int arreglo = new int[5];`
 
 ---
 
 ### 93
 ¿Cuál es una forma válida de declarar e inicializar un arreglo con los valores 10, 20 y 30?  
-A) `int[] datos = {10, 20, 30};`  
-B) `int datos = new int[3] {10, 20, 30};`  
-C) `int datos = (10, 20, 30);`
+a) `int[] datos = {10, 20, 30};`  
+b) `int datos = new int[3] {10, 20, 30};`  
+c) `int datos = (10, 20, 30);`
 
 ---
 
 ### 94
 ¿Qué sintaxis es válida para crear un arreglo de cadenas con espacio para 4 elementos, pero sin valores iniciales?  
-A) `string[] nombres = new string[4];`  
-B) `string[4] nombres;`  
-C) `string nombres = string[4];`
+a) `string[] nombres = new string[4];`  
+b) `string[4] nombres;`  
+c) `string nombres = string[4];`
 
 ---
 
 ### 95
 ¿Cuál es una forma correcta de declarar e inicializar un arreglo de tipo `char` con los caracteres 'a', 'b' y 'c'?  
-A) `char[] letras = new char[] {'a', 'b', 'c'};`  
-B) `char letras[] = {'a', 'b', 'c'};`  
-C) `char letras = ['a', 'b', 'c'];`
+a) `char[] letras = new char[] {'a', 'b', 'c'};`  
+b) `char letras[] = {'a', 'b', 'c'};`  
+c) `char letras = ['a', 'b', 'c'];`
 
 ---
 
 ### 96
 ¿Cuál es la forma correcta de acceder al primer elemento de un arreglo llamado `numeros`?  
-A) `numeros[0]`  
-B) `numeros[1]`  
-C) `numeros[first]`
+a) `numeros[0]`  
+b) `numeros[1]`  
+c) `numeros[first]`
 
 ---
 
 ### 97
 ¿Cómo se asigna el valor 25 al tercer elemento de un arreglo `valores`?  
-A) `valores[2] = 25;`  
-B) `valores[3] = 25;`  
-C) `valores[25] = 2;`
+a) `valores[2] = 25;`  
+b) `valores[3] = 25;`  
+c) `valores[25] = 2;`
 
 ---
 
 ### 98
-
 Si se tiene `string[] nombres = {"Ana", "Luis", "Juan"}`, ¿qué valor tiene `nombres[1]`?  
-A) `"Ana"`  
-B) `"Luis"`  
-C) `"Juan"`
+a) `"Ana"`  
+b) `"Luis"`  
+c) `"Juan"`
 
 ---
 
 ### 99
 ¿Qué ocurre si intentas acceder a un índice fuera del rango del arreglo?  
-A) El programa ignora el acceso.  
-B) Se lanza una excepción en tiempo de compilación.  
-C) Se lanza una excepción en tiempo de ejecución.
+a) El programa ignora el acceso.  
+b) Se lanza una excepción en tiempo de compilación.  
+c) Se lanza una excepción en tiempo de ejecución.
 
 ---
 
 ### 100
-
 Dado `int[] datos = {1, 2, 3, 4}`, ¿cómo se puede acceder al último elemento usando índices normales?  
-A) `datos[4]`  
-B) `datos[3]`  
-C) `datos[-1]`
+a) `datos[4]`  
+b) `datos[3]`  
+c) `datos[-1]`
 
 ---
 
 ### 101
 ¿Qué sintaxis se puede usar para acceder al último elemento de un arreglo en C# 8.0 o superior usando índices desde el final?  
-A) `arreglo[^1]`  
-B) `arreglo[Last]`  
-C) `arreglo[-1]`
+a) `arreglo[^1]`  
+b) `arreglo[Last]`  
+c) `arreglo[-1]`
 
 ---
 
 ### 102
 ¿Qué hace la siguiente instrucción? `numeros[^2] = 99;`  
-A) Asigna 99 al segundo elemento.  
-B) Asigna 99 al penúltimo elemento.  
-C) Asigna 99 al segundo desde el principio.
+a) Asigna 99 al segundo elemento.  
+b) Asigna 99 al penúltimo elemento.  
+c) Asigna 99 al segundo desde el principio.
 
 ---
 
 ### 103
 ¿Cuál es el valor de `frutas[^3]` si `frutas = {"Manzana", "Banana", "Pera", "Kiwi", "Uva"}`?  
-A) `"Banana"`  
-B) `"Pera"`  
-C) `"Kiwi"`
+a) `"Banana"`  
+b) `"Pera"`  
+c) `"Kiwi"`
 
 ---
 
 ### 104
 ¿Cómo se recorre un arreglo `edades` y se muestra cada elemento por consola?  
-A) `foreach (int edad in edades) { Console.WriteLine(edad); }`  
-B) `for (edad in edades) { Console.Write(edad); }`  
-C) `print edades;`
+a) `foreach (int edad in edades) { Console.WriteLine(edad); }`  
+b) `for (edad in edades) { Console.Write(edad); }`  
+c) `print edades;`
 
 ---
 
 ### 105
 ¿Qué instrucción permite modificar el valor del último elemento de un arreglo `valores` a 0, usando sintaxis moderna?  
-A) `valores[Length - 1] = 0;`  
-B) `valores[^1] = 0;`  
-C) `valores[last] = 0;`
+a) `valores[Length - 1] = 0;`  
+b) `valores[^1] = 0;`  
+c) `valores[last] = 0;`
 
 ---
 
 ### 106
 ¿Cuál es la estructura más común para recorrer un arreglo de principio a fin en C#?  
-A) `while`  
-B) `foreach`  
-C) `switch`
+a) `while`  
+b) `foreach`  
+c) `switch`
 
 ---
 
 ### 107
-
 Dado `int[] numeros = {1, 2, 3, 4}`, ¿cuál es el resultado de este código?  
 ```csharp  
 int suma = 0;  
@@ -1040,17 +1034,17 @@ foreach (int n in numeros) {
 Console.WriteLine(suma);  
 ```
 
-A) `10`  
-B) `1234`  
-C) `0`
+a) `10`  
+b) `1234`  
+c) `0`
 
 ---
 
 ### 108
 ¿Cuál es una ventaja de usar `foreach` en lugar de `for` al recorrer un arreglo?  
-A) Permite modificar el tamaño del arreglo.  
-B) Es más rápido para modificar los valores.  
-C) Es más simple y evita errores de índice.
+a) Permite modificar el tamaño del arreglo.  
+b) Es más rápido para modificar los valores.  
+c) Es más simple y evita errores de índice.
 
 ---
 
@@ -1063,11 +1057,9 @@ for (int i = 0; i < letras.Length; i++) {
 }  
 ```
 
-A) `abc`  
-B) `a b c`  
-C) `0 1 2`
-
----
+a) `abc`  
+b) `a b c`  
+c) `0 1 2`
 
 ---
 
@@ -1080,26 +1072,22 @@ for (int i = 0; i < numeros.Length; i++) {
 }  
 ```
   
-A) Reemplaza todos los valores con 2.  
-B) Duplica cada valor del arreglo.  
-C) Agrega un nuevo elemento al final del arreglo.
+a) Reemplaza todos los valores con 2.  
+b) Duplica cada valor del arreglo.  
+c) Agrega un nuevo elemento al final del arreglo.
 
 ---
 
 ### 116
-
- 
 ¿Qué significa que los arreglos en C# sean tipos por referencia?
 
-A) Que se copian completamente al pasarlos como argumento.  
-B) Que apuntan a una ubicación de memoria compartida.  
-C) Que no se pueden modificar una vez creados.
+a) Que se copian completamente al pasarlos como argumento.  
+b) Que apuntan a una ubicación de memoria compartida.  
+c) Que no se pueden modificar una vez creados.
 
 ---
 
 ### 117
-
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 void Modificar(int[] datos) {
@@ -1111,14 +1099,13 @@ Modificar(numeros);
 Console.WriteLine(numeros[0]);
 ```
 
-A) `1`  
-B) `99`  
-C) Da error de compilación.
+a) `1`  
+b) `99`  
+c) Da error de compilación.
 
 ---
 
 ### 118
- 
 Si se asigna un arreglo a otra variable, como en el siguiente ejemplo:  
 ```csharp
 int[] a = {1, 2, 3};  
@@ -1127,24 +1114,22 @@ b[1] = 100;
 ```
 ¿Cuál es el valor de `a[1]`?
 
-A) `2`  
-B) `100`  
-C) `0`
+a) `2`  
+b) `100`  
+c) `0`
 
 ---
 
 ### 119
- 
 ¿Qué sucede si se pasa un arreglo como parámetro a un método y se modifica un elemento dentro del método?
 
-A) Solo se modifica dentro del método.  
-B) Se modifica tanto dentro como fuera del método.  
-C) No es posible modificar un arreglo dentro de un método.
+a) Solo se modifica dentro del método.  
+b) Se modifica tanto dentro como fuera del método.  
+c) No es posible modificar un arreglo dentro de un método.
 
 ---
 
 ### 120
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 int[] original = {10, 20, 30};  
@@ -1153,34 +1138,31 @@ original[2] = 99;
 Console.WriteLine(copia[2]);
 ```
 
-A) `30`  
-B) `99`  
-C) Error en tiempo de ejecución.
+a) `30`  
+b) `99`  
+c) Error en tiempo de ejecución.
 
 ---
 
 ### 121
- 
 ¿Cuál es la sintaxis correcta para declarar una estructura en C#?
 
-A) `class Punto { int X; int Y; }`  
-B) `struct Punto { int X; int Y; }`  
-C) `structure Punto { int X; int Y; }`  
+a) `class Punto { int X; int Y; }`  
+b) `struct Punto { int X; int Y; }`  
+c) `structure Punto { int X; int Y; }`  
 
 ---
 
 ### 122
- 
 ¿Qué diferencia principal existe entre una `struct` y una `class` en C#?
 
-A) Las `struct` se pasan por valor y las `class` por referencia.  
-B) Las `struct` permiten herencia múltiple.  
-C) Las `struct` pueden tener finalizadores.  
+a) Las `struct` se pasan por valor y las `class` por referencia.  
+b) Las `struct` permiten herencia múltiple.  
+c) Las `struct` pueden tener finalizadores.  
 
 ---
 
 ### 123
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 struct Coordenada {
@@ -1194,44 +1176,40 @@ c2.X = 99;
 Console.WriteLine(c1.X);
 ```
 
-A) `5`  
-B) `99`  
-C) Error de compilación  
+a) `5`  
+b) `99`  
+c) Error de compilación  
 
 ---
 
 ### 124
- 
 ¿Cuál es la forma correcta de declarar una propiedad automática en una `struct`?
 
-A) `public int Edad;`  
-B) `public int Edad { get; set; }`  
-C) `private int Edad { set; get; } = 0;`  
+a) `public int Edad;`  
+b) `public int Edad { get; set; }`  
+c) `private int Edad { set; get; } = 0;`  
 
 ---
 
 ### 125
- 
 ¿Qué ocurre si no se inicializan todos los campos de una `struct` antes de usarla?
 
-A) El compilador inicializa los campos automáticamente a 0 o null.  
-B) Se lanza una excepción en tiempo de ejecución.  
-C) Se produce un error de compilación.  
+a) El compilador inicializa los campos automáticamente a 0 o null.  
+b) Se lanza una excepción en tiempo de ejecución.  
+c) Se produce un error de compilación.  
 
 ---
 
 ### 126
- 
 ¿Cuál de las siguientes afirmaciones sobre constructores en `struct` es correcta?
 
-A) Una `struct` puede tener un constructor sin parámetros.  
-B) Una `struct` puede tener constructores con parámetros, pero no uno sin parámetros.  
-C) Una `struct` puede tener un constructor sin parámetros definido por el usuario.  
+a) Una `struct` puede tener un constructor sin parámetros.  
+b) Una `struct` puede tener constructores con parámetros, pero no uno sin parámetros.  
+c) Una `struct` puede tener un constructor sin parámetros definido por el usuario.  
 
 ---
 
 ### 127
- 
 Dado el siguiente código, ¿cuál es la salida?  
 ```csharp
 struct Punto {
@@ -1245,24 +1223,22 @@ Punto p = new Punto(3);
 Console.WriteLine(p.X);
 ```
 
-A) `3`  
-B) `0`  
-C) Error de compilación  
+a) `3`  
+b) `0`  
+c) Error de compilación  
 
 ---
 
 ### 128
- 
 ¿Es posible declarar propiedades con lógica personalizada en una `struct`?
 
-A) No, solo se permiten propiedades automáticas.  
-B) Sí, siempre que todos los campos estén inicializados en el constructor.  
-C) Sí, pero solo en clases, no en `struct`.  
+a) No, solo se permiten propiedades automáticas.  
+b) Sí, siempre que todos los campos estén inicializados en el constructor.  
+c) Sí, pero solo en clases, no en `struct`.  
 
 ---
 
 ### 129
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 struct Contador {
@@ -1275,54 +1251,49 @@ b.Valor = 20;
 Console.WriteLine(a.Valor);
 ```
 
-A) `10`  
-B) `20`  
-C) Error de compilación  
+a) `10`  
+b) `20`  
+c) Error de compilación  
 
 ---
 
 ### 130
- 
 ¿Cuál de estas afirmaciones sobre `struct` es verdadera?
 
-A) Una `struct` puede heredar de otra `struct`.  
-B) Una `struct` puede implementar interfaces.  
-C) Una `struct` puede derivar de la clase `Object` de forma explícita.  
+a) Una `struct` puede heredar de otra `struct`.  
+b) Una `struct` puede implementar interfaces.  
+c) Una `struct` puede derivar de la clase `Object` de forma explícita.  
 
 ---
 
 ### 131
- 
 ¿Qué miembros puede contener una `struct` en C#?
 
-A) Solo campos y propiedades  
-B) Campos, propiedades, métodos, constructores y eventos  
-C) Solo propiedades y métodos estáticos  
+a) Solo campos y propiedades  
+b) Campos, propiedades, métodos, constructores y eventos  
+c) Solo propiedades y métodos estáticos  
 
 ---
 
 ### 132
- 
 ¿Qué característica es *única* de una propiedad automática en comparación con una propiedad normal?
 
-A) Requiere una variable explícita como respaldo  
-B) El compilador genera automáticamente el campo privado asociado  
-C) Solo se puede usar en clases, no en `struct`  
+a) Requiere una variable explícita como respaldo  
+b) El compilador genera automáticamente el campo privado asociado  
+c) Solo se puede usar en clases, no en `struct`  
 
 ---
 
 ### 133
- 
 ¿Qué ocurre si no se asignan valores a todos los campos de una `struct` dentro de un constructor personalizado?
 
-A) El compilador lo corrige automáticamente  
-B) Se produce una excepción en tiempo de ejecución  
-C) Se produce un error de compilación  
+a) El compilador lo corrige automáticamente  
+b) Se produce una excepción en tiempo de ejecución  
+c) Se produce un error de compilación  
 
 ---
 
 ### 134
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 struct Medida {
@@ -1334,44 +1305,40 @@ Medida m = new Medida();
 Console.WriteLine(m.Largo);
 ```
 
-A) `0`  
-B) `null`  
-C) Error de compilación  
+a) `0`  
+b) `null`  
+c) Error de compilación  
 
 ---
 
 ### 135
- 
 ¿Cuál es la principal ventaja de usar `struct` para tipos pequeños e inmutables?
 
-A) Menor uso de memoria en el heap  
-B) Mayor flexibilidad para herencia  
-C) Posibilidad de usar finalizadores  
+a) Menor uso de memoria en el heap  
+b) Mayor flexibilidad para herencia  
+c) Posibilidad de usar finalizadores  
 
 ---
 
 ### 136
- 
 ¿Cuál es la sintaxis correcta para declarar una clase pública en C#?
 
-A) `class Persona { }`  
-B) `public class Persona { }`  
-C) `Persona class { }`  
+a) `class Persona { }`  
+b) `public class Persona { }`  
+c) `Persona class { }`  
 
 ---
 
 ### 137
- 
 ¿Qué visibilidad tiene una clase si no se especifica ningún modificador de acceso?
 
-A) `internal`  
-B) `public`  
-C) `private`  
+a) `internal`  
+b) `public`  
+c) `private`  
 
 ---
 
 ### 138
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 public class Persona {
@@ -1385,24 +1352,22 @@ Persona p = new Persona("Ana");
 Console.WriteLine(p.Nombre);
 ```
 
-A) `null`  
-B) `Ana`  
-C) Error de compilación  
+a) `null`  
+b) `Ana`  
+c) Error de compilación  
 
 ---
 
 ### 139
- 
 ¿Qué característica permite tener varios constructores con diferente número de parámetros?
 
-A) Delegación de constructores  
-B) Polimorfismo  
-C) Sobrecarga de constructores  
+a) Delegación de constructores  
+b) Polimorfismo  
+c) Sobrecarga de constructores  
 
 ---
 
 ### 140
- 
 ¿Cuál es la salida del siguiente código?  
 ```csharp
 public class Producto {
@@ -1419,38 +1384,36 @@ Producto p = new Producto();
 Console.WriteLine(p.Nombre);
 ```
 
-A) `Sin nombre`  
-B) `null`  
-C) `Producto`  
+a) `Sin nombre`  
+b) `null`  
+c) `Producto`  
 
 ---
 
 ### 141
- 
 ¿Qué ocurre si definimos dos métodos con el mismo nombre pero diferente número de parámetros?
 
-A) Error de compilación  
-B) Se produce una sobrecarga válida  
-C) Se ignora uno de los métodos  
+a) Error de compilación  
+b) Se produce una sobrecarga válida  
+c) Se ignora uno de los métodos  
 
 ---
 
 ### 142
- 
 ¿Cuál es la forma correcta de implementar una propiedad con lógica personalizada?
 
-A)  
+a)  
 ```csharp
 public int Edad { get; set; }
 ```  
-B)  
+b)  
 ```csharp
 public int Edad {
     get { return edad; }
     set { if (value >= 0) edad = value; }
 }
 ```  
-C)  
+c)  
 ```csharp
 private set Edad(int edad) { this.edad = edad; }
 ```  
@@ -1458,17 +1421,15 @@ private set Edad(int edad) { this.edad = edad; }
 ---
 
 ### 143
- 
 ¿Qué modificador de acceso impide que una propiedad sea visible desde fuera de la clase?
 
-A) `public`  
-B) `private`  
-C) `static`  
+a) `public`  
+b) `private`  
+c) `static`  
 
 ---
 
 ### 144
- 
 ¿Cuál es la salida del siguiente código?  
 ```csharp
 public class Punto {
@@ -1484,24 +1445,22 @@ p.X = 10;
 Console.WriteLine(p.X);
 ```
 
-A) `0`  
-B) `10`  
-C) Error en tiempo de ejecución  
+a) `0`  
+b) `10`  
+c) Error en tiempo de ejecución  
 
 ---
 
 ### 145
- 
 ¿Qué palabra clave se utiliza para restringir el acceso a una propiedad a solo dentro de la clase?
 
-A) `internal`  
-B) `protected`  
-C) `private`  
+a) `internal`  
+b) `protected`  
+c) `private`  
 
 ---
 
 ### 146
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 public class Animal {
@@ -1518,24 +1477,22 @@ Animal a = new Animal("Gato");
 Console.WriteLine(a.Nombre);
 ```
 
-A) `Sin nombre`  
-B) `null`  
-C) `Gato`  
+a) `Sin nombre`  
+b) `null`  
+c) `Gato`  
 
 ---
 
 ### 147
- 
 ¿Es válido tener una propiedad con acceso `get` público y `set` privado?
 
-A) No, ambos deben tener la misma visibilidad  
-B) Sí, usando `{ get; private set; }`  
-C) Solo si la propiedad es estática  
+a) No, ambos deben tener la misma visibilidad  
+b) Sí, usando `{ get; private set; }`  
+c) Solo si la propiedad es estática  
 
 ---
 
 ### 148
- 
 ¿Cuál es el resultado de compilar el siguiente código?  
 ```csharp
 class Vehiculo {
@@ -1544,24 +1501,22 @@ class Vehiculo {
 Console.WriteLine(new Vehiculo().marca);
 ```
 
-A) Se imprime `null`  
-B) Error de compilación por acceso a miembro privado  
-C) Se imprime una cadena vacía  
+a) Se imprime `null`  
+b) Error de compilación por acceso a miembro privado  
+c) Se imprime una cadena vacía  
 
 ---
 
 ### 149
- 
 ¿Cuál es la diferencia principal entre campo y propiedad?
 
-A) Las propiedades no pueden tener lógica  
-B) Los campos no pueden ser privados  
-C) Las propiedades permiten controlar el acceso a los datos  
+a) Las propiedades no pueden tener lógica  
+b) Los campos no pueden ser privados  
+c) Las propiedades permiten controlar el acceso a los datos  
 
 ---
 
 ### 150
- 
 ¿Cuál es la salida del siguiente código?  
 ```csharp
 public class Caja {
@@ -1578,34 +1533,31 @@ Caja c = new Caja(5, 3);
 Console.WriteLine(c.Ancho);
 ```
 
-A) `3`  
-B) `0`  
-C) Error de compilación  
+a) `3`  
+b) `0`  
+c) Error de compilación  
 
 ---
 
 ### 151
- 
 ¿Qué significa que un método sea `private`?
 
-A) Solo puede ser llamado desde dentro de la clase  
-B) Solo puede ser llamado desde subclases  
-C) Puede ser accedido por cualquier parte del programa  
+a) Solo puede ser llamado desde dentro de la clase  
+b) Solo puede ser llamado desde subclases  
+c) Puede ser accedido por cualquier parte del programa  
 
 ---
 
 ### 152
- 
 ¿Qué ocurre si definimos dos métodos con el mismo nombre y mismos parámetros?
 
-A) Sobrecarga válida  
-B) Se reemplaza el primero  
-C) Error de compilación  
+a) Sobrecarga válida  
+b) Se reemplaza el primero  
+c) Error de compilación  
 
 ---
 
 ### 153
- 
 ¿Qué salida produce el siguiente código?  
 ```csharp
 public class Operaciones {
@@ -1622,24 +1574,22 @@ Operaciones op = new Operaciones();
 Console.WriteLine(op.Sumar(2, 3));
 ```
 
-A) `5`  
-B) `6`  
-C) Error de compilación  
+a) `5`  
+b) `6`  
+c) Error de compilación  
 
 ---
 
 ### 154
- 
 ¿Se puede tener múltiples constructores con el mismo número de parámetros pero diferente tipo?
 
-A) No, el compilador no lo permite  
-B) Sí, es una forma válida de sobrecarga  
-C) Solo en clases abstractas  
+a) No, el compilador no lo permite  
+b) Sí, es una forma válida de sobrecarga  
+c) Solo en clases abstractas  
 
 ---
 
 ### 155
- 
 ¿Qué salida da el siguiente código?  
 ```csharp
 public class Persona {
@@ -1653,57 +1603,53 @@ Persona p = new Persona("Lucía");
 Console.WriteLine(p.Nombre);
 ```
 
-A) `null`  
-B) `Lucía`  
-C) Error de compilación  
+a) `null`  
+b) `Lucía`  
+c) Error de compilación  
 
 ---
 
 ### 156
- 
 ¿Es obligatorio tener un constructor en una clase en C#?
 
-A) Sí, siempre debe haber al menos uno  
-B) No, el compilador genera uno por defecto si no se define  
-C) Solo si la clase tiene propiedades  
+a) Sí, siempre debe haber al menos uno  
+b) No, el compilador genera uno por defecto si no se define  
+c) Solo si la clase tiene propiedades  
 
 ---
 
 ### 157
- 
 ¿Qué palabra clave impide que una clase sea instanciada fuera de su ensamblado?
 
-A) `internal`  
-B) `private`  
-C) `sealed`  
+a) `internal`  
+b) `private`  
+c) `sealed`  
 
 ---
 
 ### 158
- 
 ¿Cuál es el propósito de un constructor?
 
-A) Asignar valores predeterminados a campos estáticos  
-B) Inicializar un objeto cuando se crea  
-C) Declarar métodos auxiliares  
+a) Asignar valores predeterminados a campos estáticos  
+b) Inicializar un objeto cuando se crea  
+c) Declarar métodos auxiliares  
 
 ---
 
 ### 159
- 
 ¿Cuál de estas opciones es una forma válida de sobrecargar un constructor?
 
-A)  
+a)  
 ```csharp
 public Persona() { }  
 public Persona(string nombre) { }
 ```  
-B)  
+b)  
 ```csharp
 public Persona(string nombre) { }  
 public Persona(string nombre) { }
 ```  
-C)  
+c)  
 ```csharp
 public Persona(int edad);  
 public Persona(string nombre);
@@ -1712,27 +1658,24 @@ public Persona(string nombre);
 ---
 
 ### 160
- 
 ¿Qué ocurre si una propiedad solo tiene el `get` y no el `set`?
 
-A) Puede leerse pero no modificarse  
-B) No puede usarse en ninguna parte  
-C) Puede modificarse desde el constructor  
+a) Puede leerse pero no modificarse  
+b) No puede usarse en ninguna parte  
+c) Puede modificarse desde el constructor  
 
 ---
 
 ### 161
- 
 ¿Es válido definir una propiedad como `public` pero su `set` como `private`?
 
-A) No, debe ser todo público o todo privado  
-B) Sí, es una práctica común  
-C) Solo para clases abstractas  
+a) No, debe ser todo público o todo privado  
+b) Sí, es una práctica común  
+c) Solo para clases abstractas  
 
 ---
 
 ### 162
- 
 ¿Cuál es la salida del siguiente código?  
 ```csharp
 public class Reloj {
@@ -1747,114 +1690,103 @@ Reloj r = new Reloj(12);
 Console.WriteLine(r.Hora);
 ```
 
-A) `0`  
-B) `12`  
-C) Error de compilación  
+a) `0`  
+b) `12`  
+c) Error de compilación  
 
 ---
 
 ### 163
- 
 ¿Qué permite la sobrecarga de métodos en una clase?
 
-A) Tener varios métodos con el mismo nombre y misma firma  
-B) Tener métodos con el mismo nombre pero diferentes firmas  
-C) Definir múltiples clases con el mismo nombre  
+a) Tener varios métodos con el mismo nombre y misma firma  
+b) Tener métodos con el mismo nombre pero diferentes firmas  
+c) Definir múltiples clases con el mismo nombre  
 
 ---
 
 ### 164
- 
 ¿Cuál es el propósito principal de las propiedades en una clase?
 
-A) Exponer campos públicos  
-B) Controlar el acceso a los datos internos  
-C) Reemplazar los métodos  
+a) Exponer campos públicos  
+b) Controlar el acceso a los datos internos  
+c) Reemplazar los métodos  
 
 ---
 
 ### 165
- 
 ¿Qué modificador se usa para que un campo solo pueda ser accedido dentro de la misma clase?
 
-A) `protected`  
-B) `public`  
-C) `private`  
+a) `protected`  
+b) `public`  
+c) `private`  
 
 ---
 
 ### 166
- 
 ¿Cuál es la diferencia principal entre una `struct` y una `class` en C#?
 
-A) Las `struct` son tipos por valor y las `class` son tipos por referencia.  
-B) Las `class` no pueden contener métodos.  
-C) Las `struct` permiten herencia, las `class` no.  
+a) Las `struct` son tipos por valor y las `class` son tipos por referencia.  
+b) Las `class` no pueden contener métodos.  
+c) Las `struct` permiten herencia, las `class` no.  
 
 ---
 
 ### 167
- 
 ¿Qué ocurre cuando se asigna una `struct` a otra variable?
 
-A) Ambas variables referencian el mismo objeto.  
-B) Se copia el valor, son dos instancias independientes.  
-C) Se lanza una excepción.  
+a) Ambas variables referencian el mismo objeto.  
+b) Se copia el valor, son dos instancias independientes.  
+c) Se lanza una excepción.  
 
 ---
 
 ### 168
- 
 ¿Cuál de las siguientes opciones es verdadera respecto a `struct` y `class`?
 
-A) Solo las `struct` pueden tener constructores con parámetros.  
-B) Solo las `class` pueden tener destructores.  
-C) Las `struct` pueden heredar de otras `struct`.  
+a) Solo las `struct` pueden tener constructores con parámetros.  
+b) Solo las `class` pueden tener destructores.  
+c) Las `struct` pueden heredar de otras `struct`.  
 
 ---
 
 ### 169
- 
 ¿Qué tipo de tipo es más adecuado para representar una entidad simple e inmutable como un punto en 2D?
 
-A) `class`  
-B) `struct`  
-C) `interface`  
+a) `class`  
+b) `struct`  
+c) `interface`  
 
 ---
 
 ### 170
-
- 
 ¿Qué diferencia de memoria existe entre `struct` y `class`?
 
-A) Las `struct` se almacenan en el heap y las `class` en el stack.  
-B) Las `struct` y `class` siempre se almacenan en el heap.  
-C) Las `struct` normalmente se almacenan en el stack y las `class` en el heap.  
+a) Las `struct` se almacenan en el heap y las `class` en el stack.  
+b) Las `struct` y `class` siempre se almacenan en el heap.  
+c) Las `struct` normalmente se almacenan en el stack y las `class` en el heap.  
 
 ---
 
 ### 171
 ¿Cuál es el principal objetivo del `encapsulamiento`?
 
-A) Permitir herencia múltiple  
-B) Proteger el estado interno de un objeto  
-C) Ejecutar múltiples métodos al mismo tiempo  
+a) Permitir herencia múltiple  
+b) Proteger el estado interno de un objeto  
+c) Ejecutar múltiples métodos al mismo tiempo  
 
 ---
 
 ### 172
-
 ¿Qué nivel de acceso evita que un campo pueda ser accedido directamente desde fuera de la clase?
 
-A) `public`  
-B) `protected`  
-C) `private`  
+a) `public`  
+b) `protected`  
+c) `private`  
 
 ---
 
 ### 173
-
 ¿Cuál es el resultado de este código?
 
 ```csharp
@@ -1870,24 +1802,22 @@ var p = new Persona();
 Console.WriteLine(p.GetNombre());
 ```
 
-A) Juan  
-B) Error de compilación  
-C) null  
+a) Juan  
+b) Error de compilación  
+c) null  
 
 ---
 
 ### 174
-
 ¿Qué permite la herencia en la programación orientada a objetos?
 
-A) Aumentar el número de constructores  
-B) Reutilizar código de una clase base  
-C) Usar operadores sobrecargados  
+a) Aumentar el número de constructores  
+b) Reutilizar código de una clase base  
+c) Usar operadores sobrecargados  
 
 ---
 
 ### 175
-
 Dada la siguiente jerarquía:
 
 ```csharp
@@ -1897,24 +1827,22 @@ class Auto : Vehiculo { }
 
 ¿Qué conversión es válida sin necesidad de casting?
 
-A) `Vehiculo v = new Auto();`  
-B) `Auto a = new Vehiculo();`  
-C) `Auto a = (Auto)new Vehiculo();`  
+a) `Vehiculo v = new Auto();`  
+b) `Auto a = new Vehiculo();`  
+c) `Auto a = (Auto)new Vehiculo();`  
 
 ---
 
 ### 176
-
 ¿Qué palabra clave se usa para permitir que un método pueda ser sobrescrito en una subclase?
 
-A) `override`  
-B) `virtual`  
-C) `sealed`  
+a) `override`  
+b) `virtual`  
+c) `sealed`  
 
 ---
 
 ### 177
-
 ¿Qué salida produce este código?
 
 ```csharp
@@ -1934,67 +1862,62 @@ Animal a = new Perro();
 a.Hablar();
 ```
 
-A) Animal  
-B) Guau  
-C) Error de compilación  
+a) Animal  
+b) Guau  
+c) Error de compilación  
 
 ---
 
 ### 178
-
 ¿Cuál es el tipo base de todos los tipos en C#?
 
-A) `base`  
-B) `Object`  
-C) `Any`  
+a) `base`  
+b) `Object`  
+c) `Any`  
 
 ---
 
 ### 179
-
 ¿Qué permite el uso del operador `is` en C#?
 
-A) Realizar herencia múltiple  
-B) Verificar si un objeto es de un tipo específico  
-C) Convertir directamente un tipo a otro  
+a) Realizar herencia múltiple  
+b) Verificar si un objeto es de un tipo específico  
+c) Convertir directamente un tipo a otro  
 
 ---
 
 ### 180
-
 ¿Qué ocurre si se hace un cast inválido entre tipos no compatibles?
 
-A) Se realiza la conversión correctamente  
-B) El programa continúa sin problemas  
-C) Se lanza una excepción en tiempo de ejecución  
+a) Se realiza la conversión correctamente  
+b) El programa continúa sin problemas  
+c) Se lanza una excepción en tiempo de ejecución  
 
 ---
 
 ### 181
-
 ¿Qué hace el operador `as` si la conversión falla?
 
-A) Lanza una excepción  
-B) Retorna `null`  
-C) Convierte a `object`  
+a) Lanza una excepción  
+b) Retorna `null`  
+c) Convierte a `object`  
 
 ---
 
 ### 182
-
 ¿Cuál de estas definiciones permite una clase ser heredada pero no sobrescrita?
 
-A)  
+a)  
 ```csharp
 class MiClase { }
 ```  
 
-B)  
+b)  
 ```csharp
 sealed class MiClase { }
 ```  
 
-C)  
+c)  
 ```csharp
 static class MiClase { }
 ```  
@@ -2002,27 +1925,24 @@ static class MiClase { }
 ---
 
 ### 183
-
 ¿Cuál es el propósito de la palabra clave `base` en C#?
 
-A) Crear una instancia de la clase base  
-B) Acceder a miembros de la clase base desde una clase derivada  
-C) Ocultar un método de la clase base  
+a) Crear una instancia de la clase base  
+b) Acceder a miembros de la clase base desde una clase derivada  
+c) Ocultar un método de la clase base  
 
 ---
 
 ### 184
-
 ¿Qué indica la sobrecarga de métodos?
 
-A) Métodos con el mismo nombre pero diferentes firmas  
-B) Herencia de múltiples clases  
-C) Un método reemplaza otro en una clase derivada  
+a) Métodos con el mismo nombre pero diferentes firmas  
+b) Herencia de múltiples clases  
+c) Un método reemplaza otro en una clase derivada  
 
 ---
 
 ### 185
-
 ¿Qué salida produce este código?
 
 ```csharp
@@ -2030,24 +1950,22 @@ object obj = "Hola mundo";
 Console.WriteLine(obj.GetType());
 ```
 
-A) `System.String`  
-B) `System.Object`  
-C) `String`  
+a) `System.String`  
+b) `System.Object`  
+c) `String`  
 
 ---
 
 ### 186
-
 ¿Cuál es la principal ventaja del polimorfismo?
 
-A) Permitir el uso de múltiples constructores  
-B) Permitir usar diferentes tipos a través de una misma interfaz  
-C) Reescribir métodos estáticos  
+a) Permitir el uso de múltiples constructores  
+b) Permitir usar diferentes tipos a través de una misma interfaz  
+c) Reescribir métodos estáticos  
 
 ---
 
 ### 187
-
 ¿Qué salida produce este código?
 
 ```csharp
@@ -2063,24 +1981,22 @@ A obj = new B();
 obj.Mostrar();
 ```
 
-A) A  
-B) B  
-C) Error de compilación  
+a) A  
+b) B  
+c) Error de compilación  
 
 ---
 
 ### 188
-
 ¿Cuál es el efecto de usar `virtual` en un método?
 
-A) Impide que el método se sobrescriba  
-B) Permite que una clase lo use como método abstracto  
-C) Permite que una subclase lo sobrescriba con `override`  
+a) Impide que el método se sobrescriba  
+b) Permite que una clase lo use como método abstracto  
+c) Permite que una subclase lo sobrescriba con `override`  
 
 ---
 
 ### 189
-
 ¿Qué salida produce este código?
 
 ```csharp
@@ -2089,18 +2005,240 @@ Gato g = a as Gato;
 Console.WriteLine(g == null);
 ```
 
-A) `True`  
-B) `False`  
-C) Error de compilación  
+a) `True`  
+b) `False`  
+c) Error de compilación  
 
 ---
 
 ### 190
-
 ¿Qué ocurre al asignar una instancia de clase a una variable de tipo `object`?
 
-A) Se realiza una conversión implícita  
-B) Se pierde el tipo original  
-C) Es necesario un cast explícito  
+a) Se realiza una conversión implícita  
+b) Se pierde el tipo original  
+c) Es necesario un cast explícito  
 
+---
 
+### 191
+¿Cuál de las siguientes declaraciones define correctamente una propiedad automática en C#?
+
+a) `public int Edad { get; set; }`  
+b) `public int Edad => edad;`  
+c) `private int edad; public int Edad() { return edad; }`
+
+---
+
+### 192
+¿Cuál de las siguientes declaraciones permite inicializar una propiedad automática con un valor por defecto?
+
+a) `public int Edad { get; set; } = 18;`  
+b) `public int Edad { get => 18; }`  
+c) `private int edad = 18; public int Edad { get; set; }`
+
+---
+
+### 193
+¿Qué salida produce el siguiente código?
+
+```csharp
+class Persona {
+    public string Nombre { get; set; } = "Juan";
+}
+var p = new Persona();
+Console.WriteLine(p.Nombre);
+```
+
+a) `Juan`  
+b) `null`  
+c) Error en tiempo de compilación
+
+---
+
+### 194
+¿Cuál de estas propiedades permite solo lectura desde fuera de la clase?
+
+a) `public int Edad { get; private set; }`  
+b) `public int Edad { get; set; }`  
+c) `private int Edad { get; set; }`
+
+---
+
+### 195
+¿Cuál de las siguientes afirmaciones es verdadera respecto a propiedades automáticas?
+
+a) Las propiedades automáticas no pueden tener un valor por defecto.  
+b) Las propiedades automáticas requieren campos explícitos.  
+c) Las propiedades automáticas generan automáticamente el campo de respaldo.
+
+---
+
+### 196
+¿Qué ocurre si se declara una propiedad así en una clase base y no se usa `virtual`?
+
+a) La propiedad no puede ser accedida desde clases derivadas.  
+b) No se puede sobrescribir la propiedad en una clase derivada.  
+c) La propiedad se comportará como abstract.
+
+---
+
+### 197
+¿Cuál es la forma correcta de sobrescribir una propiedad en una clase derivada?
+
+a) `public override int Edad { get; set; }`  
+b) `public new int Edad { get; set; }`  
+c) `public int Edad { override get; set; }`
+
+---
+
+### 198
+¿Qué palabra clave se necesita en la clase base para permitir que una propiedad sea sobrescrita?
+
+a) `sealed`  
+b) `abstract`  
+c) `virtual`
+
+---
+
+### 199
+¿Qué palabra clave evita que una clase derivada sobrescriba una propiedad heredada?
+
+a) `sealed`  
+b) `private`  
+c) `readonly`
+
+---
+
+### 200
+¿Cuál es el resultado del siguiente código?
+
+```csharp
+class Animal {
+    public virtual string Sonido { get; set; } = "Desconocido";
+}
+
+class Perro : Animal {
+    public override string Sonido { get; set; } = "Ladrido";
+}
+
+Animal a = new Perro();
+Console.WriteLine(a.Sonido);
+```
+
+a) Ladrido  
+b) Desconocido  
+c) Error en tiempo de ejecución
+
+--- 
+
+### 201
+¿Cuál es el propósito principal del delegado `Predicate<T>`?
+
+a) Devolver un `bool` según una condición sobre un objeto de tipo `T`  
+b) Ejecutar una acción sobre un objeto de tipo `T` sin devolver nada  
+c) Comparar dos objetos de tipo `T` y devolver un entero
+
+---
+
+### 202
+¿Qué valor retorna un `Comparison<T>` cuando los dos elementos comparados son iguales?
+
+a) -1  
+b) 0  
+c) 1
+
+---
+
+### 203
+¿Cuál es la diferencia principal entre `Func<T, bool>` y `Predicate<T>`?
+
+a) `Func<T, bool>` solo puede usarse con tipos primitivos  
+b) `Predicate<T>` permite más de un parámetro  
+c) Son equivalentes funcionalmente, pero `Predicate<T>` tiene un propósito semántico más claro
+
+---
+
+### 204
+Dado el siguiente código:
+
+```csharp
+List<int> numeros = new List<int> { 5, 10, 15 };
+Predicate<int> esPar = x => x % 2 == 0;
+var resultado = numeros.Find(esPar);
+```
+
+¿Qué valor tendrá `resultado`?
+
+a) 10  
+b) 15  
+c) 5
+
+---
+
+### 205
+¿Qué tipo de delegado es más adecuado para realizar ordenamientos personalizados?
+
+a) `Predicate<T>`  
+b) `Comparison<T>`  
+c) `Action<T>`
+
+---
+
+### 206
+¿Cuál de las siguientes opciones representa una declaración válida de un delegado genérico?
+
+a) `public delegate T Proceso<U>(U valor);`  
+b) `public delegate Resultado Delegado<T>(T entrada);`  
+c) `public delegate bool Validar(bool entrada);`
+
+---
+
+### 207
+¿Qué representa esta expresión lambda?
+
+```csharp
+(x, y) => x > y
+```
+
+a) Un `Func<int, int, bool>`  
+b) Un `Predicate<int>`  
+c) Un `Action<int, int>`
+
+---
+
+### 208
+Dado este código:
+
+```csharp
+List<string> palabras = new List<string> { "casa", "computadora", "sol" };
+var largas = palabras.FindAll(p => p.Length > 4);
+```
+
+¿Qué contiene la lista `largas`?
+
+a) casa, sol  
+b) computadora  
+c) computadora, casa
+
+---
+
+### 209
+¿Qué hace este código?
+
+```csharp
+Action<string> mostrar = s => Console.WriteLine(s.ToUpper());
+mostrar("hola");
+```
+
+a) Imprime "hola" en consola  
+b) Imprime "HOLA" en consola  
+c) Genera un error de compilación
+
+---
+
+### 210
+¿Qué tipo se adapta mejor a esta lambda: `(a, b) => a + b`?
+
+a) `Func<int, int>`  
+b) `Func<int, int, int>`  
+c) `Action<int, int>`

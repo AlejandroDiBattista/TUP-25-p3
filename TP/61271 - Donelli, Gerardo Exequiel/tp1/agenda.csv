@@ -1,4 +1,3 @@
-nombre,telefono,email
-Juan Perez,1234567890,jperez@mail.com
-Maria Lopez,0987654321,mlopez@mail.com
-
+1;Juan Pérez;123456789;juanperez@email.com
+2;Ana Gómez;987654321;anagomez@email.com
+3;Pedro Díaz;555555555;pedrodiaz@email.com
