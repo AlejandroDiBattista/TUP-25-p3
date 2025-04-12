@@ -1,60 +1,165 @@
-// TP2: Sistema de Cuentas Bancarias
-//
-
-// Implementar un sistema de cuentas bancarias que permita realizar operaciones como depósitos, retiros, transferencias y pagos.
-
-class Banco{}
-class Cliente{}
-
-abstract class Cuenta{}
-class CuentaOro: Cuenta{}
-class CuentaPlata: Cuenta{}
-class CuentaBronce: Cuenta{}
-
-abstract class Operacion{}
-class Deposito: Operacion{}
-class Retiro: Operacion{}
-class Transferencia: Operacion{}
-class Pago: Operacion{}
 
 
-/// EJEMPLO DE USO ///
+using System;
+using System.Collections.Generic;
 
-// Definiciones 
+class Banco
+{
+    public string Nombre { get; }
+    private List<Cliente> clientes = new();
+    private List<Operacion> operaciones = new();
 
-var raul = new Cliente("Raul Perez");
-    raul.Agregar(new CuentaOro("10001", 1000));
-    raul.Agregar(new CuentaPlata("10002", 2000));
+    public Banco(string nombre) => Nombre = nombre;
 
-var sara = new Cliente("Sara Lopez");
-    sara.Agregar(new CuentaPlata("10003", 3000));
-    sara.Agregar(new CuentaPlata("10004", 4000));
+    public void Agregar(Cliente cliente) => clientes.Add(cliente);
 
-var luis = new Cliente("Luis Gomez");
-    luis.Agregar(new CuentaBronce("10005", 5000));
+    public void Registrar(Operacion operacion)
+    {
+        operaciones.Add(operacion);
+        operacion.Ejecutar(clientes);
+    }
 
-var nac = new Banco("Banco Nac");
-nac.Agregar(raul);
-nac.Agregar(sara);
+    public void Informe()
+    {
+        Console.WriteLine($"\n--- Informe del banco {Nombre} ---");
+        foreach (var cliente in clientes)
+        {
+            Console.WriteLine($"Cliente: {cliente.Nombre}");
+            cliente.MostrarCuentas();
+        }
+    }
+}
 
-var tup = new Banco("Banco TUP");
-tup.Agregar(luis);
+class Cliente
+{
+    public string Nombre { get; }
+    private List<Cuenta> cuentas = new();
 
+    public Cliente(string nombre) => Nombre = nombre;
 
-// Registrar Operaciones
-nac.Registrar(new Deposito("10001", 100));
-nac.Registrar(new Retiro("10002", 200));
-nac.Registrar(new Transferencia("10001", "10002", 300));
-nac.Registrar(new Transferencia("10003", "10004", 500));
-nac.Registrar(new Pago("10002", 400));
+    public void Agregar(Cuenta cuenta) => cuentas.Add(cuenta);
 
-tup.Registrar(new Deposito("10005", 100));
-tup.Registrar(new Retiro("10005", 200));
-tup.Registrar(new Transferencia("10005", "10002", 300));
-tup.Registrar(new Pago("10005", 400));
+    public Cuenta ObtenerCuenta(string numero) => cuentas.Find(c => c.Numero == numero);
 
+    public void MostrarCuentas()
+    {
+        foreach (var cuenta in cuentas)
+        {
+            Console.WriteLine($"  - Cuenta {cuenta.Numero} (${cuenta.Saldo}) [{cuenta.GetType().Name}]");
+        }
+    }
 
-// Informe final
-nac.Informe();
-tup.Informe();
+    public bool ContieneCuenta(string numero) => cuentas.Exists(c => c.Numero == numero);
+}
+
+abstract class Cuenta
+{
+    public string Numero { get; }
+    public decimal Saldo { get; protected set; }
+
+    protected Cuenta(string numero, decimal saldoInicial)
+    {
+        Numero = numero;
+        Saldo = saldoInicial;
+    }
+
+    public virtual void Depositar(decimal monto) => Saldo += monto;
+
+    public virtual bool Retirar(decimal monto)
+    {
+        if (Saldo >= monto)
+        {
+            Saldo -= monto;
+            return true;
+        }
+        return false;
+    }
+}
+
+class CuentaOro : Cuenta { public CuentaOro(string n, decimal s) : base(n, s) { } }
+class CuentaPlata : Cuenta { public CuentaPlata(string n, decimal s) : base(n, s) { } }
+class CuentaBronce : Cuenta { public CuentaBronce(string n, decimal s) : base(n, s) { } }
+
+abstract class Operacion
+{
+    public abstract void Ejecutar(List<Cliente> clientes);
+}
+
+class Deposito : Operacion
+{
+    string Numero;
+    decimal Monto;
+
+    public Deposito(string numero, decimal monto) => (Numero, Monto) = (numero, monto);
+
+    public override void Ejecutar(List<Cliente> clientes)
+    {
+        foreach (var cliente in clientes)
+        {
+            var cuenta = cliente.ObtenerCuenta(Numero);
+            if (cuenta != null)
+            {
+                cuenta.Depositar(Monto);
+                break;
+            }
+        }
+    }
+}
+
+class Retiro : Operacion
+{
+    string Numero;
+    decimal Monto;
+
+    public Retiro(string numero, decimal monto) => (Numero, Monto) = (numero, monto);
+
+    public override void Ejecutar(List<Cliente> clientes)
+    {
+        foreach (var cliente in clientes)
+        {
+            var cuenta = cliente.ObtenerCuenta(Numero);
+            if (cuenta != null && cuenta.Retirar(Monto)) break;
+        }
+    }
+}
+
+class Transferencia : Operacion
+{
+    string Origen, Destino;
+    decimal Monto;
+
+    public Transferencia(string origen, string destino, decimal monto) => (Origen, Destino, Monto) = (origen, destino, monto);
+
+    public override void Ejecutar(List<Cliente> clientes)
+    {
+        Cuenta cuentaOrigen = null, cuentaDestino = null;
+
+        foreach (var cliente in clientes)
+        {
+            if (cuentaOrigen == null) cuentaOrigen = cliente.ObtenerCuenta(Origen);
+            if (cuentaDestino == null) cuentaDestino = cliente.ObtenerCuenta(Destino);
+        }
+
+        if (cuentaOrigen != null && cuentaDestino != null && cuentaOrigen.Retirar(Monto))
+            cuentaDestino.Depositar(Monto);
+    }
+}
+
+class Pago : Operacion
+{
+    string Numero;
+    decimal Monto;
+
+    public Pago(string numero, decimal monto) => (Numero, Monto) = (numero, monto);
+
+    public override void Ejecutar(List<Cliente> clientes)
+    {
+        foreach (var cliente in clientes)
+        {
+            var cuenta = cliente.ObtenerCuenta(Numero);
+            if (cuenta != null && cuenta.Retirar(Monto)) break;
+        }
+    }
+}
+
 

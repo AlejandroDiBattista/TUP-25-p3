@@ -2,20 +2,161 @@
 //
 
 // Implementar un sistema de cuentas bancarias que permita realizar operaciones como depósitos, retiros, transferencias y pagos.
+using System.Collections.Generic;
+using static System.Console;
+class Banco{
+    public string Nombre;
+    public List<Cliente> Clientes;
+    public List<Operacion> Operaciones;
+    public static Dictionary<string, Cuenta> CuentasR= new Dictionary<string, Cuenta>();
+    public Banco(string nombre){
+        Nombre=nombre;
+        Clientes= new List<Cliente>();
+        Operaciones= new List<Operacion>();
+    }
+    public void Agregar(Cliente cliente){
+    Clientes.Add(cliente);
+    }
+    public static Cuenta Existe(string numero){
+        if(CuentasR.ContainsKey(numero)){
+            return CuentasR[numero];}
+        else { return null;}
+    }
+    public static void Registrar(Cuenta cuenta){
+        if(CuentasR.ContainsKey(cuenta.Numero)){
+            WriteLine($"La cuenta {cuenta.Numero} ya existe");
+        }
+        else{
+            CuentasR.Add(cuenta.Numero,cuenta);
+        }
+    }
+    public void Registrar(Operacion operacion){
+        Operaciones.Add(operacion);
+        if(!operacion.iniciar()){
+            WriteLine("Fallo la Operacion");
+        }
+    }
+    public void Informe(){
+        WriteLine($"Informe del banco{Nombre}.");
+        foreach(var cliente in Clientes){
+            WriteLine($"Cliente: {cliente.Nombre}");
+            foreach(var cuenta in cliente.Cuentas){
+                WriteLine($" Cuenta {cuenta.Numero}: Saldo {cuenta.Saldo}");
+            }
+        }
+    }
+}
+class Cliente{
+    public string Nombre;
+    public List<Cuenta> Cuentas;
+    public Cliente(string nombre){
+        Nombre=nombre;
+        Cuentas=new List<Cuenta>();
+    }
+    public void Agregar(Cuenta cuenta){
+        Cuentas.Add(cuenta);
+        Banco.Registrar(cuenta);
+    }
+}
+abstract class Cuenta{
+    public string Numero;
+    public decimal Saldo;
+    public decimal Puntos=0;
+    public Cuenta(string numero,decimal saldo){
+        Numero=numero;
+        Saldo=saldo;
+    }
+    public bool Depositar(decimal Dinero){
+        if(Dinero<=0){return false;}
+        else{
+        Saldo+=Dinero;
+        return true;
+        }
+    }
+    public bool Extraccion(decimal Dinero){
+        if(Dinero<=0|| Dinero>Saldo){return false;}
+        else{
+            Saldo-=Dinero;
+            return true;
+        }
+    }
+    public abstract void SumaPuntos(decimal monto);
+}
+class CuentaOro: Cuenta{
+    public CuentaOro(string numero,decimal saldo): base(numero,saldo){}
+    public override void SumaPuntos(decimal monto){
+        if (monto >=750){Puntos += 0.09m;}
+        else Puntos+=0.05m;
+    }
+}
+class CuentaPlata: Cuenta{
+    public CuentaPlata(string numero,decimal saldo): base(numero,saldo){}
+    public override void SumaPuntos(decimal monto){
+    Puntos+= monto*0.03m;
+    }
+}
+class CuentaBronce: Cuenta{
+    public CuentaBronce(string numero,decimal saldo): base(numero,saldo){}
+    public override void SumaPuntos(decimal monto){
+    Puntos+= monto*0.012m;
+    }
+}
 
-class Banco{}
-class Cliente{}
-
-abstract class Cuenta{}
-class CuentaOro: Cuenta{}
-class CuentaPlata: Cuenta{}
-class CuentaBronce: Cuenta{}
-
-abstract class Operacion{}
-class Deposito: Operacion{}
-class Retiro: Operacion{}
-class Transferencia: Operacion{}
-class Pago: Operacion{}
+abstract class Operacion{
+    public Cuenta NumeroCuenta;
+    public decimal Monto;
+    public Operacion(string numero,decimal monto){
+        NumeroCuenta=Banco.Existe(numero);
+        Monto=monto;
+    }
+    public abstract bool iniciar();
+    public abstract string MostrarOperacion();
+}
+class Deposito: Operacion{
+    public Deposito(string numero, decimal monto): base(numero,monto){}
+    public override bool iniciar(){
+        return NumeroCuenta.Depositar(Monto);
+    }
+    public override string MostrarOperacion(){
+        return $"Se a depositado el monto de {Monto} a la cuenta {NumeroCuenta?.Numero}.";
+    }
+}
+class Retiro: Operacion{
+    public Retiro(string numero, decimal monto): base(numero,monto){}
+    public override bool iniciar(){
+        return NumeroCuenta.Extraccion(Monto);
+    }
+    public override string MostrarOperacion(){
+        return $"Se a Extraido el monto de {Monto} desde la cuenta {NumeroCuenta?.Numero}.";
+    }
+}
+class Transferencia: Operacion{
+    public Cuenta Referencia;
+    public Transferencia(string numeroCuenta,string referencia, decimal monto): base(numeroCuenta,monto){
+        Referencia=Banco.Existe(referencia);
+    }
+    public override bool iniciar(){
+        if (NumeroCuenta == null|| Referencia==null){return false;}
+        if(!NumeroCuenta.Extraccion(Monto)){return false;}
+        if(!Referencia.Depositar(Monto)){
+            NumeroCuenta.Depositar(Monto);
+            return false;
+        }
+        return true;
+    }
+    public override string MostrarOperacion(){
+        return $"Transferencia de {Monto} hecho desde la cuenta {NumeroCuenta?.Numero}.";
+    }
+}
+class Pago: Operacion{
+    public Pago(string numero, decimal monto): base(numero,monto){}
+    public override bool iniciar(){
+        return NumeroCuenta.Extraccion(Monto);
+    }
+    public override string MostrarOperacion(){
+        return $"Pago realizado de {Monto} desde la cuenta {NumeroCuenta?.Numero}.";
+    }
+}
 
 
 /// EJEMPLO DE USO ///

@@ -1,60 +1,324 @@
-// TP2: Sistema de Cuentas Bancarias
-//
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-// Implementar un sistema de cuentas bancarias que permita realizar operaciones como depósitos, retiros, transferencias y pagos.
+// **** CLASES ****
 
-class Banco{}
-class Cliente{}
+abstract class Cuenta
+{
+    private static int contadorCuentas = 1000;
+    public string Numero { get; }
+    public decimal Saldo { get; protected set; }
+    public decimal Puntos { get; protected set; }
 
-abstract class Cuenta{}
-class CuentaOro: Cuenta{}
-class CuentaPlata: Cuenta{}
-class CuentaBronce: Cuenta{}
+    public Cuenta(decimal saldoInicial)
+    {
+        Numero = (contadorCuentas++).ToString();
+        Saldo = saldoInicial;
+        Puntos = 0;
+    }
 
-abstract class Operacion{}
-class Deposito: Operacion{}
-class Retiro: Operacion{}
-class Transferencia: Operacion{}
-class Pago: Operacion{}
+    public virtual void Depositar(decimal monto)
+    {
+        Saldo += monto;
+    }
 
+    public virtual bool Extraer(decimal monto)
+    {
+        if (Saldo >= monto)
+        {
+            Saldo -= monto;
+            return true;
+        }
+        return false;
+    }
 
-/// EJEMPLO DE USO ///
+    public abstract void Pagar(decimal monto);
 
-// Definiciones 
+    public void Acreditar(decimal monto)
+    {
+        Saldo += monto;
+    }
 
-var raul = new Cliente("Raul Perez");
-    raul.Agregar(new CuentaOro("10001", 1000));
-    raul.Agregar(new CuentaPlata("10002", 2000));
+    public override string ToString()
+    {
+        return $"Cuenta Nº: {Numero} | Saldo: ${Saldo} | Puntos: {Puntos}";
+    }
+}
 
-var sara = new Cliente("Sara Lopez");
-    sara.Agregar(new CuentaPlata("10003", 3000));
-    sara.Agregar(new CuentaPlata("10004", 4000));
+class CuentaOro : Cuenta
+{
+    public CuentaOro(decimal saldoInicial) : base(saldoInicial) { }
 
-var luis = new Cliente("Luis Gomez");
-    luis.Agregar(new CuentaBronce("10005", 5000));
+    public override void Pagar(decimal monto)
+    {
+        if (Extraer(monto))
+        {
+            Puntos += monto > 1000 ? monto * 0.05m : monto * 0.03m;
+        }
+    }
+}
 
-var nac = new Banco("Banco Nac");
-nac.Agregar(raul);
-nac.Agregar(sara);
+class CuentaPlata : Cuenta
+{
+    public CuentaPlata(decimal saldoInicial) : base(saldoInicial) { }
 
-var tup = new Banco("Banco TUP");
-tup.Agregar(luis);
+    public override void Pagar(decimal monto)
+    {
+        if (Extraer(monto))
+        {
+            Puntos += monto * 0.02m;
+        }
+    }
+}
 
+class CuentaBronce : Cuenta
+{
+    public CuentaBronce(decimal saldoInicial) : base(saldoInicial) { }
 
-// Registrar Operaciones
-nac.Registrar(new Deposito("10001", 100));
-nac.Registrar(new Retiro("10002", 200));
-nac.Registrar(new Transferencia("10001", "10002", 300));
-nac.Registrar(new Transferencia("10003", "10004", 500));
-nac.Registrar(new Pago("10002", 400));
+    public override void Pagar(decimal monto)
+    {
+        if (Extraer(monto))
+        {
+            Puntos += monto * 0.01m;
+        }
+    }
+}
 
-tup.Registrar(new Deposito("10005", 100));
-tup.Registrar(new Retiro("10005", 200));
-tup.Registrar(new Transferencia("10005", "10002", 300));
-tup.Registrar(new Pago("10005", 400));
+class Cliente
+{
+    private static int contadorClientes = 1;
+    public int NumeroCliente { get; }
+    public string Nombre { get; }
+    public List<Cuenta> Cuentas { get; }
 
+    public Cliente(string nombre)
+    {
+        NumeroCliente = contadorClientes++;
+        Nombre = nombre;
+        Cuentas = new List<Cuenta>();
+    }
 
-// Informe final
-nac.Informe();
-tup.Informe();
+    public void Agregar(Cuenta cuenta)
+    {
+        Cuentas.Add(cuenta);
+    }
 
+    public Cuenta ObtenerCuenta(string numero)
+    {
+        return Cuentas.FirstOrDefault(c => c.Numero == numero);
+    }
+
+    public override string ToString()
+    {
+        return $"Cliente Nº: {NumeroCliente} | Nombre: {Nombre}";
+    }
+}
+
+class Banco
+{
+    public string Nombre { get; }
+    public List<Cliente> Clientes { get; }
+
+    public Banco(string nombre)
+    {
+        Nombre = nombre;
+        Clientes = new List<Cliente>();
+    }
+
+    public void Agregar(Cliente cliente)
+    {
+        Clientes.Add(cliente);
+    }
+
+    public Cuenta BuscarCuenta(string numero)
+    {
+        return Clientes.SelectMany(c => c.Cuentas).FirstOrDefault(c => c.Numero == numero);
+    }
+
+    public void MostrarTodasLasCuentas()
+    {
+        foreach (var cliente in Clientes)
+        {
+            Console.WriteLine(cliente);
+            foreach (var cuenta in cliente.Cuentas)
+            {
+                Console.WriteLine("   " + cuenta);
+            }
+        }
+    }
+}
+
+// ******* EJECUCIÓN *********
+
+Banco banco = new Banco("Banco UTN");
+
+while (true)
+{
+    Console.WriteLine("\n===== Menú Principal =====");
+    Console.WriteLine("1. Agregar Cliente");
+    Console.WriteLine("2. Agregar Cuenta");
+    Console.WriteLine("3. Depositar");
+    Console.WriteLine("4. Retirar");
+    Console.WriteLine("5. Pagar");
+    Console.WriteLine("6. Salir");
+    Console.Write("Seleccione una opción: ");
+
+    string opcion = Console.ReadLine();
+
+    switch (opcion)
+    {
+        case "1":
+            Console.Write("Ingrese el nombre del cliente: ");
+            string nombre = Console.ReadLine();
+            banco.Agregar(new Cliente(nombre));
+            Console.WriteLine("Cliente agregado.");
+            break;
+
+        case "2":
+            Console.WriteLine("Clientes disponibles:");
+            foreach (var c in banco.Clientes)
+            {
+                Console.WriteLine(c);
+            }
+
+            Console.Write("Ingrese el número del cliente: ");
+            if (!int.TryParse(Console.ReadLine(), out int numeroCliente))
+            {
+                Console.WriteLine("Número inválido.");
+                break;
+            }
+
+            Cliente cliente = banco.Clientes.FirstOrDefault(c => c.NumeroCliente == numeroCliente);
+            if (cliente != null)
+            {
+                Console.WriteLine("Seleccione el tipo de cuenta:");
+                Console.WriteLine("1. Oro");
+                Console.WriteLine("2. Plata");
+                Console.WriteLine("3. Bronce");
+                string tipo = Console.ReadLine();
+
+                Console.Write("Saldo inicial: ");
+                if (!decimal.TryParse(Console.ReadLine(), out decimal saldo))
+                {
+                    Console.WriteLine("Monto inválido.");
+                    break;
+                }
+
+                Cuenta nuevaCuenta = tipo switch
+                {
+                    "1" => new CuentaOro(saldo),
+                    "2" => new CuentaPlata(saldo),
+                    "3" => new CuentaBronce(saldo),
+                    _ => null
+                };
+
+                if (nuevaCuenta != null)
+                {
+                    cliente.Agregar(nuevaCuenta);
+                    Console.WriteLine($"Cuenta agregada: {nuevaCuenta}");
+                }
+                else
+                {
+                    Console.WriteLine("Tipo inválido.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cliente no encontrado.");
+            }
+            break;
+
+        case "3":
+            Console.WriteLine("Cuentas disponibles:");
+            banco.MostrarTodasLasCuentas();
+
+            Console.Write("Ingrese el número de cuenta: ");
+            string numeroDep = Console.ReadLine();
+            Cuenta cuentaDep = banco.BuscarCuenta(numeroDep);
+            if (cuentaDep != null)
+            {
+                Console.Write("Ingrese el monto: ");
+                if (decimal.TryParse(Console.ReadLine(), out decimal montoDep))
+                {
+                    cuentaDep.Depositar(montoDep);
+                    Console.WriteLine("Depósito realizado.");
+                }
+                else
+                {
+                    Console.WriteLine("Monto inválido.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cuenta no encontrada.");
+            }
+            break;
+
+        case "4":
+            Console.WriteLine("Cuentas disponibles:");
+            banco.MostrarTodasLasCuentas();
+
+            Console.Write("Ingrese el número de cuenta: ");
+            string numeroExt = Console.ReadLine();
+            Cuenta cuentaExt = banco.BuscarCuenta(numeroExt);
+            if (cuentaExt != null)
+            {
+                Console.Write("Ingrese el monto: ");
+                if (decimal.TryParse(Console.ReadLine(), out decimal montoExt))
+                {
+                    if (cuentaExt.Extraer(montoExt))
+                    {
+                        Console.WriteLine("Retiro realizado.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Fondos insuficientes.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Monto inválido.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cuenta no encontrada.");
+            }
+            break;
+
+        case "5":
+            Console.WriteLine("Cuentas disponibles:");
+            banco.MostrarTodasLasCuentas();
+
+            Console.Write("Ingrese el número de cuenta: ");
+            string numeroPag = Console.ReadLine();
+            Cuenta cuentaPag = banco.BuscarCuenta(numeroPag);
+            if (cuentaPag != null)
+            {
+                Console.Write("Ingrese el monto a pagar: ");
+                if (decimal.TryParse(Console.ReadLine(), out decimal montoPag))
+                {
+                    cuentaPag.Pagar(montoPag);
+                    Console.WriteLine("Pago realizado, puntos acumulados: " + cuentaPag.Puntos);
+                }
+                else
+                {
+                    Console.WriteLine("Monto inválido.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cuenta no encontrada.");
+            }
+            break;
+
+        case "6":
+            Console.WriteLine("¡Gracias por usar el sistema bancario!");
+            return;
+
+        default:
+            Console.WriteLine("Opción no válida.");
+            break;
+    }
+}

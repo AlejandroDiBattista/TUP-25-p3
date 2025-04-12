@@ -47,12 +47,13 @@ namespace TUP {
             do {
                 Console.Write(mensaje);
                 ConsoleKeyInfo tecla = Console.ReadKey(true);
+                
                 opcion = tecla.KeyChar.ToString();
-                Console.WriteLine(opcion); // Mostrar la tecla presionada
+                if (tecla.Key == ConsoleKey.Escape) opcion = "0";
                 
                 opcionValida = opcionesValidas.Contains(opcion);
                 if (!opcionValida) {
-                    Escribir($"Opción inválida. Por favor ingrese un número entre {opcionesValidas[0]} y {opcionesValidas[opcionesValidas.Length - 1]}.", ConsoleColor.Red);
+                    Escribir($"\nOpción inválida. Por favor ingrese un número entre {opcionesValidas[0]} y {opcionesValidas[opcionesValidas.Length - 1]}.", ConsoleColor.Red);
                 }
             } while (!opcionValida);
             

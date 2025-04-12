@@ -7,4 +7,17 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Programa.cs" />
+    <Compile Include="Consola.cs" />
+    <Compile Include="Alumno.cs" />
+    <Compile Include="Clase.cs" />
+    <Compile Include="EstadoPractico.cs" />
+    <Compile Include="Asistencias.cs" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,5 @@
+C:\Users\juare\Documents\UTN - TUP\Programacion 3\prog\TP\61129 - Tello, Abril María Agostina\tp3\obj\Debug\net9.0\tp3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\juare\Documents\UTN - TUP\Programacion 3\prog\TP\61129 - Tello, Abril María Agostina\tp3\obj\Debug\net9.0\tp3.AssemblyInfoInputs.cache
+C:\Users\juare\Documents\UTN - TUP\Programacion 3\prog\TP\61129 - Tello, Abril María Agostina\tp3\obj\Debug\net9.0\tp3.AssemblyInfo.cs
+C:\Users\juare\Documents\UTN - TUP\Programacion 3\prog\TP\61129 - Tello, Abril María Agostina\tp3\obj\Debug\net9.0\tp3.csproj.CoreCompileInputs.cache
+C:\Users\juare\Documents\UTN - TUP\Programacion 3\prog\TP\61129 - Tello, Abril María Agostina\tp3\obj\Debug\net9.0\tp3.sourcelink.json

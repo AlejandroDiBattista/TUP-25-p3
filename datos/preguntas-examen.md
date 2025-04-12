@@ -2129,3 +2129,116 @@ a) Ladrido
 b) Desconocido  
 c) Error en tiempo de ejecución
 
+--- 
+
+### 201
+¿Cuál es el propósito principal del delegado `Predicate<T>`?
+
+a) Devolver un `bool` según una condición sobre un objeto de tipo `T`  
+b) Ejecutar una acción sobre un objeto de tipo `T` sin devolver nada  
+c) Comparar dos objetos de tipo `T` y devolver un entero
+
+---
+
+### 202
+¿Qué valor retorna un `Comparison<T>` cuando los dos elementos comparados son iguales?
+
+a) -1  
+b) 0  
+c) 1
+
+---
+
+### 203
+¿Cuál es la diferencia principal entre `Func<T, bool>` y `Predicate<T>`?
+
+a) `Func<T, bool>` solo puede usarse con tipos primitivos  
+b) `Predicate<T>` permite más de un parámetro  
+c) Son equivalentes funcionalmente, pero `Predicate<T>` tiene un propósito semántico más claro
+
+---
+
+### 204
+Dado el siguiente código:
+
+```csharp
+List<int> numeros = new List<int> { 5, 10, 15 };
+Predicate<int> esPar = x => x % 2 == 0;
+var resultado = numeros.Find(esPar);
+```
+
+¿Qué valor tendrá `resultado`?
+
+a) 10  
+b) 15  
+c) 5
+
+---
+
+### 205
+¿Qué tipo de delegado es más adecuado para realizar ordenamientos personalizados?
+
+a) `Predicate<T>`  
+b) `Comparison<T>`  
+c) `Action<T>`
+
+---
+
+### 206
+¿Cuál de las siguientes opciones representa una declaración válida de un delegado genérico?
+
+a) `public delegate T Proceso<U>(U valor);`  
+b) `public delegate Resultado Delegado<T>(T entrada);`  
+c) `public delegate bool Validar(bool entrada);`
+
+---
+
+### 207
+¿Qué representa esta expresión lambda?
+
+```csharp
+(x, y) => x > y
+```
+
+a) Un `Func<int, int, bool>`  
+b) Un `Predicate<int>`  
+c) Un `Action<int, int>`
+
+---
+
+### 208
+Dado este código:
+
+```csharp
+List<string> palabras = new List<string> { "casa", "computadora", "sol" };
+var largas = palabras.FindAll(p => p.Length > 4);
+```
+
+¿Qué contiene la lista `largas`?
+
+a) casa, sol  
+b) computadora  
+c) computadora, casa
+
+---
+
+### 209
+¿Qué hace este código?
+
+```csharp
+Action<string> mostrar = s => Console.WriteLine(s.ToUpper());
+mostrar("hola");
+```
+
+a) Imprime "hola" en consola  
+b) Imprime "HOLA" en consola  
+c) Genera un error de compilación
+
+---
+
+### 210
+¿Qué tipo se adapta mejor a esta lambda: `(a, b) => a + b`?
+
+a) `Func<int, int>`  
+b) `Func<int, int, int>`  
+c) `Action<int, int>`

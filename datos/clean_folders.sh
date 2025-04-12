@@ -12,7 +12,7 @@ find ../TP -type d -name "obj" -o -name "bin" | while read dir; do
 done
 
 # Find and remove all enunciado.md files
-find ./TP -type f -name "enunciado.md" | while read file; do
+find ../TP -type f -name "enunciado.md" | while read file; do
   echo "Removing file: $file"
   rm -f "$file"
 done
