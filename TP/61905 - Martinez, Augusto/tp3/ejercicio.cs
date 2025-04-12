@@ -1,5 +1,101 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
+class ListaOrdenada<T>
+{
+    private List<T> elementos;
+    private IComparer<T> comparador;
+
+    public ListaOrdenada() : this(Comparer<T>.Default) { }
+
+    public ListaOrdenada(IComparer<T> comparer)
+    {
+        elementos = new List<T>();
+        this.comparador = comparer;
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion) : this(Comparer<T>.Default)
+    {
+        elementos.AddRange(coleccion);
+        elementos.Sort(comparador);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice]
+    {
+        get
+        {
+            if (indice < 0 || indice >= elementos.Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            return elementos[indice];
+        }
+    }
+
+    public void Agregar(T item)
+    {
+        int indice = 0;
+        while (indice < elementos.Count && comparador.Compare(elementos[indice], item) < 0)
+        {
+            indice++;
+        }
+        elementos.Insert(indice, item);
+    }
+
+    public bool Contiene(T item)
+    {
+        return elementos.Contains(item);
+    }
+
+    public void Eliminar(T item)
+    {
+        elementos.Remove(item);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado)
+    {
+        return new ListaOrdenada<T>(elementos.Where(predicado).ToList(), comparador);
+    }
+}
+
+class Contacto : IEquatable<Contacto>
+{
+    public string Nombre { get; set; }
+    public string Telefono { get; set; }
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as Contacto);
+    }
+
+    public bool Equals(Contacto other)
+    {
+        return other != null &&
+               Nombre == other.Nombre &&
+               Telefono == other.Telefono;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
+}
+
+/// --------------------------------------------------------///
+///   Desde aca para abajo no se puede modificar el código   ///
+/// --------------------------------------------------------///
+
+///
+=======
 
 
 class ListaOrdenada{
@@ -17,9 +113,6 @@ class Contacto {
 /// --------------------------------------------------------///
 
 /// 
-/// PRUEBAS AUTOMATIZADAS
-///
-
 // Funcion auxiliar para las pruebas
 public static void Assert<T>(T real, T esperado, string mensaje){
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
@@ -101,14 +194,7 @@ Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
 
-/// Pruebas de lista ordenada (con contactos) 
-
-var juan  = new Contacto("Juan",  "123456");
-var pedro = new Contacto("Pedro", "654321");
-var ana   = new Contacto("Ana",   "789012");
-var otro  = new Contacto("Otro",  "345678");
-
-var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana });
+var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana }, Comparer<Contacto>.Create((c1, c2) => c1.Nombre.CompareTo(c2.Nombre)));
 Assert(contactos.Cantidad, 3, "Cantidad de contactos");
 Assert(contactos[0].Nombre, "Ana", "Primer contacto");
 Assert(contactos[1].Nombre, "Juan", "Segundo contacto");
@@ -139,4 +225,5 @@ contactos.Eliminar(otro);
 Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar un elemento inexistente");
 Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
 Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
+
 Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");

@@ -1,15 +1,123 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
+// Clase ListaOrdenada //
+public class ListaOrdenada<T> : IEnumerable<T> where T : IComparable<T>
+{
+    private readonly List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice]
+    {
+        get
+        {
+            if (indice < 0 || indice >= elementos.Count)
+                throw new IndexOutOfRangeException();
+            return elementos[indice];
+        }
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion = null)
+    {
+        if (coleccion != null)
+        {
+            foreach (var item in coleccion)
+            {
+                Agregar(item);
+            }
+        }
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.BinarySearch(elemento) >= 0;
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (elemento == null)
+            throw new ArgumentNullException(nameof(elemento));
+
+        if (Contiene(elemento))
+            return;
+
+        int index = elementos.BinarySearch(elemento);
+        if (index < 0)
+            index = ~index;
+
+        elementos.Insert(index, elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        if (elemento == null)
+            throw new ArgumentNullException(nameof(elemento));
+
+        int index = elementos.BinarySearch(elemento);
+        if (index >= 0)
+            elementos.RemoveAt(index);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
+    {
+        if (condicion == null)
+            throw new ArgumentNullException(nameof(condicion));
+
+        var resultado = new ListaOrdenada<T>();
+        foreach (var elemento in elementos.Where(condicion))
+        {
+            resultado.Agregar(elemento);
+        }
+        return resultado;
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        return elementos.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }
 
-class Contacto {
-    public string Nombre { get; set; }
-    public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+// Clase Contacto //
+public class Contacto : IComparable<Contacto>
+{
+    public string Nombre { get; }
+    public string Telefono { get; }
+
+    public Contacto(string nombre, string telefono)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre no puede estar vacío", nameof(nombre));
+        if (string.IsNullOrWhiteSpace(telefono))
+            throw new ArgumentException("El teléfono no puede estar vacío", nameof(telefono));
+
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        if (otro == null) return 1;
+        return string.Compare(Nombre, otro.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Contacto otro && 
+               string.Equals(Nombre, otro.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override int GetHashCode()
+    {
+        return Nombre?.ToLowerInvariant().GetHashCode() ?? 0;
+    }
 }
 
 /// --------------------------------------------------------///

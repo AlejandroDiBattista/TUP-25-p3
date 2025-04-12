@@ -10,8 +10,8 @@
 07.  61141  Di Clemente, María Antonela               (381) 398-3935        10    
 08.  61730  Diaz, Antonio                             (381) 392-6461         1    
 09.  61626  Diaz Londero, Sergio Gonzalo              (381) 604-6547        12 ++ 
-10.  61271  Donelli, Gerardo Exequiel                 (381) 514-3223        12 ++ 
-11.  61221  Duclós, Marcelo Ezequiel                  (381) 551-4353        12 ++ 
+10.  61271  Donelli, Gerardo Exequiel                 (381) 514-3223        12 +++
+11.  61221  Duclós, Marcelo Ezequiel                  (381) 551-4353        12 +++
 12.  61720  Fernández, Luciano                        (381) 586-7891         0    
 13.  62093  Frías Silva, Juan Segundo                 (381) 415-8753         8 ++ 
 14.  61139  Gallo, María Matilde                      (381) 333-4836        10 ++ 
@@ -24,7 +24,7 @@
 21.  62053  Herrera Palomino, Ivam Agustín            (381) 697-0643        12 ++ 
 22.  61450  Jiménez Paz, Patricio Agustín             (381) 388-2674         8 ++ 
 23.  61627  Juárez Fernández, Lourdes Abril           (381) 647-9914        12 ++ 
-24.  61473  Lagoria García, Tomás Gustavo             (381) 357-7724        11 ++ 
+24.  61473  Lagoria García, Tomás Gustavo             (381) 357-7724        11 +++
 25.  61956  Leglisé, Laureano                         (261) 468-9809        13 +++
 26.  61679  Lobo Barrera, Mia de los Angeles          (381) 677-0639        12 ++ 
 27.  61794  Lobo Campero, Hernán Ignacio              (381) 590-6461         8 ++ 
@@ -47,7 +47,7 @@
 44.  62172  Salcedo, Mariana Aylen                    (381) 466-9695         4    
 45.  61136  Sosa, Oscar Ignacio                       (381) 528-9145        10    
 46.  61478  Soto, Antonella                           (387) 517-0010        12 ++ 
-47.  61096  Suarez Vece, Leandro Andres               (381) 512-6476        11 ++ 
+47.  61096  Suarez Vece, Leandro Andres               (381) 512-6476        11 +++
 48.  61129  Tello, Abril María Agostina               (381) 447-2483        13 ++ 
 49.  61793  Trujillo, Facundo Nahuel                  (381) 206-2084        12 +  
 50.  62555  Verón, Matias Gabriel                     (381) 519-6654        11 ++ 
@@ -55,8 +55,8 @@
 52.  61862  Zerda, Thomas                             (381) 333-0962        11    
 
 ## Comisión C5
-01.  61491  Acuña, Alejo Gabriel                      (381) 636-2211        10 ++ 
-02.  61252  Aguirre Rojas, Lourdes Valentina          (381) 500-1078         9    
+01.  61491  Acuña, Alejo Gabriel                      (381) 636-2211        10 +++
+02.  61252  Aguirre Rojas, Lourdes Valentina          (381) 500-1078         9 ++ 
 03.  61290  Azubel, Tomas                             (381) 680-5666        10 ++ 
 04.  61189  Buzza, Juliana                            (381) 524-7391         7 ++ 
 05.  62612  Campos, Julieta Antonella                 (381) 605-0864         4 +  
@@ -77,7 +77,7 @@
 20.  61437  Holmquist, Ignacio Tobias                 (381) 516-9171        10    
 21.  61041  Iosa Molina, Nicolás                      (381) 624-2939        10 ++ 
 22.  61322  Juarez, Thiago                            (381) 418-2169         5    
-23.  61218  Liendo, Lautaro                           (381) 582-5319         9 ++ 
+23.  61218  Liendo, Lautaro                           (381) 582-5319         9 +++
 24.  61226  Luna, Andres Maximiliano                  (381) 412-2061         8 ++ 
 25.  61535  Mainardi, Facundo                         (381) 584-1265        10 ++ 
 26.  61905  Martinez, Augusto                         (381) 580-1228        10 +  
@@ -100,7 +100,7 @@
 43.  61858  Perez, Facundo Agustin                    (381) 661-8312         8    
 44.  61140  Perez, Fernando Alberto                   (381) 643-2069         5 ++ 
 45.  61671  Quinteros, Gabriel                        (381) 664-1854        10 +++
-46.  61064  Racedo, Francisco Nicolas                 (381) 301-3850        10 ++ 
+46.  61064  Racedo, Francisco Nicolas                 (381) 301-3850        10 +++
 47.  61052  Reynoso, Braian Nicolás                   (381) 654-0412        10 ++ 
 48.  62104  Robledo, Juan Gerardo                     (381) 468-4269        10 ++ 
 49.  61962  Robledo, Rocio Micaela                    (381) 475-8990         9 ++ 

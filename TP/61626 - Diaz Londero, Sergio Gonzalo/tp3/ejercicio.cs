@@ -1,24 +1,102 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        foreach (T item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    public T this[int indice]
+    {
+        get { return elementos[indice]; }
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0)
+        {
+            i++;
+        }
+        elementos.Insert(i, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
+    {
+        ListaOrdenada<T> nueva = new ListaOrdenada<T>();
+        for (int i = 0; i < elementos.Count; i++)
+        {
+            if (condicion(elementos[i]))
+            {
+                nueva.Agregar(elementos[i]);
+            }
+        }
+        return nueva;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return this.Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto c)
+        {
+            return this.Nombre == c.Nombre && this.Telefono == c.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
-/// --------------------------------------------------------///
-///   Desde aca para abajo no se puede modificar el código  ///
-/// --------------------------------------------------------///
-
-/// 
-/// PRUEBAS AUTOMATIZADAS
-///
 
 // Funcion auxiliar para las pruebas
 public static void Assert<T>(T real, T esperado, string mensaje){
