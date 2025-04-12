@@ -8,23 +8,23 @@
     "net9.0": []
   },
   "packageFolders": {
-    "C:\\Users\\liend\\.nuget\\packages\\": {},
+    "C:\\Users\\delga\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\liend\\Documents\\GitHub\\TUP-25-p3\\datos\\datos.csproj",
+      "projectUniqueName": "C:\\Users\\delga\\Documents\\GitHub\\TUP-25-p3\\datos\\datos.csproj",
       "projectName": "datos",
-      "projectPath": "C:\\Users\\liend\\Documents\\GitHub\\TUP-25-p3\\datos\\datos.csproj",
-      "packagesPath": "C:\\Users\\liend\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\liend\\Documents\\GitHub\\TUP-25-p3\\datos\\obj\\",
+      "projectPath": "C:\\Users\\delga\\Documents\\GitHub\\TUP-25-p3\\datos\\datos.csproj",
+      "packagesPath": "C:\\Users\\delga\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\delga\\Documents\\GitHub\\TUP-25-p3\\datos\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\liend\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\delga\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -72,7 +72,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
