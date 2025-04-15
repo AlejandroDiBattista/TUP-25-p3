@@ -5,50 +5,43 @@ class ListaOrdenada<T> where T : IComparable<T>
 {
     private List<T> elementos = new List<T>();
 
-    public ListaOrdenada() { }
-
-    public ListaOrdenada(IEnumerable<T> elementosIniciales)
-    {
-        foreach (var elem in elementosIniciales)
-        {
-            Agregar(elem);
-        }
-    }
-
     public int Cantidad => elementos.Count;
 
     public T this[int indice] => elementos[indice];
 
-    public void Agregar(T elemento)
+    public ListaOrdenada() { }
+    public ListaOrdenada(IEnumerable<T> coleccion)
     {
-        if (Contiene(elemento)) return;
-
-        int index = elementos.BinarySearch(elemento);
-        if (index < 0) index = ~index;
-        elementos.Insert(index, elemento);
+        foreach (var item in coleccion)
+            Agregar(item);
     }
 
-    public bool Contiene(T elemento)
+    public bool Contiene(T elemento) => elementos.Contains(elemento);
+
+    public void Agregar(T elemento)
     {
-        return elementos.Contains(elemento);
+        if (Contiene(elemento)) return; // Ignora duplicados
+
+        int posicion = elementos.BinarySearch(elemento);
+        if (posicion < 0) posicion = ~posicion; 
+        elementos.Insert(posicion, elemento);
     }
 
     public void Eliminar(T elemento)
     {
-        elementos.Remove(elemento);
+        if (Contiene(elemento))
+            elementos.Remove(elemento);
     }
 
     public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
     {
-        var resultado = new ListaOrdenada<T>();
-        foreach (var elem in elementos)
+        var listaFiltrada = new ListaOrdenada<T>();
+        foreach (var item in elementos)
         {
-            if (condicion(elem))
-            {
-                resultado.Agregar(elem);
-            }
+            if (condicion(item))
+                listaFiltrada.Agregar(item);
         }
-        return resultado;
+        return listaFiltrada;
     }
 }
 
@@ -63,25 +56,21 @@ class Contacto : IComparable<Contacto>
         Telefono = telefono;
     }
 
-    public int CompareTo(Contacto otro)
-    {
-        return string.Compare(this.Nombre, otro.Nombre, StringComparison.OrdinalIgnoreCase);
-    }
+    public int CompareTo(Contacto otro) => Nombre.CompareTo(otro.Nombre);
+}
 
-    public override bool Equals(object obj)
-    {
-        if (obj is Contacto otro)
-        {
-            return this.Nombre.Equals(otro.Nombre, StringComparison.OrdinalIgnoreCase)
-                && this.Telefono == otro.Telefono;
-        }
-        return false;
-    }
+/// --------------------------------------------------------///
+///   Desde aca para abajo no se puede modificar el código  ///
+/// --------------------------------------------------------///
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Nombre.ToLower(), Telefono);
-    }
+/// 
+/// PRUEBAS AUTOMATIZADAS
+///
+
+// Funcion auxiliar para las pruebas
+public static void Assert<T>(T real, T esperado, string mensaje){
+    if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
+    Console.WriteLine($"[OK] {mensaje}");
 }
 
 
