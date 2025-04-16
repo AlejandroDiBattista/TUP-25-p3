@@ -5,29 +5,41 @@ using System.Collections.Generic;
 using System;
 using System.Collections.Generic;
 
-class ListaOrdenada<T> where T : IComparable<T>
-{
-    private List<T> elementos = new List<T>();
+class ListaOrdenada<T>{
+   
+     private List<T> elementos = new List<T>();
 
-    public int Cantidad => elementos.Count;
+    public ListaOrdenada() { }
 
-    public T this[int indice] => elementos[indice];
-
-    public bool Contiene(T elemento)
+   
+    public ListaOrdenada(IEnumerable<T> coleccion) : this()
     {
-        return elementos.Contains(elemento);
+        foreach (T elemento in coleccion)
+        {
+            Agregar(elemento);
+        }
     }
 
     public void Agregar(T elemento)
     {
-        if (Contiene(elemento))
-            return;
+        if (Contiene(elemento)) return;
 
-        int i = 0;
-        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0)
-            i++;
+        int posicion = 0;
+        for (int i = 0; i < elementos.Count; i++)
+        {
+            
+            if (EsMenor(elementos[i], elemento))
+            {
+                break;
+            }
+            posicion++;
+        }
+        elementos.Insert(posicion, elemento);
+    }
 
-        elementos.Insert(i, elemento);
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
     }
 
     public void Eliminar(T elemento)
@@ -35,51 +47,82 @@ class ListaOrdenada<T> where T : IComparable<T>
         elementos.Remove(elemento);
     }
 
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    public T this[int index]
+    {
+        get { return elementos[index]; }
+    }
+
     public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
     {
-        ListaOrdenada<T> nueva = new ListaOrdenada<T>();
+        ListaOrdenada<T> nuevaLista = new ListaOrdenada<T>();
         for (int i = 0; i < elementos.Count; i++)
         {
             if (condicion(elementos[i]))
-                nueva.Agregar(elementos[i]);
+            {
+                nuevaLista.Agregar(elementos[i]);
+            }
         }
-        return nueva;
+        return nuevaLista;
+    }
+
+   
+    private bool EsMenor(T a, T b)
+    {
+        
+        if (a is int && b is int)
+        {
+            return (int)(object)a < (int)(object)b;
+        }
+
+        
+        if (a is string && b is string)
+        {
+            return string.Compare((string)(object)a, (string)(object)b) < 0;
+        }
+
+        if (a is Contacto && b is Contacto)
+        {
+            return string.Compare(((Contacto)(object)a).Nombre, ((Contacto)(object)b).Nombre) < 0;
+        }
+
+        return false;
     }
 }
 
-
-class Contacto : IComparable<Contacto>
-{
+class Contacto {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
 
-    public Contacto(string nombre, string telefono)
+     public Contacto(string nombre, string telefono)
     {
         Nombre = nombre;
         Telefono = telefono;
-    }
-
-    public int CompareTo(Contacto otro)
-    {
-        return Nombre.CompareTo(otro.Nombre);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Contacto c)
-            return Nombre == c.Nombre && Telefono == c.Telefono;
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        return (Nombre + Telefono).GetHashCode();
     }
 
     public override string ToString()
     {
         return $"{Nombre} ({Telefono})";
     }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+        {
+            return this.Nombre == otro.Nombre && this.Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
+
 }
  
 
