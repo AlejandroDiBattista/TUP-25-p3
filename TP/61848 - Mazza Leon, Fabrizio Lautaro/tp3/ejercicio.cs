@@ -1,16 +1,108 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (!Contiene(elemento))
+        {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    public bool Contiene(T elemento)
+    {
+        foreach (var item in elementos)
+        {
+            if (item.Equals(elemento))
+                return true;
+        }
+        return false;
+    }
+
+    public void Eliminar(T elemento)
+    {
+        for (int i = 0; i < elementos.Count; i++)
+        {
+            if (elementos[i].Equals(elemento))
+            {
+                elementos.RemoveAt(i);
+                break;
+            }
+        }
+    }
+
+    public T this[int indice]
+    {
+        get { return elementos[indice]; }
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var nueva = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+        {
+            if (condicion(item))
+                nueva.Agregar(item);
+        }
+        return nueva;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        var otro = obj as Contacto;
+        if (otro == null) return false;
+
+        return Nombre == otro.Nombre && Telefono == otro.Telefono;
+    }
+
+    public override int GetHashCode()
+    {
+        return (Nombre + Telefono).GetHashCode();
+    }
 }
+
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///

@@ -2,13 +2,123 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
+class ListaOrdenada<T>{
     // Implementar acá la clase ListaOrdenada
+     private List<T> elementos = new List<T>();
+
+    public ListaOrdenada() { }
+
+   
+    public ListaOrdenada(IEnumerable<T> coleccion) : this()
+    {
+        foreach (T elemento in coleccion)
+        {
+            Agregar(elemento);
+        }
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int posicion = 0;
+        for (int i = 0; i < elementos.Count; i++)
+        {
+            
+            if (EsMenor(elementos[i], elemento))
+            {
+                break;
+            }
+            posicion++;
+        }
+        elementos.Insert(posicion, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    public T this[int index]
+    {
+        get { return elementos[index]; }
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        ListaOrdenada<T> nuevaLista = new ListaOrdenada<T>();
+        for (int i = 0; i < elementos.Count; i++)
+        {
+            if (condicion(elementos[i]))
+            {
+                nuevaLista.Agregar(elementos[i]);
+            }
+        }
+        return nuevaLista;
+    }
+
+   
+    private bool EsMenor(T a, T b)
+    {
+        
+        if (a is int && b is int)
+        {
+            return (int)(object)a < (int)(object)b;
+        }
+
+        
+        if (a is string && b is string)
+        {
+            return string.Compare((string)(object)a, (string)(object)b) < 0;
+        }
+
+        if (a is Contacto && b is Contacto)
+        {
+            return string.Compare(((Contacto)(object)a).Nombre, ((Contacto)(object)b).Nombre) < 0;
+        }
+
+        return false;
+    }
 }
 
 class Contacto {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
+
+     public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public override string ToString()
+    {
+        return $"{Nombre} ({Telefono})";
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+        {
+            return this.Nombre == otro.Nombre && this.Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
     // Implementar acá la clase Contacto
 }
 

@@ -92,8 +92,6 @@ public static class Asistencias {
         var salida = new Dictionary<string, List<DateTime>>();
 
         foreach (var origen in Directory.GetFiles("./asistencias", "*.md")){   
-            Consola.Escribir($"Cargando el archivo {origen}");
-            
             List<Asistencia> estudiantes = CargarAsistencias(origen);
             foreach (var estudiante in estudiantes) {
                 if (!salida.ContainsKey(estudiante.Telefono)) {
@@ -126,9 +124,6 @@ public static class Asistencias {
         
             Consola.Escribir("=== Asistencias ===", ConsoleColor.Cyan);
             Consola.Escribir($"Hay {asistencias.Count} asistencias", ConsoleColor.Cyan);
-            // foreach (var asistencia in asistencias) {
-            //     Console.WriteLine(asistencia);
-            // }
         }
         // Ordena la lista por el número de asistencias
         return asistencias;

@@ -1,16 +1,88 @@
 using System;
 using System.Collections.Generic;
 
+// Clase ListaOrdenada<T>
+class ListaOrdenada<T> where T : IComparable<T> {// T debe implementar IComparable<T> para poder ordenarse
+    // Lista interna para almacenar los elementos
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> elementosIniciales) {// se recibe una colección de elementos iniciales
+        foreach (var elemento in elementosIniciales) {
+            Agregar(elemento);
+        }
+    }
+
+    public int Cantidad => elementos.Count;// Propiedad para obtener la cantidad de elementos
+
+    public T this[int indice] => elementos[indice];// Indexador para acceder a los elementos por índice
+
+    public void Agregar(T elemento) {
+        if (!elementos.Contains(elemento)) {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    public void Eliminar(T elemento) {
+        elementos.Remove(elemento); // Remove ignora si no existe
+    }
+
+    public bool Contiene(T elemento) {
+        return elementos.Contains(elemento);// Verifica si el elemento está en la lista
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion) {// Filtra los elementos según una condición
+        // Se recibe una función que toma un elemento y devuelve un booleano
+        var nuevaLista = new ListaOrdenada<T>();  // Nueva lista para almacenar los elementos filtrados
+        foreach (var elemento in elementos) {
+            if (condicion(elemento)) {
+                nuevaLista.Agregar(elemento);
+            }
+        }
+        return nuevaLista;
+    }
 }
 
-class Contacto {
+// Clase Contacto
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro) {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override string ToString() {
+        return $"{Nombre} ({Telefono})";// Formato de salida del contacto
+    }
+
+    public override bool Equals(object obj) {
+        if (obj is Contacto otro) {
+            return Nombre == otro.Nombre && Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Nombre, Telefono);
+    }
+
+    public static bool operator ==(Contacto a, Contacto b) {
+        return a?.Equals(b) ?? b is null;
+    }
+
+    public static bool operator !=(Contacto a, Contacto b) {
+        return !(a == b);
+    }
 }
+
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///

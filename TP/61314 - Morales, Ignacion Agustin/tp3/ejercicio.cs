@@ -87,31 +87,6 @@ public class Contacto : IComparable<Contacto>
 }
 
 
-class Program
-{
-    public static void Assert<T>(T real, T esperado, string mensaje)
-    {
-        if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
-        Console.WriteLine($"[OK] {mensaje}");
-    }
-
-    static void Main()
-    {
-        
-    }
-
-
-}
-
-
-
-
-
-
-
-
-
-
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
 /// --------------------------------------------------------///
@@ -120,15 +95,13 @@ class Program
 /// PRUEBAS AUTOMATIZADAS
 ///
 
-// Funcion auxiliar para las pruebas
-public static void Assert<T>(T real, T esperado, string mensaje){
+public static void Assert<T>(T real, T esperado, string mensaje)
+{
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
     Console.WriteLine($"[OK] {mensaje}");
 }
 
-
-/// Pruebas de lista ordenada (con enteros)
-
+// Pruebas de lista ordenada (con enteros)
 var lista = new ListaOrdenada<int>();
 lista.Agregar(5);
 lista.Agregar(1);
@@ -162,10 +135,7 @@ Assert(lista[1], 3, "Segundo elemento tras eliminar 2");
 lista.Eliminar(100);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexistente");
 
-
-
 /// Pruebas de lista ordenada (con cadenas)
-
 var nombres = new ListaOrdenada<string>(new string[] { "Juan", "Pedro", "Ana" });
 Assert(nombres.Cantidad, 3, "Cantidad de nombres");
 
@@ -200,9 +170,7 @@ Assert(nombres.Cantidad, 3, "Cantidad de nombres tras eliminar un elemento inexi
 Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
-
 /// Pruebas de lista ordenada (con contactos) 
-
 var juan  = new Contacto("Juan",  "123456");
 var pedro = new Contacto("Pedro", "654321");
 var ana   = new Contacto("Ana",   "789012");

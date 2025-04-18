@@ -1,15 +1,93 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
+public class Contacto : IComparable<Contacto>
+{
+    public string Nombre { get; }
+    public string Telefono { get; }
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+            return Nombre == otro.Nombre && Telefono == otro.Telefono;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
+
+    public override string ToString()
+    {
+        return $"{Nombre} ({Telefono})";
+    }
 }
 
-class Contacto {
-    public string Nombre { get; set; }
-    public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+public class ListaOrdenada<T> : IEnumerable<T> where T : IComparable<T>
+{
+    private readonly List<T> elementos = new();
+
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (!Contiene(elemento))
+        {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        ListaOrdenada<T> nuevaLista = new();
+        foreach (T elemento in elementos)
+        {
+            if (condicion(elemento))
+            {
+                nuevaLista.Agregar(elemento);
+            }
+        }
+        return nuevaLista;
+    }
+
+    public IEnumerator<T> GetEnumerator() => elementos.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 /// --------------------------------------------------------///
@@ -19,15 +97,12 @@ class Contacto {
 /// 
 /// PRUEBAS AUTOMATIZADAS
 ///
-
-// Funcion auxiliar para las pruebas
-public static void Assert<T>(T real, T esperado, string mensaje){
-    if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
-    Console.WriteLine($"[OK] {mensaje}");
+public static void Assert<T>(T real, T esperado, string mensaje)
+{
+if (!Equals(esperado, real))
+    throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
+Console.WriteLine($"[OK] {mensaje}");
 }
-
-
-/// Pruebas de lista ordenada (con enteros)
 
 var lista = new ListaOrdenada<int>();
 lista.Agregar(5);
@@ -43,7 +118,7 @@ Assert(lista.Filtrar(x => x > 2).Cantidad, 2, "Cantidad de elementos filtrados")
 Assert(lista.Filtrar(x => x > 2)[0], 3, "Primer elemento filtrado");
 Assert(lista.Filtrar(x => x > 2)[1], 5, "Segundo elemento filtrado");
 
-Assert(lista.Contiene(1), true,  "Contiene");
+Assert(lista.Contiene(1), true, "Contiene");
 Assert(lista.Contiene(2), false, "No contiene");
 
 lista.Agregar(3);
@@ -61,10 +136,6 @@ Assert(lista[0], 1, "Primer elemento tras eliminar 2");
 Assert(lista[1], 3, "Segundo elemento tras eliminar 2");
 lista.Eliminar(100);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexistente");
-
-
-
-/// Pruebas de lista ordenada (con cadenas)
 
 var nombres = new ListaOrdenada<string>(new string[] { "Juan", "Pedro", "Ana" });
 Assert(nombres.Cantidad, 3, "Cantidad de nombres");
@@ -89,7 +160,7 @@ Assert(nombres[0], "Ana", "Primer nombre tras agregar Carlos");
 Assert(nombres[1], "Carlos", "Segundo nombre tras agregar Carlos");
 
 nombres.Eliminar("Carlos");
-Assert(nombres.Cantidad, 3, "Cantidad de nombres tras agregar Carlos");
+Assert(nombres.Cantidad, 3, "Cantidad de nombres tras eliminar Carlos");
 
 Assert(nombres[0], "Ana", "Primer nombre tras eliminar Carlos");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Carlos");
@@ -100,13 +171,10 @@ Assert(nombres.Cantidad, 3, "Cantidad de nombres tras eliminar un elemento inexi
 Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
-
-/// Pruebas de lista ordenada (con contactos) 
-
-var juan  = new Contacto("Juan",  "123456");
+var juan = new Contacto("Juan", "123456");
 var pedro = new Contacto("Pedro", "654321");
-var ana   = new Contacto("Ana",   "789012");
-var otro  = new Contacto("Otro",  "345678");
+var ana = new Contacto("Ana", "789012");
+var otro = new Contacto("Otro", "345678");
 
 var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana });
 Assert(contactos.Cantidad, 3, "Cantidad de contactos");

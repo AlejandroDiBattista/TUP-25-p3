@@ -1,15 +1,69 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> iniciales) {
+        elementos = new List<T>();
+        foreach (var item in iniciales)
+            Agregar(item);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public void Agregar(T item) {
+        if (Contiene(item)) return;
+
+        int index = elementos.BinarySearch(item);
+        if (index < 0) index = ~index;
+        elementos.Insert(index, item);
+    }
+
+    public void Eliminar(T item) {
+        elementos.Remove(item);
+    }
+
+    public bool Contiene(T item) {
+        return elementos.Contains(item);
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> predicado) {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+            if (predicado(item))
+                resultado.Agregar(item);
+        return resultado;
+    }
+
+    public T this[int i] => elementos[i];
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro) {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj) {
+        if (obj is not Contacto c) return false;
+        return Nombre == c.Nombre && Telefono == c.Telefono;
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
@@ -61,7 +115,6 @@ Assert(lista[0], 1, "Primer elemento tras eliminar 2");
 Assert(lista[1], 3, "Segundo elemento tras eliminar 2");
 lista.Eliminar(100);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexistente");
-
 
 
 /// Pruebas de lista ordenada (con cadenas)

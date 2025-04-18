@@ -1,10 +1,21 @@
-/.vscode
-/datos/bin
-/datos/obj
-.DS_Store
+# Archivos de Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
 
-# Exclude the 'fechas' folder from GitHub
+# Binarios y objetos compilados
+**/bin/
+**/obj/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Carpetas del proyecto que no queres subir
 fechas/
-/datos/obj
-/datos/obj
-/datos/obj
+/datos/Soluciones
+
+**/tempCodeRunnerFile.cs
+
+tempCodeRunnerFile.csharp

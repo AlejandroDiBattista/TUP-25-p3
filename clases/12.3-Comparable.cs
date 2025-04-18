@@ -22,11 +22,6 @@ class Alumno : IComparable<Alumno> {
         return Legajo.GetHashCode();
     }
 
-    // Implementación del método CompareTo para la interfaz IComparable
-    // public int CompareTo(Alumno otro) {
-    //     return Legajo.CompareTo(otro.Legajo);
-    // }
-
     public int CompareTo(Alumno otro) {
         return Nombre.CompareTo(otro.Nombre);
     }

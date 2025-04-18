@@ -1,34 +1,108 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
-}
-
-class Contacto {
+// -----------------------------
+// Implementación de Contacto
+// -----------------------------
+class Contacto : IComparable<Contacto>
+{
+    //nombre
     public string Nombre { get; set; }
+    //apellido
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return Nombre.CompareTo(other.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+        {
+            return Nombre == otro.Nombre && Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
-/// --------------------------------------------------------///
-///   Desde aca para abajo no se puede modificar el código  ///
-/// --------------------------------------------------------///
+// -----------------------------
+// Implementación de ListaOrdenada<T>
+// -----------------------------
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-/// 
-/// PRUEBAS AUTOMATIZADAS
-///
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
 
-// Funcion auxiliar para las pruebas
-public static void Assert<T>(T real, T esperado, string mensaje){
-    if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+    public void Agregar(T item)
+    {
+        if (!elementos.Contains(item))
+        {
+            elementos.Add(item);
+            elementos.Sort();
+        }
+    }
+
+    public void Eliminar(T item)
+    {
+        elementos.Remove(item);
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> predicado)
+    {
+        return new ListaOrdenada<T>(elementos.Where(e => predicado(e)));
+    }
+
+    public bool Contiene(T item)
+    {
+        return elementos.Contains(item);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int index] => elementos[index];
+}
+
+// -----------------------------
+// Pruebas Automatizadas
+// -----------------------------
+
+// Función auxiliar para las pruebas
+public static void Assert<T>(T real, T esperado, string mensaje)
+{
+    if (!Equals(esperado, real))
+        throw new Exception($"[ASSERT FALLÓ] {mensaje} ? Esperado: {esperado}, Real: {real}");
     Console.WriteLine($"[OK] {mensaje}");
 }
 
-
-/// Pruebas de lista ordenada (con enteros)
-
+// -----------------------------
+// Pruebas de ListaOrdenada<int>
+// -----------------------------
 var lista = new ListaOrdenada<int>();
 lista.Agregar(5);
 lista.Agregar(1);
@@ -43,7 +117,7 @@ Assert(lista.Filtrar(x => x > 2).Cantidad, 2, "Cantidad de elementos filtrados")
 Assert(lista.Filtrar(x => x > 2)[0], 3, "Primer elemento filtrado");
 Assert(lista.Filtrar(x => x > 2)[1], 5, "Segundo elemento filtrado");
 
-Assert(lista.Contiene(1), true,  "Contiene");
+Assert(lista.Contiene(1), true, "Contiene");
 Assert(lista.Contiene(2), false, "No contiene");
 
 lista.Agregar(3);
@@ -59,13 +133,13 @@ lista.Eliminar(2);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento existente");
 Assert(lista[0], 1, "Primer elemento tras eliminar 2");
 Assert(lista[1], 3, "Segundo elemento tras eliminar 2");
+
 lista.Eliminar(100);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexistente");
 
-
-
-/// Pruebas de lista ordenada (con cadenas)
-
+// -----------------------------
+// Pruebas de ListaOrdenada<string>
+// -----------------------------
 var nombres = new ListaOrdenada<string>(new string[] { "Juan", "Pedro", "Ana" });
 Assert(nombres.Cantidad, 3, "Cantidad de nombres");
 
@@ -89,24 +163,22 @@ Assert(nombres[0], "Ana", "Primer nombre tras agregar Carlos");
 Assert(nombres[1], "Carlos", "Segundo nombre tras agregar Carlos");
 
 nombres.Eliminar("Carlos");
-Assert(nombres.Cantidad, 3, "Cantidad de nombres tras agregar Carlos");
-
+Assert(nombres.Cantidad, 3, "Cantidad de nombres tras eliminar Carlos");
 Assert(nombres[0], "Ana", "Primer nombre tras eliminar Carlos");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Carlos");
 
 nombres.Eliminar("Domingo");
 Assert(nombres.Cantidad, 3, "Cantidad de nombres tras eliminar un elemento inexistente");
-
 Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
-
-/// Pruebas de lista ordenada (con contactos) 
-
-var juan  = new Contacto("Juan",  "123456");
+// -----------------------------
+// Pruebas de ListaOrdenada<Contacto>
+// -----------------------------
+var juan = new Contacto("Juan", "123456");
 var pedro = new Contacto("Pedro", "654321");
-var ana   = new Contacto("Ana",   "789012");
-var otro  = new Contacto("Otro",  "345678");
+var ana = new Contacto("Ana", "789012");
+var otro = new Contacto("Otro", "345678");
 
 var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana });
 Assert(contactos.Cantidad, 3, "Cantidad de contactos");

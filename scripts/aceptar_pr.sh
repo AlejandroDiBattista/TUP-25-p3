@@ -30,12 +30,13 @@ for PR_NUMBER in $PR_LIST; do
         continue
     fi
 
-    # Verificar si se modificó algún archivo llamado ejercicio.cs
-    if echo "$MODIFIED_FILES" | grep -q "ejercicio.cs"; then
-        echo "Aceptando el pull request #$PR_NUMBER porque modificó ejercicio.cs"
+    # Verificar si se modificó únicamente "ejercicio.cs"
+    FILE_COUNT=$(echo "$MODIFIED_FILES" | wc -l)
+    if [ "$FILE_COUNT" -eq 1 ] && echo "$MODIFIED_FILES" | grep -Fxq "ejercicio.cs"; then
+        echo "Aceptando el pull request #$PR_NUMBER porque solo modificó ejercicio.cs"
         gh pr merge $PR_NUMBER --repo $REPO --squash --delete-branch
     else
-        echo "El pull request #$PR_NUMBER no modificó ejercicio.cs: $MODIFIED_FILES"
+        echo "Error: El pull request #$PR_NUMBER modificó otros archivos o más de un archivo: $MODIFIED_FILES"
     fi
 
 done

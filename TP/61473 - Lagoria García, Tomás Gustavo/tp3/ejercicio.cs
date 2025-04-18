@@ -2,13 +2,83 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
+public class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> elementos = new List<T>();
+        public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+    public void Agregar(T elemento) {
+        if (!elementos.Contains(elemento)) {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+    public void Eliminar(T elemento) {
+        if (elementos.Contains(elemento)) {
+            elementos.Remove(elemento);
+        }
+    }
+    public bool Contiene(T elemento) {
+        return elementos.Contains(elemento);
+    }
+    public int Cantidad
+    {
+    get{return elementos.Count;} 
+    } 
+    public T this[int index] => elementos[index];
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado) {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var elemento in elementos) {
+            if (predicado(elemento)) {
+                resultado.Agregar(elemento);
+            }
+        }
+        return resultado;
+    }
+    public ListaOrdenada() { }
     // Implementar acá la clase ListaOrdenada
 }
 
-class Contacto {
+class Contacto: IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+    public int CompareTo(Contacto otro) {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+    public override string ToString() {
+        return $"{Nombre} ({Telefono})";
+    }
+    public override bool Equals(object obj) {
+        if (obj is Contacto otro) {
+            return Nombre == otro.Nombre && Telefono == otro.Telefono;
+        }
+        return false;
+    }
+    public override int GetHashCode() {
+        return HashCode.Combine(Nombre, Telefono);
+    }
+    public static bool operator ==(Contacto a, Contacto b) {
+        return a.Equals(b);
+    }
+    public static bool operator !=(Contacto a, Contacto b) {
+        return !a.Equals(b);
+    }
+    public static bool operator <(Contacto a, Contacto b) {
+        return a.CompareTo(b) < 0;
+    }
+    public static bool operator >(Contacto a, Contacto b) {
+    return a.CompareTo(b) > 0;
+}
+
     // Implementar acá la clase Contacto
 }
 

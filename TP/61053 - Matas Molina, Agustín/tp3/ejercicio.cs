@@ -1,15 +1,79 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = coleccion.OrderBy(x => x).ToList();
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int index] => elementos[index];
+
+    public void Agregar(T elemento)
+    {
+        if (!elementos.Contains(elemento))
+        {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado)
+    {
+        return new ListaOrdenada<T>(elementos.Where(predicado));
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return string.Compare(Nombre, otro.Nombre, StringComparison.Ordinal);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto contacto)
+        {
+            return Nombre == contacto.Nombre && Telefono == contacto.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
@@ -102,7 +166,7 @@ Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
 
 /// Pruebas de lista ordenada (con contactos) 
-
+/// 
 var juan  = new Contacto("Juan",  "123456");
 var pedro = new Contacto("Pedro", "654321");
 var ana   = new Contacto("Ana",   "789012");

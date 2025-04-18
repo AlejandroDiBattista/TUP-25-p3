@@ -1,32 +1,96 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> elementos)
+    {
+        foreach (var elemento in elementos)
+        {
+            Agregar(elemento);
+        }
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int index = elementos.BinarySearch(elemento);
+        if (index < 0) index = ~index;
+        elementos.Insert(index, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    public T this[int indice]
+    {
+        get { return elementos[indice]; }
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var nueva = new ListaOrdenada<T>();
+        foreach (var elemento in elementos)
+        {
+            if (condicion(elemento))
+                nueva.Agregar(elemento);
+        }
+        return nueva;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto c)
+            return Nombre == c.Nombre && Telefono == c.Telefono;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
-
-/// --------------------------------------------------------///
-///   Desde aca para abajo no se puede modificar el código  ///
-/// --------------------------------------------------------///
-
-/// 
-/// PRUEBAS AUTOMATIZADAS
-///
 
 // Funcion auxiliar para las pruebas
 public static void Assert<T>(T real, T esperado, string mensaje){
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
     Console.WriteLine($"[OK] {mensaje}");
 }
-
-
 /// Pruebas de lista ordenada (con enteros)
 
 var lista = new ListaOrdenada<int>();

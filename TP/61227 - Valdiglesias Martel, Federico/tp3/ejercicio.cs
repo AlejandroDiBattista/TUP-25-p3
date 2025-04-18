@@ -2,14 +2,72 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> lista;
+
+    public ListaOrdenada()
+    {
+        lista = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> elementos)
+    {
+        lista = new List<T>(elementos);
+        lista.Sort();
+    }
+
+    public int Cantidad => lista.Count;
+
+    public T this[int index] => lista[index];
+
+    public void Agregar(T elemento)
+    {
+        lista.Add(elemento);
+        lista.Sort();
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return lista.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        lista.Remove(elemento);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado)
+    {
+        return new ListaOrdenada<T>(lista.Where(predicado));
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+    
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return Nombre.CompareTo(other.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Contacto contacto &&
+               Nombre == contacto.Nombre &&
+               Telefono == contacto.Telefono;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///

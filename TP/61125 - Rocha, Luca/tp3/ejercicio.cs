@@ -1,10 +1,74 @@
 using System;
 using System.Collections.Generic;
-
-class Program
+class ListaOrdenada<T> where T : IComparable<T>
 {
-    public static void Main()
+    private List<T> elementos = new List<T>();
+
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
     {
+        foreach (var item in coleccion)
+            Agregar(item);
+    }
+
+    public bool Contiene(T elemento) => elementos.Contains(elemento);
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0)
+        {
+            i++;
+        }
+        elementos.Insert(i, elemento);
+    }
+
+    public void Eliminar(T elemento) => elementos.Remove(elemento);
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
+    {
+        var nueva = new ListaOrdenada<T>();
+        foreach (var elem in elementos)
+            if (condicion(elem)) nueva.Agregar(elem);
+        return nueva;
+    }
+}
+
+class Contacto : IComparable<Contacto>
+{
+    public string Nombre { get; set; }
+    public string Telefono { get; set; }
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return this.Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+            return this.Nombre == otro.Nombre && this.Telefono == otro.Telefono;
+        return false;
+    }
+
+    public override int GetHashCode() => HashCode.Combine(Nombre, Telefono);
+
+    public override string ToString() => $"{Nombre} ({Telefono})";
+}
+
         // ---------------------------
         // FUNCION AUXILIAR DE PRUEBAS
         // ---------------------------
@@ -88,118 +152,7 @@ class Program
         Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
         Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
-        // ----------------------------
-        // PRUEBAS DE LISTA ORDENADA - CONTACTOS
-        // ----------------------------
-        var juan = new Contacto("Juan", "123456");
-        var pedro = new Contacto("Pedro", "654321");
-        var ana = new Contacto("Ana", "789012");
-        var otro = new Contacto("Otro", "345678");
-
-        var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana });
-        Assert(contactos.Cantidad, 3, "Cantidad de contactos");
-        Assert(contactos[0].Nombre, "Ana", "Primer contacto");
-        Assert(contactos[1].Nombre, "Juan", "Segundo contacto");
-        Assert(contactos[2].Nombre, "Pedro", "Tercer contacto");
-
-        Assert(contactos.Filtrar(x => x.Nombre.StartsWith("A")).Cantidad, 1, "Cantidad de contactos que empiezan con A");
-        Assert(contactos.Filtrar(x => x.Nombre.Contains("a")).Cantidad, 2, "Cantidad de contactos que contienen a");
-
-        Assert(contactos.Contiene(juan), true, "Contiene Juan");
-        Assert(contactos.Contiene(otro), false, "No contiene Otro");
-
-        contactos.Agregar(otro);
-        Assert(contactos.Cantidad, 4, "Cantidad de contactos tras agregar Otro");
-        Assert(contactos.Contiene(otro), true, "Contiene Otro");
-
-        Assert(contactos[0].Nombre, "Ana", "Primer contacto tras agregar Otro");
-        Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras agregar Otro");
-        Assert(contactos[2].Nombre, "Otro", "Tercer contacto tras agregar Otro");
-        Assert(contactos[3].Nombre, "Pedro", "Cuarto contacto tras agregar Otro");
-
-        contactos.Eliminar(otro);
-        Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar Otro");
-        Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
-        Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
-        Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
-
-        contactos.Eliminar(otro);
-        Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar un elemento inexistente");
-        Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
-        Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
-        Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
-    }
-}
-
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
 /// --------------------------------------------------------///
 
-class ListaOrdenada<T> where T : IComparable<T>
-{
-    private List<T> elementos = new List<T>();
-
-    public ListaOrdenada() { }
-
-    public ListaOrdenada(IEnumerable<T> coleccion)
-    {
-        foreach (var item in coleccion)
-            Agregar(item);
-    }
-
-    public bool Contiene(T elemento) => elementos.Contains(elemento);
-
-    public void Agregar(T elemento)
-    {
-        if (Contiene(elemento)) return;
-
-        int i = 0;
-        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0)
-        {
-            i++;
-        }
-        elementos.Insert(i, elemento);
-    }
-
-    public void Eliminar(T elemento) => elementos.Remove(elemento);
-
-    public int Cantidad => elementos.Count;
-
-    public T this[int indice] => elementos[indice];
-
-    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
-    {
-        var nueva = new ListaOrdenada<T>();
-        foreach (var elem in elementos)
-            if (condicion(elem)) nueva.Agregar(elem);
-        return nueva;
-    }
-}
-
-class Contacto : IComparable<Contacto>
-{
-    public string Nombre { get; set; }
-    public string Telefono { get; set; }
-
-    public Contacto(string nombre, string telefono)
-    {
-        Nombre = nombre;
-        Telefono = telefono;
-    }
-
-    public int CompareTo(Contacto otro)
-    {
-        return this.Nombre.CompareTo(otro.Nombre);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Contacto otro)
-            return this.Nombre == otro.Nombre && this.Telefono == otro.Telefono;
-        return false;
-    }
-
-    public override int GetHashCode() => HashCode.Combine(Nombre, Telefono);
-
-    public override string ToString() => $"{Nombre} ({Telefono})";
-}
