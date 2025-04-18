@@ -1,15 +1,109 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> : IEnumerable<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+    public void Agregar(T item)
+    {
+        if (Contiene(item)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(item) < 0)
+        {
+            i++;
+        }
+        elementos.Insert(i, item);
+    }
+
+    public bool Contiene(T item)
+    {
+        foreach (var elemento in elementos)
+        {
+            if (elemento.CompareTo(item) == 0)
+                return true;
+        }
+        return false;
+    }
+
+    public void Eliminar(T item)
+    {
+        elementos.RemoveAll(e => e.CompareTo(item) == 0);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var e in elementos)
+        {
+            if (condicion(e))
+                resultado.Agregar(e);
+        }
+        return resultado;
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        foreach (var item in elementos)
+            yield return item;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        int comp = Nombre.CompareTo(otro.Nombre);
+        return comp != 0 ? comp : Telefono.CompareTo(otro.Telefono);
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Contacto otro &&
+               Nombre == otro.Nombre &&
+               Telefono == otro.Telefono;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
+
+    public override string ToString()
+    {
+        return $"{Nombre} - {Telefono}";
+    }
 }
 
 /// --------------------------------------------------------///
