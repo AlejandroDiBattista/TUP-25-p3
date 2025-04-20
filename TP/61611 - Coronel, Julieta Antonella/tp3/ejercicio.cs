@@ -1,16 +1,81 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> _elemento = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion) {
+        foreach (var item in coleccion) {
+            Agregar(item);
+        }
+    }
+
+    public void Agregar(T item) {
+        if (Contiene(item)) return;
+
+        int indice = 0;
+        while (indice < _elemento.Count && _elemento[indice].CompareTo(item) < 0) {
+            indice++;
+        }
+        _elemento.Insert(indice, item);
+    }
+
+    public bool Contiene(T item) {
+        return _elemento.Contains(item);
+    }
+
+    public void Eliminar(T item) {
+        _elemento.Remove(item);
+    }
+
+    public int Cantidad {
+        get { return _elemento.Count; }
+    }
+
+    public T this[int indice] {
+        get { return _elemento[indice]; }
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion) {
+        var _nuevalista = new ListaOrdenada<T>();
+        foreach (var item in _elemento) {
+            if (condicion(item)) {
+                _nuevalista.Agregar(item);
+            }
+        }
+        return _nuevalista;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro) {
+        return this.Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj) {
+        if (obj is Contacto otro) {
+            return this.Nombre == otro.Nombre && this.Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
+
+
+
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
