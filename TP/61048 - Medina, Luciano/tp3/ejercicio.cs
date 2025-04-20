@@ -1,15 +1,94 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public int Cantidad => elementos.Count;
+
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        elementos = new List<T>();
+        foreach (var item in coleccion)
+            Agregar(item);
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento))
+            return;
+
+        int index = elementos.BinarySearch(elemento);
+        if (index < 0)
+            index = ~index;
+
+        elementos.Insert(index, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public T this[int indice]
+    {
+        get
+        {
+            if (indice < 0 || indice >= Cantidad)
+                throw new IndexOutOfRangeException();
+            return elementos[indice];
+        }
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var nueva = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+            if (condicion(item))
+                nueva.Agregar(item);
+        return nueva;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return string.Compare(Nombre, otro.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto c)
+            return Nombre.Equals(c.Nombre, StringComparison.OrdinalIgnoreCase)
+                && Telefono.Equals(c.Telefono, StringComparison.OrdinalIgnoreCase);
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre.ToLower(), Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
@@ -61,7 +140,6 @@ Assert(lista[0], 1, "Primer elemento tras eliminar 2");
 Assert(lista[1], 3, "Segundo elemento tras eliminar 2");
 lista.Eliminar(100);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexistente");
-
 
 
 /// Pruebas de lista ordenada (con cadenas)

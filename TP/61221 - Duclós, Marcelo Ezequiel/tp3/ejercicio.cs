@@ -2,14 +2,117 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+ // Implementar acá la clase ListaOrdenada
+// Clase genérica ListaOrdenada que mantiene los elementos ordenados
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    // Lista interna para almacenar los elementos
+    List<T> Lista_Elementos = new List<T>();
+
+    // Constructor vacío
+    public ListaOrdenada() { }
+
+    // Constructor que recibe una colección inicial de elementos
+    public ListaOrdenada(IEnumerable<T> elementos)
+    {
+        foreach (var elemento in elementos)
+        {
+            Agregar(elemento); // Agrega cada elemento manteniendo el orden
+        }
+    }
+
+    // Método para agregar un elemento a la lista
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return; // Ignora si el elemento ya existe
+
+        int i = 0;
+        // Encuentra la posición correcta para insertar el elemento
+        while (i < Lista_Elementos.Count && Lista_Elementos[i].CompareTo(elemento) < 0)
+        {
+            i++;
+        }
+
+        Lista_Elementos.Insert(i, elemento); // Inserta el elemento en la posición correcta
+    }
+
+    // Método para verificar si un elemento está en la lista
+    public bool Contiene(T elemento)
+    {
+        return Lista_Elementos.Contains(elemento);
+    }
+
+    // Método para eliminar un elemento de la lista
+    public void Eliminar(T elemento)
+    {
+        if (Lista_Elementos.Contains(elemento))
+        {
+            Lista_Elementos.Remove(elemento); // Elimina el elemento si existe
+        }
+    }
+
+    // Propiedad que devuelve la cantidad de elementos en la lista
+    public int Cantidad
+    {
+        get { return Lista_Elementos.Count; }
+    }
+
+    // Indexador para acceder a los elementos por posición
+    public T this[int i]
+    {
+        get { return Lista_Elementos[i]; }
+    }
+
+    // Método para filtrar elementos que cumplan una condición
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
+    {
+        ListaOrdenada<T> nueva = new ListaOrdenada<T>();
+        foreach (var elemento in Lista_Elementos)
+        {
+            if (condicion(elemento)) // Verifica si el elemento cumple la condición
+            {
+                nueva.Agregar(elemento); // Agrega el elemento a la nueva lista
+            }
+        }
+        return nueva;
+    }
 }
 
-class Contacto {
-    public string Nombre { get; set; }
-    public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+// Clase Contacto que representa un contacto con nombre y teléfono
+class Contacto : IComparable<Contacto>
+{
+    public string Nombre { get; set; } // Nombre del contacto
+    public string Telefono { get; set; } // Teléfono del contacto
+
+// Implementar acá la clase Contacto
+    // Constructor para inicializar un contacto
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    // Sobrescribe Equals para comparar contactos por nombre y teléfono
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto c)
+        {
+            return Nombre == c.Nombre && Telefono == c.Telefono;
+        }
+        return false;
+    }
+
+    // Sobrescribe GetHashCode para garantizar un hash único basado en nombre y teléfono
+    public override int GetHashCode()
+    {
+        return Nombre.GetHashCode() + Telefono.GetHashCode();
+    }
+
+    // Implementa CompareTo para ordenar contactos alfabéticamente por nombre
+    public int CompareTo(Contacto otro)
+    {
+        return Nombre.CompareTo(otro.Nombre);
+    }
 }
 
 /// --------------------------------------------------------///

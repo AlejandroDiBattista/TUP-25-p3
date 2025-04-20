@@ -17,11 +17,7 @@ public class ListaOrdenada<T> where T : IComparable <T>
         elementos.Sort();
     }
 
-    public ListaOrdenada(T primerElemento)
-    {
-        elementos = new List<T> { primerElemento };
-    }
-    
+   
     public void Agregar (T elemento)
     {
         if (!elementos.Contains(elemento))

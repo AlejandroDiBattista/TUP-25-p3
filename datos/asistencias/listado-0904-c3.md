@@ -1,0 +1,215 @@
+
+1/4
+  09:58 De: 3815628162 - Mensaje: 👍
+  09:58 De: 3816466685 - Mensaje: 👍🏽
+  09:58 De: 3813983935 - Mensaje: 👍🏻
+  09:58 De: 3813892631 - Mensaje: 👍🏽
+  09:58 De: 3816046547 - Mensaje: 👍🏻
+  09:58 De: 3815690318 - Mensaje: 👍🏾
+  09:59 De: 3813577724 - Mensaje: 👍🏻
+  09:59 De: 3814158753 - Mensaje: 👍
+  09:59 De: 3816389006 - Mensaje: 👍
+  09:59 De: 3815820324 - Mensaje: 👍🏻
+  09:59 De: 3814472483 - Mensaje: 👍🏼
+  10:00 De: 3813414321 - Mensaje: 👍🏻
+  10:03 De: 3815514353 - Mensaje: 👍🏻
+  10:08 De: 3815744877 - Mensaje: 👍🏽
+  10:08 De: 3814186882 - Mensaje: 👍🏻
+  11:05 De: 2614689809 - Mensaje: 👍🏽
+  11:35 De: 3816701164 - Mensaje: 👍🏻
+
+3/4
+  10:12 De: 3813414321 - Mensaje: 👍🏻
+  10:12 De: 3816747012 - Mensaje: 👍🏻
+  10:12 De: 3816701164 - Mensaje: 👍🏻
+  10:12 De: 3815514353 - Mensaje: 👍🏻
+  10:12 De: 3815906461 - Mensaje: 👍🏼
+  10:12 De: 3815126476 - Mensaje: 👍🏻
+  10:12 De: 3865342925 - Mensaje: 👍🏼
+  10:12 De: 3815289145 - Mensaje: 👍
+  10:12 De: 3814472483 - Mensaje: 👍🏼
+  10:12 De: 3814158753 - Mensaje: 👍
+  10:12 De: 2614689809 - Mensaje: 👍🏽
+  10:12 De: 3875170010 - Mensaje: 👍🏻
+  10:12 De: 3816466685 - Mensaje: 👍🏽
+  10:12 De: 3813599941 - Mensaje: 👍🏼
+  10:12 De: 3815196654 - Mensaje: 👍🏻
+  10:12 De: 3815820324 - Mensaje: 👍🏻
+  10:12 De: 3815744877 - Mensaje: 👍🏽
+  10:12 De: 3815268193 - Mensaje: 👍🏿
+  10:12 De: 3815143223 - Mensaje: 👍
+  10:13 De: 3813414968 - Mensaje: 👍🏻
+  10:13 De: 3814199202 - Mensaje: 👍🏼
+  10:13 De: 3813334836 - Mensaje: 👍🏻
+  10:13 De: 3816376461 - Mensaje: 👍
+  10:13 De: 3813577724 - Mensaje: 👍🏻
+  10:13 De: 3813887804 - Mensaje: 👍🏻
+  10:13 De: 3813983935 - Mensaje: 👍🏻
+  10:13 De: 3816970643 - Mensaje: 👍🏽
+  10:13 De: 3812062084 - Mensaje: 👍🏻
+  10:14 De: 3816479914 - Mensaje: 👍🏽
+  10:15 De: 3814186882 - Mensaje: 👍🏻
+  10:16 De: 3816559195 - Mensaje: 👍
+  10:16 De: 3815235887 - Mensaje: 👍🏻
+  10:16 De: 3813505275 - Mensaje: 👍🏻
+  10:18 De: 3813192680 - Mensaje: 👍🏻
+  10:18 De: 3813892631 - Mensaje: 👍🏽
+  10:20 De: 3816046547 - Mensaje: 👍🏻
+  10:20 De: 3816389006 - Mensaje: 👍
+  10:22 De: 3816949619 - Mensaje: 👍🏼
+  10:22 De: 3813330962 - Mensaje: 👍🏻
+  10:22 De: 3816770639 - Mensaje: 👍🏻
+  10:22 De: 3815690318 - Mensaje: 👍🏾
+  10:24 De: 3815628162 - Mensaje: 👍
+  10:38 De: 3816317223 - Mensaje: 👍
+  10:38 De: 3813540535 - Mensaje: 👍
+
+4/4
+  10:02 De: 3813414321 - Mensaje: 👍🏻
+  10:04 De: 3816488513 - Mensaje: 👍🏼
+  10:04 De: 3815514353 - Mensaje: 👍🏻
+  10:04 De: 3816970643 - Mensaje: 👍🏽
+  10:04 De: 3816479914 - Mensaje: 👍🏽
+  10:04 De: 3813414968 - Mensaje: 👍🏻
+  10:04 De: 3814472483 - Mensaje: 👍🏼
+  10:04 De: 3816701164 - Mensaje: 👍🏻
+  10:04 De: 3865342925 - Mensaje: 👍🏼
+  10:04 De: 2614689809 - Mensaje: 👍🏽
+  10:04 De: 3815143223 - Mensaje: 👍
+  10:04 De: 3813887804 - Mensaje: 👍🏻
+  10:04 De: 3816747012 - Mensaje: 👍🏻
+  10:04 De: 3816317223 - Mensaje: 👍
+  10:04 De: 3816770639 - Mensaje: 👍🏻
+  10:04 De: 3815690318 - Mensaje: 👍🏾
+  10:04 De: 3815126476 - Mensaje: 👍🏻
+  10:05 De: 3815235887 - Mensaje: 👍🏻
+  10:05 De: 3816466685 - Mensaje: 👍🏽
+  10:05 De: 3815268193 - Mensaje: 👍🏿
+  10:05 De: 3813599941 - Mensaje: 👍🏿
+  10:05 De: 3816046547 - Mensaje: 👍🏻
+  10:05 De: 3814186882 - Mensaje: 👍🏻
+  10:06 De: 3813505275 - Mensaje: 👍🏻
+  10:06 De: 3814199202 - Mensaje: 👍
+  10:06 De: 3814095039 - Mensaje: 👍🏻
+  10:07 De: 3816666103 - Mensaje: 👍🏻
+  10:08 De: 3815196654 - Mensaje: 👍🏻
+  10:08 De: 3816949619 - Mensaje: 👍🏼
+  10:08 De: 3812062084 - Mensaje: 👍🏻
+  10:08 De: 3815744877 - Mensaje: 👍🏽
+  10:09 De: 3813330962 - Mensaje: 👍🏻
+  10:13 De: 3815289145 - Mensaje: 👍
+  10:13 De: 3875170010 - Mensaje: 👍🏻
+  10:13 De: 3813334836 - Mensaje: 👍🏻
+  10:14 De: 3816559195 - Mensaje: 👍
+  10:16 De: 3813192680 - Mensaje: 👍🏻
+  10:41 De: 3813892631 - Mensaje: 👍🏽
+  12:00 De: 3815628162 - Mensaje: 👍
+  20:08 De: 3813505275 - Mensaje: public abstract class Cuenta : object {     public string Numero { get; private set; };      public decimal Saldo { get; set; };     public decimal Puntos { get; set; } = 0;      public Cuenta(string numero, decimal saldo=0) {         Numero = numero;         Saldo = saldo;     }      public bool Poner(decimal cantidad) {         if (cantidad < 0) {             return false;         }          Saldo += cantidad;         return true;     }      public bool Sacar(decimal cantidad) {         if (cantidad < 0) {             return false;         }         if (cantidad > Saldo) {             return false;         }         Saldo -= cantidad;         return true;     }      public abstract void AcumularPuntos(decimal cantidad);      public override string ToString() {         return $"Cuenta {Numero} con saldo {Saldo} y puntos {Puntos}";     } }  public class CuentaOro : Cuenta {     public CuentaOro(string numero, decimal saldo=0) : base(numero, saldo) {     }      public override void AcumularPuntos(decimal cantidad) {         if(cantidad > 1000){             Puntos += cantidad * 0.05m;         } else {             Puntos += cantidad * 0.03m;         }     }      public void Felicitar() {         Console.WriteLine("¡Felicidades! Has acumulado " + Puntos + " puntos.");     } }  public class CuentaPlata : Cuenta {     public CuentaPlata(string numero, decimal saldo=0) : base(numero, saldo) {     }      public override void AcumularPuntos(decimal cantidad) {         Puntos += cantidad * 0.02m;     } }  object c = new CuentaOro("123456789", 1000);  CuentaOro oro = c as CuentaOro;  c.Poner(500); c.Sacar(200); c.AcumularPuntos(1500); WriteLine(c.Puntos);  CuentaOro o = c as CuentaOro;   if( c is CuentaOro ){     WriteLine("Es una cuenta de oro");     CuentaOro co = (CuentaOro)c; } else {     WriteLine("No es una cuenta de oro"); } co.Felicitar(); string Nombre = null; if(Nombre == null){     WriteLine("No hay nombre"); } else {     WriteLine("El nombre tiene " + Nombre.Length + " letras"); }
+  20:08 De: 3813505275 - Mensaje: Hola chicos ahí les dejo el código de hoy
+  20:09 De: 3813505275 - Mensaje: Disculpen la hora
+
+5/4
+  14:37 De: unknown - Mensaje: 5493813926461@c.us
+
+6/4
+  20:12 De: unknown - Mensaje: 5493813540535@c.us
+  20:12 De: unknown - Mensaje: 5493813887804@c.us
+
+7/4
+  11:58 De: 3815143223 - Mensaje: 
+
+8/4
+  10:01 De: 3816488513 - Mensaje: 👍🏼
+  10:02 De: 3813330962 - Mensaje: 👍🏻
+  10:02 De: 3815514353 - Mensaje: 👍🏻
+  10:02 De: 3814472483 - Mensaje: 👍🏼
+  10:02 De: 3814199202 - Mensaje: 👍
+  10:02 De: 3813882674 - Mensaje: 👍🏽
+  10:02 De: 3865342925 - Mensaje: 👍🏼
+  10:02 De: 3813892631 - Mensaje: 👍🏽
+  10:02 De: 3816466685 - Mensaje: 👍🏽
+  10:02 De: 3816949619 - Mensaje: 👍🏼
+  10:02 De: 3816747012 - Mensaje: 👍🏻
+  10:02 De: 3815820324 - Mensaje: 👍🏻
+  10:02 De: 3813414321 - Mensaje: 👍🏻
+  10:02 De: 3814158753 - Mensaje: 👍
+  10:02 De: 3814669695 - Mensaje: 👍
+  10:02 De: 3816970643 - Mensaje: 👍🏽
+  10:02 De: 3815289145 - Mensaje: 👍
+  10:02 De: 3815143223 - Mensaje: 👍
+  10:02 De: 3816770639 - Mensaje: 👍🏻
+  10:02 De: 3813414968 - Mensaje: 👍🏻
+  10:02 De: 3814095039 - Mensaje: 👍🏻
+  10:02 De: 3813192680 - Mensaje: 👍🏻
+  10:02 De: 3815690318 - Mensaje: 👍🏾
+  10:02 De: 3815268193 - Mensaje: 👍🏿
+  10:02 De: 3816701164 - Mensaje: 👍🏻
+  10:02 De: 3816479914 - Mensaje: 👍🏽
+  10:02 De: 3813983935 - Mensaje: 👍🏻
+  10:02 De: 3815196654 - Mensaje: 👍🏻
+  10:02 De: 3815126476 - Mensaje: 👍🏻
+  10:02 De: 3812062084 - Mensaje: 👍🏻
+  10:02 De: 3875170010 - Mensaje: 👍🏻
+  10:02 De: 3815906461 - Mensaje: 👍🏼
+  10:02 De: 3813887804 - Mensaje: 👍🏻
+  10:02 De: 3813577724 - Mensaje: 👍🏻
+  10:02 De: 3816666103 - Mensaje: 👍🏻
+  10:03 De: 3815235887 - Mensaje: 👍🏻
+  10:03 De: 3816389006 - Mensaje: 👍
+  10:03 De: 3816376461 - Mensaje: 👍
+  10:04 De: 3813599941 - Mensaje: 👍🏼
+  10:05 De: 3815744877 - Mensaje: 👍🏽
+  10:07 De: 3813334836 - Mensaje: 👍🏻
+  10:07 De: 3816046547 - Mensaje: 👍🏻
+  10:09 De: 3814186882 - Mensaje: 👍🏻
+  10:15 De: 3816317223 - Mensaje: 👍
+  10:15 De: 3813505275 - Mensaje: 👍🏻
+  10:28 De: 2614689809 - Mensaje: 👍🏽
+  10:37 De: 3816559195 - Mensaje: 👍
+  13:36 De: unknown - Mensaje: 5493816376461@c.us
+
+9/4
+  10:01 De: 3816488513 - Mensaje: 👍🏼
+  10:01 De: 3816479914 - Mensaje: 👍🏽
+  10:01 De: 3815514353 - Mensaje: 👍🏻
+  10:01 De: 3815628162 - Mensaje: 👍
+  10:01 De: 3816770639 - Mensaje: 👍🏻
+  10:02 De: 3816747012 - Mensaje: 👍🏻
+  10:02 De: 3865342925 - Mensaje: 👍🏼
+  10:02 De: 3816970643 - Mensaje: 👍🏽
+  10:02 De: 3816949619 - Mensaje: 👍🏼
+  10:02 De: 3813882674 - Mensaje: 👍🏽
+  10:02 De: 3814095039 - Mensaje: 👍🏻
+  10:02 De: 3815289145 - Mensaje: 👍
+  10:02 De: 3816317223 - Mensaje: 👍
+  10:02 De: 3816376461 - Mensaje: 👍
+  10:02 De: 3813334836 - Mensaje: 👍🏻
+  10:02 De: 3814669695 - Mensaje: 👍
+  10:02 De: 3814472483 - Mensaje: 👍🏼
+  10:02 De: 2614689809 - Mensaje: 👍🏽
+  10:02 De: 3812062084 - Mensaje: 👍🏻
+  10:02 De: 3875170010 - Mensaje: 👍🏻
+  10:02 De: 3813505275 - Mensaje: 👍🏻
+  10:02 De: 3815126476 - Mensaje: 👍🏻
+  10:02 De: 3816389006 - Mensaje: 👍
+  10:02 De: 3815268193 - Mensaje: 👍🏿
+  10:02 De: 3816701164 - Mensaje: 👍🏻
+  10:02 De: 3813330962 - Mensaje: 👍🏻
+  10:02 De: 3816559195 - Mensaje: 👍
+  10:02 De: 3816046547 - Mensaje: 👍🏻
+  10:02 De: 3813892631 - Mensaje: 👍🏽
+  10:04 De: 3814186882 - Mensaje: 👍🏻
+  10:04 De: 3815690318 - Mensaje: 👍🏾
+  10:04 De: 3815235887 - Mensaje: 👍🏻
+  10:05 De: 3813983935 - Mensaje: 👍🏻
+  10:07 De: 3815906461 - Mensaje: 👍🏼
+  10:08 De: 3813192680 - Mensaje: 👍🏻
+  10:10 De: 3813887804 - Mensaje: 👍🏻
+  10:11 De: 3813414968 - Mensaje: 👍🏻
+  10:13 De: 3813540535 - Mensaje: 👍
+  10:14 De: 3813577724 - Mensaje: 👍🏻
+  10:15 De: 3815143223 - Mensaje: 👍
+  10:22 De: 3813414321 - Mensaje: 👍🏻
+  10:22 De: 3813599941 - Mensaje: 👍🏼
+  10:23 De: 3814199202 - Mensaje: 👍
+  10:24 De: 3815744877 - Mensaje: 👍🏽

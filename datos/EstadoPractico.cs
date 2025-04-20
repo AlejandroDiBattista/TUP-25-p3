@@ -26,7 +26,7 @@ public class EstadoPractico {
     };
 
     public string Emoji => _value switch {
-        "." or " " => "❓",
+        "." or " " or "" => "❓",
         "+" => "✅",
         "-" => "❌",
         "*" => "⚠️",
@@ -35,10 +35,7 @@ public class EstadoPractico {
     };
 
     private readonly string _value;
-    
-    private EstadoPractico(string value) {
-        _value = value;
-    }
-    
+    private EstadoPractico(string value) => _value = value;
+
     public override string ToString() => _value.ToString();
 }

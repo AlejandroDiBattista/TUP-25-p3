@@ -1,15 +1,62 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada() { }
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var item in coleccion)
+            Agregar(item);
+    }
+
+    public bool Contiene(T elemento) => elementos.Contains(elemento);
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return; // Ignora duplicados
+
+        int posicion = elementos.BinarySearch(elemento);
+        if (posicion < 0) posicion = ~posicion; 
+        elementos.Insert(posicion, elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        if (Contiene(elemento))
+            elementos.Remove(elemento);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion)
+    {
+        var listaFiltrada = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+        {
+            if (condicion(item))
+                listaFiltrada.Agregar(item);
+        }
+        return listaFiltrada;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro) => Nombre.CompareTo(otro.Nombre);
 }
 
 /// --------------------------------------------------------///
@@ -17,9 +64,6 @@ class Contacto {
 /// --------------------------------------------------------///
 
 /// 
-/// PRUEBAS AUTOMATIZADAS
-///
-
 // Funcion auxiliar para las pruebas
 public static void Assert<T>(T real, T esperado, string mensaje){
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
@@ -101,14 +145,7 @@ Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
 
-/// Pruebas de lista ordenada (con contactos) 
-
-var juan  = new Contacto("Juan",  "123456");
-var pedro = new Contacto("Pedro", "654321");
-var ana   = new Contacto("Ana",   "789012");
-var otro  = new Contacto("Otro",  "345678");
-
-var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana });
+var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana }, Comparer<Contacto>.Create((c1, c2) => c1.Nombre.CompareTo(c2.Nombre)));
 Assert(contactos.Cantidad, 3, "Cantidad de contactos");
 Assert(contactos[0].Nombre, "Ana", "Primer contacto");
 Assert(contactos[1].Nombre, "Juan", "Segundo contacto");

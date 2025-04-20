@@ -15,7 +15,7 @@ public class Asistencia {
         var builder = new StringBuilder();
         builder.AppendLine($"Estudiante: {Telefono}");
         builder.AppendLine("Fechas de asistencia:");
-        foreach (var date in Fechas) {
+        foreach (var date in Fechas.Distinct()) {
             builder.AppendLine($"  - {date:dd/MM/yyyy}");
         }
         return builder.ToString();
@@ -29,7 +29,6 @@ public static class Asistencias {
         return (value >= 0x1F600 && value <= 0x1F64F) ||  // emoticonos
                (value >= 0x1F300 && value <= 0x1F5FF) ||  // pictogramas
                (value >= 0x1F680 && value <= 0x1F6FF) ||  // transporte
-               (value >= 0x2600 && value <= 0x26FF)   ||  // varios
                (value >= 0x1F900 && value <= 0x1F9FF) ||  // gestos
                (value >= 0x1FA70 && value <= 0x1FAFF);    // más emojis
         }
@@ -91,9 +90,8 @@ public static class Asistencias {
 
     public static List<Asistencia> Cargar(bool listar = false) {
         var salida = new Dictionary<string, List<DateTime>>();
+
         foreach (var origen in Directory.GetFiles("./asistencias", "*.md")){   
-            Consola.Escribir($"Cargando el archivo {origen}");
-            
             List<Asistencia> estudiantes = CargarAsistencias(origen);
             foreach (var estudiante in estudiantes) {
                 if (!salida.ContainsKey(estudiante.Telefono)) {
@@ -101,9 +99,13 @@ public static class Asistencias {
                 }
                 salida[estudiante.Telefono].AddRange(estudiante.Fechas);
             }
-        }
+        }   
 
         // Cuenta cuantas veces hay asistencias en la fecha
+        List<Asistencia> asistencias = salida
+            .Select(item => new Asistencia(item.Key) { Fechas = item.Value })
+            .ToList();
+        
         if(listar){
             int antes = 0;
             var contador = new Dictionary<DateTime, int>();
@@ -119,25 +121,9 @@ public static class Asistencias {
                 Consola.Escribir($"{entrada.Key:dd/MM/yyyy}: {entrada.Value} veces");
             }
             Consola.Escribir("===\n");
-        }
-        // var despues = 0;
-        // Elimina fechas poco frecuentes
-        // foreach (var (telefono, fechas) in salida){
-        //     salida[telefono] = fechas.Where(f => contador[f.Date] > 20).ToList();
-        //     despues += fechas.Count;
-        // }
-        // Consola.Escribir($"Hay {salida.Count} alumnos con {despues} {antes}) ");
-
-        List<Asistencia> asistencias = salida
-            .Select(item => new Asistencia(item.Key) { Fechas = item.Value })
-            .ToList();
         
-        if (listar) {
             Consola.Escribir("=== Asistencias ===", ConsoleColor.Cyan);
             Consola.Escribir($"Hay {asistencias.Count} asistencias", ConsoleColor.Cyan);
-            foreach (var asistencia in asistencias) {
-                Console.WriteLine(asistencia);
-            }
         }
         // Ordena la lista por el número de asistencias
         return asistencias;

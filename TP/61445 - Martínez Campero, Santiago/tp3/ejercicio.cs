@@ -2,14 +2,75 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> elementos;
+    public int Cantidad => elementos.Count;
+
+    public ListaOrdenada() { 
+        elementos = new List<T>();
+    }
+    public void Agregar(T elemento){
+        if (!elementos.Contains(elemento)) {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    public void Eliminar(T elemento) {
+        if (elementos.Contains(elemento)) {
+            elementos.Remove(elemento);
+        }
+    }
+
+    public bool Contiene(T elemento) {
+        return elementos.Contains(elemento);
+    }
+
+    public ListaOrdenada(T[] elementos) {
+        this.elementos = new List<T>(elementos);
+        this.elementos.Sort();
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado) {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var elemento in elementos) 
+        {
+            if (predicado(elemento)) 
+            {
+                resultado.Agregar(elemento);
+            }
+        }
+        return resultado;
+    }
+
+    public T this[int index] {
+        get { 
+            int i = 0;
+
+            foreach (var elemento in elementos) {
+                if (i == index) {
+                    return elemento;
+                }
+                i++;
+            }
+            throw new IndexOutOfRangeException("Índice fuera de rango");
+         }
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+    
+    public Contacto(string nombre, string telefono) 
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+    public int CompareTo(Contacto otro) 
+    {
+        return Nombre.CompareTo(otro.Nombre);
+    }
 }
 
 /// --------------------------------------------------------///

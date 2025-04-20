@@ -1,17 +1,74 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var item in coleccion)
+        {
+            Agregar(item);
+        }
+    }
+
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public void Agregar(T item)
+    {
+        if (Contiene(item)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(item) < 0)
+        {
+            i++;
+        }
+
+        elementos.Insert(i, item);
+    }
+public void Eliminar(T item)
+    {
+        elementos.Remove(item);
+    }
+
+    public bool Contiene(T item)
+    {
+        return elementos.Contains(item);
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> criterio)
+    {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var item in elementos)
+        {
+            if (criterio(item))
+            {
+                resultado.Agregar(item);
+            }
+        }
+        return resultado;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
-}
 
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+            public int CompareTo(Contacto otro) {
+            return Nombre.CompareTo(otro.Nombre);
+        }
+}
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
 /// --------------------------------------------------------///

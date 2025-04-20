@@ -2,15 +2,73 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> elementos;
+
+public ListaOrdenada() { 
+    elementos = new List<T>();
+}
+public ListaOrdenada(IEnumerable<T> coleccion) {
+    elementos = new List<T>();
+    foreach (var item in coleccion) {
+        Agregar(item);
+    }
+}
+    public void Agregar(T elemento) {
+        if (Contiene(elemento)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0) {
+            i++;
+        }
+        elementos.Insert(i, elemento);
+    }
+    public bool Contiene(T elemento) {
+        return elementos.Contains(elemento);
+    }
+    public void Eliminar(T elemento) {
+        elementos.Remove(elemento);
+    }
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    public T this[int indice]
+    {
+        get { return elementos[indice]; }
+    }
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado) {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var elemento in elementos) {
+            if (predicado(elemento)) {
+                resultado.Agregar(elemento);
+            }
+        }
+        return resultado;
+    }
 }
 
-class Contacto {
+
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        return this.Nombre.CompareTo(otro.Nombre);
+    }
 }
+
+
+
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
@@ -137,6 +195,6 @@ Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");
 
 contactos.Eliminar(otro);
 Assert(contactos.Cantidad, 3, "Cantidad de contactos tras eliminar un elemento inexistente");
-Assert(contactos[0].Nombre, "Ana", "Primer contacto tras eliminar Otro");
-Assert(contactos[1].Nombre, "Juan", "Segundo contacto tras eliminar Otro");
+Assert(contactos[0].Nombre, "Ana","Primer contacto tras eliminar Otro");
+Assert(contactos[1].Nombre, "Juan","Segundo contacto tras eliminar Otro");
 Assert(contactos[2].Nombre, "Pedro", "Tercer contacto tras eliminar Otro");

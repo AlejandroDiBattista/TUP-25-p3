@@ -1,15 +1,117 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    // Constructor sin parámetros
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    // Constructor con para el array inicial
+    public ListaOrdenada(T[] elementosIniciales)
+    {
+        elementos = new List<T>();
+        foreach (var elemento in elementosIniciales)
+        {
+            Agregar(elemento);
+        }
+    }
+
+    // Propiedad para obtener la cantidad de elementos del array
+    public int Cantidad
+    {
+        get { return elementos.Count; }
+    }
+
+    // Utilizamos el indice para acceder a los elementos por posición
+    public T this[int indice]
+    {
+        get { return elementos[indice]; }
+    }
+
+    // Método para agregar un elemento manteniendo el orden
+    public void Agregar(T elemento)
+    {
+        // Si el elemento ya existe, no se ignora la accion
+        if (Contiene(elemento))
+            return;
+
+        // Buscar la posición correcta para insertar el elemento
+        int posicion = 0;
+        while (posicion < elementos.Count && elementos[posicion].CompareTo(elemento) < 0)
+        {
+            posicion++;
+        }
+
+        // Insertar el elemento en la posición correcta
+        elementos.Insert(posicion, elemento);
+    }
+
+    // Método para eliminar un elemento
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    // Método para verificar si un elemento está en la lista
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    // Método para filtrar elementos según la condicion
+    public ListaOrdenada<T> Filtrar(Predicate<T> predicado)
+    {
+        ListaOrdenada<T> resultado = new ListaOrdenada<T>();
+        foreach (var elemento in elementos)
+        {
+            if (predicado(elemento))
+            {
+                resultado.Agregar(elemento);
+            }
+        }
+        return resultado;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    // Constructor
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    // Implementación de IComparable<Contacto> para ordenar por nombre
+    public int CompareTo(Contacto otro)
+    {
+        if (otro == null) return 1;
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    // Sobrescribir Equals para poder usar Contains
+    public override bool Equals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+
+        Contacto otro = (Contacto)obj;
+        return Nombre == otro.Nombre && Telefono == otro.Telefono;
+    }
+
+    // Sobrescribir GetHashCode para mantener consistencia con Equals
+    public override int GetHashCode()
+    {
+        return (Nombre + Telefono).GetHashCode();
+    }
 }
 
 /// --------------------------------------------------------///
@@ -65,7 +167,7 @@ Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexiste
 
 
 /// Pruebas de lista ordenada (con cadenas)
-
+/// 
 var nombres = new ListaOrdenada<string>(new string[] { "Juan", "Pedro", "Ana" });
 Assert(nombres.Cantidad, 3, "Cantidad de nombres");
 

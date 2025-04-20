@@ -1,15 +1,84 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos = new List<T>();
 
+    public ListaOrdenada() { }
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada(IEnumerable<T> coleccion)
+    {
+        foreach (var item in coleccion)
+            Agregar(item);
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int i = 0;
+        while (i < elementos.Count && elementos[i].CompareTo(elemento) < 0)
+        {
+            i++;
+        }
+        elementos.Insert(i, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        var nuevaLista = new ListaOrdenada<T>();
+        foreach (var e in elementos)
+        {
+            if (condicion(e))
+                nuevaLista.Agregar(e);
+        }
+        return nuevaLista;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro)
+    {
+        if (otro == null) return 1;
+        return Nombre.CompareTo(otro.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto c)
+            return Nombre == c.Nombre && Telefono == c.Telefono;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
@@ -22,7 +91,8 @@ class Contacto {
 
 // Funcion auxiliar para las pruebas
 public static void Assert<T>(T real, T esperado, string mensaje){
-    if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
+    if (!Equals(esperado, real)) throw new Exception ($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
+    
     Console.WriteLine($"[OK] {mensaje}");
 }
 

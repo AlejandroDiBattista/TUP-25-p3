@@ -1,15 +1,78 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T> {
+    
+    private List<T> elementos = new List<T>();
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() { }
+
+    public ListaOrdenada(IEnumerable<T> coleccion) {
+        elementos.AddRange(coleccion);
+        elementos.Sort();
+    }
+    
+    public int Cantidad => elementos.Count;
+    
+    public T this[int index] => elementos[index];
+    
+    public void Agregar(T elemento) {
+        if (!Contiene(elemento)) {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+    
+    public void Eliminar(T elemento) {
+        if (Contiene(elemento)) {
+            elementos.Remove(elemento);
+        }
+    }
+    
+    public bool Contiene(T elemento) {
+        return elementos.Contains(elemento);
+    }
+    
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado) {
+        var resultado = new ListaOrdenada<T>(elementos.Where(predicado));
+        return resultado;
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> 
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+    
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre= nombre;
+        Telefono= telefono;
+    }
+    //IMPLEMENTACION CONJUNTA DE EQUALS Y GETHASHCODE
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otroContacto)
+        {
+            return Nombre == otroContacto.Nombre && Telefono == otroContacto.Telefono;
+        }
+        return false;
+    }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Nombre.GetHashCode(), Telefono.GetHashCode());
+    }
+    public override string ToString()
+    {
+        return $"{Nombre} - {Telefono}";
+    }
+
+    //SIN EL COMPARE NO PODRIA ORDENAR LA LISTA
+    public int CompareTo(Contacto otro)
+    {
+        if(otro == null) return 1; 
+        return Telefono.CompareTo(otro.Telefono);
+    }   
 }
 
 /// --------------------------------------------------------///

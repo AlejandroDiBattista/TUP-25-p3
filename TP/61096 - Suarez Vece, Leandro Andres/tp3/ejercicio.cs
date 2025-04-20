@@ -2,14 +2,104 @@ using System;
 using System.Collections.Generic;
 
 
-class ListaOrdenada{
+
+public delegate bool isTrue<T>(T condicion);
+class ListaOrdenada<T> where T : IComparable<T>
+{
     // Implementar acá la clase ListaOrdenada
+
+    public ListaOrdenada() { } // Constructor vacío
+
+    public ListaOrdenada(IEnumerable<T> datos)
+    {
+        foreach (var item in datos)
+        {
+            Agregar(item);
+        }
+    }
+    public List<T> Lista { get; set; } = new List<T>();
+
+    public virtual int Cantidad => Lista.Count;
+
+    public void Agregar(T data)
+    {
+        if (!Contiene(data))
+        {
+            Lista.Add(data);
+            Ordenar();
+        }
+    }
+
+    public void Eliminar(T data)
+    {
+        if (Contiene(data))
+            Lista.Remove(data);
+    }
+    public bool Contiene(T data)
+    {
+        foreach (var item in Lista)
+        {
+            if (EqualityComparer<T>.Default.Equals(item, data))
+                return true;
+        }
+        return false;
+    }
+
+
+    public ListaOrdenada<T> Filtrar(isTrue<T> condicion)
+    {
+        var resultado = new ListaOrdenada<T>();
+        foreach (var elemento in Lista)
+        {
+            if (condicion(elemento))
+            {
+                resultado.Agregar(elemento);
+            }
+        }
+        return resultado;
+    }
+
+    public void Ordenar()
+    {
+        for (int i = 0; i < Lista.Count - 1; i++)
+        {
+            for (int j = 0; j < Lista.Count - i - 1; j++)
+            {
+                if (Lista[j].CompareTo(Lista[j + 1]) > 0)
+                {
+                    var temp = Lista[j];
+                    Lista[j] = Lista[j + 1];
+                    Lista[j + 1] = temp;
+                }
+            }
+        }
+    }
+
+    public T this[int index] => Lista[index];
+
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
     // Implementar acá la clase Contacto
+
+    public Contacto(string nombre)
+    {
+        this.Nombre = nombre;
+
+    }
+    public Contacto(string nombre, string telefono)
+    {
+        this.Nombre = nombre;
+        this.Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto data)
+    {
+        return this.Nombre.CompareTo(data.Nombre); // orden alfabético por nombre
+    }
 }
 
 /// --------------------------------------------------------///
@@ -21,7 +111,8 @@ class Contacto {
 ///
 
 // Funcion auxiliar para las pruebas
-public static void Assert<T>(T real, T esperado, string mensaje){
+public static void Assert<T>(T real, T esperado, string mensaje)
+{
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
     Console.WriteLine($"[OK] {mensaje}");
 }
@@ -43,7 +134,7 @@ Assert(lista.Filtrar(x => x > 2).Cantidad, 2, "Cantidad de elementos filtrados")
 Assert(lista.Filtrar(x => x > 2)[0], 3, "Primer elemento filtrado");
 Assert(lista.Filtrar(x => x > 2)[1], 5, "Segundo elemento filtrado");
 
-Assert(lista.Contiene(1), true,  "Contiene");
+Assert(lista.Contiene(1), true, "Contiene");
 Assert(lista.Contiene(2), false, "No contiene");
 
 lista.Agregar(3);
@@ -101,12 +192,12 @@ Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
 
-/// Pruebas de lista ordenada (con contactos) 
+// /// Pruebas de lista ordenada (con contactos) 
 
-var juan  = new Contacto("Juan",  "123456");
+var juan = new Contacto("Juan", "123456");
 var pedro = new Contacto("Pedro", "654321");
-var ana   = new Contacto("Ana",   "789012");
-var otro  = new Contacto("Otro",  "345678");
+var ana = new Contacto("Ana", "789012");
+var otro = new Contacto("Otro", "345678");
 
 var contactos = new ListaOrdenada<Contacto>(new Contacto[] { juan, pedro, ana });
 Assert(contactos.Cantidad, 3, "Cantidad de contactos");

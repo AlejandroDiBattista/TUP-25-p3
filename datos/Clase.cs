@@ -1,4 +1,7 @@
 using System.Collections;
+using System.Diagnostics;
+using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using TUP;
 
@@ -19,7 +22,8 @@ class Clase : IEnumerable<Alumno> {
 
         foreach (var linea in File.ReadLines(origen)) {
             var texto = linea.PadRight(100,' '); 
-            var practicos = texto.Substring(75, 20).Trim();
+            var resultados = texto.Substring(87).Trim();
+            var practicos  = texto.Substring(75, 15).Trim().PadRight(3, ' ');
             texto = texto.Substring(0, 75);
 
             var matchComision = Regex.Match(texto, LineaComision);
@@ -39,6 +43,11 @@ class Clase : IEnumerable<Alumno> {
                 } else {
                     practicos = practicos.Trim();
                 }
+                practicos = practicos.PadRight(3, ' ');
+                int cantidadResultados;
+                if(!int.TryParse(resultados, out cantidadResultados)){
+                    cantidadResultados = 0;
+                }
                 Alumno alumno = new Alumno(
                     int.Parse(matchAlumno.Groups["index"].Value), 
                     int.Parse(matchAlumno.Groups["legajo"].Value),
@@ -47,7 +56,8 @@ class Clase : IEnumerable<Alumno> {
                     telefono,
                     comision,
                     practicos,
-                    asistencias
+                    asistencias,
+                    cantidadResultados
                 );
 
                 clase.alumnos.Add(alumno);
@@ -68,7 +78,8 @@ class Clase : IEnumerable<Alumno> {
     public Clase ConAprobados(int cantidad) => new(Alumnos.Where(a => a.Practicos.Count(p => p == EstadoPractico.Aprobado) >= cantidad));
     public Clase OrdenandoPorNombre() => new (alumnos.OrderBy(a => a.Apellido).ThenBy(a => a.Nombre));
     public Clase OrdenandoPorLegajo() => new (alumnos.OrderBy(a => a.Legajo));
-
+    public Clase DebenRecuperar() => new (alumnos.Where(a => !a.Abandono && ( a.CantidadPresentados < 3 && a.CantidadPresentados > 0 || a.Resultado <0 )));
+    
     // Métodos de modificación
     public void Agregar(Alumno alumno) {
         if (alumno != null) {
@@ -90,8 +101,10 @@ class Clase : IEnumerable<Alumno> {
                 writer.WriteLine($"\n## Comisión {comision}");
                 foreach(var alumno in EnComision(comision).OrdenandoPorNombre()) {
                     alumno.Orden = ++orden;
-                    string lineaBase = $"{alumno.Orden:D2}.  {alumno.Legajo}  {alumno.NombreCompleto,-40}  {alumno.Telefono,-15}";
-                    writer.WriteLine($"{lineaBase,-75} {alumno.Asistencias,2} {alumno.PracticosToString()}");
+                    string linea = $"{alumno.Orden:D2}.  {alumno.Legajo}  {alumno.NombreCompleto,-40}  {alumno.Telefono,-15}";
+                    linea = $"{linea,-75} {alumno.Asistencias,2} {alumno.PracticosToString(),-15}";
+                    linea = $"{linea,-87} {alumno.Resultado,3}";
+                    writer.WriteLine(linea);
                 }
             }
         }
@@ -146,9 +159,8 @@ class Clase : IEnumerable<Alumno> {
         Consola.Escribir($"● {cambios} carpetas cambiadas", ConsoleColor.Green);
     }
 
-
     public static int ContarLineasEfectivas(string archivo) {
-        var lineas = File.ReadAllLines(archivo);
+        var lineas = File.ReadAllLines(archivo).TakeWhile(linea => !linea.Contains("PRUEBAS AUTOMATIZADAS"));
         return lineas.Count(linea =>
             !linea.Trim().Equals("") &&                     // No es una línea vacía
             !linea.TrimStart().StartsWith("Console.") &&    // No es un mensaje de consola
@@ -163,15 +175,20 @@ class Clase : IEnumerable<Alumno> {
     public void VerificaPresentacionPractico(int practico) {
         const string Base = "../TP";
         Consola.Escribir($"=== Verificación de presentación del trabajo práctico TP{practico} ===", ConsoleColor.Cyan);
+        var enunciado = Path.Combine("../enunciados", $"tp{practico}", "ejercicio.cs");
+        int lineas = ContarLineasEfectivas(enunciado);
+        Consola.Escribir($" - Enunciado tiene {lineas} líneas efectivas", ConsoleColor.Cyan);
         foreach(var comision in Comisiones) {
             var presentados = 0;
             var ausentes = 0;
+            var errores = 0;
             foreach(var alumno in EnComision(comision)){
-                var archivo = Path.Combine(Base, alumno.Carpeta, $"TP{practico}", "ejercicio.cs");
+                var archivo = Path.Combine(Base, alumno.Carpeta, $"tp{practico}", "ejercicio.cs");
                 EstadoPractico estado = EstadoPractico.Error;
                 if (File.Exists(archivo)) {
-                    int lineasEfectivas = ContarLineasEfectivas(archivo);
-                    estado = lineasEfectivas >= 40 ? EstadoPractico.Aprobado : EstadoPractico.NoPresentado;
+                    int lineasEfectivas = ContarLineasEfectivas(archivo) - lineas;
+                    
+                    estado = lineasEfectivas >= 20  ? EstadoPractico.Aprobado : EstadoPractico.NoPresentado;
                     if (estado == EstadoPractico.Aprobado) {
                         presentados++;
                     }
@@ -179,20 +196,54 @@ class Clase : IEnumerable<Alumno> {
                         ausentes++;
                     }
                     alumno.PonerPractico(practico, estado);
-                    Consola.Escribir($"{alumno.Legajo}. {alumno.NombreCompleto, -60} {lineasEfectivas, 3} {estado}", estado.Color);
+                    if(practico == 3 && lineasEfectivas > 20) {
+                        alumno.Resultado = ResultadoEjecutar(archivo);
+                    }
+                    var color = lineasEfectivas < 20 ? ConsoleColor.Yellow : ConsoleColor.White;
+                    if(alumno.Resultado < 0){
+                        errores++;
+                        color = ConsoleColor.Red;
+                    }
+                    if(alumno.Resultado > 0 ){
+                        color = ConsoleColor.Green;
+                    }
+                    Consola.Escribir($" - {alumno.Legajo}  {alumno.NombreCompleto, -60}  {lineasEfectivas, 3} {estado}", color);
                 }
             }
-            Consola.Escribir($"Comisión {comision} \n Presentados: {presentados,3}\n Ausentes   : {ausentes,3}", ConsoleColor.Cyan);
+            Consola.Escribir($"Comisión {comision} \n Presentados: {presentados,3}\n Ausentes   : {ausentes,3}\n Errores:     {errores,3}", ConsoleColor.Cyan);
+        }
+    }
+    
+    public static string EjecutarCSharp(string origen){
+        var runInfo = new ProcessStartInfo{
+            FileName = "dotnet", Arguments = $"script \"{origen}\"",
+            RedirectStandardOutput = true, RedirectStandardError = true,
+            UseShellExecute = false,       CreateNoWindow = true
+        };
+
+        using (var runProcess = Process.Start(runInfo) ?? throw new InvalidOperationException("Failed to start process")){
+            string salida = runProcess.StandardOutput.ReadToEnd();
+            string error  = runProcess.StandardError.ReadToEnd();
+            runProcess.WaitForExit();
+            return salida + error;
+        }
+    }
+
+    public static int ResultadoEjecutar(string origen){
+        var salida = EjecutarCSharp(origen);
+        if (salida.Contains(": error")) {
+            return - salida.Split("\n").Count(line => line.Contains(": error"));
+        } else {
+            return salida.Split("\n").Count(line => line.Contains("[OK]"));
         }
     }
 
     public void CopiarPractico(int practico, bool forzar=false) {
         const string Base = "../TP";
-        const string Enunciados = "../Enunciados";
+        const string Enunciados = "../enunciados";
         Consola.Escribir($" ▶︎ Copiando trabajo práctico de TP{practico}", ConsoleColor.Cyan);
         var carpetaOrigen = Path.Combine(Enunciados, $"TP{practico}");
         
-        // Verificar que exista el enunciado
         if (!Directory.Exists(carpetaOrigen)) {
             Consola.Escribir($"Error: No se encontró el enunciado del trabajo práctico '{practico}' en {carpetaOrigen}", ConsoleColor.Red);
             return;
@@ -236,16 +287,21 @@ class Clase : IEnumerable<Alumno> {
             Consola.Escribir($"\n=== Comisión {comision} ===", ConsoleColor.Blue);    
             foreach (var alumno in EnComision(comision).OrdenandoPorNombre()) {
                 var emojis = alumno.Practicos.Select(p => p.Emoji).ToList();
-                var asistencia = string.Join("", emojis);
-                string linea = $"{alumno.Legajo} - {alumno.NombreCompleto, -40} {$"{alumno.Telefono}", -20}";
-                Consola.Escribir($" {linea,-78} {alumno.Asistencias,2} {asistencia} ");
+                if(alumno.Resultado < 0){
+                    emojis[2] = "🔴";
+                }
+                var asistencia = string.Join(" ", emojis);
+                string linea = $"{alumno.Legajo} - {alumno.NombreCompleto, -40} {$"{alumno.Telefono}", -15}";
+                linea = $" {linea,-65} {alumno.Asistencias, 2}  {asistencia}   ";
+                // linea += alumno.Resultado switch{ < 0 => "🔴", 0 => "", > 0 => "🟢" };
+
+                Consola.Escribir(linea);
             }
             Consola.Escribir($"Total alumnos en comisión {comision}: {EnComision(comision).Count()}", ConsoleColor.Yellow);
         }
         Consola.Escribir($"\nTotal general de alumnos: {alumnos.Count}", ConsoleColor.Green);
     }
 
-    // Función auxiliar para listar alumnos por comisión con un mensaje personalizado
     private void ListarPorComision(IEnumerable<Alumno> listado, string comision, string mensaje) {
         if (!listado.Any()) { 
             Consola.Escribir($"No hay {mensaje} en la comisión {comision}", ConsoleColor.Green); }
@@ -253,7 +309,7 @@ class Clase : IEnumerable<Alumno> {
             Consola.Escribir($"\n=== Comisión {comision} ===", ConsoleColor.Blue);
             Consola.Escribir("```");        
             foreach (var alumno in listado) { 
-                Consola.Escribir($"{alumno.Legajo} {alumno.NombreCompleto,-32} {alumno.Asistencias} {alumno.CantidadPresentados,2}", ConsoleColor.Red); 
+                Consola.Escribir($"{alumno.Legajo} {alumno.NombreCompleto,-32} {alumno.Asistencias,2} {alumno.CantidadPresentados,2}", ConsoleColor.Red); 
             }
             Consola.Escribir("```");        
             Consola.Escribir($"Total {mensaje}: {listado.Count()}", ConsoleColor.Yellow);
@@ -270,6 +326,30 @@ class Clase : IEnumerable<Alumno> {
         Consola.Escribir($"\nTOTAL: {totalAusentes} de {alumnos.Count} alumnos", ConsoleColor.Yellow);
     }
 
+    public void GenerarReporteRecuperacion(string destino = "./recuperacion.md") {
+        Consola.Escribir($" ▶︎ Generando reporte de recuperación en {destino}", ConsoleColor.Cyan);
+        using (StreamWriter writer = new(destino)) {
+            writer.WriteLine("# Reporte de Recuperación");
+            writer.WriteLine($"*Generado el: {DateTime.Now}*");
+
+            var alumnosRecuperar = DebenRecuperar();
+
+            foreach (var comision in alumnosRecuperar.Comisiones) {
+                writer.WriteLine($"\n## Comisión {comision}");
+                writer.WriteLine("\n| Legajo | Nombre Completo                 | TP1       | TP2       | TP3       |");
+                writer.WriteLine(  "|--------|---------------------------------|-----------|-----------|-----------|");
+
+                var alumnosComision = alumnosRecuperar.EnComision(comision).OrdenandoPorNombre();
+                foreach (var alumno in alumnosComision) {
+                    writer.WriteLine($"| {alumno.Legajo} | {alumno.NombreCompleto,-31} | {alumno.EstadoRecuperacionTP(1),-9} | {alumno.EstadoRecuperacionTP(2),-9} | {alumno.EstadoRecuperacionTP(3),-9} |");
+                }
+                writer.WriteLine($"\nTotal en comisión {comision}: {alumnosComision.Count()}");
+            }
+            writer.WriteLine($"\n**Total general a recuperar: {alumnosRecuperar.Count()}**");
+        }
+        Consola.Escribir($" ● Reporte de recuperación generado.", ConsoleColor.Green);
+    }
+
     public void ListarAusentes(int cantidad) {
         Consola.Escribir($"\nListado de alumnos con {cantidad} o más ausencias:", ConsoleColor.Yellow);
         foreach (var comision in Comisiones) {
@@ -278,6 +358,10 @@ class Clase : IEnumerable<Alumno> {
         }
         var totalAusentes = ConAusentes(cantidad).alumnos.Count;
         Consola.Escribir($"\nTOTAL: {totalAusentes} de {alumnos.Count} alumnos", ConsoleColor.Yellow);
+    }
+
+    public void Reiniciar(){
+        alumnos.ForEach(a => a.Reiniciar());
     }
 
     public void CargarAsistencia(List<Asistencia> asistencias){
@@ -294,22 +378,10 @@ class Clase : IEnumerable<Alumno> {
 
     public Alumno? Buscar(string telefono){
         telefono = $"({telefono.Substring(0, 3)}) {telefono.Substring(3, 3)}-{telefono.Substring(6, 4)}";
-        foreach(var alumno in ConTelefono(true)) {
-            if (alumno.Telefono == telefono) {
-                return alumno;
-            }
-        }
-        return null;
+        return ConTelefono(true).FirstOrDefault(alumno => alumno.Telefono == telefono);
     }
 
-    public Alumno? Buscar(int legajo){
-        foreach(var alumno in alumnos) {
-            if (alumno.Legajo == legajo) {
-                return alumno;
-            }
-        }
-        return null;
-    }
+    public Alumno? Buscar(int legajo) => alumnos.FirstOrDefault(a => a.Legajo == legajo);
 
     public IEnumerator<Alumno> GetEnumerator() => alumnos.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator()    => GetEnumerator();

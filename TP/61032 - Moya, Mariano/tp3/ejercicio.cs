@@ -1,22 +1,91 @@
 using System;
 using System.Collections.Generic;
 
+class ListaOrdenada<T> where T : IComparable<T> {
+    private List<T> elementos;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada() {
+        elementos = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> coleccion) {
+        elementos = new List<T>();
+        foreach (var item in coleccion) {
+            elementos.Add(item);
+        }
+        elementos.Sort();
+    }
+
+    public void Agregar(T elemento) {
+        if (!Contiene(elemento)) {
+            elementos.Add(elemento);
+            elementos.Sort();
+        }
+    }
+
+    public bool Contiene(T elemento) {
+        foreach (var item in elementos) {
+            if (item.Equals(elemento)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void Eliminar(T elemento) {
+        for (int i = 0; i < elementos.Count; i++) {
+            if (elementos[i].Equals(elemento)) {
+                elementos.RemoveAt(i);
+                break;
+            }
+        }
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice] => elementos[indice];
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> condicion) {
+        var filtrados = new List<T>();
+        foreach (var item in elementos) {
+            if (condicion(item)) {
+                filtrados.Add(item);
+            }
+        }
+        return new ListaOrdenada<T>(filtrados);
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto> {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono) {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto otro) {
+        return string.Compare(Nombre, otro.Nombre, StringComparison.Ordinal);
+    }
+
+    public override bool Equals(object obj) {
+        if (obj is Contacto otro) {
+            return Nombre == otro.Nombre && Telefono == otro.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Nombre, Telefono);
+    }
 }
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
 /// --------------------------------------------------------///
 
-/// 
+/// do
 /// PRUEBAS AUTOMATIZADAS
 ///
 
@@ -102,7 +171,7 @@ Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
 
 /// Pruebas de lista ordenada (con contactos) 
-
+/// 
 var juan  = new Contacto("Juan",  "123456");
 var pedro = new Contacto("Pedro", "654321");
 var ana   = new Contacto("Ana",   "789012");

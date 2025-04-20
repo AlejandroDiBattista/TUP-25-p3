@@ -1,8 +1,5 @@
 # TP2: Sistema Bancario 
 
-> Fecha de entrega: Sabado 5 hasta las 23:59 hs
-
-> Crear Rama llamada "<Legajo>-<Nombre Completo>"
 > El pull request tambien debe llamar "TP2 - <Legajo> <NombreCopleto>"
 
 ## Objetivo:

@@ -1,16 +1,82 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
+class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> _items;
 
-class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    public ListaOrdenada()
+    {
+        _items = new List<T>();
+    }
+
+    public ListaOrdenada(IEnumerable<T> collection)
+    {
+        _items = collection.OrderBy(x => x).ToList();
+    }
+
+    public int Cantidad => _items.Count;
+
+    public T this[int index] => _items[index];
+
+    public void Agregar(T item)
+    {
+        if (!_items.Contains(item))
+        {
+            _items.Add(item);
+            _items.Sort();
+        }
+    }
+
+    public void Eliminar(T item)
+    {
+        _items.Remove(item);
+    }
+
+    public bool Contiene(T item)
+    {
+        return _items.Contains(item);
+    }
+
+    public ListaOrdenada<T> Filtrar(Func<T, bool> predicado)
+    {
+        return new ListaOrdenada<T>(_items.Where(predicado).ToList());
+    }
 }
 
-class Contacto {
+class Contacto : IComparable<Contacto>
+{
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return string.Compare(this.Nombre, other.Nombre);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto)
+        {
+            var other = (Contacto)obj;
+            return this.Nombre == other.Nombre && this.Telefono == other.Telefono;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return (Nombre + Telefono).GetHashCode();
+    }
 }
+
 
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
@@ -20,15 +86,13 @@ class Contacto {
 /// PRUEBAS AUTOMATIZADAS
 ///
 
-// Funcion auxiliar para las pruebas
-public static void Assert<T>(T real, T esperado, string mensaje){
+public static void Assert<T>(T real, T esperado, string mensaje)
+{
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
     Console.WriteLine($"[OK] {mensaje}");
 }
 
-
-/// Pruebas de lista ordenada (con enteros)
-
+// Pruebas de lista ordenada (con enteros)
 var lista = new ListaOrdenada<int>();
 lista.Agregar(5);
 lista.Agregar(1);
@@ -62,10 +126,7 @@ Assert(lista[1], 3, "Segundo elemento tras eliminar 2");
 lista.Eliminar(100);
 Assert(lista.Cantidad, 3, "Cantidad de elementos tras eliminar elemento inexistente");
 
-
-
 /// Pruebas de lista ordenada (con cadenas)
-
 var nombres = new ListaOrdenada<string>(new string[] { "Juan", "Pedro", "Ana" });
 Assert(nombres.Cantidad, 3, "Cantidad de nombres");
 
@@ -100,9 +161,7 @@ Assert(nombres.Cantidad, 3, "Cantidad de nombres tras eliminar un elemento inexi
 Assert(nombres[0], "Ana", "Primer nombre tras eliminar Domingo");
 Assert(nombres[1], "Juan", "Segundo nombre tras eliminar Domingo");
 
-
 /// Pruebas de lista ordenada (con contactos) 
-
 var juan  = new Contacto("Juan",  "123456");
 var pedro = new Contacto("Pedro", "654321");
 var ana   = new Contacto("Ana",   "789012");
