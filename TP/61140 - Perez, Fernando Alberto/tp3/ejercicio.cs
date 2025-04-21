@@ -1,95 +1,132 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
-
-class ListaOrdenada{
-    class ListaOrdenada<T> where T : IComparable<T>
+public class Contacto : IComparable<Contacto>
 {
-private List<T> elementos = new List<T>();
-public ListaOrdenada() { }
-public ListaOrdenada(IEnumerable<T> coleccion)
-{
-foreach (var item in coleccion)
-{
-Agregar(item);
-}
-}
-public void Agregar(T item)
-{
-if (Contiene(item)) return;
-int index = 0;
-while (index < elementos.Count && elementos[index].CompareTo(item) < 0)
-{
-index++;
-}
-elementos.Insert(index, item);
-}
-public void Eliminar(T item)
-{
-for (int i = 0; i < elementos.Count; i++)
-{
-if (elementos[i].Equals(item))
-{
-elementos.RemoveAt(i);
-break;
-}
-}
-}
-public bool Contiene(T item)
-{
-foreach (var elem in elementos)
-{
-if (elem.Equals(item)) return true;
-}
-return false;
-}
-public ListaOrdenada<T> Filtrar(Func<T, bool> criterio)
-{
-var resultado = new ListaOrdenada<T>();
-foreach (var elem in elementos)
-{
-if (criterio(elem))
-{
- resultado.Agregar(elem);
-}
-}
-return resultado;
-}
-public int Cantidad => elementos.Count;
-public T this[int index] => elementos[index];
-}
-class Contacto : IComparable<Contacto>
-{
-public string Nombre { get; set; }
-public string Telefono { get; set; }
-public Contacto(string nombre, string telefono)
-{
-Nombre = nombre;
-Telefono = telefono;
-}
-public int CompareTo(Contacto otro)
-{
-return this.Nombre.CompareTo(otro.Nombre);
-}
-public override bool Equals(object obj)
-{
-if (obj is Contacto c)
-return Nombre == c.Nombre && Telefono == c.Telefono;
-return false;
-}
-public override int GetHashCode()
-{
-return Nombre.GetHashCode() ^ Telefono.GetHashCode();
-}
-}
-}
-
-class Contacto {
     public string Nombre { get; set; }
     public string Telefono { get; set; }
-    // Implementar acá la clase Contacto
+
+    public Contacto(string nombre, string telefono)
+    {
+        Nombre = nombre;
+        Telefono = telefono;
+    }
+
+    public int CompareTo(Contacto other)
+    {
+        return string.Compare(Nombre, other.Nombre, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Contacto otro)
+        {
+            return Nombre.Equals(otro.Nombre, StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Nombre.ToLower().GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return $"{Nombre} - {Telefono}";
+    }
 }
 
+public class ListaOrdenada<T> where T : IComparable<T>
+{
+    private List<T> elementos;
+
+    public ListaOrdenada()
+    {
+        elementos = new List<T>();
+    }
+
+    public void Agregar(T elemento)
+    {
+        if (Contiene(elemento)) return;
+
+        int index = elementos.BinarySearch(elemento);
+        if (index < 0) index = ~index;
+        elementos.Insert(index, elemento);
+    }
+
+    public bool Contiene(T elemento)
+    {
+        return elementos.Contains(elemento);
+    }
+
+    public void Eliminar(T elemento)
+    {
+        elementos.Remove(elemento);
+    }
+
+    public int Cantidad => elementos.Count;
+
+    public T this[int indice]
+    {
+        get
+        {
+            if (indice < 0 || indice >= elementos.Count)
+                throw new IndexOutOfRangeException();
+            return elementos[indice];
+        }
+    }
+
+    public ListaOrdenada<T> Filtrar(Predicate<T> condicion)
+    {
+        ListaOrdenada<T> nuevaLista = new ListaOrdenada<T>();
+        foreach (var elemento in elementos)
+        {
+            if (condicion(elemento))
+                nuevaLista.Agregar(elemento);
+        }
+        return nuevaLista;
+    }
+
+    public void MostrarTodos()
+    {
+        foreach (var elem in elementos)
+        {
+            Console.WriteLine(elem);
+        }
+    }
+}
+
+// Ejemplo de uso
+public class Program
+{
+    public static void Main()
+    {
+        var lista = new ListaOrdenada<Contacto>();
+        lista.Agregar(new Contacto("Carlos", "123456"));
+        lista.Agregar(new Contacto("Ana", "789012"));
+        lista.Agregar(new Contacto("Beatriz", "345678"));
+        lista.Agregar(new Contacto("Carlos", "000000")); // No se agrega porque está repetido
+
+        Console.WriteLine("Lista ordenada:");
+        lista.MostrarTodos();
+
+        Console.WriteLine($"\nContiene 'Ana'? {lista.Contiene(new Contacto("Ana", ""))}");
+
+        lista.Eliminar(new Contacto("Beatriz", ""));
+        Console.WriteLine("\nDespués de eliminar 'Beatriz':");
+        lista.MostrarTodos();
+
+        Console.WriteLine($"\nCantidad de elementos: {lista.Cantidad}");
+        Console.WriteLine($"Elemento en la posición 0: {lista[0]}");
+
+        var filtrada = lista.Filtrar(c => c.Nombre.StartsWith("C"));
+        Console.WriteLine("\nFiltrando contactos que empiezan con 'C':");
+        filtrada.MostrarTodos();
+    }
+}
 /// --------------------------------------------------------///
 ///   Desde aca para abajo no se puede modificar el código  ///
 /// --------------------------------------------------------///
