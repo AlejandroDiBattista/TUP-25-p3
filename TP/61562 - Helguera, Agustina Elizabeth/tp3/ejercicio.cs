@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 
 class ListaOrdenada{
-    // Implementar acá la clase ListaOrdenada
+    // Implementar acá la clase ListaOrdenada ACA EStuve
 }
 
 class Contacto {
