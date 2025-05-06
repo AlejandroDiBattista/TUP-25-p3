@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
-// MODELOS
+
 public class Pregunta
 {
     public int Id { get; set; }
@@ -23,7 +23,7 @@ public class Resultado
     public double Nota { get; set; }
 }
 
-// CONTEXTO DB
+
 public class AppDb : DbContext
 {
     public DbSet<Pregunta> Preguntas => Set<Pregunta>();
@@ -33,7 +33,7 @@ public class AppDb : DbContext
         => opt.UseSqlite("Data Source=datos.db");
 }
 
-// PROGRAMA PRINCIPAL
+
 class Program
 {
     static void Main()
