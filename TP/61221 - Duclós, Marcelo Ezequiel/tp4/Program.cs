@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 class Pregunta {
-    public int Id { get; set; }
+    public int PreguntaId { get; set; }
     public string Enunciado { get; set; } = "";
     public string RespuestaA { get; set; } = "";
-    public string RespuestaB { get; set; } = "";
+    public string RespuestaB {get; set; } = "";
     public string RespuestaC { get; set; } = "";
     public string Correcta { get; set; } = "";
     public List<Respuesta> Respuestas { get; set; } = new();
@@ -51,6 +51,7 @@ class Program {
                 Console.WriteLine("1) Registrar Pregunta");
                 Console.WriteLine("2) Tomar Examen");
                 Console.WriteLine("3) Ver Reportes");
+                Console.WriteLine("4) Eliminar Pregunta");
                 Console.WriteLine("0) Salir");
                 Console.Write("Opción: ");
                 
@@ -61,6 +62,7 @@ class Program {
                     case "1": RegistrarPregunta(db); break;
                     case "2": TomarExamen(db); break;
                     case "3": VerReportes(db); break;
+                    case "4": EliminarPregunta(db); break;
                     default:
                         Console.WriteLine("Opción no válida");
                         Console.WriteLine("Pulsa ENTER para continuar");
@@ -296,9 +298,19 @@ class Program {
                 var correctas = p.Respuestas.Count(r => r.EsCorrecta);
                 var porcentaje = total > 0 ? (double)correctas / total * 100 : 0;
                 
-                Console.WriteLine($"Pregunta: {p.Enunciado}");
-                Console.WriteLine($"Respondida {total} veces");
-                Console.WriteLine($"Porcentaje de aciertos: {porcentaje:F2}%\n");
+                Console.WriteLine($"""
+                    #{p.PreguntaId:000}
+
+                    {p.Enunciado}
+
+                    A) {p.RespuestaA}
+                    B) {p.RespuestaB}
+                    C) {p.RespuestaC}
+
+                    Respondida {total} veces
+                    Porcentaje de aciertos: {porcentaje:F2}%
+                    """);
+                Console.WriteLine();
             }
         }
         
@@ -307,6 +319,47 @@ class Program {
     }
 
     static void EliminarPregunta(DatosContexto db) {
-        // ... código para eliminar preguntas ...
+        Console.Clear();
+        Console.WriteLine("=== Eliminar Pregunta ===\n");
+        
+        var preguntas = db.Preguntas.ToList();
+        if (!preguntas.Any()) {
+            Console.WriteLine("No hay preguntas registradas.");
+            Console.WriteLine("\nPulsa ENTER para continuar");
+            Console.ReadLine();
+            return;
+        }
+
+        foreach (var p in preguntas) {
+            Console.WriteLine($"""
+                #{p.PreguntaId:000}
+                {p.Enunciado}
+                A) {p.RespuestaA}
+                B) {p.RespuestaB}
+                C) {p.RespuestaC}
+                """);
+            Console.WriteLine();
+        }
+
+        Console.Write("\nIngrese el ID de la pregunta a eliminar (0 para cancelar): ");
+        if (!int.TryParse(Console.ReadLine(), out int id) || id == 0) return;
+
+        var pregunta = db.Preguntas.Find(id);
+        if (pregunta == null) {
+            Console.WriteLine("Pregunta no encontrada.");
+            Console.WriteLine("\nPulsa ENTER para continuar");
+            Console.ReadLine();
+            return;
+        }
+
+        Console.Write("¿Está seguro que desea eliminar esta pregunta? (S/N): ");
+        if (Console.ReadLine()?.Trim().ToUpper() != "S") return;
+
+        db.Preguntas.Remove(pregunta);
+        db.SaveChanges();
+
+        Console.WriteLine("\nPregunta eliminada correctamente");
+        Console.WriteLine("Pulsa ENTER para continuar");
+        Console.ReadLine();
     }
 }
