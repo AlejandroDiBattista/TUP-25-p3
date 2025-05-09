@@ -1,0 +1,1 @@
+curl 'https://api.openweathermap.org/data/2.5/weather?q=salta&appid=30d38b26954359266708f92e1317dac0&units=metric&lang=es'
