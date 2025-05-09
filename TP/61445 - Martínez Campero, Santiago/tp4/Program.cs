@@ -34,7 +34,7 @@ class DatosContexto : DbContext {
     public DbSet<Pregunta> Preguntas { get; set; }
     public DbSet<Examen> Examenes { get; set; }
     public DbSet<Respuesta> Respuestas { get; set; }
-
+  
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
         optionsBuilder.UseSqlite("Data Source=examen.db");
     }
@@ -44,11 +44,6 @@ class DatosContexto : DbContext {
             .HasOne(r => r.Examen)
             .WithMany(e => e.Respuestas)
             .HasForeignKey(r => r.ExamenId);
-
-        modelBuilder.Entity<Respuesta>()
-            .HasOne(r => r.Pregunta)
-            .WithMany()
-            .HasForeignKey(r => r.PreguntaId);
     }
 }
 
@@ -286,6 +281,7 @@ class Program {
             using (var db = new DatosContexto()) {
                 db.Preguntas.RemoveRange(db.Preguntas);
                 db.SaveChanges();
+
             }
             Console.WriteLine("Todas las preguntas han sido eliminadas.");
         } else {

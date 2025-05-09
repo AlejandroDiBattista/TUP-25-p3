@@ -109,18 +109,23 @@ using (var db = new AgendaContext()) {
 
     // Agregar una lista de contactos a la base de datos
     db.Contactos.AddRange(contactos);
+    Log("=== Antes de grabar ===");
     db.SaveChanges();
+    Log("=== Despues de grabar ===");
 
     var alejandro = new Contacto { Nombre = "Alejandro", Apellido = "Di Battista" };
     
     var telefono  = new Entrada  { Tipo = "Teléfono", Valor = "(123) 456-7890" };
     var email     = new Entrada  { Tipo = "Email",    Valor = "adibattista@gmail.com"};
 
-    db.Contactos.Add(alejandro);
     alejandro.Entradas.Add(telefono);
     alejandro.Entradas.Add(email);
 
+    db.Contactos.Add(alejandro);
+
+    Log($"=== Antes de grabar   ID: {alejandro.Id} ===");
     db.SaveChanges();
+    Log($"=== Despues de grabar ID: {alejandro.Id} ===");
 
     // Listar contactos
     WriteLine("\n=== Lista de Contactos ===");
@@ -136,7 +141,7 @@ using (var db = new AgendaContext()) {
     foreach(var c in listaContactos) {
         WriteLine($"\n{c.Id,2}) {c.Apellido}, {c.Nombre}");
         foreach(var e in c.Entradas) {
-            WriteLine($"   {e.Tipo, 10}: {e.Valor}");
+            WriteLine($"   {e.Tipo, -10}: {e.Valor} ({e.Contacto.Entradas.Count})");
         }
     }
 }

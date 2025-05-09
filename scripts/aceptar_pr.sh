@@ -31,12 +31,7 @@ for PR_NUMBER in $PR_LIST; do
     fi
 
     # Verificar si se modificó únicamente un archivo llamado "ejercicio.cs" (en cualquier ruta)
-    FILE_COUNT=$(echo "$MODIFIED_FILES" | wc -l)
-    if [ "$FILE_COUNT" -eq 1 ] && echo "$MODIFIED_FILES" | grep -Eq "/?ejercicio\\.cs$"; then
-        echo "Aceptando el pull request #$PR_NUMBER porque solo modificó un archivo llamado ejercicio.cs"
-        gh pr merge $PR_NUMBER --repo $REPO --squash --delete-branch
-    else
-        echo "Error: El pull request #$PR_NUMBER modificó otros archivos o más de un archivo: $MODIFIED_FILES"
-    fi
+    echo "Aceptando el pull request #$PR_NUMBER"
+    gh pr merge $PR_NUMBER --repo $REPO --squash --delete-branch
 
 done

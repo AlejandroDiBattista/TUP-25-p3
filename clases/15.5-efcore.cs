@@ -16,10 +16,10 @@ static void Log(string mensaje) =>
 
 // Definición de las entidades
 public class Contacto {
-    public int Id { get; set; }             // Clave primaria
+    public int Id { get; set; }            // Clave primaria
     public string Nombre { get; set; }      // Campos de la tabla
     public string Apellido { get; set; }
-    public string Telefono { get; set; }
+    public string Telefono { get; set; } 
 
     public Contacto(string nombre, string apellido, string telefono) {
         Nombre = nombre;
@@ -74,6 +74,7 @@ using (var db = new ContactosContext()) {
                         .ThenBy(c => c.Nombre);
     WriteLine("\n=== Lista de Contactos ===");
     WriteLine("ID Nombre Completo                 Telefono");
+    Log("Antes del foreach"); 
     foreach (var c in alfabetico) {
         WriteLine(c);
     }
@@ -93,6 +94,7 @@ using (var db = new ContactosContext()) {
 
     WriteLine("\n=== Contactos con Telefono (555) ===");
     WriteLine("ID Nombre Completo                 Telefono");
+    Log("Antes del foreach en (555)");
     foreach (var c in contactos555) {
         WriteLine(c);
     }
@@ -101,8 +103,8 @@ using (var db = new ContactosContext()) {
     Log("Contactos (Nombre y Apellido) (sin ejecutar)");
     var nombres = db.Contactos
                         .Select(c => new { c.Nombre, c.Apellido })
-                        .OrderBy(c => c.Apellido)
-                        .Where(c => c.Nombre.StartsWith("C"));
+                        .Where(c => c.Nombre.StartsWith("C"))
+                        .OrderBy(c => c.Apellido);
 
     WriteLine("\n=== Contactos (Nombre y Apellido) ===");
     foreach(var c in nombres) {

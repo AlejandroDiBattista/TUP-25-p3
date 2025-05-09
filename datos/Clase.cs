@@ -167,7 +167,7 @@ class Clase : IEnumerable<Alumno> {
             !linea.TrimStart().StartsWith("Console.") &&    // No es un mensaje de consola
             !linea.TrimStart().StartsWith("using") &&       // No es una directiva using
             !linea.TrimStart().StartsWith("//") &&          // No es un comentario
-            !linea.Trim().Equals("{") &&                    // No es solo una llave de apertura
+            !linea.Trim().Equals("{") &&                       // No es solo una llave de apertura
             !linea.Trim().Equals("}")                       // No es solo una llave de cierre
         );
     }

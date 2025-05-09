@@ -46,7 +46,7 @@ Frias Silva juan segundo
 [19/3/25, 08:40:13] 3813887804: 61203
 Acevedo costello Juan Ignacio
 [19/3/25, 08:40:39] 3816389006: 61352
- García Moya, José Ignacio
+García Moya, José Ignacio
 [19/3/25, 08:41:08] 3816666103: 61059
 3816666103
 [19/3/25, 08:41:41] 3875170010: 61478
@@ -55,7 +55,7 @@ Soto Antonella
 Duclós Marcelo Ezequiel
 [19/3/25, 08:41:52] 3814199202: 62055
 Aiquen ahumada
-[19/3/25, 08:43:00] 3816970643: 62053 
+[19/3/25, 08:43:00] 3816970643: 62053
 Iván Agustín herrera
 [19/3/25, 08:44:44] 3816046547: 61626
 Diaz Londero Sergio Gonzalo
@@ -67,7 +67,7 @@ Lobo Barrera Mia de los Angeles
 Verón Matias Gabriel
 [19/3/25, 08:49:23] 3814472483: 61129
 Tello Abril María Agostina
-[19/3/25, 08:52:21] 3816317223: 61113 
+[19/3/25, 08:52:21] 3816317223: 61113
 Oriz Caballero Juan José
 [19/3/25, 08:52:50] 3813530060: 61581 Paz Naim Federico
 [19/3/25, 08:53:05] 3816701164: 61032
@@ -86,9 +86,9 @@ Acosta Maira
 [19/3/25, 08:55:25] 3815289145: Sosa Oscar Ignacio
 61136
 [19/3/25, 08:55:46] 3815690318: ‎3815690318 añadió a 2614689809 y 3813892631. Toca para cambiar quiénes pueden añadir a otros miembros.
-[19/3/25, 08:55:54] 3815867891: 61720 
+[19/3/25, 08:55:54] 3815867891: 61720
 Fernandez Luciano
-[19/3/25, 08:56:11] 3813892631: 61200 
+[19/3/25, 08:56:11] 3813892631: 61200
 Gauna Martin
 [19/3/25, 08:56:28] ‪+54 9 3816 46‑6622‬: ‎‪+54 9 3816 46‑6622‬ se unió usando el enlace de invitación de este grupo
 [19/3/25, 08:56:40] 2614689809: 61956
@@ -143,7 +143,7 @@ Ivam Agustín herrera
 [20/3/25, 08:21:28] 3815514353: 61221
 Duclós, Marcelo Ezequiel
 [20/3/25, 08:21:28] 3816389006: 61352
- García Moya, José Ignacio
+García Moya, José Ignacio
 [20/3/25, 08:21:29] 3814199202: 62055
 Aiquen Ahumada
 [20/3/25, 08:21:30] 3816479914: 61627
@@ -188,7 +188,7 @@ Helguera, Agustina Elizabeth
 Diaz, Antonio
 [20/3/25, 08:21:54] 3816046547: 61626
 Diaz Londero Sergio Gonzalo
-[20/3/25, 08:22:00] 3815867891: 61720 
+[20/3/25, 08:22:00] 3815867891: 61720
 Fernandez Luciano
 [20/3/25, 08:22:02] 3816317223: 61113.
 Oriz Caballero, Juan José
@@ -205,7 +205,7 @@ Gonzalez Patti, Valentin
 [20/3/25, 08:31:03] 3814186882: 61579 3814186882
 [20/3/25, 10:00:54] 3815343458: 61596
 Zamora, Gonzalo
-[20/3/25, 10:21:18] 3816666103: 61059 
+[20/3/25, 10:21:18] 3816666103: 61059
 palavecino, fabricio gaston
 [20/3/25, 11:42:42] 3813540535: ‎3813414321 añadió a 3813540535. Toca para cambiar quiénes pueden añadir a otros miembros.
 [21/3/25, 02:13:13] 3815343458: ‎Eliminaste este mensaje.
@@ -253,8 +253,7 @@ palavecino, fabricio gaston
 [21/3/25, 10:17:56] 3815235887: 👍🏻
 [21/3/25, 10:18:03] 3816317223: 👍
 [21/3/25, 10:22:07] 3814472483: 👍🏼
-[24/3/25, 17:34:45] 3815343458: Aiquen… no te tengo en mis listado de alumnos inscriptos. 
-
+[24/3/25, 17:34:45] 3815343458: Aiquen… no te tengo en mis listado de alumnos inscriptos.
 Podrías revisar la situación…
 [24/3/25, 17:35:23] 3816376461: 61037
 Paz, Rodrigo Federico Isidro
@@ -445,35 +444,32 @@ Di clemente Maria Antonella
 [28/3/25, 10:13:10] 3816046547: 👍🏻
 [28/3/25, 10:26:27] 3815268193: 👍🏿
 ‎[29/3/25, 00:25:28] 3815343458: tutorial-subir-trabajo.pdf • ‎4 páginas ‎documento omitido
-[31/3/25, 12:55:50] 3815343458: Hola! 
-
+[31/3/25, 12:55:50] 3815343458: Hola!
 Este es el listado de todos alumnos que NO presentaron el TP1
-
 ```
 === Ausentes Comisión C3 ===
- 61203 - Acevedo Costello, Juan Ignacio
- 62055 - Ahumada, Aiquén
- 61214 - Collazos Cortez, Máximo Alberto
- 61141 - Di Clemente, María Antonela
- 61730 - Diaz, Antonio
- 61720 - Fernández, Luciano
- 62093 - Frías Silva, Juan Segundo
- 61139 - Gallo, María Matilde
- 61352 - García Moya, José Ignacio
- 61562 - Helguera, Agustina Elizabeth
- 61318 - Herrera, Dalma Luján
- 61818 - Lopez Tisera, Gaston
- 61676 - Massey, Maximiliano
- 61668 - Molina, Santiago Nicolas
- 61059 - Palavecino, Fabricio Gaston
- 61581 - Paz, Naim Federico
- 62172 - Salcedo, Mariana Aylen
- 61136 - Sosa, Oscar Ignacio
- 62555 - Verón, Matias Gabriel
- 61596 - Zamora, Gonzalo Alejandro
- 61862 - Zerda, Thomas
+61203 - Acevedo Costello, Juan Ignacio
+62055 - Ahumada, Aiquén
+61214 - Collazos Cortez, Máximo Alberto
+61141 - Di Clemente, María Antonela
+61730 - Diaz, Antonio
+61720 - Fernández, Luciano
+62093 - Frías Silva, Juan Segundo
+61139 - Gallo, María Matilde
+61352 - García Moya, José Ignacio
+61562 - Helguera, Agustina Elizabeth
+61318 - Herrera, Dalma Luján
+61818 - Lopez Tisera, Gaston
+61676 - Massey, Maximiliano
+61668 - Molina, Santiago Nicolas
+61059 - Palavecino, Fabricio Gaston
+61581 - Paz, Naim Federico
+62172 - Salcedo, Mariana Aylen
+61136 - Sosa, Oscar Ignacio
+62555 - Verón, Matias Gabriel
+61596 - Zamora, Gonzalo Alejandro
+61862 - Zerda, Thomas
 ```
-
 Puede haber un error así que si entregaste el trabajo y no apareces comunicate conmigo. Si no lo entregaste tenes una oportunidad mas hasta hoy a las 23:59
 [1/4/25, 09:58:20] 3816949619: 👍🏼
 [1/4/25, 09:58:25] 3815143223: 👍
@@ -605,92 +601,75 @@ Puede haber un error así que si entregaste el trabajo y no apareces comunicate 
 [4/4/25, 10:41:24] 3813892631: 👍🏽
 [4/4/25, 12:00:49] 3815628162: 👍
 [4/4/25, 20:08:40] 3813505275: public abstract class Cuenta : object {
-    public string Numero { get; private set; }; 
-    public decimal Saldo { get; set; };
-    public decimal Puntos { get; set; } = 0;
-
-    public Cuenta(string numero, decimal saldo=0) {
-        Numero = numero;
-        Saldo = saldo;
-    }
-
-    public bool Poner(decimal cantidad) {
-        if (cantidad < 0) {
-            return false;
-        }
-
-        Saldo += cantidad;
-        return true;
-    }
-
-    public bool Sacar(decimal cantidad) {
-        if (cantidad < 0) {
-            return false;
-        }
-        if (cantidad > Saldo) {
-            return false;
-        }
-        Saldo -= cantidad;
-        return true;
-    }
-
-    public abstract void AcumularPuntos(decimal cantidad);
-
-    public override string ToString() {
-        return $"Cuenta {Numero} con saldo {Saldo} y puntos {Puntos}";
-    }
+public string Numero { get; private set; };
+public decimal Saldo { get; set; };
+public decimal Puntos { get; set; } = 0;
+public Cuenta(string numero, decimal saldo=0) {
+Numero = numero;
+Saldo = saldo;
 }
-
+public bool Poner(decimal cantidad) {
+if (cantidad < 0) {
+return false;
+}
+Saldo += cantidad;
+return true;
+}
+public bool Sacar(decimal cantidad) {
+if (cantidad < 0) {
+return false;
+}
+if (cantidad > Saldo) {
+return false;
+}
+Saldo -= cantidad;
+return true;
+}
+public abstract void AcumularPuntos(decimal cantidad);
+public override string ToString() {
+return $"Cuenta {Numero} con saldo {Saldo} y puntos {Puntos}";
+}
+}
 public class CuentaOro : Cuenta {
-    public CuentaOro(string numero, decimal saldo=0) : base(numero, saldo) {
-    }
-
-    public override void AcumularPuntos(decimal cantidad) {
-        if(cantidad > 1000){
-            Puntos += cantidad * 0.05m;
-        } else {
-            Puntos += cantidad * 0.03m;
-        }
-    }
-
-    public void Felicitar() {
-        Console.WriteLine("¡Felicidades! Has acumulado " + Puntos + " puntos.");
-    }
+public CuentaOro(string numero, decimal saldo=0) : base(numero, saldo) {
 }
-
+public override void AcumularPuntos(decimal cantidad) {
+if(cantidad > 1000){
+Puntos += cantidad * 0.05m;
+} else {
+Puntos += cantidad * 0.03m;
+}
+}
+public void Felicitar() {
+Console.WriteLine("¡Felicidades! Has acumulado " + Puntos + " puntos.");
+}
+}
 public class CuentaPlata : Cuenta {
-    public CuentaPlata(string numero, decimal saldo=0) : base(numero, saldo) {
-    }
-
-    public override void AcumularPuntos(decimal cantidad) {
-        Puntos += cantidad * 0.02m;
-    }
+public CuentaPlata(string numero, decimal saldo=0) : base(numero, saldo) {
 }
-
+public override void AcumularPuntos(decimal cantidad) {
+Puntos += cantidad * 0.02m;
+}
+}
 object c = new CuentaOro("123456789", 1000);
-
 CuentaOro oro = c as CuentaOro;
-
 c.Poner(500);
 c.Sacar(200);
 c.AcumularPuntos(1500);
 WriteLine(c.Puntos);
-
 CuentaOro o = c as CuentaOro;
-
-
 if( c is CuentaOro ){
-    WriteLine("Es una cuenta de oro");
-    CuentaOro co = (CuentaOro)c;
+WriteLine("Es una cuenta de oro");
+CuentaOro co = (CuentaOro)c;
 } else {
-    WriteLine("No es una cuenta de oro");
+WriteLine("No es una cuenta de oro");
 }
 co.Felicitar();
 string Nombre = null;
 if(Nombre == null){
-    WriteLine("No hay nombre");
+WriteLine("No hay nombre");
 } else {
-    WriteLine("El nombre tiene " + Nombre.Length + " letras");
+WriteLine("El nombre tiene " + Nombre.Length + " letras");
 }
 [4/4/25, 20:08:54] 3813505275: Hola chicos ahí les dejo el código de hoy
 [4/4/25, 20:09:00] 3813505275: Disculpen la hora
@@ -717,7 +696,6 @@ if(Nombre == null){
 61793 Trujillo, Facundo Nahuel         4  1
 61596 Zamora, Gonzalo Alejandro        2  1
 ```
-
 Si hubo algún error o si no lo enviaron aun comuniquense conmigo
 ‎[7/4/25, 11:58:51] 3815143223: ‎imagen omitida
 [8/4/25, 10:01:59] 3816488513: 👍🏼
@@ -815,11 +793,8 @@ Si hubo algún error o si no lo enviaron aun comuniquense conmigo
 [9/4/25, 10:23:21] 3814199202: 👍
 [9/4/25, 10:24:16] 3815744877: 👍🏽
 [10/4/25, 07:48:35] 3815343458: hola a todos 👋🏻
-
-como lo hablamos la clase de hoy sera virtual  
-
-8:10 les envio el enlace de Google Meet para asistir 
-
+como lo hablamos la clase de hoy sera virtual
+8:10 les envio el enlace de Google Meet para asistir
 los espero
 [10/4/25, 08:10:38] 3815343458: https://meet.google.com/iwk-jeiz-fwt
 [10/4/25, 08:11:44] 3815343458: Les comparti el enlace de la reunion… 8:15 exacta empezamos
@@ -862,9 +837,7 @@ los espero
 [10/4/25, 10:46:21] 3815690318: Clase de hoy
 [10/4/25, 12:15:46] 3815343458: Gracias Rodrigo..
 [11/4/25, 08:13:19] 3815343458: hola chicos
-
 tuve un inconveniente no voy a poder dar clases hoy
-
 quedan liberados
 ‎[11/4/25, 08:14:13] 3813414321: ‎sticker omitido
 ‎[15/4/25, 08:15:29] 3815343458: recuperacion.pdf • ‎12 páginas ‎documento omitido
@@ -1571,8 +1544,8 @@ quedan liberados
 [23/4/25, 23:47:24] 3816376461: 1F3129
 [23/4/25, 23:47:29] 3816376461: 042812
 [23/4/25, 23:47:32] 3816376461: 241446
-[23/4/25, 23:49:14] 3816970643: 17C373 
-127AEC 
+[23/4/25, 23:49:14] 3816970643: 17C373
+127AEC
 138FB7
 [23/4/25, 23:51:51] 3815514353: 1BB363
 [23/4/25, 23:59:00] 3813983935: 1E20C2
@@ -2305,3 +2278,126 @@ OCDE32
 [29/4/25, 11:08:28] 3816666103: 👍🏻
 [29/4/25, 11:08:47] 3816317223: 👍
 [29/4/25, 11:16:12] 3815514353: 👍🏻
+[30/4/25, 00:53:25] 3815343458: Disculpen la hora.
+Surgió una emergencia, hoy miercoles no puedo dictar clases.
+Nos vemos el próximo Martes
+[4/5/25, 15:07:34] 3813892631: ‎Cambió tu código de seguridad con Martín Javier.
+[5/5/25, 17:16:00] 3816488513: Buenas tardes profe, mañana serán clases virtuales?
+[5/5/25, 17:17:13] 3815343458: Hola… no que yo sepa… hay algun paro?
+[5/5/25, 17:17:36] 3816317223: de colectivos profe
+[5/5/25, 19:07:19] 3815343458: Hola a todos!!!
+Mañana hay clases virtuales por el paro de colectivo.
+Les envió el enlace un rato antes de la clase.
+Los espero.
+[5/5/25, 19:07:58] 3815690318: Perfecto profesor, gracias
+[5/5/25, 19:17:07] 2614689809: muchas gracias profesor, nos vemos mañana
+[5/5/25, 19:18:17] 3815268193: Gracias profe
+[5/5/25, 21:49:56] 3815289145: Profesor acaban de anunciar que no hay paro, hay clase normal?
+[5/5/25, 23:49:05] 3815343458: Se levantó el paro!!
+Martes clase presencial normal 🤷🏻‍♂️
+[6/5/25, 10:08:33] 3815268193: 👍🏿
+[6/5/25, 10:08:37] 3813882674: 👍🏽
+[6/5/25, 10:08:38] 3816466685: 👍🏾
+[6/5/25, 10:08:39] 3813505275: 👍🏻
+[6/5/25, 10:08:40] 3814199202: 👍
+[6/5/25, 10:08:40] 3813892631: 👍🏽
+[6/5/25, 10:08:42] 3815196654: 👍🏻
+[6/5/25, 10:08:42] 3815126476: 👍🏻
+[6/5/25, 10:08:44] 3814472483: 👍🏼
+[6/5/25, 10:08:45] 3816747012: 👍🏻
+[6/5/25, 10:08:45] 3816970643: 👍🏽
+[6/5/25, 10:08:45] 3813577724: 👍🏻
+[6/5/25, 10:08:46] 3813599941: 👍
+[6/5/25, 10:08:48] 3816488513: 👍🏼
+[6/5/25, 10:08:49] 3816949619: 👍🏼
+[6/5/25, 10:08:52] 3815289145: 👍
+[6/5/25, 10:08:53] 3816376461: 👍
+[6/5/25, 10:08:54] 3813887804: 👍🏻
+[6/5/25, 10:08:54] 3816770639: 👍🏻
+[6/5/25, 10:08:55] 3813330962: 👍🏻
+[6/5/25, 10:08:55] 3815627688: 👍🏻
+[6/5/25, 10:08:56] 3815514353: 👍🏻
+[6/5/25, 10:09:01] 3815143223: ‎Se eliminó este mensaje.
+[6/5/25, 10:09:07] 3815143223: 👍
+[6/5/25, 10:09:22] 3812062084: 👍🏻
+[6/5/25, 10:09:25] 3865342925: 👍🏼
+[6/5/25, 10:09:26] 3816701164: 👍🏻
+[6/5/25, 10:09:27] 3814186882: 👍🏻
+[6/5/25, 10:09:57] 2614689809: 👍🏽
+[6/5/25, 10:10:18] 3816479914: 👍🏽
+[6/5/25, 10:10:23] 3875170010: 👍🏻
+[6/5/25, 10:10:41] 3815906461: 👍🏼
+[6/5/25, 10:10:48] 3815628162: 👍
+[6/5/25, 10:11:20] 3816046547: 👍🏻
+[6/5/25, 10:11:32] 3815690318: 👍🏽
+[6/5/25, 10:12:19] 3816389006: 👍
+[6/5/25, 10:12:21] 3816666103: 👍🏻
+[6/5/25, 10:14:22] 3816317223: 👍
+[6/5/25, 10:15:01] 3815235887: 👍🏻
+[6/5/25, 10:16:43] 3816559195: 👍
+[6/5/25, 10:34:35] 3813540535: 👍
+[6/5/25, 10:34:56] 3813414321: 👍
+[6/5/25, 22:38:07] 3814158753: ‎Cambió tu código de seguridad con Juan Segundo.
+[7/5/25, 08:14:32] 3813577724: 😁
+[7/5/25, 08:14:32] 3813882674: 😃
+[7/5/25, 08:14:32] 3816479914: 😁
+[7/5/25, 08:14:34] 3815343458: -
+[7/5/25, 08:14:35] 3815196654: 😁
+[7/5/25, 08:14:35] 3815628162: 😁
+[7/5/25, 08:14:37] 3816770639: 😁
+[7/5/25, 08:14:37] 3816701164: 😁
+[7/5/25, 08:14:38] 3813983935: 😃
+[7/5/25, 08:14:40] 3816970643: 😄
+[7/5/25, 08:14:43] 3815289145: 😀
+[7/5/25, 08:14:46] 3815627688: 🙂
+[7/5/25, 08:14:47] 3814158753: 😄
+[7/5/25, 08:14:53] 3813414321: 😁
+[7/5/25, 08:14:53] 3812062084: 😁
+[7/5/25, 08:14:55] 3815906461: 😃
+[7/5/25, 08:14:56] 3815744877: 😁
+[7/5/25, 08:14:59] 3816389006: 😁
+[7/5/25, 08:15:00] 3815514353: 🙂
+[7/5/25, 08:15:16] 3815343458: fin
+[8/5/25, 10:08:18] 3815126476: 😁
+[8/5/25, 10:08:25] 3816466685: 😀
+[8/5/25, 10:08:26] 3813330962: 😁
+[8/5/25, 10:08:27] 3815235887: 😀
+[8/5/25, 10:08:28] 3813887804: 😁
+[8/5/25, 10:08:29] 3814472483: 😁
+[8/5/25, 10:08:29] 3814199202: 😀
+[8/5/25, 10:08:31] 3814158753: 😁
+[8/5/25, 10:08:31] 3816376461: 😁
+[8/5/25, 10:08:31] 3815196654: 😁
+[8/5/25, 10:08:31] 3815143223: 😁
+[8/5/25, 10:08:33] 3865342925: 😁
+[8/5/25, 10:08:33] 3813334836: 😁
+[8/5/25, 10:08:33] 3816747012: 😃
+[8/5/25, 10:08:33] 3815289145: 😀
+[8/5/25, 10:08:34] 3815628162: 😁
+[8/5/25, 10:08:34] 3816479914: 😁
+[8/5/25, 10:08:34] 3813540535: 😄
+[8/5/25, 10:08:37] 3815690318: 🙂
+[8/5/25, 10:08:39] 3875170010: 😁
+[8/5/25, 10:08:39] 3815268193: 😁
+[8/5/25, 10:08:40] 3815744877: 😁
+[8/5/25, 10:08:40] 3815627688: 🙂
+[8/5/25, 10:08:40] 3813882674: 😃
+[8/5/25, 10:08:40] 3816770639: 😄
+[8/5/25, 10:08:41] 3816559195: 😄
+[8/5/25, 10:08:41] 3813599941: 😁
+[8/5/25, 10:08:41] 3815820324: 😎
+[8/5/25, 10:08:43] 3813505275: 😁
+[8/5/25, 10:08:45] 3816317223: 😀
+[8/5/25, 10:08:48] 3812062084: 😁
+[8/5/25, 10:08:50] 3815514353: 😁
+[8/5/25, 10:09:05] 3816970643: 😄
+[8/5/25, 10:09:12] 3816666103: 😁
+[8/5/25, 10:09:39] 2614689809: 😃
+[8/5/25, 10:09:42] 3813983935: 😃
+[8/5/25, 10:09:59] 3816389006: 😁
+[8/5/25, 10:10:06] 3816949619: 😃
+[8/5/25, 10:10:25] 3813577724: 😁
+[8/5/25, 10:10:58] 3816488513: 😃
+[8/5/25, 10:14:37] 3814669695: 😁
+[8/5/25, 10:24:06] 3816046547: 😁
+[8/5/25, 10:27:40] 3813892631: 😁

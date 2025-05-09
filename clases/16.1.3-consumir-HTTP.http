@@ -1,0 +1,7 @@
+@city = salta
+@appid = 30d38b26954359266708f92e1317dac0
+@weatherUrl = https://api.openweathermap.org/data/2.5/weather?q={{city}}&appid={{appid}}&units=metric&lang=es
+
+### Solicitud GET a la API de OpenWeatherMap para obtener el clima de la ciudad parametrizada
+GET {{weatherUrl}}
+

@@ -9,7 +9,7 @@
 **/obj/
 
 # Archivos del sistema
-.DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Carpetas del proyecto que no queres subir
@@ -22,7 +22,6 @@ tempCodeRunnerFile.csharp
 /datos/obj
 /datos/obj
 /clases/tmp
-examen/respuestas-examen.md
 examen/respuestas-examen.md
 *.db-shm
 *.db-wal
