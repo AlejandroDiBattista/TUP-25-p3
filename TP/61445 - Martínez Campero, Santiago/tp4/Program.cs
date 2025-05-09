@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 class Pregunta {
     public int PreguntaId { get; set; }
-    public string Enunciado  { get; set; } = "Texto predeterminado"; // O
+    public string Enunciado  { get; set; } = "Texto predeterminado";
     public string RespuestaA { get; set; } = "";
     public string RespuestaB { get; set; } = "";
     public string RespuestaC { get; set; } = "";
@@ -35,19 +35,16 @@ class DatosContexto : DbContext {
     public DbSet<Examen> Examenes { get; set; }
     public DbSet<Respuesta> Respuestas { get; set; }
 
-    // Configuración de la base de datos SQLite
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-        // Se crea un archivo SQLite llamado examen.db en la carpeta del proyecto
         optionsBuilder.UseSqlite("Data Source=examen.db");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-        // Configura la relación 1 a muchos entre Examen y Respuesta
         modelBuilder.Entity<Respuesta>()
             .HasOne(r => r.Examen)
             .WithMany(e => e.Respuestas)
             .HasForeignKey(r => r.ExamenId);
-        // Configura la relación 1 a muchos entre Pregunta y Respuesta
+
         modelBuilder.Entity<Respuesta>()
             .HasOne(r => r.Pregunta)
             .WithMany()
@@ -57,10 +54,6 @@ class DatosContexto : DbContext {
 
 class Program {
     static void Main(string[] args) {
-        using (var db = new DatosContexto()) {
-            db.Database.EnsureCreated(); // Crea la base de datos si no existe
-        }
-
         while (true) {
             Console.Clear();
             Console.WriteLine("=== Sistema de Exámenes Multiple Choice ===");
@@ -113,7 +106,6 @@ class Program {
         } while (correcta != "A" && correcta != "B" && correcta != "C");
 
         using (var db = new DatosContexto()) {
-            // Inserta la pregunta en la tabla Preguntas (SQL: INSERT INTO Preguntas ...)
             db.Preguntas.Add(new Pregunta {
                 Enunciado = enunciado,
                 RespuestaA = a,
@@ -121,7 +113,7 @@ class Program {
                 RespuestaC = c,
                 Correcta = correcta
             });
-            db.SaveChanges(); // Ejecuta el INSERT en la base de datos
+            db.SaveChanges();
         }
         Console.WriteLine("Pregunta registrada correctamente. Presione una tecla para continuar...");
         Console.ReadKey();
@@ -134,7 +126,6 @@ class Program {
         string nombre = Console.ReadLine() ?? "";
         List<Pregunta> preguntas;
         using (var db = new DatosContexto()) {
-            // Selecciona 5 preguntas aleatorias de la base de datos (SQL: SELECT ... ORDER BY RANDOM() LIMIT 5)
             preguntas = db.Preguntas.AsEnumerable().OrderBy(p => Guid.NewGuid()).Take(5).ToList();
         }
         if (preguntas.Count < 1) {
@@ -167,7 +158,6 @@ class Program {
         }
         float nota = correctas;
         using (var db = new DatosContexto()) {
-            // Inserta el examen en la tabla Examenes (SQL: INSERT INTO Examenes ...)
             var examen = new Examen {
                 NombreAlumno = nombre,
                 Correctas = correctas,
@@ -175,8 +165,7 @@ class Program {
                 NotaFinal = nota
             };
             db.Examenes.Add(examen);
-            db.SaveChanges(); // Guarda el examen y genera el ExamenId
-            // Inserta cada respuesta asociada al examen (SQL: INSERT INTO Respuestas ...)
+            db.SaveChanges();
             foreach (var r in respuestas) {
                 r.ExamenId = examen.ExamenId;
                 db.Respuestas.Add(r);
@@ -226,7 +215,6 @@ class Program {
         Console.Clear();
         Console.WriteLine("=== Exámenes Rendidos ===");
         using (var db = new DatosContexto()) {
-            // SQL: SELECT * FROM Examenes
             var examenes = db.Examenes.ToList();
             foreach (var ex in examenes) {
                 Console.WriteLine($"Alumno: {ex.NombreAlumno} | Correctas: {ex.Correctas}/{ex.TotalPreguntas} | Nota: {ex.NotaFinal}");
@@ -241,7 +229,6 @@ class Program {
         Console.Write("Ingrese el nombre del alumno: ");
         string nombre = Console.ReadLine();
         using (var db = new DatosContexto()) {
-            // SQL: SELECT * FROM Examenes WHERE NombreAlumno LIKE '%nombre%'
             var examenes = db.Examenes.Where(e => e.NombreAlumno.Contains(nombre ?? "")).ToList();
             foreach (var ex in examenes) {
                 Console.WriteLine($"Alumno: {ex.NombreAlumno} | Correctas: {ex.Correctas}/{ex.TotalPreguntas} | Nota: {ex.NotaFinal}");
@@ -255,7 +242,6 @@ class Program {
         Console.Clear();
         Console.WriteLine("=== Ranking de Mejores Alumnos ===");
         using (var db = new DatosContexto()) {
-            // SQL: SELECT NombreAlumno, MAX(NotaFinal) FROM Examenes GROUP BY NombreAlumno ORDER BY MAX(NotaFinal) DESC
             var ranking = db.Examenes
                 .GroupBy(e => e.NombreAlumno)
                 .Select(g => new { Alumno = g.Key, MejorNota = g.Max(e => e.NotaFinal) })
@@ -274,7 +260,6 @@ class Program {
         Console.Clear();
         Console.WriteLine("=== Estadísticas por Pregunta ===");
         using (var db = new DatosContexto()) {
-            // SQL: SELECT PreguntaId, COUNT(*), SUM(CASE WHEN EsCorrecta THEN 1 ELSE 0 END) FROM Respuestas GROUP BY PreguntaId
             var estadisticas = db.Preguntas
                 .Select(p => new {
                     p.Enunciado,
@@ -299,8 +284,8 @@ class Program {
 
         if (confirmacion == "S") {
             using (var db = new DatosContexto()) {
-                db.Preguntas.RemoveRange(db.Preguntas); // Elimina todas las preguntas
-                db.SaveChanges(); // Guarda los cambios en la base de datos
+                db.Preguntas.RemoveRange(db.Preguntas);
+                db.SaveChanges();
             }
             Console.WriteLine("Todas las preguntas han sido eliminadas.");
         } else {
