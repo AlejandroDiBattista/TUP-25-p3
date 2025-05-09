@@ -100,7 +100,7 @@ class Program{
         var c = Console.ReadLine() ?? "";
         string correcta;
         do {
-            Console.Write("¿Cuál es la opción correcta? (A/B/C): ");
+            Console.Write("¿Cuál es la opción correcta? (A/B/C) ");
             correcta = (Console.ReadLine() ?? "").Trim().ToUpper();
         } while (correcta != "A" && correcta != "B" && correcta != "C");
 
