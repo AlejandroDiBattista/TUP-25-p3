@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Data.Common;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -64,26 +65,6 @@ class Program{
         using (var db = new DatosContexto())
         {
             db.Database.EnsureCreated();
-        }
-
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine("--- Sistema de Exámenes Multiple Choice ---");
-            Console.WriteLine("1) Registrar pregunta");
-            Console.WriteLine("2) Tomar examen");
-            Console.WriteLine("3) Ver reportes");
-            Console.WriteLine("0) Salir");
-            Console.Write("Seleccione una opción: ");
-            var op = Console.ReadLine();
-            switch (op)
-            {
-                case "1": RegistrarPregunta(); break;
-                case "2": TomarExamen(); break;
-                case "3": VerReportes(); break;
-                case "0": return;
-                default: Console.WriteLine("Opción inválida"); Console.ReadKey(); break;
-            }
         }
     }
     static void RegistrarPregunta()
