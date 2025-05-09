@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace TP4_61450;
 
 public interface IPreguntaExamen
@@ -48,8 +50,11 @@ public class PreguntaExamen : IPreguntaExamen
             {
                 Respuesta = respuesta; // Guardar la respuesta
                 VerificarRespuesta();
-                db.SaveChanges();
 
+                db.PreguntasExamen.Attach(this);
+                db.Entry(this).State = EntityState.Modified;
+
+                db.SaveChanges();
                 transaccion.Commit();
             }
             catch (Exception)

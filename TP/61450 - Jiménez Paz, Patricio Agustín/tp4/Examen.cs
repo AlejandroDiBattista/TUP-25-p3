@@ -57,6 +57,9 @@ public class Examen : IExamen
                 Nota = (Preguntas.Count(p => p.Correcta) * 10) / Preguntas.Count;
                 Aprobado = Nota >= 6;
 
+                db.Examenes.Attach(this);
+                db.Entry(this).State = EntityState.Modified;
+
                 db.SaveChanges();
                 transaccion.Commit();
             }
@@ -122,7 +125,7 @@ public class Examen : IExamen
             var preguntasDisponibles = db
                 .Preguntas.AsEnumerable()
                 .OrderBy(p => Guid.NewGuid())
-                .Take(10)
+                .Take(5)
                 .ToList();
 
             if (!preguntasDisponibles.Any())
@@ -217,6 +220,7 @@ public class Examen : IExamen
         Console.WriteLine("--------------------------------------------------");
         CalcularNota();
         MostrarNota();
+        Utilidades.Esperar();
     }
 
     public static void MostrarUltimosExamenes(int cantidad)

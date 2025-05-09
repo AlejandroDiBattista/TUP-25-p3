@@ -49,15 +49,14 @@ public class Pregunta : IPregunta
             CantidadRespondida > 0 ? (CantidadCorrecta / (float)CantidadRespondida) * 100 : 0;
         Console.WriteLine(
             $"""
-                #{PreguntaId:000}
-
-                {Enunciado}
+                #{PreguntaId:000} - {Enunciado}
 
                 Respondida: {CantidadRespondida} veces
                 Correctas: {CantidadCorrecta} veces
                 Incorrectas: {CantidadIncorrecta} veces
 
                 Porcentaje de aciertos: {porcentaje:F2}%
+                
             """
         );
     }
