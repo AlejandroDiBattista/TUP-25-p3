@@ -141,6 +141,7 @@ class Program{
                         ReiniciarSistema(db);
                         break;
                     case "0":
+                        MostrarDespedida();
                         salir = true;
                         break;
                     default:
@@ -1009,5 +1010,17 @@ class Program{
                 WriteColored("✗ No", ConsoleColor.Red);
             }
         }
+    }
+
+    static void MostrarDespedida()
+    {
+        Console.Clear();
+        ConsoleHelper.WriteTitle("¡HASTA PRONTO!");
+        ConsoleHelper.WriteSuccess("Gracias por utilizar el sistema de exámenes de C#.");
+        ConsoleHelper.WriteColored("Esperamos que esta herramienta te haya ayudado a ", ConsoleColor.White);
+        ConsoleHelper.WriteLineColored("mejorar tus conocimientos.", ConsoleColor.White);
+        ConsoleHelper.WriteSuccess("¡Continúa practicando y mejorando tus habilidades de programación!");
+        Console.WriteLine("\nPresione cualquier tecla para salir...");
+        Console.ReadKey();
     }
 } // Final de la clase Program
