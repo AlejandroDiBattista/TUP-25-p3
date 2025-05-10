@@ -24,11 +24,11 @@ El sistema deberá usar Entity Framework Core para persistir todos los datos en 
 
 2.	**Toma de Examen**
 * El sistema debe permitir al alumno ingresar su nombre.
-* El sistema debe seleccionar diez preguntas aleatorias de la base de datos.
+* El sistema debe seleccionar cinco preguntas aleatorias de la base de datos.
 * El alumno debe responder a cada pregunta seleccionando A, B o C.
 - Se debe calcular:
     * La cantidad de respuestas correctas.
-    * La nota final sobre 10 puntos.
+    * La nota final sobre 5 puntos.
 
 3.	**Registro de Resultados**
 -	Se debe almacenar:

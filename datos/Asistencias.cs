@@ -27,7 +27,8 @@ public static class Asistencias {
     public static string NormalizarCambioTelefono(string telefono) {
         Dictionary<string, string> CambiosTelefonos = new() {
             { "3815825319", "3812130484" },
-            { "3813192680", "3815627688" }
+            { "3813192680", "3815627688" },
+            { "3815459105", "3812220501" },
         };
         return CambiosTelefonos.TryGetValue(telefono, out var nuevo) ? nuevo : telefono;
     }
@@ -84,7 +85,6 @@ public static class Asistencias {
                 
                 telefono = NormalizarCambioTelefono(telefono);
 
-
                 if (ContieneEmoji(mensaje)) {
                     if (!estudiantes.ContainsKey(telefono)) {
                         estudiantes[telefono] = new Asistencia(telefono);
@@ -100,7 +100,7 @@ public static class Asistencias {
         return estudiantes.Values.ToList();
     }
 
-public static List<Asistencia> CargarAsistenciasHistoria(string origen) {
+    public static List<Asistencia> CargarAsistenciasHistoria(string origen) {
         var camino = $"/Users/adibattista/Documents/GitHub/tup-25-p3/datos/{origen}";
 
         if (!File.Exists(camino)) {

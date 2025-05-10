@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Data.Common;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 class Pregunta {
-    public int Id { get; set; }
-    public string Enunciado { get; set; } = "";
+    public int PreguntaId { get; set; }
+    public string Enunciado  { get; set; } = "";
     public string RespuestaA { get; set; } = "";
     public string RespuestaB { get; set; } = "";
     public string RespuestaC { get; set; } = "";
-    public string Correcta { get; set; } = "";
+    public string Correcta   { get; set; } = "";
 }
 
 class DatosContexto : DbContext{
@@ -17,19 +20,37 @@ class DatosContexto : DbContext{
     }
 
 }
+
 class Program{
     static void Main(string[] args){
         using (var db = new DatosContexto()){
-            // Crea la base de datos si no existe
+            db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
-            db.Preguntas.Add(new Pregunta {
-                Enunciado = "¿Cuál es el lenguaje de programación desarrollado por Microsoft y utilizado principalmente en .NET?",
+            
+            var p = new Pregunta {
+                Enunciado  = "¿Cuál es el lenguaje de programación desarrollado por Microsoft y utilizado principalmente en .NET?",
                 RespuestaA = "Java",
                 RespuestaB = "C#",
                 RespuestaC = "Python",
-                Correcta = "B"
-            });
+                Correcta   = "B"
+            };
+            db.Preguntas.Add(p);
             db.SaveChanges();
+            
+            Console.Clear();
+            foreach(var pregunta in db.Preguntas){
+                Console.WriteLine($"""
+
+                    #{pregunta.PreguntaId:000}
+                
+                    {p.Enunciado}
+
+                     A) {p.RespuestaA}
+                     B) {p.RespuestaB}
+                     C) {p.RespuestaC}
+
+                """);
+            }
         }
     }
 }

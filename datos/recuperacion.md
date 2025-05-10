@@ -1,5 +1,5 @@
 # Reporte de Recuperación
-*Generado el: 28/4/2025 17:30:06*
+*Generado el: 29/4/2025 17:57:45*
 
 ## Comisión C3
 
@@ -15,7 +15,7 @@ Total en comisión C3: 2
 | Legajo | Nombre Completo                 | TP1       | TP2       | TP3       |
 |--------|---------------------------------|-----------|-----------|-----------|
 | 62612 | Campos, Julieta Antonella       |           | Recuperar | Recuperar |
-| 61905 | Martinez, Augusto               |           | Recuperar |           |
+| 61905 | Martinez, Augusto               |           | Recuperar | Recuperar |
 | 61061 | Velardez, Leandro Ivan          |           |           | Recuperar |
 
 Total en comisión C5: 3

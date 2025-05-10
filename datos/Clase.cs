@@ -22,7 +22,8 @@ class Clase : IEnumerable<Alumno> {
 
         foreach (var linea in File.ReadLines(origen)) {
             var texto = linea.PadRight(100,' '); 
-            var resultados = texto.Substring(87).Trim();
+            var resultados = texto.Substring(87, 3).Trim();
+            var notas      = texto.Substring(90, 3).Trim();
             var practicos  = texto.Substring(75, 15).Trim().PadRight(3, ' ');
             texto = texto.Substring(0, 75);
 
@@ -101,9 +102,9 @@ class Clase : IEnumerable<Alumno> {
                 writer.WriteLine($"\n## Comisión {comision}");
                 foreach(var alumno in EnComision(comision).OrdenandoPorNombre()) {
                     alumno.Orden = ++orden;
-                    string linea = $"{alumno.Orden:D2}.  {alumno.Legajo}  {alumno.NombreCompleto,-40}  {alumno.Telefono,-15}";
-                    linea = $"{linea,-75} {alumno.Asistencias,2} {alumno.PracticosToString(),-15}";
-                    linea = $"{linea,-87} {alumno.Creditos,3}";
+                    string linea = $"{alumno.Orden:D2}.  {alumno.Legajo}  {alumno.NombreCompleto, -40}  {alumno.Telefono, -15}";
+                    linea = $"{linea,-75} {alumno.Asistencias, 2} {alumno.PracticosToString(), -15}";
+                    linea = $"{linea,-87} {alumno.Creditos, 3}  {alumno.Nota1erParcial, 3}  {10 * alumno.Nota / 60.0,3:0}";
                     writer.WriteLine(linea);
                 }
             }
@@ -166,7 +167,7 @@ class Clase : IEnumerable<Alumno> {
             !linea.TrimStart().StartsWith("Console.") &&    // No es un mensaje de consola
             !linea.TrimStart().StartsWith("using") &&       // No es una directiva using
             !linea.TrimStart().StartsWith("//") &&          // No es un comentario
-            !linea.Trim().Equals("{") &&                    // No es solo una llave de apertura
+            !linea.Trim().Equals("{") &&                       // No es solo una llave de apertura
             !linea.Trim().Equals("}")                       // No es solo una llave de cierre
         );
     }
@@ -242,7 +243,7 @@ class Clase : IEnumerable<Alumno> {
         const string Base = "../TP";
         const string Enunciados = "../enunciados";
         Consola.Escribir($" ▶︎ Copiando trabajo práctico de TP{practico}", ConsoleColor.Cyan);
-        var carpetaOrigen = Path.Combine(Enunciados, $"TP{practico}");
+        var carpetaOrigen = Path.Combine(Enunciados, $"tp{practico}");
         
         if (!Directory.Exists(carpetaOrigen)) {
             Consola.Escribir($"Error: No se encontró el enunciado del trabajo práctico '{practico}' en {carpetaOrigen}", ConsoleColor.Red);
@@ -250,7 +251,7 @@ class Clase : IEnumerable<Alumno> {
         }
 
         foreach (var alumno in Alumnos.OrderBy(a => a.Legajo)) {
-            var carpetaDestino = Path.Combine(Base, alumno.Carpeta, $"TP{practico}");
+            var carpetaDestino = Path.Combine(Base, alumno.Carpeta, $"tp{practico}");
             if(forzar && Directory.Exists(carpetaDestino)) {
                 Directory.Delete(carpetaDestino, true);
             }
@@ -282,7 +283,6 @@ class Clase : IEnumerable<Alumno> {
     }
 
     public void ListarAlumnos(){
-        Consola.Escribir("\nListado de alumnos:", ConsoleColor.Blue);
         foreach(var comision in Comisiones){
             Consola.Escribir($"\n=== Comisión {comision} ===", ConsoleColor.Blue);    
             foreach (var alumno in EnComision(comision).OrdenandoPorNombre()) {
@@ -293,7 +293,6 @@ class Clase : IEnumerable<Alumno> {
                 var asistencia = string.Join(" ", emojis);
                 string linea = $"{alumno.Legajo} - {alumno.NombreCompleto, -40} {$"{alumno.Telefono}", -15}";
                 linea = $" {linea,-65} {alumno.Asistencias, 2}  {asistencia}   ";
-                // linea += alumno.Resultado switch{ < 0 => "🔴", 0 => "", > 0 => "🟢" };
 
                 Consola.Escribir(linea);
             }

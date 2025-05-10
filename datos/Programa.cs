@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using TUP;
-    // using System.Collections.Generic;
 
 class Program {
     static string ElegirOpcionMenu() {
@@ -12,7 +11,7 @@ class Program {
         Consola.Escribir("4. Faltan presentar trabajo práctico");
         Consola.Escribir("5. Verificar asistencia");
         Consola.Escribir("6. Mostrar recuperación");
-        Consola.Escribir("7. Normalizar créditos");
+        Consola.Escribir("7. Cargar Notas Parcial");
         Consola.Escribir("0. Salir");
         return Consola.ElegirOpcion("\nElija una opción (0-7): ", "01234567");
     }
@@ -61,101 +60,151 @@ class Program {
         clase.DebenRecuperar().ListarAlumnos();
     }
 
-    static void ConvertirNombreTelefono(Clase clase, string origen) {
-        var lineasOriginales = File.ReadAllLines(origen);
-
-        Consola.Escribir($"Leyendo archivo '{origen}'...", ConsoleColor.Cyan);
-        if (!File.Exists(origen)) {
-            Consola.Escribir($"El archivo '{origen}' no existe. Verifique la ruta y vuelva a intentarlo.", ConsoleColor.Red);
-            return;
-        } 
-        Consola.Escribir($"Tiene {lineasOriginales.Length} líneas.", ConsoleColor.Cyan);
-
+    static void ConvertirNombreATelefono(Clase clase) {
         var alias = new Dictionary<string, string>();
-        foreach (var alumno in clase) {
-            if (alumno.TieneTelefono) {
-                alias[alumno.NombreLimpio] = alumno.TelefonoLimpio;
-                // Console.WriteLine($"Alias: {alumno.NombreLimpio} -> {alumno.TelefonoLimpio}");
-            }
+        foreach (var alumno in clase.ConTelefono()) {
+            alias[alumno.NombreLimpio] = alumno.TelefonoLimpio;
         }
-        // Numero excepcionales 
-        alias["Alejandro Di Battista"] = "3815343458";
-        alias["gonzalo zamora"] = "3813540535";
-        alias["~ Gabriel Carabajal"] = "3815627688";
-        alias["Cristian Ivan Soraire"] = "";
+        alias["Alejandro Di Battista"]     = "3815343458";
+        alias["gonzalo zamora"]            = "3813540535";
+        alias["~ Gabriel Carabajal"]        = "3815627688";
+        alias["Cristian Ivan Soraire"]     = "X";
         alias["Abigail * Medina Costilla"] = "3816557818";
-        alias["~ lauu🥶"] = "3812130484";
+        alias["~ Agustín Morales"]          = "3815459105";
+        alias["~ lauu🥶"]                   = "3812130484";
 
-        var contar = 0;
-        for (int i = 0; i < lineasOriginales.Length; i++) {
-            foreach (var kvp in alias) {
-                if (lineasOriginales[i].Contains(kvp.Key, StringComparison.OrdinalIgnoreCase)) {
-                    lineasOriginales[i] = lineasOriginales[i].Replace(kvp.Key, kvp.Value, StringComparison.OrdinalIgnoreCase);
-                    contar++;
+        var contar   = 0;
+        var archivos = Directory.GetFiles("./asistencias", "historia*.txt");
+        foreach (var origen in archivos) {
+            List<string> salida = new();
+            var lineas = File.ReadAllLines(origen);
+            foreach (var linea in lineas) {
+                var texto = linea.Trim();
+                if (texto == "") continue;
+                
+                foreach(var (nombre, telefono) in alias) {
+                    if (texto.Contains(nombre, StringComparison.OrdinalIgnoreCase)) {
+                        texto = texto.Replace(nombre, telefono, StringComparison.OrdinalIgnoreCase);
+                        contar++;
+                    }
                 }
+                salida.Add(texto);
             }
+            Consola.Escribir($"Se encontraron {contar} coincidencias en el archivo {origen}.");
+            File.WriteAllLines(origen, salida);
         }
+
         Consola.Escribir($"Se encontraron {contar} coincidencias.", ConsoleColor.Cyan);
-        File.WriteAllLines(origen, lineasOriginales);
+        Consola.EsperarTecla();
     }
 
-    static void NormalizarCreditos(Clase clase, string origen) {
-        if (!File.Exists(origen)) {
-            Consola.Escribir($"El archivo '{origen}' no existe. Verifique la ruta y vuelva a intentarlo.", ConsoleColor.Red);
-            return;
+    static void RegistrarCreditos(Clase clase) {
+        Dictionary<string, HashSet<string>> creditos = new();
+
+        var archivos = Directory.GetFiles("./asistencias", "historia*.txt");
+        foreach (var origen in archivos) {
+            CargarCreditos(origen, creditos);
         }
 
-        var codigos = LeerCodigos(origen);
-        var contar = 1;
-        foreach (var alumno in clase) {
-            if (codigos.ContainsKey(alumno.TelefonoLimpio)) {
-                alumno.Creditos = codigos[alumno.TelefonoLimpio].Count;
-            } else {
-                Consola.Escribir($"{contar++,2}) No se encontró {alumno.NombreCompleto} Tel>: {alumno.TelefonoLimpio} en el archivo.", ConsoleColor.Red);
+        foreach (var alumno in clase.ConTelefono()) {
+            if (creditos.ContainsKey(alumno.TelefonoLimpio)) {
+                alumno.Creditos = creditos[alumno.TelefonoLimpio].Count;
             }
         }
 
-        foreach (var alumno in clase.OrderByDescending(a => a.Creditos)) {
-            if (alumno.Creditos > 0) {
-                Consola.Escribir($"{alumno.NombreCompleto,-40} - {alumno.TelefonoLimpio} - {alumno.Creditos,2}");
-            }
+        Consola.Escribir("\n=== Alumnos con mas creditos (Top 20) ===");
+        foreach (var alumno in clase.OrderByDescending(a => a.Creditos).Where(a => a.Creditos > 0).Take(20)) {
+            Consola.Escribir($". {alumno.NombreCompleto,-40}   {alumno.Telefono}   {alumno.Creditos, 2}");
         }
         clase.Guardar("alumos-normal.md");
     }
 
-    static Dictionary<string, HashSet<string>> LeerCodigos(string origen) {
-        Dictionary<string, HashSet<string>> codigos = new();
+    static void CargarCreditos(string origen, Dictionary<string, HashSet<string>> creditos) {
+        var patronTelefono  = new Regex(@"\b(\d{10})\b");
+        var patronCredito   = new Regex(@"\b[0-9a-fA-F]{6}\b");
+        var contarTelefonos = 0;
+        var contarCreditos  = 0;
+        var lineas   = File.ReadLines(origen);
         var telefono = "";
-        var patronTelefono = new Regex(@"\b(\d{10})\b");
-        var patronCodigo = new Regex(@"\b[0-9a-fA-F]{6}\b");
-        var lineas = File.ReadLines(origen);
-        var contar = 0;
-        foreach (var linea in lineas) {
 
+        foreach (var linea in lineas) {
             var matchTelefono = patronTelefono.Match(linea);
             if (matchTelefono.Success) {
-                contar++;
-                if(telefono == "3815235887") Consola.Escribir($"Teléfono: {telefono} -> {linea} {patronCodigo.IsMatch(linea)}");
-
                 telefono = matchTelefono.Groups[1].Value;
-                if (!codigos.ContainsKey(telefono)) {
-                    codigos[telefono] = new HashSet<string>();
+                if (!creditos.ContainsKey(telefono)) {
+                    creditos[telefono] = new HashSet<string>();
                 }
+                contarTelefonos++;
             }
-            var matchCodigo = patronCodigo.Matches(linea);
-            foreach (Match m in matchCodigo) {
-                if(telefono == "3815235887") Consola.Escribir($"Teléfono: {telefono} -> Código: {m.Value}");
-                if(telefono.Trim() == "") continue;
-                codigos[telefono].Add(m.Value);
+
+            if(telefono.Trim() == "") continue;
+
+            var matchCreditos = patronCredito.Matches(linea);
+            foreach (Match credito in matchCreditos) {
+                creditos[telefono].Add(credito.Value);
+                contarCreditos++;
             }
         }
-        Consola.Escribir($"Hay {lineas.Count()} líneas en el archivo con {contar} telefonos.");
-        Consola.EsperarTecla();
-        return codigos;
+
+        Consola.Escribir($"Hay {lineas.Count()} líneas en el archivo con {contarTelefonos} telefonos y {contarCreditos} creditos.");
+        // Consola.EsperarTecla();
     }
+
+    static void RegistrarNotas(Clase clase) {
+        Dictionary<string, string> notas = new();
+
+        var archivos = Directory.GetFiles("./asistencias", "historia*.txt");
+        foreach (var origen in archivos) {
+            CargarNotas(origen, notas);
+        }
+
+        foreach (var alumno in clase.ConTelefono()) {
+            if (notas.ContainsKey(alumno.TelefonoLimpio)) {
+                alumno.Nota1erParcial = int.Parse(notas[alumno.TelefonoLimpio].Substring(6,2));
+            }
+        }
+
+        Consola.Escribir("\n=== Alumnos menores notas (Top 20) ===");
+        foreach (var alumno in clase.OrderByDescending(a => a.Nota1erParcial).Where(a => a.Nota1erParcial > 0).Take(20)) {
+            Consola.Escribir($". {alumno.NombreCompleto,-40}   {alumno.Telefono}   {alumno.Nota1erParcial, 2}");
+        }
+        clase.Guardar("alumos-normal.md");
+    }
+
+
+    static void CargarNotas(string origen, Dictionary<string, string> notas) {
+        var patronTelefono  = new Regex(@"\b(\d{10})\b");
+        var patronNota      = new Regex(@"\b(\d{5}-\d{2}-\d{4})\b");
+        var contarTelefonos = 0;
+        var contarNotas     = 0;
+        var lineas   = File.ReadLines(origen);
+        var telefono = "";
+
+        foreach (var linea in lineas) {
+            var matchTelefono = patronTelefono.Match(linea);
+            if (matchTelefono.Success) {
+                telefono = matchTelefono.Groups[1].Value;
+                contarTelefonos++;
+            }
+
+            if(telefono.Trim() == "") continue;
+
+            var matchNota = patronNota.Match(linea);
+            if (matchNota.Success) {
+                notas[telefono] = matchNota.Groups[1].Value;
+                contarNotas++;
+            }
+        }
+
+        Consola.Escribir($"Hay {lineas.Count()} líneas en el archivo con {contarTelefonos} telefonos y {contarNotas} notas.");
+        // Consola.EsperarTecla();
+    }
+    
 
     static void Main(string[] args) {
         var clase = Clase.Cargar();
+        ConvertirNombreATelefono(clase);
+
         int practico = 4;
 
         Consola.Escribir("=== Bienvenido al sistema de gestión de alumnos ===", ConsoleColor.Cyan);
@@ -172,10 +221,8 @@ class Program {
                 "5" => () => OpcionVerificarAsistencia(),
                 "6" => () => OpcionMostrarRecuperacion(clase),
                 "7" => () => {
-                    ConvertirNombreTelefono(clase, "./asistencias/historia-c3.txt");
-                    NormalizarCreditos(clase, "./asistencias/historia-c3.txt");
-                    ConvertirNombreTelefono(clase, "./asistencias/historia-c5.txt");
-                    NormalizarCreditos(clase, "./asistencias/historia-c5.txt");
+                        RegistrarCreditos(clase);
+                        RegistrarNotas(clase);
                 },
                 _   => () => {}
             };
