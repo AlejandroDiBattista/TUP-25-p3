@@ -17,20 +17,20 @@ builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNam
 
 var app = builder.Build();
 
-// ENDPOINT: Listar todos los productos
+
 app.MapGet("/productos", async (AppDb db) => await db.Productos.OrderBy(p => p.Id).ToListAsync());
 
-// ENDPOINT: Listar productos a reponer (stock < 3)
+
 app.MapGet("/productos/reponer", async (AppDb db) =>
     await db.Productos.Where(p => p.Stock < 3).OrderBy(p => p.Id).ToListAsync()
 );
 
-// ENDPOINT: Obtener producto por ID
+
 app.MapGet("/productos/{id:int}", async (int id, AppDb db) =>
     await db.Productos.FindAsync(id) is Producto p ? Results.Ok(p) : Results.NotFound()
 );
 
-// ENDPOINT: Actualizar producto (stock, nombre, precio)
+
 app.MapPut("/productos/{id:int}", async (int id, Producto prod, AppDb db) =>
 {
     var producto = await db.Productos.FindAsync(id);
@@ -43,7 +43,7 @@ app.MapPut("/productos/{id:int}", async (int id, Producto prod, AppDb db) =>
     return Results.Ok(producto);
 });
 
-// Inicializar la base de datos con productos personalizados si está vacía
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDb>();
