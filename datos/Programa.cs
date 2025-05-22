@@ -1,28 +1,18 @@
 ﻿using System.Text.RegularExpressions;
+using System.IO.Compression;
 using TUP;
+using System.Globalization; 
+
+// Clase auxiliar para el Menú
 
 class Program {
-    static string ElegirOpcionMenu() {
-        Console.Clear();
-        Consola.Escribir("=== MENÚ DE OPCIONES ===", ConsoleColor.Cyan);
-        Consola.Escribir("1. Listar alumnos");
-        Consola.Escribir("2. Publicar trabajo práctico");
-        Consola.Escribir("3. Verificar presentación de trabajos práctico");
-        Consola.Escribir("4. Faltan presentar trabajo práctico");
-        Consola.Escribir("5. Verificar asistencia");
-        Consola.Escribir("6. Mostrar recuperación");
-        Consola.Escribir("7. Cargar Notas Parcial");
-        Consola.Escribir("0. Salir");
-        return Consola.ElegirOpcion("\nElija una opción (0-7): ", "01234567");
-    }
-
-    static void OpcionListarAlumnos(Clase clase) {
+    static void ListarAlumnos(Clase clase) {
         Consola.Escribir("=== Listado de alumnos ===", ConsoleColor.Cyan);
         clase.ListarAlumnos();
         clase.ExportarDatos();
     }
 
-    static void OpcionCopiarPractico(Clase clase) {
+    static void CopiarPractico(Clase clase) {
         Consola.Escribir("=== Copiar trabajo práctico ===", ConsoleColor.Cyan);
         string tp   = Consola.LeerCadena("Ingrese el número del trabajo práctico a copiar (ej: 1): ", new[] { "1", "2", "3", "4", "5", "6" });
         bool forzar = Consola.Confirmar("¿Forzar copia incluso si ya existe?");
@@ -31,7 +21,7 @@ class Program {
         clase.CopiarPractico(int.Parse(tp), forzar);
     }
 
-    static void OpcionVerificarPresentacion(Clase clase, int practico) {
+    static void VerificarPresentacion(Clase clase, int practico) {
         Consola.Escribir("=== Verificar presentación de trabajo práctico ===", ConsoleColor.Cyan);
         clase.NormalizarCarpetas();
         clase.Reiniciar();
@@ -43,21 +33,14 @@ class Program {
         clase.Guardar();
     }
 
-    static void OpcionListarNoPresentaron(Clase clase, int practico) {
+    static void ListarNoPresentaron(Clase clase, int practico) {
         Consola.Escribir($"=== Alumnos que no presentaron práctico {practico} ===", ConsoleColor.Cyan);
         clase.ListarNoPresentaron(practico);
     }
 
-    static void OpcionVerificarAsistencia() {
+    static void VerificarAsistencia() {
         Consola.Escribir("=== Verificar asistencia ===", ConsoleColor.Cyan);
         Asistencias.Cargar(true);
-    }
-
-    static void OpcionMostrarRecuperacion(Clase clase) {
-        Consola.Escribir("=== Generando reporte de recuperación ===", ConsoleColor.Cyan);
-        clase.GenerarReporteRecuperacion();
-        Consola.Escribir("Reporte 'recuperacion.md' generado.", ConsoleColor.Green);
-        clase.DebenRecuperar().ListarAlumnos();
     }
 
     static void ConvertirNombreATelefono(Clase clase) {
@@ -67,7 +50,7 @@ class Program {
         }
         alias["Alejandro Di Battista"]     = "3815343458";
         alias["gonzalo zamora"]            = "3813540535";
-        alias["~ Gabriel Carabajal"]        = "3815627688";
+        alias["~ Gabriel Carabajal"]       = "3815627688";
         alias["Cristian Ivan Soraire"]     = "X";
         alias["Abigail * Medina Costilla"] = "3816557818";
         alias["~ Agustín Morales"]          = "3815459105";
@@ -94,8 +77,7 @@ class Program {
             File.WriteAllLines(origen, salida);
         }
 
-        Consola.Escribir($"Se encontraron {contar} coincidencias.", ConsoleColor.Cyan);
-        Consola.EsperarTecla();
+        Consola.Escribir($"Se encontraron {contar} coincidencias al convertir telefonos", ConsoleColor.Cyan);
     }
 
     static void RegistrarCreditos(Clase clase) {
@@ -112,10 +94,11 @@ class Program {
             }
         }
 
-        Consola.Escribir("\n=== Alumnos con mas creditos (Top 20) ===");
-        foreach (var alumno in clase.OrderByDescending(a => a.Creditos).Where(a => a.Creditos > 0).Take(20)) {
+        Consola.Escribir("\n=== Alumnos con mas creditos (Top 10) ===");
+        foreach (var alumno in clase.OrderByDescending(a => a.Creditos).Where(a => a.Creditos > 0).Take(10)) {
             Consola.Escribir($". {alumno.NombreCompleto,-40}   {alumno.Telefono}   {alumno.Creditos, 2}");
         }
+
         clase.Guardar("alumos-normal.md");
     }
 
@@ -151,26 +134,32 @@ class Program {
     }
 
     static void RegistrarNotas(Clase clase) {
+        Dictionary<string, HashSet<string>> creditos = new();
         Dictionary<string, string> notas = new();
 
         var archivos = Directory.GetFiles("./asistencias", "historia*.txt");
+        
         foreach (var origen in archivos) {
+            CargarCreditos(origen, creditos);
             CargarNotas(origen, notas);
         }
 
         foreach (var alumno in clase.ConTelefono()) {
+            if (creditos.ContainsKey(alumno.TelefonoLimpio)) {
+                alumno.Creditos = creditos[alumno.TelefonoLimpio].Count;
+            }
             if (notas.ContainsKey(alumno.TelefonoLimpio)) {
-                alumno.Nota1erParcial = int.Parse(notas[alumno.TelefonoLimpio].Substring(6,2));
+                alumno.Parcial = int.Parse(notas[alumno.TelefonoLimpio].Substring(6,2));
             }
         }
 
-        Consola.Escribir("\n=== Alumnos menores notas (Top 20) ===");
-        foreach (var alumno in clase.OrderByDescending(a => a.Nota1erParcial).Where(a => a.Nota1erParcial > 0).Take(20)) {
-            Consola.Escribir($". {alumno.NombreCompleto,-40}   {alumno.Telefono}   {alumno.Nota1erParcial, 2}");
+        Consola.Escribir("\n=== Alumnos con examen perfecto ===");
+        var i = 1;
+        foreach (var alumno in clase.OrderByDescending(a => a.Parcial).Where(a => a.Parcial == 60)) {
+            Consola.Escribir($"{i++,2}. {alumno.NombreCompleto,-40}   {alumno.Telefono}   {alumno.Parcial, 2}");
         }
-        clase.Guardar("alumos-normal.md");
+        clase.Guardar("alumnos.md");
     }
-
 
     static void CargarNotas(string origen, Dictionary<string, string> notas) {
         var patronTelefono  = new Regex(@"\b(\d{10})\b");
@@ -199,35 +188,74 @@ class Program {
         Consola.Escribir($"Hay {lineas.Count()} líneas en el archivo con {contarTelefonos} telefonos y {contarNotas} notas.");
         // Consola.EsperarTecla();
     }
-    
+
+    static void CopiarHistoriaChat(Clase clase) {
+
+        ProcessLatestZipForComision("c3");
+        ProcessLatestZipForComision("c5");
+
+        ConvertirNombreATelefono(clase);
+
+        Consola.Escribir("Ok", ConsoleColor.Green); // Único mensaje al finalizar
+    }
+
+    static void ProcessLatestZipForComision(string comision) {
+        string capetaOrigen   = "/Users/adibattista/Downloads";
+        string carpetaDestino = "/Users/adibattista/Documents/GitHub/tup-25-p3/datos/asistencias";
+
+        var origen  = Path.Combine(capetaOrigen,  comision);
+        var destino = Path.Combine(carpetaDestino, comision);
+
+        try {
+            var archivos = Directory.GetFiles(origen, $"WhatsApp*-{comision}*.zip");
+            var ultimo = archivos.Select(f => new FileInfo(f)).OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
+            if (ultimo == null) return; // No hay archivos zip para esta comision, salimos sin hacer nien
+                
+            string targetFileName = $"historia-{comision}.txt";
+            string destinationFilePath = Path.Combine(destino, targetFileName);
+
+            using (ZipArchive archive = ZipFile.OpenRead(ultimo.FullName)) {
+                ZipArchiveEntry? chatEntry = archive.Entries.FirstOrDefault(entry => 
+                    entry.Name.Equals("_chat.txt") || entry.FullName.Equals("_chat.txt")
+                );
+                if (chatEntry != null) {
+                    using (StreamReader reader = new StreamReader(chatEntry.Open())) {
+                        string chatContent = reader.ReadToEnd();
+                        File.WriteAllText(destinationFilePath, chatContent);
+                    }
+                }
+            }
+            // Delete all previous WhatsApp zip files for this commission
+            foreach (var file in archivos) {
+                File.Delete(file);
+            }
+        } 
+        catch (Exception) {}
+    }
+
+    static void RegistrarTodo(Clase clase, int practico) {
+        CopiarHistoriaChat(clase);
+        VerificarAsistencia();
+        VerificarPresentacion(clase, practico);
+        RegistrarNotas(clase);
+    }
 
     static void Main(string[] args) {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
         var clase = Clase.Cargar();
-        ConvertirNombreATelefono(clase);
 
         int practico = 4;
 
-        Consola.Escribir("=== Bienvenido al sistema de gestión de alumnos ===", ConsoleColor.Cyan);
-        while (true) {
-            string opcion = ElegirOpcionMenu();
-            if (opcion == "0") return;
-            Console.Clear();
+        var menu = new TUP.Menu("Bienvenido al sistema de gestión de alumnos");
+        menu.Agregar("Listar alumnos",                  () => ListarAlumnos(clase));
+        menu.Agregar("Publicar trabajo práctico",       () => CopiarPractico(clase));
+        menu.Agregar("Registrar Asistencia & Notas",    () => RegistrarTodo(clase, practico));
+        menu.Agregar("Faltan presentar TP",             () => ListarNoPresentaron(clase, practico));
+    
+        menu.Ejecutar();
 
-            Action action = opcion switch {
-                "1" => () => OpcionListarAlumnos(clase),
-                "2" => () => OpcionCopiarPractico(clase),
-                "3" => () => OpcionVerificarPresentacion(clase, practico),
-                "4" => () => OpcionListarNoPresentaron(clase, practico),
-                "5" => () => OpcionVerificarAsistencia(),
-                "6" => () => OpcionMostrarRecuperacion(clase),
-                "7" => () => {
-                        RegistrarCreditos(clase);
-                        RegistrarNotas(clase);
-                },
-                _   => () => {}
-            };
-            action();
-            Consola.EsperarTecla();
-        }
+        Consola.Escribir("Saliendo del programa...", ConsoleColor.DarkGray);
     }
 }

@@ -1,0 +1,64 @@
+@baseUrl = https://crudcrud.com/api/4d458ffac5c64bfc927a43e911628f26/contactos
+
+
+### Crear Juan Perez
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "nombre": "Juan de los palotes",
+  "apellido": "Perez Jaime",
+  "email": "jperez@email.com"
+}
+
+
+### Crear Maria Gomes
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+    "nombre": "Maria",
+    "apellido": "Gomez",
+    "email": "mgomez@mail.com"
+}
+
+
+### Crear Carlos Lopez  
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+    "nombre": "Carlos",
+    "apellido": "Lopez",
+    "email": "clopez@mail.com"
+}
+
+
+### Traer todos los usuarios
+GET {{baseUrl}}
+Content-Type: application/json
+
+### Traer un usuario por ID  
+GET {{baseUrl}}/681d9e7c35fa0203e8bb7d43
+Content-Type: application/json
+
+### Actualizar el nombre de un usuario por ID
+
+PUT {{baseUrl}}/681d9a4a35fa0203e8bb7d39
+Content-Type: application/json
+
+{
+  "nombre": "Juanito",
+  "apellido": "Perecito",
+  "email": "jperez@gmail.com"
+}
+
+### Leer nuevamente el usuario por ID para verificar el cambio
+GET {{baseUrl}}/681d8f3a35fa0203e8bb7d14
+Content-Type: application/json
+
+### Borrar un usuario por ID
+
+DELETE {{baseUrl}}/681d9a4a35fa0203e8bb7d39 
+Content-Type: application/json
+

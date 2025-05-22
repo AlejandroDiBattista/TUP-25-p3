@@ -23,7 +23,7 @@ public class Asistencia {
 }
 
 public static class Asistencias {
-
+    
     public static string NormalizarCambioTelefono(string telefono) {
         Dictionary<string, string> CambiosTelefonos = new() {
             { "3815825319", "3812130484" },

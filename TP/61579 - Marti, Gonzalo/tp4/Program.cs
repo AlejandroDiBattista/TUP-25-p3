@@ -219,6 +219,7 @@ class Program {
                     #{pregunta.PreguntaId:000}
                 
                     {p.Enunciado}
+            
             string respuesta;
             do {
                 Console.Write("\nSeleccione una opción (A, B, C): ");

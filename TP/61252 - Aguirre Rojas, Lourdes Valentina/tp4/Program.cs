@@ -45,9 +45,9 @@ class Program{
                 
                     {p.Enunciado}
 
-                     A) {p.RespuestaA}
-                     B) {p.RespuestaB}
-                     C) {p.RespuestaC}
+                    A) {p.RespuestaA}
+                    B) {p.RespuestaB}
+                    C) {p.RespuestaC}
 
                 """);
             }

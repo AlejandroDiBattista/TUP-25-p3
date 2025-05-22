@@ -10,13 +10,16 @@ public class Alumno {
     public string Comision { get; private set; }    
     public int Orden { get; set; }
     public int Asistencias { get; set; } = 0;
-    public int Resultado { get; set; } = 0; 
     public int Creditos { get; set; } = 0;
-    public int Nota1erParcial { get; set; } = 0;
-    public int Nota => Math.Min(Nota1erParcial + Math.Min(Creditos, 20), 60);
+    public int Parcial { get; set; } = 0;
+    public int Resultado { get; set; } = 0;
+
+    public double Nota => Math.Round(Math.Min(Parcial + Math.Min(Creditos, 20), 60) / 6.0, 1);
+    public string PracticosStr => string.Join("", Practicos.Select(p => p.ToString()));
+
     public List<EstadoPractico> Practicos { get; set; } = new(); // Almacena el estado de los trabajos prácticos como una lista
 
-    public Alumno(int orden, int legajo, string apellido, string nombre, string telefono, string comision, string practicos, int asistencias = 0, int resultado=0, int notas=0) {
+    public Alumno(int orden, int legajo, string apellido, string nombre, string telefono, string comision, string practicos, int asistencias, int creditos, int parcial) {
         Orden    = orden;
         Legajo   = legajo;
         Apellido = apellido.Trim();
@@ -25,8 +28,8 @@ public class Alumno {
         Comision = comision;
         Practicos = ConvertirStringAPracticos(practicos);
         Asistencias = asistencias;
-        Resultado = resultado;
-        Nota1erParcial = notas;
+        Creditos = creditos;
+        Parcial = parcial;
     }
 
     private List<EstadoPractico> ConvertirStringAPracticos(string practicosStr) {
@@ -39,10 +42,6 @@ public class Alumno {
         return lista;
     }
 
-    public string PracticosToString() {
-        return string.Join("", Practicos.Select(p => p.ToString()));
-    }
-
     public void Reiniciar(){
         Practicos.Clear();
         Asistencias = 0;
@@ -51,25 +50,12 @@ public class Alumno {
     public string TelefonoLimpio => Telefono.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Trim();
     public string NombreLimpio   => $"{Nombre} {Apellido}".Replace("-", "").Replace("*", "").Trim();
 
-
     public bool TieneTelefono      => Telefono != "";
     public string NombreCompleto   => $"{Apellido}, {Nombre}".Replace("-", "").Replace("*", "").Trim();
     public string Carpeta          => $"{Legajo} - {NombreCompleto}";
     public int CantidadPresentados => Practicos.Count(p => p == EstadoPractico.Aprobado);
     public bool Abandono           => Asistencias < 4 && CantidadPresentados == 0;
 
-    public string EstadoRecuperacionTP(int practico) {
-        if (practico < 1 || practico > 3) return ""; // Solo para TP1, TP2, TP3
-
-        var estado = ObtenerPractico(practico);
-
-        if (practico == 3) {
-            // TP3: Recupera si no está aprobado O si tiene errores (Resultado < 0)
-            return (estado != EstadoPractico.Aprobado) ? "Recuperar" : (Resultado < 0 ? "Corregir 🚩" : "");
-        } else {
-            return (estado != EstadoPractico.Aprobado) ? "Recuperar" : "";
-        }
-    }
 
     public EstadoPractico ObtenerPractico(int practico) {
         if (practico <= 0 || practico > MaxPracticos) return EstadoPractico.NoPresentado;
@@ -80,7 +66,6 @@ public class Alumno {
     public void PonerPractico(int practico, EstadoPractico estado) {
         if (practico <= 0 || practico > MaxPracticos) return;
         
-        // Aseguramos que la lista tenga suficientes elementos
         while (Practicos.Count < practico) {
             Practicos.Add(EstadoPractico.NoPresentado);
         }
@@ -95,7 +80,7 @@ public class Alumno {
     }
 
     public override string ToString() {
-        return $"{Legajo} - {NombreCompleto} - {Telefono} - {Comision} - {PracticosToString()}";
+        return $"{Legajo} - {NombreCompleto} - {Telefono} - {Comision} - {PracticosStr} - {Asistencias} - {Parcial} - {Nota}";
     }
 
     public override int GetHashCode() {
@@ -106,5 +91,6 @@ public class Alumno {
         if (otro == null) return false;
         return Legajo == otro.Legajo;
     }
-    public static Alumno Yo => new (0, 0, "Di Battista", "Alejandro", "(381) 534-3458", "", "++");
+ 
+    public static Alumno Yo => new (0, 0, "Di Battista", "Alejandro", "(381) 534-3458", "", "++",0,0,0);
 }

@@ -1,0 +1,48 @@
+@host = http://localhost:5000
+
+### 1. Listar todos los contactos
+GET {{host}}/contactos
+Accept: application/json
+
+### 1.1 Filtrar contactos por query (q)
+GET {{host}}/contactos?q=maira
+Accept: application/json
+
+### 2. Obtener contacto por ID (existente)
+GET {{host}}/contactos/1
+Accept: application/json
+
+### 2.1 Obtener contacto por ID (no existente)
+GET {{host}}/contactos/999
+Accept: application/json
+
+### 3. Crear nuevo contacto
+POST {{host}}/contactos
+Content-Type: application/json
+
+{
+  "nombre": "Mario",
+  "apellido": "Perez",
+  "telefono": "555987654",
+  "email": "mario.perez@example.com",
+  "edad": 28
+}
+
+### 4. Actualizar contacto existente
+PUT {{host}}/contactos/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nombre": "Luis",
+  "email": "luis.perez@example.com",
+  "edad": 29
+}
+
+### 5. Eliminar contacto existente
+DELETE {{host}}/contactos/1
+Accept: application/json
+
+### 5.1 Intentar eliminar no existente
+DELETE {{host}}/contactos/999
+Accept: application/json

@@ -1,0 +1,41 @@
+# Pruebas para API REST de Productos
+# Usa el plugin Rest Client de VSCode para ejecutar estas solicitudes
+
+### Obtener todos los productos
+GET http://localhost:5000/productos
+Accept: application/json
+
+### Obtener un producto por ID (existente)
+GET http://localhost:5000/productos/1
+Accept: application/json
+
+### Obtener un producto por ID (no existente)
+GET http://localhost:5000/productos/999
+Accept: application/json
+
+### Crear un nuevo producto
+POST http://localhost:5000/productos
+Content-Type: application/json
+
+{
+  "descripcion": "Producto Test",
+  "precio": 99.99,
+  "cantidad": 5
+}
+
+### Actualizar un producto existente
+PUT http://localhost:5000/productos/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "descripcion": "Producto Actualizado",
+  "precio": 111.11,
+  "cantidad": 10
+}
+
+### Eliminar un producto existente
+DELETE http://localhost:5000/productos/1
+
+### Intentar eliminar un producto no existente
+DELETE http://localhost:5000/productos/999
