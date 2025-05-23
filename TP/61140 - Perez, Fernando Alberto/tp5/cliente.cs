@@ -1,31 +1,57 @@
-using System;                     // Console, etc.
-using System.Linq;                // OrderBy
-using System.Net.Http;            // HttpClient, StringContent ✔
-using System.Text.Json;           // JsonSerializer, JsonNamingPolicy
-using System.Threading.Tasks;     // Task
+using System.Net.Http;
+using System.Net.Http.Json;
 
-var baseUrl = "http://localhost:5000";
-var http = new HttpClient();
-var jsonOpt = new JsonSerializerOptions {
-    PropertyNamingPolicy        = JsonNamingPolicy.CamelCase,
-    PropertyNameCaseInsensitive = true
-};
+var client = new HttpClient { BaseAddress = new Uri("http://localhost:5000") };
 
-// Codigo de ejemplo: Reemplazar por la implementacion real 
-
-async Task<List<Producto>> TraerAsync(){
-    var json = await http.GetStringAsync($"{baseUrl}/productos");
-    return JsonSerializer.Deserialize<List<Producto>>(json, jsonOpt)!;
+async Task ShowAllProducts()
+{
+    var products = await client.GetFromJsonAsync<List<Product>>("/products");
+    foreach (var p in products)
+        Console.WriteLine($"{p.Id}: {p.Name} (Stock: {p.Stock})");
 }
 
-Console.WriteLine("=== Productos ===");
-foreach (var p in await TraerAsync()) {
-    Console.WriteLine($"{p.Id} {p.Nombre,-20} {p.Precio,15:c}");
+async Task ShowProductsToReplenish()
+{
+    var products = await client.GetFromJsonAsync<List<Product>>("/products/replenish");
+    foreach (var p in products)
+        Console.WriteLine($"{p.Id}: {p.Name} (Stock: {p.Stock})");
 }
-class Producto {
+
+async Task ModifyStock(string action)
+{
+    Console.Write("ID del producto: ");
+    int id = int.Parse(Console.ReadLine());
+    Console.Write("Cantidad: ");
+    int amount = int.Parse(Console.ReadLine());
+
+    var response = await client.PostAsync($"/products/{id}/{action}/{amount}", null);
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+}
+
+bool running = true;
+while (running)
+{
+    Console.WriteLine("\n1. Listar productos");
+    Console.WriteLine("2. Listar productos a reponer");
+    Console.WriteLine("3. Agregar stock");
+    Console.WriteLine("4. Quitar stock");
+    Console.WriteLine("5. Salir");
+    Console.Write("Opción: ");
+    var choice = Console.ReadLine();
+
+    switch (choice)
+    {
+        case "1": await ShowAllProducts(); break;
+        case "2": await ShowProductsToReplenish(); break;
+        case "3": await ModifyStock("add"); break;
+        case "4": await ModifyStock("remove"); break;
+        case "5": running = false; break;
+    }
+}
+
+public class Product
+{
     public int Id { get; set; }
-    public string Nombre { get; set; } = null!;
-    public decimal Precio { get; set; }
+    public string Name { get; set; } = "";
+    public int Stock { get; set; }
 }
-
-// Fin del ejemplo
