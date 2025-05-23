@@ -11,12 +11,12 @@ async Task MostrarMenuAsync()
         Console.Clear();
         Console.WriteLine("\n=== Menú Inventario ===");
         Console.WriteLine("1. Listar productos");
-        Console.WriteLine("2. Ver producto por ID");
-        Console.WriteLine("3. Listar productos con stock crítico");
-        Console.WriteLine("4. Agregar producto");
+        Console.WriteLine("2. Listar productos con stock crítico");
+        Console.WriteLine("3. Modificar stock de producto");
+        /* Console.WriteLine("4. Agregar producto");
         Console.WriteLine("5. Modificar producto");
         Console.WriteLine("6. Modificar stock de producto");
-        Console.WriteLine("7. Eliminar producto");
+        Console.WriteLine("7. Eliminar producto"); */
         Console.WriteLine("0. Salir");
         Console.Write("\nSeleccione una opción: ");
         var opcion = Console.ReadLine();
@@ -34,14 +34,14 @@ async Task MostrarMenuAsync()
                 EsperarTecla();
                 break;
             case "2":
-                await VerProductoPorIdAsync();
-                EsperarTecla();
-                break;
-            case "3":
                 await ListarStockCriticoAsync();
                 EsperarTecla();
                 break;
-            case "4":
+            case "3":
+                await ModificarStockAsync();
+                EsperarTecla();
+                break;
+            /* case "4":
                 await AgregarProductoAsync();
                 EsperarTecla();
                 break;
@@ -56,7 +56,7 @@ async Task MostrarMenuAsync()
             case "7":
                 await EliminarProductoAsync();
                 EsperarTecla();
-                break;
+                break; */
             case "0":
                 return;
             default:
@@ -80,7 +80,7 @@ async Task ListarProductosAsync()
         Console.WriteLine($"{p.Id, -3} {p.Nombre, -20} {p.Precio, 10:c} {p.Stock, 10}");
 }
 
-async Task VerProductoPorIdAsync()
+/* async Task VerProductoPorIdAsync()
 {
     Console.Write("Ingrese ID de producto: ");
     if (int.TryParse(Console.ReadLine(), out int id))
@@ -101,7 +101,7 @@ async Task VerProductoPorIdAsync()
     {
         Console.WriteLine("ID inválido.");
     }
-}
+} */
 
 async Task ListarStockCriticoAsync()
 {
@@ -112,7 +112,7 @@ async Task ListarStockCriticoAsync()
         Console.WriteLine($"{p.Id, -3} {p.Nombre, -20} {p.Precio, 10:c} {p.Stock, 10}");
 }
 
-async Task AgregarProductoAsync()
+/* async Task AgregarProductoAsync()
 {
     Console.Write("Nombre: ");
     var nombre = Console.ReadLine() ?? "";
@@ -140,9 +140,9 @@ async Task AgregarProductoAsync()
     };
     var agregado = await Inventario.AgregarAsync(nuevo);
     Console.WriteLine($"Producto agregado con ID {agregado.Id}");
-}
+} */
 
-async Task ModificarProductoAsync()
+/* async Task ModificarProductoAsync()
 {
     Console.Write("ID del producto a modificar: ");
     if (!int.TryParse(Console.ReadLine(), out int id))
@@ -192,7 +192,7 @@ async Task ModificarProductoAsync()
     {
         Console.WriteLine("Producto no encontrado.");
     }
-}
+} */
 
 async Task ModificarStockAsync()
 {
@@ -223,7 +223,7 @@ async Task ModificarStockAsync()
     }
 }
 
-async Task EliminarProductoAsync()
+/* async Task EliminarProductoAsync()
 {
     Console.Write("ID a eliminar: ");
     if (!int.TryParse(Console.ReadLine(), out int id))
@@ -233,7 +233,7 @@ async Task EliminarProductoAsync()
     }
     var ok = await Inventario.EliminarAsync(id);
     Console.WriteLine(ok ? "Producto eliminado." : "No se pudo eliminar el producto.");
-}
+} */
 
 await MostrarMenuAsync();
 
@@ -263,11 +263,11 @@ static class Inventario
         return JsonSerializer.Deserialize<List<Producto>>(json, jsonOpt)!;
     }
 
-    public static async Task<Producto> TraerAsync(int id)
+    /* public static async Task<Producto> TraerAsync(int id)
     {
         var json = await http.GetStringAsync($"{baseUrl}/productos/{id}");
         return JsonSerializer.Deserialize<Producto>(json, jsonOpt)!;
-    }
+    } */
 
     public static async Task<List<Producto>> TraerAsync(bool stockCritico)
     {
@@ -275,7 +275,7 @@ static class Inventario
         return JsonSerializer.Deserialize<List<Producto>>(json, jsonOpt)!;
     }
 
-    public static async Task<Producto> AgregarAsync(Producto p)
+    /* public static async Task<Producto> AgregarAsync(Producto p)
     {
         var json = JsonSerializer.Serialize(p, jsonOpt);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -283,9 +283,9 @@ static class Inventario
         response.EnsureSuccessStatusCode();
         json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<Producto>(json, jsonOpt)!;
-    }
+    } */
 
-    public static async Task<Producto> ModificarAsync(Producto p)
+    /* public static async Task<Producto> ModificarAsync(Producto p)
     {
         var json = JsonSerializer.Serialize(p, jsonOpt);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -293,7 +293,7 @@ static class Inventario
         response.EnsureSuccessStatusCode();
         json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<Producto>(json, jsonOpt)!;
-    }
+    } */
 
     public static async Task<bool> ModificarStockAsync(int id, int stock)
     {
@@ -304,9 +304,9 @@ static class Inventario
         return response.IsSuccessStatusCode;
     }
 
-    public static async Task<bool> EliminarAsync(int id)
+    /* public static async Task<bool> EliminarAsync(int id)
     {
         var response = await http.DeleteAsync($"{baseUrl}/productos/{id}");
         return response.IsSuccessStatusCode;
-    }
+    } */
 }

@@ -23,10 +23,10 @@ app.MapGet("/productos", async (AppDb db) => await db.Productos.ToListAsync());
 app.MapGet("/productos/stockCritico", async (AppDb db) => await db.Productos.Where(p => p.Stock < 3).ToListAsync());
 
 // Obtener un producto por id
-app.MapGet("/productos/{id}", async (int id, AppDb db) => await db.Productos.FindAsync(id) is Producto p ? Results.Ok(p) : Results.NotFound());
+//app.MapGet("/productos/{id}", async (int id, AppDb db) => await db.Productos.FindAsync(id) is Producto p ? Results.Ok(p) : Results.NotFound());
 
 // Crear un producto
-app.MapPost("/productos", async (Producto p, AppDb db) => {
+/* app.MapPost("/productos", async (Producto p, AppDb db) => {
     try
     {
         if (p.Stock < 0) return Results.BadRequest("El stock no puede ser negativo");
@@ -42,10 +42,10 @@ app.MapPost("/productos", async (Producto p, AppDb db) => {
     {
         return Results.Problem(ex.Message);
     }
-});
+}); */
 
 // Actualizar un producto
-app.MapPut("/productos/{id}", async (int id, Producto p, AppDb db) => {
+/* app.MapPut("/productos/{id}", async (int id, Producto p, AppDb db) => {
     var producto = await db.Productos.FindAsync(id);
     if (producto is null) return Results.NotFound();
 
@@ -68,7 +68,7 @@ app.MapPut("/productos/{id}", async (int id, Producto p, AppDb db) => {
         await tran.RollbackAsync();
         return Results.Problem(ex.Message);
     }
-});
+}); */
 
 // Actualizar el stock de un producto, tanto para aumentar como para disminuir
 // Se espera un JSON con la cantidad de stock a modificar
@@ -100,7 +100,7 @@ app.MapPut("/productos/{id}/stock", async (int id, StockDto stockDto, AppDb db) 
 });
 
 // Eliminar un producto
-app.MapDelete("/productos/{id}", async (int id, AppDb db) => {
+/* app.MapDelete("/productos/{id}", async (int id, AppDb db) => {
     var producto = await db.Productos.FindAsync(id);
     if (producto is null) return Results.NotFound();
 
@@ -117,7 +117,7 @@ app.MapDelete("/productos/{id}", async (int id, AppDb db) => {
         await tran.RollbackAsync();
         return Results.Problem(ex.Message);
     }
-});
+}); */
 
 var db = app.Services.GetRequiredService<AppDb>();
 db.Database.EnsureCreated(); // crear BD si no existe
