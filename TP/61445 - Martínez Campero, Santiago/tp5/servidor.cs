@@ -1,8 +1,11 @@
 #r "sdk:Microsoft.NET.Sdk.Web"
-#r "nuget: Microsoft.EntityFrameworkCore, 9.0.4"
-#r "nuget: Microsoft.EntityFrameworkCore.Sqlite, 9.0.4"
+#r "nuget: Microsoft.EntityFrameworkCore, 9.0.0-rc.2.24472.11"
+#r "nuget: Microsoft.EntityFrameworkCore.Sqlite, 9.0.0-rc.2.24472.11"
+#r "nuget: SQLitePCLRaw.bundle_e_sqlite3, 2.1.10" 
+#r "nuget: Microsoft.Extensions.Hosting, 9.0.0-rc.2.24472.3"
+#r "nuget: Microsoft.Extensions.DependencyInjection, 9.0.0-rc.2.24472.3"
 
-using System.Text.Json;                     
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -10,32 +13,46 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 
-//  CONFIGURACIÓN
 var builder = WebApplication.CreateBuilder();
-builder.Services.AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=./tienda.db")); // agregar servicios : Instalar EF Core y SQLite
+builder.Services.AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=./tienda.db"));
 builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 var app = builder.Build();
 
 app.MapGet("/productos", async (AppDb db) => await db.Productos.ToListAsync());
 
-var db = app.Services.GetRequiredService<AppDb>();
-db.Database.EnsureCreated(); // crear BD si no existe
-// Agregar productos de ejemplo al crear la base de datos
+app.MapGet("/productos/reponer", async (AppDb db) =>
+    await db.Productos.Where(p => p.Stock < 3).ToListAsync());
 
-app.Run("http://localhost:5000"); 
-// NOTA: Si falla la primera vez, corralo nuevamente.
+app.MapPost("/productos/{id}/agregar-stock", async (int id, StockDto stockDto, AppDb db) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto is null) return Results.NotFound();
+    producto.Stock += stockDto.Cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
+});
 
+app.MapPost("/productos/{id}/quitar-stock", async (int id, StockDto stockDto, AppDb db) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto is null) return Results.NotFound();
+    if (producto.Stock < stockDto.Cantidad) return Results.BadRequest("Stock insuficiente.");
+    producto.Stock -= stockDto.Cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
+});
 
-
-// Modelo de datos
-class AppDb : DbContext {
-    public AppDb(DbContextOptions<AppDb> options) : base(options) { }
-    public DbSet<Producto> Productos => Set<Producto>();
-}
-
-class Producto{
-    public int Id { get; set; }
-    public string Nombre { get; set; } = null!;
-    public decimal Precio { get; set; }
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDb>();
+    db.Database.EnsureCreated();
+    if (!db.Productos.Any())
+    {
+        for (int i = 1; i <= 10; i++)
+        {
+            db.Productos.Add(new Producto { Nombre = $"Producto {i}", Precio = 10 * i, Stock = 10 });
+        }
+        db.SaveChanges();
+    }
 }
