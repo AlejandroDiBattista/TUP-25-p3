@@ -2,40 +2,64 @@
 #r "nuget: Microsoft.EntityFrameworkCore, 9.0.4"
 #r "nuget: Microsoft.EntityFrameworkCore.Sqlite, 9.0.4"
 
-using System.Text.Json;                     
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
-//  CONFIGURACIÓN
 var builder = WebApplication.CreateBuilder();
-builder.Services.AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=./tienda.db")); // agregar servicios : Instalar EF Core y SQLite
-builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
-
+builder.Services.AddDbContext<StoreContext>();
 var app = builder.Build();
 
-app.MapGet("/productos", async (AppDb db) => await db.Productos.ToListAsync());
-
-var db = app.Services.GetRequiredService<AppDb>();
-db.Database.EnsureCreated(); // crear BD si no existe
-// Agregar productos de ejemplo al crear la base de datos
-
-app.Run("http://localhost:5000"); 
-// NOTA: Si falla la primera vez, corralo nuevamente.
-
-
-
-// Modelo de datos
-class AppDb : DbContext {
-    public AppDb(DbContextOptions<AppDb> options) : base(options) { }
-    public DbSet<Producto> Productos => Set<Producto>();
-}
-
-class Producto{
+// Modelos y DB Context
+public class Product
+{
     public int Id { get; set; }
-    public string Nombre { get; set; } = null!;
-    public decimal Precio { get; set; }
+    public string Name { get; set; } = "";
+    public int Stock { get; set; }
 }
+
+public class StoreContext : DbContext
+{
+    public DbSet<Product> Products => Set<Product>();
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+        => options.UseSqlite("Data Source=store.db");
+}
+
+// Inicialización
+using var scope = app.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<StoreContext>();
+db.Database.EnsureCreated();
+if (!db.Products.Any())
+{
+    for (int i = 1; i <= 10; i++)
+        db.Products.Add(new Product { Name = $"Producto {i}", Stock = 10 });
+    db.SaveChanges();
+}
+
+// Endpoints
+app.MapGet("/products", async (StoreContext db) => await db.Products.ToListAsync());
+
+app.MapGet("/products/replenish", async (StoreContext db) =>
+    await db.Products.Where(p => p.Stock < 3).ToListAsync());
+
+app.MapPost("/products/{id}/add/{amount:int}", async (StoreContext db, int id, int amount) =>
+{
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+    product.Stock += amount;
+    await db.SaveChangesAsync();
+    return Results.Ok(product);
+});
+
+app.MapPost("/products/{id}/remove/{amount:int}", async (StoreContext db, int id, int amount) =>
+{
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+    if (product.Stock < amount) return Results.BadRequest("Stock insuficiente.");
+    product.Stock -= amount;
+    await db.SaveChangesAsync();
+    return Results.Ok(product);
+});
+
+app.Run();
