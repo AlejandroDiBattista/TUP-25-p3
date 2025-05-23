@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 static async Task ObtenerClima() {
     // Leemos la ciudad ingresada por el usuario
     Write("Ingrese una ciudad: ");
-    string ciudad = ReadLine()?.Trim() ?? "Tucuman";
+    string ciudad = ReadLine();
 
     // Armamos la URL de la API con la ciudad y la API Key
     string apiKey = "30d38b26954359266708f92e1317dac0";
@@ -51,8 +51,8 @@ static async Task ObtenerClima() {
     var data = JsonDocument.Parse(response);
 
     // Se usa GetProperty() para acceder a las propiedades del JSON
-    var temp  = data.RootElement.GetProperty("main").GetProperty("temp").GetDouble();
-    var clima = data.RootElement.GetProperty("weather")[0].GetProperty("description").GetString();
+    var temp   = data.RootElement.GetProperty("main").GetProperty("temp").GetDouble();
+    var clima  = data.RootElement.GetProperty("weather")[0].GetProperty("description").GetString();
     var viento = data.RootElement.GetProperty("wind").GetProperty("speed").GetDouble();
 
     // Se muestra la información en consola

@@ -1,75 +1,33 @@
-# TP4: Sistema de Exámenes Multiple Choice en Consola usando Entity Framework Core
+# TP5
 
-> **Fecha de entrega:** Viernes 09/05/2025 23:59
+> **Fecha de entrega**: Viernes 23/05/2025 hasta las 23:59
 
-## Objetivo General
+## Consigna 
 
-El objetivo del trabajo práctico es diseñar y desarrollar una aplicación de consola en C# que permita:
-- Registrar preguntas de opción múltiple.
-- Tomar exámenes aleatorios.
-- Evaluar al alumno.
-- Registrar los resultados históricos.
-- Generar reportes estadísticos básicos.
+Realizar una aplicación cliente/servidor que administre el stock de una tienda de productos.
 
-El sistema deberá usar Entity Framework Core para persistir todos los datos en una base de datos SQLite.
+### Aplicación cliente
 
-⸻
+Implementar una aplicación de consola que:
 
-## Requisitos Funcionales
-1.	**Registro de Preguntas**
-- Cada pregunta debe tener:
-    * Enunciado de la pregunta.
-    * Tres alternativas de respuesta (A, B, C).
-    * Indicación de cuál es la respuesta correcta.
+- Liste los productos disponibles en la tienda.
+- Liste los productos que se deben reponer (stock menor a 3 unidades).
+- Permita agregar stock a un producto.
+- Permita quitar stock a un producto.
 
-2.	**Toma de Examen**
-* El sistema debe permitir al alumno ingresar su nombre.
-* El sistema debe seleccionar diez preguntas aleatorias de la base de datos.
-* El alumno debe responder a cada pregunta seleccionando A, B o C.
-- Se debe calcular:
-    * La cantidad de respuestas correctas.
-    * La nota final sobre 10 puntos.
+La aplicación se debe conectar al servidor REST que implemente las funciones correspondientes a cada una de las acciones usando `HttpClient`.
 
-3.	**Registro de Resultados**
--	Se debe almacenar:
-    * Nombre del alumno.
-    * Cantidad de respuestas correctas.
-    * Total de preguntas.
-    * Nota final.
+### Aplicación servidor
 
-4.	**Registro de Respuestas**
--	Para cada pregunta respondida, debe almacenarse:
-    * A qué examen pertenece.
-    * Qué pregunta fue.
-    * Si fue respondida correctamente o no.
+El servidor debe implementar una API REST que permita:
+- Listar los productos disponibles en la tienda.
+- Listar los productos que se deben reponer (stock menor a 3 unidades).
+- Agregar stock a un producto.
+- Quitar stock a un producto (debe validar que el stock no quede negativo).
 
-5.	**Reportes**
--	Mostrar listado de todos los exámenes rendidos.
--	Filtrar resultados por nombre de alumno.
--	Mostrar un ranking de los mejores alumnos basado en la mejor nota obtenida.
--	Mostrar un informe estadístico por pregunta, que incluya:
-    * Cuántas veces fue respondida.
-    * Qué porcentaje de respuestas fueron correctas.
+Los datos deben ser persistidos en SQLite usando Entity Framework Core.
+El servidor se debe implementar usando Minimal API.
 
----
+Al comenzar, crear 10 ejemplos de productos con un stock inicial de 10 unidades cada uno.
 
-**Requisitos Técnicos**
-* La persistencia de datos debe ser realizada usando Entity Framework Core con base de datos SQLite.
-* El sistema debe estar implementado como aplicación de consola (no GUI).
-* Debe respetar una estructura limpia de clases:
-    * Pregunta
-    * ResultadoExamen
-    * RespuestaExamen
-* Debe usar correctamente los conceptos de:
-    * DbContext.
-    * Relaciones entre tablas (1 a muchos).
-    * Consultas con LINQ.
-
----
-
-**Notas adicionales**
-* El número de preguntas del examen debe ser 5 por defecto.
-* Si hay menos de 5 preguntas disponibles, el sistema debe realizar el examen con las preguntas que haya.
-* No se permite el uso de frameworks gráficos ni web.
-* El proyecto debe ser entregado en un único directorio, con el código fuente completo.
-
+> NOTA: Los programas están hechos para que se ejecuten con `dotnet script`.

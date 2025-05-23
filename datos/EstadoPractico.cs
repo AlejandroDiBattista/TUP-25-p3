@@ -1,23 +1,23 @@
 namespace TUP;
 
 public class EstadoPractico {
-    public static readonly EstadoPractico NoPresentado = new(" ");
-    public static readonly EstadoPractico Aprobado = new("+");
-    public static readonly EstadoPractico Desaprobado = new("-");
-    public static readonly EstadoPractico Error = new("*");
-    public static readonly EstadoPractico EnProgreso = new("~");
+    public static readonly EstadoPractico NoPresentado = new("·");
+    public static readonly EstadoPractico Aprobado     = new("+");
+    public static readonly EstadoPractico Desaprobado  = new("-");
+    public static readonly EstadoPractico Error        = new("*");
+    public static readonly EstadoPractico EnProgreso   = new("~");
         
     public static EstadoPractico FromString(string c) => c switch {
-        "." or " " => NoPresentado,
+        "." or " " or "·"=> NoPresentado,
         "+" => Aprobado,
         "-" => Desaprobado,
         "*" => Error,
-        "~" => EnProgreso,
+        "~" => EnProgreso, 
         _ => Error
     };
     
     public ConsoleColor Color => _value switch {
-        "." or " " => ConsoleColor.White,
+        "." or " " or "·" => ConsoleColor.White,
         "+" => ConsoleColor.Green,
         "-" => ConsoleColor.Yellow,
         "*" => ConsoleColor.Red,
@@ -26,7 +26,7 @@ public class EstadoPractico {
     };
 
     public string Emoji => _value switch {
-        "." or " " or "" => "❓",
+        "." or " " or "" or "·"=> "❓",
         "+" => "✅",
         "-" => "❌",
         "*" => "⚠️",

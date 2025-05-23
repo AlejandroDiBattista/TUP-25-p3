@@ -26,3 +26,7 @@ examen/respuestas-examen.md
 *.db-shm
 *.db-wal
 /datos/asistencias/tmp
+
+.fake
+Enunciados/.DS_Store
+Enunciados/.DS_Store

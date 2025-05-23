@@ -1,0 +1,63 @@
+@host = http://localhost:5000
+
+### 1. GET /probar/
+GET {{host}}/probar/
+
+### 2. POST /probar
+POST {{host}}/probar
+
+### 3. PUT /probar
+PUT {{host}}/probar
+
+### 4. DELETE /probar
+DELETE {{host}}/probar
+
+### 5. GET /buscar?q=texto
+GET {{host}}/buscar?q=rest
+
+### 6. GET /buscar/{texto}
+GET {{host}}/buscar/restful
+
+### 7. GET /traer/{id}?pagina=2
+GET {{host}}/traer/abc123?pagina=3
+
+### 8. GET /noticias
+GET {{host}}/noticias
+
+### 9. GET /noticias/{seccion}
+GET {{host}}/noticias/deportes
+
+### 10. GET /noticias/{año}/{mes}/{dia}?pagina=2
+GET {{host}}/noticias/2025/05/17?pagina=2
+
+### 11. POST /persona
+POST {{host}}/persona
+Content-Type: application/json
+
+{
+  "nombre": "Ana",  
+  "edad": 25
+}
+
+### 12. GET /solicitud?q=param
+GET {{host}}/solicitud?q=header
+
+### 13. GET /respuesta
+GET {{host}}/respuesta
+Accept: application/json
+
+### 14. GET /contexto?q=contexto
+GET {{host}}/contexto?q=contexto
+Accept: application/json
+
+### 15. GET /persona/generica
+GET {{host}}/persona/generica
+Accept: application/json
+
+### 16. GET /persona
+GET {{host}}/persona
+Accept: application/json
+
+### 17. GET /persona/{nombre}/{apellido}/{telefono}
+GET {{host}}/persona/Carlos/Lopez/5551234
+Accept: application/json

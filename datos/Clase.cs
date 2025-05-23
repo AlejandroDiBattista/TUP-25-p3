@@ -8,7 +8,8 @@ using TUP;
 class Clase : IEnumerable<Alumno> {
     public List<Alumno> alumnos = new List<Alumno>();
     const string LineaComision = @"##.*\s(?<comision>C\d)";
-    const string LineaAlumno = @"(?<index>\d+)\.\s*(?<legajo>\d{5})\s*(?<nombre>[^,]+)\s*,\s*(?<apellido>[^(]+)(?:\s*(?<telefono>\(\d+\)\s*\d+(?:[- ]\d+)*))?";
+    // const string LineaAlumno = @"(?<index>\d+)\.\s*(?<legajo>\d{5})\s*(?<nombre>[^,]+)\s*,\s*(?<apellido>[^(]+)(?:\s*(?<telefono>\(\d+\)\s*\d+(?:[- ]\d+)*))?";
+    const string LineaAlumno = @"(?<index>\d+)\.\s+(?<legajo>\d{5})\s+(?<nombre>[^,]+)";
 
     public List<string> Comisiones => alumnos.Select(a => a.Comision).Distinct().OrderBy(c => c).ToList();
     public IEnumerable<Alumno> Alumnos => alumnos.OrderBy(a => a.NombreCompleto).ToList();
@@ -20,13 +21,9 @@ class Clase : IEnumerable<Alumno> {
         string comision = "C0";
         Clase clase = new();
 
+        Console.Clear();
         foreach (var linea in File.ReadLines(origen)) {
-            var texto = linea.PadRight(100,' '); 
-            var resultados = texto.Substring(87, 3).Trim();
-            var notas      = texto.Substring(90, 3).Trim();
-            var practicos  = texto.Substring(75, 15).Trim().PadRight(3, ' ');
-            texto = texto.Substring(0, 75);
-
+            var texto = linea.Trim();
             var matchComision = Regex.Match(texto, LineaComision);
             if (matchComision.Success) {
                 comision = matchComision.Groups["comision"].Value;
@@ -35,30 +32,29 @@ class Clase : IEnumerable<Alumno> {
 
             var matchAlumno = Regex.Match(texto, LineaAlumno);
             if (matchAlumno.Success) {
-                string telefono = matchAlumno.Groups["telefono"].Success ? matchAlumno.Groups["telefono"].Value.Trim() : "";
-                
-                int asistencias = 0;
-                if(practicos.Length > 1 && practicos.Contains(" ")) {
-                    asistencias = int.Parse(practicos.Split(" ")[0].Trim());
-                    practicos = practicos.Split(" ")[1];
-                } else {
-                    practicos = practicos.Trim();
-                }
-                practicos = practicos.PadRight(3, ' ');
-                int cantidadResultados;
-                if(!int.TryParse(resultados, out cantidadResultados)){
-                    cantidadResultados = 0;
-                }
+                Console.WriteLine(texto);
+                var partes = Regex.Split(linea, @"\s{2,}"); // Split on 2 or more spaces
+                var index       = int.Parse(partes[0].TrimEnd('.'));
+                var legajo      = int.Parse(partes[1]);
+                var nombre      = partes[2].Trim();
+                var telefono    = partes[3].Trim();
+                var asistencias = int.Parse(partes[4]);
+                var practicos   = partes[5].Trim();
+                var creditos    = int.Parse(partes[6]);
+                var parcial     = int.Parse(partes[7]);
+                // Alumno(int orden, int legajo, string apellido, string nombre, string telefono, string comision, string practicos, int asistencias = 0, int resultado=0, int notas=0) {
+
                 Alumno alumno = new Alumno(
-                    int.Parse(matchAlumno.Groups["index"].Value), 
-                    int.Parse(matchAlumno.Groups["legajo"].Value),
-                    matchAlumno.Groups["nombre"].Value.Trim(),
-                    matchAlumno.Groups["apellido"].Value.Trim(),
+                    index,
+                    legajo,
+                    nombre.Split(", ")[0].Trim(),
+                    nombre.Split(", ")[1].Trim(),
                     telefono,
                     comision,
                     practicos,
                     asistencias,
-                    cantidadResultados
+                    creditos,
+                    parcial
                 );
 
                 clase.alumnos.Add(alumno);
@@ -79,7 +75,6 @@ class Clase : IEnumerable<Alumno> {
     public Clase ConAprobados(int cantidad) => new(Alumnos.Where(a => a.Practicos.Count(p => p == EstadoPractico.Aprobado) >= cantidad));
     public Clase OrdenandoPorNombre() => new (alumnos.OrderBy(a => a.Apellido).ThenBy(a => a.Nombre));
     public Clase OrdenandoPorLegajo() => new (alumnos.OrderBy(a => a.Legajo));
-    public Clase DebenRecuperar() => new (alumnos.Where(a => !a.Abandono && ( a.CantidadPresentados < 3 && a.CantidadPresentados > 0 || a.Resultado <0 )));
     
     // Métodos de modificación
     public void Agregar(Alumno alumno) {
@@ -98,13 +93,11 @@ class Clase : IEnumerable<Alumno> {
         using (StreamWriter writer = new(destino)) {
             writer.WriteLine("# Listado de alumnos");
             foreach(var comision in Comisiones) {
-                var orden = 0;
+                var orden = 1;
                 writer.WriteLine($"\n## Comisión {comision}");
-                foreach(var alumno in EnComision(comision).OrdenandoPorNombre()) {
-                    alumno.Orden = ++orden;
-                    string linea = $"{alumno.Orden:D2}.  {alumno.Legajo}  {alumno.NombreCompleto, -40}  {alumno.Telefono, -15}";
-                    linea = $"{linea,-75} {alumno.Asistencias, 2} {alumno.PracticosToString(), -15}";
-                    linea = $"{linea,-87} {alumno.Creditos, 3}  {alumno.Nota1erParcial, 3}  {10 * alumno.Nota / 60.0,3:0}";
+                foreach(var a in EnComision(comision).OrdenandoPorNombre()) {
+                    a.Orden = orden++;
+                    var linea = $"{a.Orden:D2}.  {a.Legajo,5}  {a.NombreCompleto,-35}  {a.Telefono,-14}   {a.Asistencias,2}  {a.PracticosStr,-10}  {a.Creditos,2}  {a.Parcial,2}  {a.Nota,4:F1}";
                     writer.WriteLine(linea);
                 }
             }
@@ -175,8 +168,11 @@ class Clase : IEnumerable<Alumno> {
 
     public void VerificaPresentacionPractico(int practico) {
         const string Base = "../TP";
-        Consola.Escribir($"=== Verificación de presentación del trabajo práctico TP{practico} ===", ConsoleColor.Cyan);
-        var enunciado = Path.Combine("../enunciados", $"tp{practico}", "ejercicio.cs");
+        
+        var fuente = practico == 4 ? "Program.cs" : "ejercicio.cs";
+
+        Consola.Escribir($"\n=== Verificación de presentación del trabajo práctico TP{practico} ===", ConsoleColor.Blue);
+        var enunciado = Path.Combine("../enunciados", $"tp{practico}", fuente);
         int lineas = ContarLineasEfectivas(enunciado);
         Consola.Escribir($" - Enunciado tiene {lineas} líneas efectivas", ConsoleColor.Cyan);
         foreach(var comision in Comisiones) {
@@ -184,7 +180,7 @@ class Clase : IEnumerable<Alumno> {
             var ausentes = 0;
             var errores = 0;
             foreach(var alumno in EnComision(comision)){
-                var archivo = Path.Combine(Base, alumno.Carpeta, $"tp{practico}", "ejercicio.cs");
+                var archivo = Path.Combine(Base, alumno.Carpeta, $"tp{practico}", fuente);
                 EstadoPractico estado = EstadoPractico.Error;
                 if (File.Exists(archivo)) {
                     int lineasEfectivas = ContarLineasEfectivas(archivo) - lineas;
@@ -197,9 +193,11 @@ class Clase : IEnumerable<Alumno> {
                         ausentes++;
                     }
                     alumno.PonerPractico(practico, estado);
-                    if(practico == 3 && lineasEfectivas > 20) {
+                    
+                    if(practico == 3 && lineasEfectivas > 20) { // Si es TP3, ejecutar el programa y verificar el resultado
                         alumno.Resultado = ResultadoEjecutar(archivo);
                     }
+                    
                     var color = lineasEfectivas < 20 ? ConsoleColor.Yellow : ConsoleColor.White;
                     if(alumno.Resultado < 0){
                         errores++;
@@ -290,9 +288,9 @@ class Clase : IEnumerable<Alumno> {
                 if(alumno.Resultado < 0){
                     emojis[2] = "🔴";
                 }
-                var asistencia = string.Join(" ", emojis);
+                var asistencia = string.Join("", emojis);
                 string linea = $"{alumno.Legajo} - {alumno.NombreCompleto, -40} {$"{alumno.Telefono}", -15}";
-                linea = $" {linea,-65} {alumno.Asistencias, 2}  {asistencia}   ";
+                linea = $" {linea,-65} {alumno.Asistencias, 2}  {asistencia}  {alumno.Nota, 4:0.0}";
 
                 Consola.Escribir(linea);
             }
@@ -323,30 +321,6 @@ class Clase : IEnumerable<Alumno> {
         }
         var totalAusentes = ConPractico(practico, EstadoPractico.NoPresentado).alumnos.Count;
         Consola.Escribir($"\nTOTAL: {totalAusentes} de {alumnos.Count} alumnos", ConsoleColor.Yellow);
-    }
-
-    public void GenerarReporteRecuperacion(string destino = "./recuperacion.md") {
-        Consola.Escribir($" ▶︎ Generando reporte de recuperación en {destino}", ConsoleColor.Cyan);
-        using (StreamWriter writer = new(destino)) {
-            writer.WriteLine("# Reporte de Recuperación");
-            writer.WriteLine($"*Generado el: {DateTime.Now}*");
-
-            var alumnosRecuperar = DebenRecuperar();
-
-            foreach (var comision in alumnosRecuperar.Comisiones) {
-                writer.WriteLine($"\n## Comisión {comision}");
-                writer.WriteLine("\n| Legajo | Nombre Completo                 | TP1       | TP2       | TP3       |");
-                writer.WriteLine(  "|--------|---------------------------------|-----------|-----------|-----------|");
-
-                var alumnosComision = alumnosRecuperar.EnComision(comision).OrdenandoPorNombre();
-                foreach (var alumno in alumnosComision) {
-                    writer.WriteLine($"| {alumno.Legajo} | {alumno.NombreCompleto,-31} | {alumno.EstadoRecuperacionTP(1),-9} | {alumno.EstadoRecuperacionTP(2),-9} | {alumno.EstadoRecuperacionTP(3),-9} |");
-                }
-                writer.WriteLine($"\nTotal en comisión {comision}: {alumnosComision.Count()}");
-            }
-            writer.WriteLine($"\n**Total general a recuperar: {alumnosRecuperar.Count()}**");
-        }
-        Consola.Escribir($" ● Reporte de recuperación generado.", ConsoleColor.Green);
     }
 
     public void ListarAusentes(int cantidad) {

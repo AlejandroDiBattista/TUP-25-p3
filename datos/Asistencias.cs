@@ -23,12 +23,13 @@ public class Asistencia {
 }
 
 public static class Asistencias {
-
+    
     public static string NormalizarCambioTelefono(string telefono) {
         Dictionary<string, string> CambiosTelefonos = new() {
             { "3815825319", "3812130484" },
             { "3813192680", "3815627688" },
             { "3815459105", "3812220501" },
+            { "3865342925", "3813392050" }
         };
         return CambiosTelefonos.TryGetValue(telefono, out var nuevo) ? nuevo : telefono;
     }
