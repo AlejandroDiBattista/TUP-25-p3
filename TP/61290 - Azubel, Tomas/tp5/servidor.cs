@@ -41,7 +41,6 @@ app.MapGet("/productos", async (AppDb db) => await db.Productos.ToListAsync());
 app.MapGet("/productos/reponer", async (AppDb db) => 
     await db.Productos.Where(p => p.Stock < 3).ToListAsync());
 
-// Endpoint modificado para aceptar objeto JSON
 app.MapPost("/productos/{id}/agregar", async (int id, HttpRequest request, AppDb db) => {
     var requestData = await JsonSerializer.DeserializeAsync<Dictionary<string, int>>(request.Body);
     if (!requestData.TryGetValue("cantidad", out int cantidad))
@@ -55,7 +54,6 @@ app.MapPost("/productos/{id}/agregar", async (int id, HttpRequest request, AppDb
     return Results.Ok(producto);
 });
 
-// Endpoint modificado para aceptar objeto JSON
 app.MapPost("/productos/{id}/quitar", async (int id, HttpRequest request, AppDb db) => {
     var requestData = await JsonSerializer.DeserializeAsync<Dictionary<string, int>>(request.Body);
     if (!requestData.TryGetValue("cantidad", out int cantidad))
@@ -74,7 +72,6 @@ app.MapPost("/productos/{id}/quitar", async (int id, HttpRequest request, AppDb 
 
 app.Run("http://localhost:5000");
 
-// Modelos (sin cambios)
 class AppDb : DbContext {
     public AppDb(DbContextOptions<AppDb> options) : base(options) { }
     public DbSet<Producto> Productos => Set<Producto>();
