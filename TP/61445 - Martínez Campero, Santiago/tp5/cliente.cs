@@ -99,3 +99,44 @@ async Task AgregarStock(){
         Console.WriteLine($"Error al agregar stock: {response.ReasonPhrase}");
     }
 }
+
+async Task QuitarStock(){
+    Console.Write("Ingrese el ID del producto: ");
+    if (!int.TryParse(Console.ReadLine(), out int id))
+    {
+        Console.WriteLine("ID no válido.");
+        return;
+    }
+    Console.Write("Ingrese la cantidad a quitar: ");
+    if (!int.TryParse(Console.ReadLine(), out int cantidad) || cantidad <= 0)
+    {
+        Console.WriteLine("Cantidad no válida.");
+        return;
+    }
+
+    var response = await http.PostAsJsonAsync($"{baseUrl}/productos/{id}/quitar-stock", new StockDto { Cantidad = cantidad }, jsonOpt);
+    if (response.IsSuccessStatusCode)
+    {
+        var producto = await response.Content.ReadFromJsonAsync<Producto>(jsonOpt);
+        Console.WriteLine($"Stock quitado. Nuevo stock de {producto?.Nombre}: {producto?.Stock}");
+    }
+    else
+    {
+        var error = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"Error al quitar stock: {response.ReasonPhrase} - {error}");
+    }
+}
+
+await MainMenu();
+
+class Producto {
+    public int Id { get; set; }
+    public string Nombre { get; set; } = null!;
+    public decimal Precio { get; set; }
+    public int Stock { get; set; }
+}
+
+class StockDto
+{
+    public int Cantidad { get; set; }
+}

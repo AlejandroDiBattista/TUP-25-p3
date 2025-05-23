@@ -56,3 +56,22 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
+
+app.Run("http://localhost:5000");
+
+class AppDb : DbContext {
+    public AppDb(DbContextOptions<AppDb> options) : base(options) { }
+    public DbSet<Producto> Productos => Set<Producto>();
+}
+
+class Producto{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = null!;
+    public decimal Precio { get; set; }
+    public int Stock { get; set; }
+}
+
+class StockDto
+{
+    public int Cantidad { get; set; }
+}
