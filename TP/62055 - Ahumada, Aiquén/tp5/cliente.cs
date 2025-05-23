@@ -12,7 +12,7 @@ var jsonOpt = new JsonSerializerOptions {
     PropertyNameCaseInsensitive = true
 };
 
-// Codigo de ejemplo: Reemplazar por la implementacion real 
+
 
 async Task<List<Producto>> TraerAsync(){
     var json = await http.GetStringAsync($"{baseUrl}/productos");
@@ -43,7 +43,7 @@ async Task ModificarStockAsync(bool agregar)
         return;
     }
 
-    var dto = new { cantidad }; // serializa { "cantidad": N }
+    var dto = new { cantidad }; 
     var contenido = new StringContent(
         JsonSerializer.Serialize(dto, jsonOpt),
         System.Text.Encoding.UTF8,

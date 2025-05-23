@@ -1,5 +1,9 @@
 #r "sdk:Microsoft.NET.Sdk.Web"
-dotnet run servidor.cs
+#r "nuget: Microsoft.EntityFrameworkCore, 9.0.4"
+#r "nuget: Microsoft.EntityFrameworkCore.Sqlite, 9.0.4"
+#r "nuget: SQLitePCLRaw.bundle_e_sqlite3, 2.0.7"
+
+using System.Text.Json;                     
 using Microsoft.AspNetCore.Http;    
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -25,7 +29,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDb>();
     db.Database.EnsureCreated();
 
-    // Si la tabla Productos está vacía, agregamos 10 productos de ejemplo
+   
     if (!db.Productos.Any())
     {
         for (int i = 1; i <= 10; i++)
@@ -33,7 +37,7 @@ using (var scope = app.Services.CreateScope())
             db.Productos.Add(new Producto
             {
                 Nombre = $"Producto {i}",
-                Precio = 10m * i,  // Por ejemplo, precio escalonado: 10, 20, 30...
+                Precio = 10m * i,  
                 Stock = 10
             });
         }
