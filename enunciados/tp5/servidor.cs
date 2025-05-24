@@ -39,3 +39,65 @@ class Producto{
     public string Nombre { get; set; } = null!;
     public decimal Precio { get; set; }
 }
+
+public class AppDbContext : DbContext
+{
+    public DbSet<Producto> Productos { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+    {
+        options.UseSqlite("Data Source=tienda.db");
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Producto>().HasData(
+            new Producto { Id = 1, Nombre = "Laptop", Stock = 10 },
+            new Producto { Id = 2, Nombre = "Mouse", Stock = 10 },
+            new Producto { Id = 3, Nombre = "Teclado", Stock = 10 },
+            new Producto { Id = 4, Nombre = "Monitor", Stock = 10 },
+            new Producto { Id = 5, Nombre = "Auriculares", Stock = 10 },
+            new Producto { Id = 6, Nombre = "Silla Gamer", Stock = 10 },
+            new Producto { Id = 7, Nombre = "Impresora", Stock = 10 },
+            new Producto { Id = 8, Nombre = "Router", Stock = 10 },
+            new Producto { Id = 9, Nombre = "Disco SSD", Stock = 10 },
+            new Producto { Id = 10, Nombre = "Pendrive", Stock = 10 }
+        );
+    }
+}
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddDbContext<AppDbContext>();
+var app = builder.Build();
+
+app.MapGet("/productos", async (AppDbContext db) => await db.Productos.ToListAsync());
+
+app.MapGet("/productos/reposicion", async (AppDbContext db) =>
+    await db.Productos.Where(p => p.Stock < 3).ToListAsync());
+
+app.MapPost("/productos/agregar/{id}/{cantidad}", async (AppDbContext db, int id, int cantidad) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto != null)
+    {
+        producto.Stock += cantidad;
+        await db.SaveChangesAsync();
+        return Results.Ok(producto);
+    }
+    return Results.NotFound();
+});
+
+app.MapPost("/productos/quitar/{id}/{cantidad}", async (AppDbContext db, int id, int cantidad) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto != null && producto.Stock - cantidad >= 0)
+    {
+        producto.Stock -= cantidad;
+        await db.SaveChangesAsync();
+        return Results.Ok(producto);
+    }
+    return Results.BadRequest();
+});
+
+app.Run();
