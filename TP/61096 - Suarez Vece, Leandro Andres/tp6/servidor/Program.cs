@@ -1,8 +1,23 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
+using MYContext;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// agregar servicios : Instalar EF Core y SQLite
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite("Data Source=./tienda-onlone.db"));
+builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+
 // Agregar servicios CORS para permitir solicitudes desde el cliente
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp", policy =>
+    {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
               .AllowAnyHeader()
               .AllowAnyMethod();
@@ -14,8 +29,15 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated(); // 👈 Esto crea la DB si no existe
+}
+
 // Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
 }
 
