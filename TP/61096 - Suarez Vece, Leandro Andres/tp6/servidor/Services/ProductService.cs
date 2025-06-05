@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Servidor.Models;
 using MYContext;
+using Servidor.Dto;
 
 namespace Services;
 
 public interface IPruductServices
 {
     Task<List<Producto>> GetPorducts(string? query);
+    Task CarritoInit(CarritoDto dto);
 
 }
 
@@ -35,6 +37,13 @@ public class ProductService : IPruductServices
         }
 
         return await query.ToListAsync();
+    }
+
+    public async Task CarritoInit(CarritoDto dto)
+    {
+        var carrito = new Carrito { Cantidad = dto.Cantidad, ProductoId = dto.ProductoId };
+        _context.Carrito.Add(carrito);
+        await _context.SaveChangesAsync();
     }
 
 }

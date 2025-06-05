@@ -19,7 +19,7 @@ public class Compra
     [EmailAddress]
     public string EmailCliente { get; set; }
 
-    public ICollection<ItemCompra>? Items { get; set; }
+    public List<ItemCompra>? Items { get; set; }
 
     [NotMapped]
     public decimal Total => Items?.Sum(i => i.Cantidad * i.PrecioUnitario) ?? 0m;

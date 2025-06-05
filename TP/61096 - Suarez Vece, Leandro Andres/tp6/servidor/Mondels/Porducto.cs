@@ -22,5 +22,8 @@ public class Producto
     public int Stock { get; set; }
     public string ImagenUrl { get; set; }
 
-    public ICollection<ItemCompra>? ItemsCompra { get; set; }
+    public List<ItemCompra>? ItemsCompra { get; set; }
+
+    public Carrito carrito { get; set; }
+
 }

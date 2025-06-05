@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MYContext;
 using Services;
+using Servidor.Dto;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +62,12 @@ app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
 {
     var productos = await servicio.GetPorducts(busqueda);
     return Results.Ok(productos);
+});
+
+app.MapPost("/carrito", async (CarritoDto carrito, IPruductServices servicio) =>
+{
+    await servicio.CarritoInit(carrito);
+    return Results.Ok();
 });
 
 app.Run();
