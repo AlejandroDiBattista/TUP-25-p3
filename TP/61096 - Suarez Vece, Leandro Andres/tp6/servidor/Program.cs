@@ -64,6 +64,12 @@ app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
     return Results.Ok(productos);
 });
 
+app.MapGet("/carrito", async (IPruductServices servicio) =>
+{
+    var productos = await servicio.GetPorductsCarrito();
+    return Results.Ok(productos);
+});
+
 app.MapPost("/carrito", async (CarritoDto carrito, IPruductServices servicio) =>
 {
     await servicio.CarritoInit(carrito);
