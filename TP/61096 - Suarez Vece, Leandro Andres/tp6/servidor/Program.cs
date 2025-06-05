@@ -6,12 +6,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MYContext;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // agregar servicios : Instalar EF Core y SQLite
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite("Data Source=./tienda-onlone.db"));
 builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+
+//inyeccion de dependencias
+builder.Services.AddScoped<IPruductServices, ProductService>();
+
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options =>
@@ -32,7 +37,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated(); // 👈 Esto crea la DB si no existe
+    db.Database.EnsureCreated();
 }
 
 // Configurar el pipeline de solicitudes HTTP
@@ -49,5 +54,12 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
+
+app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
+{
+    var productos = await servicio.GetPorducts(busqueda);
+    return Results.Ok(productos);
+});
 
 app.Run();

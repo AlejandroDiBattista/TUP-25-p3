@@ -22,6 +22,5 @@ public class Producto
     public int Stock { get; set; }
     public string ImagenUrl { get; set; }
 
-    // Relación inversa opcional
     public ICollection<ItemCompra>? ItemsCompra { get; set; }
 }
