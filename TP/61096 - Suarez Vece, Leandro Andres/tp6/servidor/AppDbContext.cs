@@ -17,6 +17,12 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Producto>().HasData(ProductoSeeder.ObtenerProductos());
+
+        modelBuilder.Entity<ItemCompra>()
+            .HasOne(ic => ic.Compra)
+            .WithMany(c => c.Items)
+            .HasForeignKey(ic => ic.CompraId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

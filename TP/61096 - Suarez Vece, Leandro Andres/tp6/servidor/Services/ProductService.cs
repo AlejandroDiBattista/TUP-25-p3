@@ -15,6 +15,8 @@ public interface IPruductServices
     Task CarritoInit(CompraDto dto);
     Task ActualizarCarrito(int id, ItemCompraDto dto);
 
+    Task ElimnarCarrito(int id);
+
 }
 
 public class ProductService : IPruductServices
@@ -100,16 +102,15 @@ public class ProductService : IPruductServices
         }
     }
 
-    // public async Task CarritoPut(CarritoDto dto)
-    // {
-    //     var buscar = await _context.Carrito.FindAsync(dto.ProductoId);
+    public async Task ElimnarCarrito(int id)
+    {
+        var res = await _context.Compras.FindAsync(id);
+        if (res != null)
+        {
+            _context.Compras.Remove(res);
+            await _context.SaveChangesAsync();
+        }
+    }
 
-    //     if (buscar != null)
-    //     {
-    //         // buscar.Stock -= dto.Cantidad;
-    //         buscar.Cantidad = dto.Cantidad;
-    //         await _context.SaveChangesAsync();
-    //     }
-    // }
 
 }

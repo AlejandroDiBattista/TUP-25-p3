@@ -82,5 +82,10 @@ app.MapPut("/carrito/{id}", async (int id, ItemCompraDto dto, IPruductServices s
     await servicio.ActualizarCarrito(id, dto);
     return Results.Ok();
 });
+app.MapDelete("/carrito/{id}", async (int id, IPruductServices servicio) =>
+{
+    await servicio.ElimnarCarrito(id);
+    return Results.Ok();
+});
 
 app.Run();
