@@ -11,8 +11,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Producto> Productos { get; set; }
     public DbSet<Compra> Compras { get; set; }
-    public DbSet<ItemCompra> ItemsCompra { get; set; }
-    public DbSet<Carrito> Carrito { get; set; }
+    public DbSet<ItemCompra> ItemsCompras { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

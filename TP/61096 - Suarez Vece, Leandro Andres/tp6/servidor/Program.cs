@@ -64,15 +64,22 @@ app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
     return Results.Ok(productos);
 });
 
-app.MapGet("/carrito", async (IPruductServices servicio) =>
+app.MapGet("/carrito/{id}", async (int id, IPruductServices servicio) =>
 {
-    var productos = await servicio.GetPorductsCarrito();
+    var productos = await servicio.GetPorductsCarrito(id);
     return Results.Ok(productos);
 });
 
-app.MapPost("/carrito", async (CarritoDto carrito, IPruductServices servicio) =>
+app.MapPost("/carrito", async (IPruductServices servicio) =>
 {
-    await servicio.CarritoInit(carrito);
+    var compra = new CompraDto();
+    await servicio.CarritoInit(compra);
+    return Results.Ok();
+});
+
+app.MapPut("/carrito/{id}", async (int id, ItemCompraDto dto, IPruductServices servicio) =>
+{
+    await servicio.ActualizarCarrito(id, dto);
     return Results.Ok();
 });
 

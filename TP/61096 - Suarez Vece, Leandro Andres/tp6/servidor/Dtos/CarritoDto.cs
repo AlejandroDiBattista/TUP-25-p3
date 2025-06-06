@@ -5,16 +5,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Servidor.Dto;
 
-public class CarritoDto
+public class ItemCompraDto
 {
     public int ProductoId { get; set; }
     public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
 }
-public class CarritoGtDto
+public class CompraDto
 {
-    public int Id_Carrito { get; set; }
+    public DateTime Fecha { get; set; } = DateTime.Now;
+}
+public class ItemCompraGtDto
+{
+    public int Id_iten { get; set; }
     public int Cantidad { get; set; }
     public int ProductoId { get; set; }
+    public int CompraId { get; set; }
     public string NombreProducto { get; set; }
     public decimal PrecioProducto { get; set; }
 

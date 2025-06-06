@@ -24,6 +24,5 @@ public class Producto
 
     public List<ItemCompra>? ItemsCompra { get; set; }
 
-    public Carrito carrito { get; set; }
 
 }

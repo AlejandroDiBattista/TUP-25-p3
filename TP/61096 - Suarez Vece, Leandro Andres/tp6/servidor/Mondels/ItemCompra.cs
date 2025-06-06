@@ -15,15 +15,14 @@ public class ItemCompra
     public decimal PrecioUnitario { get; set; }
 
 
-
     [ForeignKey(nameof(ProductoId))]
     public int ProductoId { get; set; }
 
-    public Producto? Producto { get; set; }
 
     [ForeignKey(nameof(CompraId))]
     public int CompraId { get; set; }
     public Compra? Compra { get; set; }
+    public Producto? Producto { get; set; }
 
 
 }

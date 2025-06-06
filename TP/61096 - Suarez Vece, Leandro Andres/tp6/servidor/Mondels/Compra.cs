@@ -9,15 +9,15 @@ public class Compra
     [Key]
     public int Id_compra { get; set; }
     public DateTime Fecha { get; set; }
-    [Required]
+
     [MaxLength(50)]
-    public string NombreCliente { get; set; }
-    [Required]
+    public string? NombreCliente { get; set; }
+
     [MaxLength(50)]
-    public string ApellidoCliente { get; set; }
-    [Required]
+    public string? ApellidoCliente { get; set; }
+
     [EmailAddress]
-    public string EmailCliente { get; set; }
+    public string? EmailCliente { get; set; }
 
     public List<ItemCompra>? Items { get; set; }
 

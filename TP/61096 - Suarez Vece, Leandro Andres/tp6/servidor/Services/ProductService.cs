@@ -11,8 +11,9 @@ namespace Services;
 public interface IPruductServices
 {
     Task<List<Producto>> GetPorducts(string? query);
-    Task<List<CarritoGtDto>> GetPorductsCarrito();
-    Task CarritoInit(CarritoDto dto);
+    Task<List<ItemCompraGtDto>> GetPorductsCarrito(int id);
+    Task CarritoInit(CompraDto dto);
+    Task ActualizarCarrito(int id, ItemCompraDto dto);
 
 }
 
@@ -39,40 +40,76 @@ public class ProductService : IPruductServices
 
         return await query.ToListAsync();
     }
-    public async Task<List<CarritoGtDto>> GetPorductsCarrito()
+
+    public async Task<List<ItemCompraGtDto>> GetPorductsCarrito(int id)
     {
-        var res = await _context.Carrito
+        var res = await _context.ItemsCompras
                 .Join(
                     _context.Productos,
-                    carrito => carrito.ProductoId,
+                    item => item.ProductoId,
                     producto => producto.Id_producto,
-                    (carrito, producto) => new CarritoGtDto
+                    (item, producto) => new ItemCompraGtDto
                     {
-                        Id_Carrito = carrito.Id_Carrito,
-                        Cantidad = carrito.Cantidad,
+                        Id_iten = item.Id_iten,
+                        Cantidad = item.Cantidad,
                         ProductoId = producto.Id_producto,
                         NombreProducto = producto.Nombre,
-                        PrecioProducto = producto.Precio
+                        PrecioProducto = item.PrecioUnitario,
+                        CompraId = item.CompraId
                     }
                 )
+                .Where(x => x.CompraId == id)
                 .ToListAsync();
 
         return res;
     }
 
-    public async Task CarritoInit(CarritoDto dto)
+    public async Task CarritoInit(CompraDto dto)
     {
-        var buscar = await _context.Productos.FindAsync(dto.ProductoId);
-
-        if (buscar != null && buscar.Stock >= dto.Cantidad)
-        {
-            buscar.Stock -= dto.Cantidad;
-
-            var carrito = new Carrito { Cantidad = dto.Cantidad, ProductoId = dto.ProductoId };
-            _context.Carrito.Add(carrito);
-            await _context.SaveChangesAsync();
-        }
+        var data = new Compra { Fecha = dto.Fecha };
+        _context.Compras.Add(data);
+        await _context.SaveChangesAsync();
 
     }
+    public async Task ActualizarCarrito(int id, ItemCompraDto dto)
+    {
+        var prod = await _context.Productos.FindAsync(dto.ProductoId);
+
+        if (prod != null && prod.Stock >= dto.Cantidad)
+        {
+            var buscar = await _context.ItemsCompras
+                    .FirstOrDefaultAsync(x => x.ProductoId == dto.ProductoId && x.CompraId == id);
+
+            if (buscar != null)
+            {
+                buscar.Cantidad = dto.Cantidad;
+            }
+            else
+            {
+                var nuevoItem = new ItemCompra
+                {
+                    ProductoId = dto.ProductoId,
+                    CompraId = id,
+                    Cantidad = dto.Cantidad,
+                    PrecioUnitario = dto.PrecioUnitario
+                };
+
+                await _context.ItemsCompras.AddAsync(nuevoItem);
+            }
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    // public async Task CarritoPut(CarritoDto dto)
+    // {
+    //     var buscar = await _context.Carrito.FindAsync(dto.ProductoId);
+
+    //     if (buscar != null)
+    //     {
+    //         // buscar.Stock -= dto.Cantidad;
+    //         buscar.Cantidad = dto.Cantidad;
+    //         await _context.SaveChangesAsync();
+    //     }
+    // }
 
 }
