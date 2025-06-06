@@ -15,6 +15,29 @@ public class CompraDto
 {
     public DateTime Fecha { get; set; } = DateTime.Now;
 }
+
+public class Page
+{
+    public int pageIndex { get; set; }
+    public int pageSize { get; set; }
+}
+public class CompraPendienteDto
+{
+    public int Id_compra { get; set; }
+    public DateTime Fecha { get; set; }
+    public bool Entregado { get; set; }
+}
+public class CompraGetDto
+{
+    public int Id_compra { get; set; }
+    public string NombreCliente { get; set; }
+    public string ApellidoCliente { get; set; }
+    public string EmailCliente { get; set; }
+    public DateTime Fecha { get; set; }
+    public List<ItemCompraGtDto> Items { get; set; }
+
+    public decimal Total => Items?.Sum(i => i.subTotal) ?? 0m;
+}
 public class ConfirmarCompraDto
 {
     [MaxLength(50)]

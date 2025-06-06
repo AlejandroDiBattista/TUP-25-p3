@@ -61,13 +61,24 @@ app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha 
 app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
 {
     var productos = await servicio.GetPorducts(busqueda);
-    return Results.Ok(productos);
+    return productos is null ? Results.NotFound("No se encontró productos.") : Results.Ok(productos);
+});
+app.MapGet("/pendientes", async (IPruductServices servicio) =>
+{
+    var productos = await servicio.GetCarritoPendiente();
+    return productos is null ? Results.NotFound("No se encontró el carrito pendiente.") : Results.Ok(productos);
+});
+
+app.MapPost("/historial", async (Page page, IPruductServices servicio) =>
+{
+    var historial = await servicio.GetHistorial(page);
+    return historial is null ? Results.NotFound("No se encontró un historial.") : Results.Ok(historial);
 });
 
 app.MapGet("/carrito/{id}", async (int id, IPruductServices servicio) =>
 {
-    var productos = await servicio.GetPorductsCarrito(id);
-    return Results.Ok(productos);
+    var dto = await servicio.GetPorductsCarrito(id);
+    return dto is null ? Results.NotFound("No se encontró el carrito pendiente.") : Results.Ok(dto);
 });
 
 app.MapPost("/carrito", async (IPruductServices servicio) =>

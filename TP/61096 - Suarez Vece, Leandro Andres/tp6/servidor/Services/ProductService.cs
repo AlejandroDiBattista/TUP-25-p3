@@ -12,6 +12,8 @@ public interface IPruductServices
 {
     Task<List<Producto>> GetPorducts(string? query);
     Task<List<ItemCompraGtDto>> GetPorductsCarrito(int id);
+    Task<CompraPendienteDto> GetCarritoPendiente();
+    Task<List<CompraGetDto>> GetHistorial(Page page);
     Task CarritoInit(CompraDto dto);
     Task ActualizarCarrito(int id, ItemCompraDto dto);
     Task ConfirmarCompra(int id, ConfirmarCompraDto dto);
@@ -43,6 +45,47 @@ public class ProductService : IPruductServices
 
         return await query.ToListAsync();
     }
+    public async Task<CompraPendienteDto> GetCarritoPendiente()
+    {
+        var res = await _context.Compras.Where(x => x.Entregado == false)
+                        .Select(x => new CompraPendienteDto
+                        {
+                            Id_compra = x.Id_compra,
+                            Fecha = x.Fecha,
+                            Entregado = x.Entregado
+                        })
+                         .FirstOrDefaultAsync();
+        return res;
+    }
+    public async Task<List<CompraGetDto>> GetHistorial(Page page)
+    {
+        var res = await _context.Compras
+            .Where(x => x.Entregado == true)
+            .OrderBy(c => c.Fecha)
+            .Skip(page.pageIndex * page.pageSize)
+            .Take(page.pageSize)
+            .Select(x => new CompraGetDto
+            {
+                Id_compra = x.Id_compra,
+                NombreCliente = x.NombreCliente,
+                ApellidoCliente = x.ApellidoCliente,
+                EmailCliente = x.EmailCliente,
+                Fecha = x.Fecha,
+                Items = new List<ItemCompraGtDto>()
+            })
+            .ToListAsync();
+
+        //problema de n+1 pero funca
+        if (res != null)
+        {
+            foreach (var compra in res)
+            {
+                compra.Items = await GetPorductsCarrito(compra.Id_compra);
+            }
+        }
+        return res;
+    }
+
 
     public async Task<List<ItemCompraGtDto>> GetPorductsCarrito(int id)
     {
