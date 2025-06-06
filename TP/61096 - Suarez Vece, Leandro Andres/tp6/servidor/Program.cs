@@ -88,4 +88,10 @@ app.MapDelete("/carrito/{id}", async (int id, IPruductServices servicio) =>
     return Results.Ok();
 });
 
+app.MapDelete("/carrito/{id}/{id2}", async (int id, int id2, IPruductServices servicio) =>
+{
+    await servicio.ElimnarPorudctoCarrito(id, id2);
+    return Results.Ok();
+});
+
 app.Run();

@@ -16,6 +16,7 @@ public interface IPruductServices
     Task ActualizarCarrito(int id, ItemCompraDto dto);
 
     Task ElimnarCarrito(int id);
+    Task ElimnarPorudctoCarrito(int idCompra, int Id_iten);
 
 }
 
@@ -108,6 +109,17 @@ public class ProductService : IPruductServices
         if (res != null)
         {
             _context.Compras.Remove(res);
+            await _context.SaveChangesAsync();
+        }
+    }
+    public async Task ElimnarPorudctoCarrito(int idCompra, int Id_iten)
+    {
+        var res = await _context.ItemsCompras
+        .Where(x => x.CompraId == idCompra && x.Id_iten == Id_iten)
+        .FirstOrDefaultAsync();
+        if (res != null)
+        {
+            _context.ItemsCompras.Remove(res);
             await _context.SaveChangesAsync();
         }
     }
