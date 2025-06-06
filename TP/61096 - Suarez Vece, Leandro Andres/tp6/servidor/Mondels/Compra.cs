@@ -21,6 +21,8 @@ public class Compra
 
     public List<ItemCompra>? Items { get; set; }
 
+    public bool Entregado { get; set; }
+
     [NotMapped]
     public decimal Total => Items?.Sum(i => i.Cantidad * i.PrecioUnitario) ?? 0m;
 }

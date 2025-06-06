@@ -15,6 +15,17 @@ public class CompraDto
 {
     public DateTime Fecha { get; set; } = DateTime.Now;
 }
+public class ConfirmarCompraDto
+{
+    [MaxLength(50)]
+    public string? NombreCliente { get; set; }
+
+    [MaxLength(50)]
+    public string? ApellidoCliente { get; set; }
+
+    [EmailAddress]
+    public string? EmailCliente { get; set; }
+}
 public class ItemCompraGtDto
 {
     public int Id_iten { get; set; }

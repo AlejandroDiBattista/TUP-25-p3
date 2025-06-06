@@ -14,7 +14,7 @@ public interface IPruductServices
     Task<List<ItemCompraGtDto>> GetPorductsCarrito(int id);
     Task CarritoInit(CompraDto dto);
     Task ActualizarCarrito(int id, ItemCompraDto dto);
-
+    Task ConfirmarCompra(int id, ConfirmarCompraDto dto);
     Task ElimnarCarrito(int id);
     Task ElimnarPorudctoCarrito(int idCompra, int Id_iten);
 
@@ -69,10 +69,22 @@ public class ProductService : IPruductServices
 
     public async Task CarritoInit(CompraDto dto)
     {
-        var data = new Compra { Fecha = dto.Fecha };
+        var data = new Compra { Fecha = dto.Fecha, Entregado = false };
         _context.Compras.Add(data);
         await _context.SaveChangesAsync();
 
+    }
+    public async Task ConfirmarCompra(int id, ConfirmarCompraDto dto)
+    {
+        var res = await _context.Compras.FindAsync(id);
+        if (res != null)
+        {
+            res.NombreCliente = dto.NombreCliente;
+            res.ApellidoCliente = dto.ApellidoCliente;
+            res.EmailCliente = dto.EmailCliente;
+            res.Entregado = true;
+            await _context.SaveChangesAsync();
+        }
     }
     public async Task ActualizarCarrito(int id, ItemCompraDto dto)
     {
@@ -112,6 +124,8 @@ public class ProductService : IPruductServices
             await _context.SaveChangesAsync();
         }
     }
+
+
     public async Task ElimnarPorudctoCarrito(int idCompra, int Id_iten)
     {
         var res = await _context.ItemsCompras
