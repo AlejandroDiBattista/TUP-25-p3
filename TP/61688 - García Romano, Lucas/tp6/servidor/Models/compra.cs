@@ -1,4 +1,5 @@
 namespace servidor.Models;
+//representa la compra en la tienda
 
 public class Compra
 //Son los Detalles de la compra
@@ -7,6 +8,7 @@ public class Compra
     
     //Fecha de la compra
     public DateTime Fecha { get; set; } = DateTime.UtcNow;
+    //es el total de la compra
     public decimal Total { get; set; }
 
 //Son los detalles del cliente
