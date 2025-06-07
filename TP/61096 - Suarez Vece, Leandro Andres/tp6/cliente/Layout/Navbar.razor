@@ -1,0 +1,57 @@
+@using Microsoft.AspNetCore.Components.Routing
+
+@code {
+    private bool condicion = false;
+}
+<nav class="navbar navbar-expand-lg bg-dark text-white" data-bs-theme="dark">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white" href="#">P3:C3</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ">
+                <li class="nav-item">
+                    <NavLink href="/" class="nav-link text-white" activeClass="active">
+                        <img src="/ico/home.png" class="nav-icono" alt="" srcset="">
+                        Home
+                    </NavLink>
+                </li>
+                @if (condicion)
+                {
+                    <li>
+                        <NavLink href="/carrito" class="nav-link text-white" activeClass="active">
+                            <img src="/ico/carrito.png" class="nav-icono" alt="" srcset="">
+                            Carrito
+                        </NavLink>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <NavLink href="/carrito" class="nav-link text-white position-relative" activeClass="active">
+                            <span class="nav-icono2">2</span>
+                            <img src="/ico/carrito.png" class="nav-icono" alt="" srcset="">
+                            Carrito
+                        </NavLink>
+                    </li>
+                }
+
+                <li class="nav-item">
+                    <NavLink href="/historial" class="nav-link text-white" activeClass="active">
+                        <img src="/ico/historial.png" class="nav-icono" alt="" srcset="">
+                        Historial
+                    </NavLink>
+                </li>
+            </ul>
+
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" />
+                <button class="btn btn-outline-light" type="submit">Buscar</button>
+            </form>
+        </div>
+    </div>
+</nav>

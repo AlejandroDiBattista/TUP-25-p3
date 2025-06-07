@@ -75,7 +75,7 @@ public class ProductService : IPruductServices
             })
             .ToListAsync();
 
-        //problema de n+1 pero funca
+        //problema de n+1 pero funca y se ve fachero
         if (res != null)
         {
             foreach (var compra in res)
