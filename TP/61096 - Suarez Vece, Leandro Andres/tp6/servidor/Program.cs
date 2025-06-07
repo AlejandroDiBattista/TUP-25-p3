@@ -65,8 +65,8 @@ app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
 });
 app.MapGet("/pendientes", async (IPruductServices servicio) =>
 {
-    var productos = await servicio.GetCarritoPendiente();
-    return productos is null ? Results.NotFound("No se encontró el carrito pendiente.") : Results.Ok(productos);
+    var compraPendiente = await servicio.GetCarritoPendiente();
+    return compraPendiente is null ? Results.NotFound("No se encontró el carrito pendiente.") : Results.Ok(compraPendiente);
 });
 
 app.MapPost("/historial", async (Page page, IPruductServices servicio) =>
@@ -81,11 +81,10 @@ app.MapGet("/carrito/{id}", async (int id, IPruductServices servicio) =>
     return dto is null ? Results.NotFound("No se encontró el carrito pendiente.") : Results.Ok(dto);
 });
 
-app.MapPost("/carrito", async (IPruductServices servicio) =>
+app.MapPost("/carrito", async (CompraDto dto, IPruductServices servicio) =>
 {
-    var compra = new CompraDto();
-    await servicio.CarritoInit(compra);
-    return Results.Ok();
+    var res = await servicio.CarritoInit(dto);
+    return Results.Ok(res);
 });
 
 app.MapPut("/carrito/{id}", async (int id, ItemCompraDto dto, IPruductServices servicio) =>

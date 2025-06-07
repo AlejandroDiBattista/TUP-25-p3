@@ -14,7 +14,7 @@ public interface IPruductServices
     Task<List<ItemCompraGtDto>> GetPorductsCarrito(int id);
     Task<CompraPendienteDto> GetCarritoPendiente();
     Task<List<CompraGetDto>> GetHistorial(Page page);
-    Task CarritoInit(CompraDto dto);
+    Task<CompraPendienteDto> CarritoInit(CompraDto dto);
     Task ActualizarCarrito(int id, ItemCompraDto dto);
     Task ConfirmarCompra(int id, ConfirmarCompraDto dto);
     Task ElimnarCarrito(int id);
@@ -110,11 +110,12 @@ public class ProductService : IPruductServices
         return res;
     }
 
-    public async Task CarritoInit(CompraDto dto)
+    public async Task<CompraPendienteDto> CarritoInit(CompraDto dto)
     {
         var data = new Compra { Fecha = dto.Fecha, Entregado = false };
         _context.Compras.Add(data);
         await _context.SaveChangesAsync();
+        return new CompraPendienteDto { Id_compra = data.Id_compra, Fecha = dto.Fecha, Entregado = false };
 
     }
     public async Task ConfirmarCompra(int id, ConfirmarCompraDto dto)

@@ -142,3 +142,45 @@ code {
 .form-floating>.form-control:focus::placeholder {
     text-align: start;
 }
+
+/* home */
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: start;
+}
+
+.carta-home {
+    flex: 0 1 calc(24% - 10px);
+    gap: 1rem;
+    min-width: 150px;
+}
+
+.card-img-top {
+    width: 120px;
+    height: 220px;
+}
+
+
+@media (max-width: 992px) {
+    .carta-home {
+        flex: 1 1 calc(32.333% - 10px);
+        /* 2 por fila */
+    }
+}
+
+@media (max-width: 664px) {
+    .carta-home {
+        flex: 1 1 calc(50% - 10px);
+        /* 1 por fila */
+    }
+}
+
+@media (max-width: 576px) {
+    .carta-home {
+        flex: 1 1 100%;
+        /* 1 por fila */
+    }
+}

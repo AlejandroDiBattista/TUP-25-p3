@@ -1,8 +1,9 @@
-@using Microsoft.AspNetCore.Components.Routing
+@using cliente.Services
+@using cliente.Models
 
-@code {
-    private bool condicion = false;
-}
+@inject ApiService ApiService
+
+
 <nav class="navbar navbar-expand-lg bg-dark text-white" data-bs-theme="dark">
     <div class="container-fluid">
         <a class="navbar-brand text-white" href="#">P3:C3</a>
@@ -20,7 +21,7 @@
                         Home
                     </NavLink>
                 </li>
-                @if (condicion)
+                @if (ApiService.Count < 1)
                 {
                     <li>
                         <NavLink href="/carrito" class="nav-link text-white" activeClass="active">
@@ -33,7 +34,7 @@
                 {
                     <li class="nav-item">
                         <NavLink href="/carrito" class="nav-link text-white position-relative" activeClass="active">
-                            <span class="nav-icono2">2</span>
+                            <span class="nav-icono2">@ApiService.Count</span>
                             <img src="/ico/carrito.png" class="nav-icono" alt="" srcset="">
                             Carrito
                         </NavLink>
@@ -55,3 +56,12 @@
         </div>
     </div>
 </nav>
+
+@code {
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiService.ObtenerCompraPendiente();
+    }
+}
