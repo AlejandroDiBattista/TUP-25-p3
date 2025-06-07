@@ -21,6 +21,6 @@ public class ApiService {
 }
 
 public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
+    public required string Mensaje { get; set; }
+    public required DateTime Fecha { get; set; }
 }
