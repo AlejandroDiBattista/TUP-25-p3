@@ -23,6 +23,7 @@ builder.Services.AddDbContext<TiendaContext>(options =>
 
 builder.Services.AddControllers();
 
+var carritos = new List<Carrito>();
 var app = builder.Build();
 
 
@@ -48,7 +49,41 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 //Endpoint devuelve los productos desde la base de datos
-app.MapGet("/api/productos", async (TiendaContext db) =>
-    await db.Productos.ToListAsync());
+app.MapGet("/api/productos", async (TiendaContext db, string? buscar) =>
+
+// Busca productos por nombre, descripción, marca o precio
+{
+    if (string.IsNullOrEmpty(buscar))
+        return Results.Ok(await db.Productos.ToListAsync());
+
+    var filtrados = await db.Productos
+        .Where(p =>
+            p.Nombre.Contains(buscar) ||
+            p.Descripcion.Contains(buscar) ||
+            p.Marca.Contains(buscar) ||
+            p.Precio.ToString().Contains(buscar)
+        )
+        .ToListAsync();
+
+    return Results.Ok(filtrados);
+});
+
+//endpoint para inicializar el carrito
+app.MapPost("/carritos", () =>
+{
+    var carrito = new Carrito();
+    carritos.Add(carrito);
+    return Results.Ok(new { carrito.Id });
+});
+//llama al Carrito por el ID y devuelve los detalles
+app.MapGet("/carritos/{id}", (Guid id) =>
+{
+    var carrito = carritos.FirstOrDefault(c => c.Id == id);
+
+    if (carrito == null)
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
+
+    return Results.Ok(carrito.Items);
+});
 
 app.Run();
