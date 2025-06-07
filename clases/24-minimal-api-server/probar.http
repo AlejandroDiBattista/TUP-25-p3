@@ -1,0 +1,34 @@
+@host = http://localhost:5193
+
+### Obtener todos los contactos
+GET {{host}}/contactos
+Accept: application/json
+
+### Obtener un contacto por id
+GET {{host}}/contactos/1
+Accept: application/json
+
+### Crear un nuevo contacto
+POST {{host}}/contactos
+Content-Type: application/json
+
+{
+  "nombre": "Carlos",
+  "apellido": "Lopez",
+  "telefono": "5551234",
+  "email": "carlos@mail.com"
+}
+
+### Actualizar un contacto existente
+PUT {{host}}/contactos/1
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "telefono": "999999",
+  "email": "juan_actualizado@mail.com"
+}
+
+### Eliminar un contacto
+DELETE {{host}}/contactos/1

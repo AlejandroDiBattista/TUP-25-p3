@@ -1,32 +1,75 @@
-# Archivos de Visual Studio
+# -----------------------------
+# IDEs y editores
+# -----------------------------
+# Visual Studio
 .vs/
-.vscode/
-*.user
 *.suo
+*.user
 
-# Binarios y objetos compilados
+# VS Code
+.vscode/
+
+# Code Runner (extensiones temporales)
+**/tempCodeRunnerFile.cs
+tempCodeRunnerFile.csharp
+
+# -----------------------------
+# Salidas de compilación
+# -----------------------------
+# Binarios y objetos
 **/bin/
 **/obj/
 
-# Archivos del sistema
+# Publicaciones y despliegues
+**/publish/
+**/node_modules/
+
+# -----------------------------
+# Sistema operativo
+# -----------------------------
+# macOS
 **/.DS_Store
+
+# Windows
 Thumbs.db
 
-# Carpetas del proyecto que no queres subir
+# -----------------------------
+# Archivos temporales y caches
+# -----------------------------
+# Carpetas temporales del proyecto
+**/tmp/
+
+# Nombres genéricos
+*.tmp
+*.log
+
+# Fechas y soluciones intermedias
 fechas/
-/datos/Soluciones
+/datos/Soluciones/
 
-**/tempCodeRunnerFile.cs
+# -----------------------------
+# Contenido web estático
+# -----------------------------
+# Ignorar librerías bajo wwwroot/lib
+**/wwwroot/lib/**
 
-tempCodeRunnerFile.csharp
-/datos/obj
-/datos/obj
-/clases/tmp
-examen/respuestas-examen.md
+
+# -----------------------------
+# Bases de datos locales
+# -----------------------------
 *.db-shm
 *.db-wal
-/datos/asistencias/tmp
 
+# -----------------------------
+# Archivos específicos del proyecto
+# -----------------------------
+# Enunciados y exámenes
+examen/respuestas-examen.md
+
+# Configuración sensible
+github-config.json
+*.secret.json
+
+# Archivos falsos de prueba
 .fake
-Enunciados/.DS_Store
-Enunciados/.DS_Store
+*/node_modules

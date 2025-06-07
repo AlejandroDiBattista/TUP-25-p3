@@ -2,6 +2,7 @@
 # Requiere mcp[cli] ≥ 1.2   →  pip3 install "mcp[cli]"
 
 import asyncio
+
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 

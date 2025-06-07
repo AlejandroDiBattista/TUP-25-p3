@@ -1,0 +1,38 @@
+@page "/"
+
+@inject NavigationManager Navegar
+@inject ContadoresServicio Contar 
+@* Traemos el servicio ContadoresServicio *@
+
+<h1>Definir contadores</h1>
+<input @bind="Nombre" />
+<button @onclick="AgregarContador">➕</button>
+
+<ul>
+    @foreach (var contador in Contar.Contadores)
+    {
+        <li>
+            @contador.Nombre 
+            <button @onclick="() => Contar.Eliminar(contador)">❌</button> 
+        </li>
+    }
+</ul>
+
+<button @onclick="IrContadores">Ver contadores</button>
+
+@code { 
+    string Nombre = "";
+
+    void AgregarContador(){
+        if(Nombre == "") return;
+        var c = new Contador() { Nombre = Nombre };
+        Contar.Agregar(c);
+        Nombre = "";
+    }
+
+    void IrContadores()
+    {
+        if (Contar.Contadores.Count < 1) return;
+        Navegar.NavigateTo("/contadores");
+    }
+}

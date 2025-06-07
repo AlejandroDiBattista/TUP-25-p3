@@ -1,0 +1,151 @@
+/* Estilos personalizados para Sistema de Control de Tráfico */
+body {
+    background: linear-gradient(90deg, #f9face, #eec79d);
+    color: #333;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    background: rgba(255,255,255,0.8);
+    border-radius: 20px;
+    box-shadow: 0 0px 2px rgba(0,0,0,0.2);
+    padding: 1rem;
+    margin: 10px auto;
+    max-width: 600px;
+    h1, h2, h3 {
+        margin: 0px;
+        margin-bottom: 10px;
+    }
+}
+
+.form-card {
+    label {
+        font-size: .9rem;
+        font-weight: light;
+        margin-bottom: 10px;
+    }
+    input {
+        width: calc(100% - 20px);
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+    }
+    .actions {
+        text-align: right;
+        margin-top: 20px;
+    }
+}
+
+.btn {
+    background: rgb(250, 250, 250);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+.counter-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.counter-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    position: relative;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.counter-card h3 {
+    font-size: 16px;
+    font-weight: light;
+    margin: 0 0 5px 0;
+    text-align: center;
+    width: 100%;
+}
+
+.counter-value {
+    font-size: 3em;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}
+
+.timer {
+    text-align: center;
+    font-size: 30px;
+    font-weight: lighter;
+    color: #888;
+    margin: 20px;
+}
+
+.results {
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+.results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.results th,
+.results td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: left;
+    &.derecha {
+        text-align: right;
+    }
+}
+
+.app {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 10px;
+}
+
+/* Bloque principal de loading-progress */
+.loading-progress {
+    position: relative;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    margin: 20vh auto 1rem auto;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+.loading-progress circle:last-child {
+    stroke: red;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
+
+/* Bloque principal de loading-progress-text */
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}

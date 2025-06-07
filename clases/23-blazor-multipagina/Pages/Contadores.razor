@@ -1,0 +1,51 @@
+@page "/contadores"
+
+@inject NavigationManager Navegar
+@inject ContadoresServicio Contar
+
+@using System.Timers
+
+<h1>Contadores</h1>
+<p>Reloj: @FormatoTiempo(Contar.TiempoFaltante)</p>
+<ul>
+@foreach (var contador in Contar.Contadores)
+{
+    <li>
+        @contador.Nombre hay @contador.Cantidad
+        <button @onclick="() => contador.Incrementar()">➕</button>
+    </li>
+}
+</ul>
+
+<button @onclick="IrResumen">Terminar</button>
+
+@code {
+    string FormatoTiempo(int segundos)
+    {
+        var tiempo = TimeSpan.FromSeconds(segundos);
+        return $"{tiempo.Minutes:D2}:{tiempo.Seconds:D2}";
+    }
+
+    Timer reloj = new Timer(1000);
+    void IrResumen()
+    {
+        if (Contar.SegundosTranscurridos < 10) return;
+        Navegar.NavigateTo("/resumen");
+    }
+
+    protected override void OnInitialized()
+    {
+        Contar.IniciarReloj();
+        reloj.Elapsed += (_,_) => {
+            Contar.ActualizarReloj();
+            InvokeAsync(StateHasChanged);
+        };
+        reloj.Start(); // Iniciar el temporizador
+    }
+
+    public void Dispose()
+    {
+        reloj.Stop();
+        reloj.Dispose();
+    }
+}

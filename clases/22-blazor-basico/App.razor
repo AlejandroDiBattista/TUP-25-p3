@@ -1,0 +1,160 @@
+﻿@using System
+@using System.Linq
+@using System.Timers
+
+<div class="app">
+    @if (pasos == 1) 
+    {
+
+        <Ficha titulo="¿Cuántos tipos de vehículos?" accion="Siguiente" onClick="IrAsignarNombres">
+            <label for="count">Cantidad de tipos de vehículos:</label>
+            <input id="count" type="number" @bind="contadores" min="1" />
+        </Ficha>
+    
+    } 
+    else if (pasos == 2) 
+    {
+
+        <Ficha titulo="Asignar Nombres a vehículos" accion="Siguiente" onClick="IrContar">
+            @for (var i = 0; i < nombres.Length; i++) {
+                var indice = i;
+                <div @key="indice">
+                    <label for="name_@indice">Nombre del contador @(indice + 1):</label>
+                    <input id="name_@indice" type="text" @bind="nombres[indice]" />
+                </div>
+            }
+        </Ficha>
+
+    } 
+    else if (pasos == 3) 
+    {
+
+        <Ficha titulo="Contar vehículos" accion="Terminar" onClick="IrInformar">
+            <div class="timer">@MostrarReloj</div>
+            <div class="counter-grid">
+                @for (int i = 0; i < listaContadores.Count; i++) {
+                    int indiceActual = i;
+                    <div @key="indiceActual" class="counter-card btn" @onclick="() => Incrementar(indiceActual)">
+                        <h3>@listaContadores[indiceActual].Nombre</h3>
+                        <div class="counter-value">@listaContadores[indiceActual].Cantidad</div>
+                    </div>
+                }
+            </div>
+        </Ficha>
+
+    } 
+    else if (pasos == 4) 
+    {
+        
+        <Ficha titulo="Resultados" accion="Comenzar" onClick="IrComienzo">
+            <div class="results">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vehículo</th>
+                            <th>Cantidad</th>
+                            <th>Vehículos/hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in listaContadores) {
+                            <tr>
+                                <td>@c.Nombre</td>
+                                <td class="derecha">@c.Cantidad</td>
+                                <td class="derecha">@Velocidad(c.Cantidad) v/h</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Ficha>
+
+    }
+</div>
+
+
+@code {
+    private int pasos = 1;
+    private int contadores = 1;
+    private List<Contador> listaContadores = new();
+    private string[] nombres = Array.Empty<string>();
+
+    private int segundos;
+    private Timer? temporizador;
+
+    // Navegar entre pasos
+
+    private void IrAsignarNombres() {
+        nombres = new string[contadores];
+        for (int i = 0; i < nombres.Length; i++) {
+            nombres[i] = $"Vehiculo {i + 1}";
+        }
+        pasos = 2;
+    }
+
+    private void IrContar() {
+        listaContadores = nombres
+            .Select((nombre, i) => new Contador { Nombre = (nombre == "") ? $"Tipo {i + 1}" : nombre })
+            .ToList();
+        IniciarReloj();
+        pasos = 3;
+    }
+
+    private void IrInformar() {
+        temporizador?.Stop();
+        pasos = 4;
+    }
+
+    private void IrComienzo() {
+        temporizador?.Dispose();
+        contadores = 1;
+        listaContadores.Clear();
+        nombres = Array.Empty<string>();
+        pasos = 1;
+    }
+
+    private string MostrarReloj => TimeSpan.FromSeconds(segundos).ToString("mm\\:ss");
+
+    private void IniciarReloj(){
+        segundos = 600;
+        temporizador = new Timer(1000) { AutoReset = true };
+        temporizador.Elapsed += (_, _) => {
+            if (segundos > 0) {
+                segundos--;
+                StateHasChanged();
+            } else {
+                IrInformar();
+            }
+        };
+        temporizador.Start();
+    }
+
+    
+    private void Incrementar(int indice) {
+        if (indice >= 0 && indice < listaContadores.Count) {
+            listaContadores[indice].Incrementar();
+            StateHasChanged();
+        }
+    }
+    
+
+    
+    private int Velocidad(int cantidad) {
+        // El tiempo transcurrido es 10 minutos o menos si terminó antes
+        var minutos = (600 - segundos) / 60.0;
+        if (minutos <= 0) minutos = 0.1; // Evitar división por cero
+        
+        // Proyectar el conteo a una hora completa
+        return (int)Math.Round(cantidad * (60 / minutos));
+    }
+    
+
+    public class Contador {
+        public string Nombre { get; set; } = string.Empty;   
+        public int Cantidad  { get; set; }  
+
+        public void Incrementar() => Cantidad++; // Método para Incrementar la cantidad del contador    
+    }
+
+}
+

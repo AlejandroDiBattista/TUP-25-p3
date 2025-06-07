@@ -1,0 +1,94 @@
+﻿@page "/"
+@rendermode InteractiveServer  // Se indicamos que este componente se renderiza en el servidor de forma interactiva
+
+@inject Agenda agenda // Inyectamos la instancia de Agenda
+
+<PageTitle>Agenda de Contactos</PageTitle>
+
+<div class="container">
+    @if(contacto == null) {
+        <div>
+            <button class="btn-add" @onclick="Agregar">➕ Agregar Contacto</button>
+            <h3>Agenda de Contactos</h3>
+            
+            @if(agenda.Contactos.Count == 0) {
+                <div class="empty-message">
+                    <p>📝 No hay contactos en la agenda.</p>
+                    <p>¡Agrega tu primer contacto usando el botón de arriba!</p>
+                </div>
+            } else {
+                <ul class="contact-list">
+                    @foreach(Contacto c in agenda.Contactos) {
+                        <li class="contact-item">
+                            <div>
+                                <strong>@c.Apellido, @c.Nombre</strong>
+                            </div>
+                            <div>📞 @c.Telefono</div>
+                            <div class="contact-actions">
+                                <button class="btn-secondary" @onclick="() => Editar(c)"  >✏️ Editar  </button>
+                                <button class="btn-danger"    @onclick="() => Eliminar(c)">🗑️ Eliminar</button>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    } else {
+        <div class="form-container">
+            <form>
+                <fieldset>
+                    <label>Nombre</label>
+                    <input @bind="contacto.Nombre" placeholder="Ingrese el nombre" />
+                </fieldset>
+                <fieldset>
+                    <label>Apellido</label>
+                    <input @bind="contacto.Apellido" placeholder="Ingrese el apellido" />
+                </fieldset>
+                <fieldset>
+                    <label>Teléfono</label>
+                    <input @bind="contacto.Telefono" placeholder="Ingrese el número de teléfono" />
+                </fieldset>
+                <div>
+                    <button type="button" class="btn-primary"   @onclick="Guardar">
+                        Guardar
+                    </button>
+                    <button type="button" class="btn-secondary" @onclick="Cancelar">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+</div>
+
+@code {
+    Contacto? contacto = null;
+
+    void Agregar(){
+        contacto = new Contacto();
+    }
+
+    void Editar(Contacto c){
+        contacto = new Contacto{
+            Id = c.Id,
+            Nombre = c.Nombre,
+            Apellido = c.Apellido,
+            Telefono = c.Telefono
+        };
+    }
+
+    void Eliminar(Contacto c) {
+        agenda.Borrar(c);
+    }
+
+    void Guardar() {
+        if(contacto == null) return;
+        agenda.Registrar(contacto);
+        contacto = null;        
+    }
+
+    void Cancelar() {
+        contacto = null;
+    }
+    
+}
