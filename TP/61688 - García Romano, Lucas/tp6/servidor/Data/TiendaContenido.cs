@@ -13,6 +13,9 @@ public class TiendaContext : DbContext
     public DbSet<Compra> Compras => Set<Compra>();
     //Detalles de la compra 
     public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+    // Para compatibilidad con convenciones de EF Core
+    public DbSet<Compra> Compras { get; set; }
+    public DbSet<ItemCompra> ItemsCompra { get; set; }
 //Configuracion de la Base de Datos
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
