@@ -3,16 +3,17 @@
 @using cliente.Modelos
 @inject ApiService ApiService
 @inject ProductoService ProductoService
+@inject CarritoService CarritoService
 
-<h3>Catálogo de Productos</h3>
+<h3 style="padding: 20px;">Catálogo de Productos</h3>
 
 @if (productos == null)
 {
-    <p>Cargando productos...</p>
+    <p style="padding: 20px;">Cargando productos...</p>
 }
 else if (productos.Count == 0)
 {
-    <p>No hay productos disponibles.</p>
+    <p style="padding: 20px;">No hay productos disponibles.</p>
 }
 else
 {
@@ -20,11 +21,13 @@ else
         @foreach (var prod in productos)
         {
             <div class="producto-card">
-                <img src="@prod.Imagen" alt="@prod.Nombre" style="width: 150px;" />
+                <img src="@prod.ImagenUrl" alt="@prod.Nombre" />
                 <h4>@prod.Nombre</h4>
                 <p>Precio: $@prod.Precio</p>
                 <p>Stock: @prod.Stock</p>
-                <button>Agregar al carrito</button>
+                <button @onclick="() => CarritoService.AgregarProducto(prod)">
+                    Agregar al carrito
+                </button>
             </div>
         }
     </div>

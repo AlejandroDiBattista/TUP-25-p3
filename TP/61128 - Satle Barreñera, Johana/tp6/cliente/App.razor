@@ -1,5 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 
+<!-- Navegación básica sin Layout -->
+<div style="padding: 1rem; background-color: #f5f5f5; margin-bottom: 1rem;">
+    <a href="/" style="margin-right: 20px;">🏠 Catálogo</a>
+    <a href="/carrito">🛒 Carrito</a>
+</div>
+
 
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
