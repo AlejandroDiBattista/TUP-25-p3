@@ -19,6 +19,41 @@ builder.Services.AddCors(options => {
 builder.Services.AddControllers();
 var app = builder.Build();
 
+
+
+
+using (var scope = app.Services.CreateScope()) // Crea un nuevo ámbito de servicio
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<TiendaContext>();
+
+        // Verificar si estamos en desarrollo para evitar esto en producción accidentalmente
+        if (app.Environment.IsDevelopment())
+        {
+            // CUIDADO: Estas dos líneas BORRARÁN y RECREARÁN la base de datos
+            // EN CADA INICIO del servidor. Esto es lo que necesitas para resetear el stock.
+            dbContext.Database.EnsureDeleted(); // Elimina la base de datos si existe
+            dbContext.Database.EnsureCreated(); // Crea la base de datos (y ejecutará HasData)
+            Console.WriteLine("DEBUG: Base de datos recreada y productos sembrados con stock inicial.");
+        }
+        else
+        {
+            // En otros entornos (Staging/Production), simplemente aplica migraciones
+            dbContext.Database.Migrate();
+            Console.WriteLine("DEBUG: Migraciones aplicadas en entorno de producción/staging.");
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred creating or migrating the DB.");
+    }
+}
+
+
+
 app.UseCors("AllowClientApp");
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 

@@ -49,14 +49,19 @@ else
     @code {
     private DatosCliente datosCliente = new();
 
-    private async void ConfirmarCompra()
-    {
-        Console.WriteLine($"Compra confirmada por {datosCliente.Nombre} {datosCliente.Apellido} ({datosCliente.Email})");
-        Console.WriteLine($"Total: ${CarritoService.CalcularTotal()}");
+    private async Task ConfirmarCompra()
+{
+    Console.WriteLine($"Compra confirmada por {datosCliente.Nombre} {datosCliente.Apellido} ({datosCliente.Email})");
+    Console.WriteLine($"Total: ${CarritoService.CalcularTotal()}");
 
-        CarritoService.LimpiarCarrito();
-        var productos = await productoService.ObtenerProductosAsync(); // Refresca productos tras confirmar                                                              
+    var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
+    Console.WriteLine($"Resultado confirmación: {ok}");
+    if (ok)
+    {
+        Console.WriteLine("Redirigiendo al catálogo...");
+        await productoService.ObtenerProductosAsync();
         Navigation.NavigateTo("/");
     }
+}
 }
 }

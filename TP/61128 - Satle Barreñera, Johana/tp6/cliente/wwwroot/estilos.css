@@ -4,80 +4,175 @@ body {
     background-color: #f5f5f5;
 }
 
-.productos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
+/* --- Estilos de la cabecera (Header/Navbar) --- */
+.cabecera {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    z-index: 1000;
 }
 
-.producto-card {
+.logo {
+    font-size: 1.5em;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+.carrito-link {
+    text-decoration: none;
+    font-size: 1.1em;
+    color: black;
+}
+
+.page {
+    padding-top: 20px; /* Esto da espacio debajo de la cabecera si el layout lo incluye */
+    display: inline;
+}
+
+/* --- Estilos para la barra de búsqueda --- */
+.search-bar-container {
+    display: flex; /* Alinea los elementos en fila */
+    gap: 10px; /* Espacio entre el input y los botones */
+    margin: 15px auto; /* Centra el contenedor horizontalmente y añade margen arriba/abajo */
+    max-width: 600px; /* Ancho máximo para que no ocupe todo el espacio */
+    padding: 5px; /* Un poco de padding interno */
+    border-radius: 5px; /* Bordes ligeramente redondeados */
+    border: 1px solid #ccc; /* Borde sutil */
+    background-color: #f8f8f8; /* Fondo ligeramente grisáceo */
+}
+
+.search-input {
+    flex-grow: 1; /* Permite que el input ocupe el espacio disponible */
+    padding: 8px 12px;
+    border: none; /* Elimina el borde por defecto del input */
+    border-radius: 3px; /* Bordes redondeados */
+    font-size: 1rem;
+}
+
+.search-input:focus {
+    outline: none; /* Elimina el outline al enfocar */
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5); /* Sombra sutil al enfocar */
+}
+
+.search-button,
+.clear-search-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.search-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.search-button:hover {
+    background-color: #0056b3;
+}
+
+.clear-search-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.clear-search-button:hover {
+    background-color: #5a6268;
+}
+
+/* --- Estilos para el contenedor principal del catálogo --- */
+.contenedor-catalogo {
+    display: flex;
+    justify-content: center; /* Centra el grid de productos */
+    padding: 20px; /* Padding alrededor de todo el catálogo */
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    box-sizing: border-box; /* Incluye padding en el ancho */
+}
+
+/* --- Estilos para la cuadrícula de productos --- */
+.productos-grid {
+    display: flex; /* Usamos flexbox para el grid */
+    flex-wrap: wrap; /* Permite que los elementos salten de línea */
+    gap: 20px; /* Espacio entre las tarjetas de producto */
+    max-width: 1200px; /* Ancho máximo del grid para que no se estire demasiado */
+    justify-content: center; /* Centra las tarjetas dentro del grid */
+}
+
+/* --- Estilos para las tarjetas de producto individuales --- */
+.productos-card {
     background-color: white;
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
     transition: transform 0.2s;
+    width: 250px; /* Ancho fijo para cada tarjeta (o puedes usar min-width/max-width) */
+    box-sizing: border-box; /* Asegura que el padding no añada ancho extra */
+    display: flex; /* Usar flex para el contenido de la tarjeta */
+    flex-direction: column; /* Apilar los elementos verticalmente */
+    justify-content: space-between; /* Empujar botón hacia abajo */
+    align-items: center; /* Centrar contenido horizontalmente */
 }
 
-.producto-card:hover {
+.productos-card:hover {
     transform: scale(1.02);
 }
 
-.producto-card img {
+.productos-card img {
     width: 100%;
     height: 150px;
     object-fit: contain;
     margin-bottom: 10px;
+    border-radius: 5px;
+    display: block;
 }
 
-.producto-card button {
+.productos-card h4 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.productos-card p {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 5px; /* Reducido para compactar */
+}
+
+.productos-card p:last-of-type { /* Último párrafo antes del botón */
+    margin-bottom: 15px; /* Más espacio antes del botón */
+}
+
+.productos-card button {
     background-color: #0d6efd;
     color: white;
     border: none;
     padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
+    margin-top: auto; /* Empuja el botón al final si hay espacio vertical */
+    width: 100%; /* Asegura que el botón ocupe todo el ancho disponible */
 }
 
-.producto-card button:hover {
+.productos-card button:hover {
     background-color: #084298;
 }
 
-.navbar {
-    display: flex;
-    align-items: center;
-    background-color: #343a40;
-    color: white;
-    padding: 10px 20px;
-}
-
-.navbar a {
-    color: white;
-    text-decoration: none;
-    margin-right: 15px;
-    font-weight: bold;
-}
-
-.contenedor-catalogo {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-}
-
-.productos-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    max-width: 1200px;
-    justify-content: center;
+.productos-card button[disabled] {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
 
-
-
-
+/* --- Estilos para el carrito (si los usas en otras páginas, déjalos) --- */
 .contenedor-carrito {
     max-width: 900px;
     margin: auto;

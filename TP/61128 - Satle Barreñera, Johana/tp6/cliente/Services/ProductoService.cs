@@ -7,15 +7,37 @@ namespace cliente.Services
     {
         private readonly HttpClient _http;
 
+        public List<Producto> Productos { get; private set; } = new();
+
         public ProductoService(HttpClient http)
         {
             _http = http;
         }
 
-        public async Task<List<Producto>> ObtenerProductosAsync()
+        public async Task ObtenerProductosAsync(string? searchTerm = null)
+    {
+        string url = "/productos";
+        if (!string.IsNullOrEmpty(searchTerm))
         {
-            return await _http.GetFromJsonAsync<List<Producto>>("/productos") ?? new List<Producto>();
+            // Codifica el término de búsqueda para la URL
+            url += $"?q={Uri.EscapeDataString(searchTerm)}";
+        }
+
+        try
+        {
+            Productos = (await _http.GetFromJsonAsync<List<Producto>>(url)) ?? new List<Producto>();
+            
+            Console.WriteLine($"DEBUG: Productos cargados. Cantidad: {Productos?.Count ?? 0}");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Error al obtener productos: {ex.Message}");
+            Productos = new List<Producto>(); // Asegurarse de que no sea null
         }
     }
+        
+    }
+
+    
 }
 

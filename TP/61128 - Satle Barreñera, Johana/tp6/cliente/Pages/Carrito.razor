@@ -1,12 +1,13 @@
 @page "/carrito"
 @using cliente.Services
+@using cliente.Modelos 
 @inject CarritoService CarritoService
 @implements IDisposable
 
 
 <h3 style="text-align: center; padding-top: 10px;">🛒 Carrito de Compras</h3>
 
-@if (CarritoService.ProductosEnCarrito.Count == 0)
+@if (CarritoService.ProductosEnCarrito.Count == 0) // Usas ProductosEnCarrito, lo mantuvimos en CarritoService
 {
     <p style="text-align: center;">No hay productos en el carrito.</p>
 }
@@ -24,19 +25,19 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var producto in CarritoService.ProductosEnCarrito)
+                @foreach (var producto in CarritoService.ProductosEnCarrito) // Usas ProductosEnCarrito
                 {
                     <tr>
                         <td>@producto.Nombre</td>
                         <td>$@producto.Precio</td>
                         <td>
-                            <button class="btn-control" @onclick="() => CarritoService.DisminuirCantidad(producto.Id)">−</button>
+                            <button class="btn-control" @onclick="() => DisminuirCantidadClick(producto.Id)">−</button>
                             <span class="mx-2">@producto.Cantidad</span>
-                            <button class="btn-control" @onclick="() => CarritoService.AumentarCantidad(producto.Id)">+</button>
+                            <button class="btn-control" @onclick="() => AumentarCantidadClick(producto.Id)">+</button>
                         </td>
                         <td>$@(producto.Precio * producto.Cantidad)</td>
                         <td>
-                            <button class="btn-eliminar" @onclick="() => CarritoService.EliminarProducto(producto.Id)">🗑️</button>
+                            <button class="btn-eliminar" @onclick="() => EliminarProductoClick(producto.Id)">🗑️</button>
                         </td>
                     </tr>
                 }
@@ -45,7 +46,7 @@ else
 
         <h4 class="total-carrito">Total: $@CarritoService.CalcularTotal()</h4>
 
-        <button class="btn-vaciar" @onclick="CarritoService.LimpiarCarrito">Vaciar carrito 🧹</button>
+        <button class="btn-vaciar" @onclick="LimpiarCarritoClick">Vaciar carrito 🧹</button>
 
         <a href="/confirmacion" class="btn btn-success" style="margin-left: 10px;">Confirmar compra ✅</a>
     </div>
@@ -54,11 +55,37 @@ else
 @code {
     protected override void OnInitialized()
     {
+        // Suscribirse a los cambios en el servicio
         CarritoService.OnChange += StateHasChanged;
+        // Opcional: Cargar el carrito desde el backend al inicializar la página si el carritoId ya existe
+        // await CarritoService.CargarCarritoDesdeBackendAsync(); // Si implementas esta funcionalidad
     }
 
     public void Dispose()
     {
+        // Desuscribirse para evitar fugas de memoria
         CarritoService.OnChange -= StateHasChanged;
+    }
+
+    // --- NUEVOS MÉTODOS WRAPPER PARA LLAMAR A LOS MÉTODOS ASÍNCRONOS DEL SERVICIO ---
+
+    private async Task AumentarCantidadClick(int productoId)
+    {
+        await CarritoService.AumentarCantidad(productoId);
+    }
+
+    private async Task DisminuirCantidadClick(int productoId)
+    {
+        await CarritoService.DisminuirCantidad(productoId);
+    }
+
+    private async Task EliminarProductoClick(int productoId)
+    {
+        await CarritoService.EliminarProducto(productoId); // Ahora es asíncrono
+    }
+
+    private void LimpiarCarritoClick()
+    {
+        CarritoService.LimpiarCarrito(); // Este método es síncrono en la versión que te di.
     }
 }
