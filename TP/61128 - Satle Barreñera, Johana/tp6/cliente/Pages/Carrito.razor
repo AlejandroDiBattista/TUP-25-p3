@@ -1,55 +1,63 @@
 @page "/carrito"
 @using cliente.Services
-@using cliente.Modelos
 @inject CarritoService CarritoService
+@implements IDisposable
 
-<h3>Carrito de Compras</h3>
+
+<h3 style="text-align: center; padding-top: 10px;">🛒 Carrito de Compras</h3>
 
 @if (CarritoService.ProductosEnCarrito.Count == 0)
 {
-    <p>No hay productos en el carrito.</p>
+    <p style="text-align: center;">No hay productos en el carrito.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var producto in CarritoService.ProductosEnCarrito)
-            {
+    <div class="contenedor-carrito">
+        <table class="tabla-carrito">
+            <thead>
                 <tr>
-                    <td>@producto.Nombre</td>
-                    <td>$@producto.Precio</td>
-                    <td>@producto.Cantidad</td>
-                    <td>$@(producto.Precio * producto.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarDelCarrito(producto.Id)">Eliminar</button>
-                    </td>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var producto in CarritoService.ProductosEnCarrito)
+                {
+                    <tr>
+                        <td>@producto.Nombre</td>
+                        <td>$@producto.Precio</td>
+                        <td>
+                            <button class="btn-control" @onclick="() => CarritoService.DisminuirCantidad(producto.Id)">−</button>
+                            <span class="mx-2">@producto.Cantidad</span>
+                            <button class="btn-control" @onclick="() => CarritoService.AumentarCantidad(producto.Id)">+</button>
+                        </td>
+                        <td>$@(producto.Precio * producto.Cantidad)</td>
+                        <td>
+                            <button class="btn-eliminar" @onclick="() => CarritoService.EliminarProducto(producto.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-    <h5>Total: $@CarritoService.CalcularTotal()</h5>
+        <h4 class="total-carrito">Total: $@CarritoService.CalcularTotal()</h4>
 
-    <button class="btn btn-secondary" @onclick="LimpiarCarrito">Vaciar carrito</button>
+        <button class="btn-vaciar" @onclick="CarritoService.LimpiarCarrito">Vaciar carrito 🧹</button>
+        <a href="/confirmacion" class="btn btn-success" style="margin-left: 10px;">Confirmar compra ✅</a>
+    </div>
 }
 
 @code {
-    private void EliminarDelCarrito(int id)
+    protected override void OnInitialized()
     {
-        CarritoService.EliminarProducto(id);
+        CarritoService.OnChange += StateHasChanged;
     }
 
-    private void LimpiarCarrito()
+    public void Dispose()
     {
-        CarritoService.LimpiarCarrito();
+        CarritoService.OnChange -= StateHasChanged;
     }
 }

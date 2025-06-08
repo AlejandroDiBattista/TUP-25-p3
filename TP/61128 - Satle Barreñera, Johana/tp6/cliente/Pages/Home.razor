@@ -5,39 +5,41 @@
 @inject ProductoService ProductoService
 @inject CarritoService CarritoService
 
-<h3 style="padding: 20px;">Catálogo de Productos</h3>
+<h3 style="text-align: center; padding: 20px;">Catálogo de Productos</h3>
 
 @if (productos == null)
 {
-    <p style="padding: 20px;">Cargando productos...</p>
+    <p style="padding: 20px; text-align: center;">Cargando productos...</p>
 }
 else if (productos.Count == 0)
 {
-    <p style="padding: 20px;">No hay productos disponibles.</p>
+    <p style="padding: 20px; text-align: center;">No hay productos disponibles.</p>
 }
 else
 {
-    <div class="productos-grid">
-        @foreach (var prod in productos)
-        {
-            <div class="producto-card">
-                <img src="@prod.ImagenUrl" alt="@prod.Nombre" />
-                <h4>@prod.Nombre</h4>
-                <p>Precio: $@prod.Precio</p>
-                <p>Stock: @prod.Stock</p>
-                <button @onclick="() => CarritoService.AgregarProducto(prod)">
-                    Agregar al carrito
-                </button>
-            </div>
-        }
+    <div class="contenedor-catalogo">
+        <div class="productos-grid">
+            @foreach (var prod in productos)
+            {
+                <div class="producto-card">
+                    <img src="@prod.ImagenUrl" alt="@prod.Nombre" />
+                    <h4>@prod.Nombre</h4>
+                    <p>Precio: $@prod.Precio</p>
+                    <p>Stock: @prod.Stock</p>
+                    <button @onclick="() => CarritoService.AgregarProducto(prod)">
+                        Agregar al carrito
+                    </button>
+                </div>
+            }
+        </div>
     </div>
 }
 
 @code {
-    List<Producto>? productos;
+    private List<Producto> productos = new();
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ProductoService.ObtenerProductos();
+        productos = await ProductoService.ObtenerProductosAsync();
     }
 }

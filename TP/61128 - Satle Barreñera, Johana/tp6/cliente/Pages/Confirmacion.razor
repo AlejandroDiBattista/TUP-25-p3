@@ -1,0 +1,59 @@
+@page "/confirmacion"
+@using cliente.Services
+@using cliente.Modelos
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+
+<h3 style="text-align: center; padding-top: 10px;">✅ Confirmación de Compra</h3>
+
+@if (CarritoService.ProductosEnCarrito.Count == 0)
+{
+    <p style="text-align: center;">Tu carrito está vacío.</p>
+}
+else
+{
+    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div style="max-width: 500px; margin: auto;">
+            <h4>Resumen:</h4>
+            <p>Total de ítems: @CarritoService.ProductosEnCarrito.Sum(p => p.Cantidad)</p>
+            <p>Importe total: $@CarritoService.CalcularTotal()</p>
+
+            <h4>Datos del Cliente</h4>
+            <div>
+                <label>Nombre:</label>
+                <InputText class="form-control" @bind-Value="datosCliente.Nombre" />
+                <ValidationMessage For="@(() => datosCliente.Nombre)" />
+            </div>
+            <div>
+                <label>Apellido:</label>
+                <InputText class="form-control" @bind-Value="datosCliente.Apellido" />
+                <ValidationMessage For="@(() => datosCliente.Apellido)" />
+            </div>
+            <div>
+                <label>Email:</label>
+                <InputText class="form-control" @bind-Value="datosCliente.Email" />
+                <ValidationMessage For="@(() => datosCliente.Email)" />
+            </div>
+
+            <button class="btn btn-primary" type="submit" style="margin-top: 10px;">Confirmar Compra</button>
+        </div>
+    </EditForm>
+
+
+    @code {
+    private DatosCliente datosCliente = new();
+
+    private void ConfirmarCompra()
+    {
+        Console.WriteLine($"Compra confirmada por {datosCliente.Nombre} {datosCliente.Apellido} ({datosCliente.Email})");
+        Console.WriteLine($"Total: ${CarritoService.CalcularTotal()}");
+
+        CarritoService.LimpiarCarrito();
+        Navigation.NavigateTo("/");
+    }
+}
+}

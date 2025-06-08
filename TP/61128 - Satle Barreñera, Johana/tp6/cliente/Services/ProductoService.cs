@@ -12,7 +12,7 @@ namespace cliente.Services
             _http = http;
         }
 
-        public async Task<List<Producto>> ObtenerProductos()
+        public async Task<List<Producto>> ObtenerProductosAsync()
         {
             return await _http.GetFromJsonAsync<List<Producto>>("/productos") ?? new List<Producto>();
         }

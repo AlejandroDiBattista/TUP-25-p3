@@ -52,4 +52,30 @@ public class CarritoService
 
     public decimal CalcularTotal() =>
         ProductosEnCarrito.Sum(p => p.Precio * p.Cantidad);
+
+
+
+        public void AumentarCantidad(int id)
+    {
+        var producto = ProductosEnCarrito.FirstOrDefault(p => p.Id == id);
+        if (producto != null && producto.Cantidad < producto.Stock)
+        {
+            producto.Cantidad++;
+            OnChange?.Invoke();
+        }
+    }
+
+    public void DisminuirCantidad(int id)
+    {
+        var producto = ProductosEnCarrito.FirstOrDefault(p => p.Id == id);
+        if (producto != null)
+        {
+            producto.Cantidad--;
+            if (producto.Cantidad <= 0)
+            {
+                ProductosEnCarrito.Remove(producto);
+            }
+            OnChange?.Invoke();
+        }
+    }
 }
