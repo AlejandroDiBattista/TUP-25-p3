@@ -1,5 +1,6 @@
 @using cliente.Services
 @using cliente.Models
+@implements IDisposable
 
 @inject ApiService ApiService
 
@@ -63,5 +64,16 @@
     protected override async Task OnInitializedAsync()
     {
         await ApiService.ObtenerCompraPendiente();
+        ApiService.OnChange += ActualizarVista; // Suscribirse al evento de cambio
     }
+    void ActualizarVista()
+    {
+        StateHasChanged(); // Forzar la actualización del menú
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnChange -= ActualizarVista;
+    }
+
 }

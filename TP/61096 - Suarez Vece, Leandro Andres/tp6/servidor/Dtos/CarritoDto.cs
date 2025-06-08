@@ -55,6 +55,7 @@ public class ItemCompraGtDto
     public int Cantidad { get; set; }
     public int ProductoId { get; set; }
     public int CompraId { get; set; }
+    public int Stock { get; set; }
     public string NombreProducto { get; set; }
     public decimal PrecioProducto { get; set; }
 

@@ -101,7 +101,8 @@ public class ProductService : IPruductServices
                         ProductoId = producto.Id_producto,
                         NombreProducto = producto.Nombre,
                         PrecioProducto = item.PrecioUnitario,
-                        CompraId = item.CompraId
+                        CompraId = item.CompraId,
+                        Stock = producto.Stock
                     }
                 )
                 .Where(x => x.CompraId == id)

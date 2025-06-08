@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Collections.Generic;
+using System;
 using cliente.Models;
 
 namespace cliente.Services;
@@ -12,13 +14,126 @@ public class ApiService
         _httpClient = httpClient;
     }
 
+    public event Action OnChange;
     public int Count => ListaProductos?.Count ?? 0;
-    public CompraPendienteDto Compra;
-    public List<ItemCompraGtDto> ListaProductos = new();
-
-    public void AgregarProducto(ItemCompraGtDto producto)
+    private List<ItemCompraGtDto> _listaProductos = new List<ItemCompraGtDto>();
+    public List<ItemCompraGtDto> ListaProductos
     {
-        ListaProductos.Add(producto);
+        get => _listaProductos;
+        set
+        {
+            _listaProductos = value;
+            NotifyStateChanged(); // Notificar el cambio
+        }
+    }
+
+
+    private CompraPendienteDto _compra;
+    public CompraPendienteDto Compra
+    {
+        get => _compra;
+        set
+        {
+            _compra = value;
+            NotifyStateChanged();
+        }
+    }
+
+    private void NotifyStateChanged() => OnChange?.Invoke();
+
+    public async Task VaciarCarrito()
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.DeleteAsync($"carrito/{Compra.Id_compra}");
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Producto Eliminado");
+                EliminarTodoProductMemoria();
+                OnChange?.Invoke();
+            }
+
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"Error al obtener datos: {ex.Message}");
+        }
+    }
+    public async Task ElimarDelCarrito(int id)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.DeleteAsync($"carrito/{Compra.Id_compra}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Producto Eliminado");
+                EliminarProductoMemoria(id);
+                OnChange?.Invoke();
+            }
+
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"Error al obtener datos: {ex.Message}");
+        }
+    }
+    public async Task AgregarProductoAlCarrito(ItemCompraDto dto, string producto, int stock)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync($"carrito/{Compra.Id_compra}", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Producto agregado o modificado");
+                AgregarProductoMemoria(dto, producto, stock);
+                OnChange?.Invoke();
+            }
+
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"Error al obtener datos: {ex.Message}");
+        }
+    }
+
+    public async Task EliminarProductoMemoria(int id)
+    {
+        var productoExistente = ListaProductos.FirstOrDefault(p => p.ProductoId == id);
+        _listaProductos.Remove(productoExistente);
+        NotifyStateChanged();
+    }
+    public async Task EliminarTodoProductMemoria()
+    {
+
+        _listaProductos.Clear();
+        NotifyStateChanged();
+    }
+
+
+    public void AgregarProductoMemoria(ItemCompraDto dto, string nombre, int stock)
+    {
+        var productoExistente = ListaProductos.FirstOrDefault(p => p.ProductoId == dto.ProductoId);
+
+        if (productoExistente != null)
+        {
+            productoExistente.Cantidad += dto.Cantidad;
+        }
+        else
+        {
+            var producto = new ItemCompraGtDto
+            {
+                Cantidad = dto.Cantidad,
+                ProductoId = dto.ProductoId,
+                CompraId = Compra.Id_compra,
+                NombreProducto = nombre,
+                PrecioProducto = dto.PrecioUnitario,
+                Stock = stock
+            };
+
+            ListaProductos.Add(producto);
+        }
+
+        NotifyStateChanged();
     }
 
     public async Task ObtenerCompraPendiente()
@@ -37,6 +152,8 @@ public class ApiService
             Console.WriteLine($"Error al obtener datos: {ex.Message}");
         }
     }
+
+
     public async Task<DatosRespuesta<List<Producto>>> ObtenerProductos()
     {
         try

@@ -106,9 +106,9 @@ app.MapDelete("/carrito/{id}", async (int id, IPruductServices servicio) =>
     return Results.Ok();
 });
 
-app.MapDelete("/carrito/{id}/{id2}", async (int id, int id2, IPruductServices servicio) =>
+app.MapDelete("/carrito/{idCompra}/{idProducto}", async (int idCompra, int idProducto, IPruductServices servicio) =>
 {
-    await servicio.ElimnarPorudctoCarrito(id, id2);
+    await servicio.ElimnarPorudctoCarrito(idCompra, idProducto);
     return Results.Ok();
 });
 

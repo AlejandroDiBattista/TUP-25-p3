@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using cliente.Services
 @using cliente.Models
+
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
@@ -14,26 +15,37 @@
 @if (datos.Response.Count > 0)
 {
         <div class="d-flex flex-wrap gap-4 justify-content-start">
-            @foreach (var producto in datos.Response)
+            @foreach (var p in datos.Response)
             {
                 <div class="carta-home">
                     <div class="card h-100">
-                        <img src="@producto.ImagenUrl" class="card-img-top" alt="Imagen de @producto.Nombre">
+                        <img src="@p.ImagenUrl" class="card-img-top" alt="Imagen de @p.Nombre">
                         <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            <p class="card-text">@producto.Descripcion</p>
-                            <p class="card-text"><strong>Stock:</strong> @producto.Stock unidades</p>
-                            <p class="card-text text-success"><strong>Precio:</strong> @producto.Precio.ToString()</p>
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <p class="card-text">@p.Descripcion</p>
+                            <p class="card-text"><strong>Stock:</strong> @p.Stock unidades</p>
+                            <p class="card-text text-success"><strong>Precio:</strong> @p.Precio.ToString()</p>
                             <div class="d-grid gap-2">
                                 @if(ApiService.Compra != null){
-                                <div>
-                                    <button type="button">-</button>
-                                    <input type="number" value="0" name="" id="">
-                                    <button type="button">-</button>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button" class="btn btn-outline-primary"
+                                         @onclick="()=>ModificarCantidad(p.Id_producto, -1)">-</button>
+
+                                    <input type="number" meta-id="@p.Id_producto" value="@cantidades[p.Id_producto]" min="0" max="@p.Stock" 
+                                        @onchange="(e) => CapturarCantidad(p.Id_producto, e.Value)"
+                                        class="form-control text-center w-auto border-bottom border-primary" style="max-width: 80px;">
+
+                                    <button type="button" class="btn btn-outline-primary"
+                                        @onclick="()=>ModificarCantidad(p.Id_producto, 1)">+</button>
                                 </div>
-                                <button type="button" class="btn btn-primary"  >Agregar Carrito</button>
+
+                                <button type="button" class="btn btn-primary"
+                                    @onclick="async () => AgregarCarrito(p.Id_producto, p.Precio, p.Stock, p.Nombre)" >Agregar Carrito</button>
                                 }else{
-                                <button type="button" class="btn btn-primary" @onclick="InicairCarrito">Iniciar compra</button>
+
+                                <button type="button" class="btn btn-primary" 
+                                    @onclick="InicairCarrito">Iniciar compra</button>
+
                                 }
                             </div>
                         </div>
@@ -53,14 +65,64 @@ else
 </div>
 
 
-
+@implements IDisposable 
 @code {
+
+    private Dictionary<int, int> cantidades = new Dictionary<int, int>();
     private DatosRespuesta<List<Producto>> datos ;
     private string error = null;
 
+
     protected override async Task OnInitializedAsync()
     {
+        ApiService.OnChange += StateHasChanged;
         await ObtenerDatosDelServidor();
+        InicializarListaCantidades();
+    
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnChange -= StateHasChanged;
+    }
+
+    void CapturarCantidad(int productoId, object valor)
+    {
+        if (int.TryParse(valor.ToString(), out int cantidad))
+        {
+            cantidades[productoId] = Math.Max(0, cantidad); // Evita valores negativos
+        }
+    }
+
+    void ModificarCantidad(int productoId, int cambio)
+    {
+        if (!cantidades.ContainsKey(productoId))
+        {
+            cantidades[productoId] = 0;
+        }
+        cantidades[productoId] = Math.Max(0, cantidades[productoId] + cambio);
+    }
+
+
+    public async Task AgregarCarrito(int id, decimal precio, int stock, string nombre){
+        try{
+            var cantidad = cantidades[id];
+            if(cantidad <= stock){
+                var data = new ItemCompraDto
+                {
+                    ProductoId = id,
+                    Cantidad = cantidades[id],
+                    PrecioUnitario = precio
+                };
+                await ApiService.AgregarProductoAlCarrito(data, nombre, stock);
+                
+            }else{
+                Console.WriteLine($"Sobrepasa el stock disponible");
+            }
+
+        }catch (Exception ex){
+            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+        }
     }
 
     private async Task ObtenerDatosDelServidor()
@@ -82,6 +144,16 @@ else
         }
         catch (Exception ex){
             Console.WriteLine($"Error al Iniciar al carrito: {ex.Message}");
+        }
+    }
+
+    public void InicializarListaCantidades(){
+        foreach (var p in datos.Response)
+        {
+            if (!cantidades.ContainsKey(p.Id_producto))
+            {
+                cantidades[p.Id_producto] = 0; // Inicializa con 0
+            }
         }
     }
 }
