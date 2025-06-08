@@ -25,29 +25,6 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Diccionario temporal de carritos en memoria
 var carritos = new Dictionary<string, List<CarritoItem>>();
 
-// Cargar productos iniciales si no existen
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
-    db.Database.EnsureCreated();
-    if (!db.Productos.Any())
-    {
-        db.Productos.AddRange(new[] {
-            new Producto { Nombre = "Celular Samsung A10", Descripcion = "Celular económico", Precio = 100000, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Notebook Lenovo", Descripcion = "Portátil para estudiantes", Precio = 250000, Stock = 5, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Auriculares Bluetooth", Descripcion = "Auriculares inalámbricos", Precio = 15000, Stock = 20, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Teclado Mecánico", Descripcion = "RGB con switches rojos", Precio = 30000, Stock = 7, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Mouse Gamer", Descripcion = "Sensor óptico 16000 DPI", Precio = 18000, Stock = 15, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Monitor 24 pulgadas", Descripcion = "Full HD 1080p", Precio = 120000, Stock = 3, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Silla Gamer", Descripcion = "Ergonómica con soporte lumbar", Precio = 80000, Stock = 4, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Disco SSD 500GB", Descripcion = "Alta velocidad de lectura", Precio = 40000, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Router WiFi 6", Descripcion = "Cobertura mejorada", Precio = 35000, Stock = 6, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Webcam HD", Descripcion = "Ideal para videollamadas", Precio = 10000, Stock = 12, ImagenUrl = "https://via.placeholder.com/150" }
-        });
-        db.SaveChanges();
-    }
-}
-
 // GET /productos
 app.MapGet("/productos", async (TiendaContext db, string? q) =>
 {

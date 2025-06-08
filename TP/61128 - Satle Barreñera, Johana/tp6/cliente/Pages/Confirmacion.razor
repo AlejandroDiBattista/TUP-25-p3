@@ -3,6 +3,8 @@
 @using cliente.Modelos
 @inject CarritoService CarritoService
 @inject NavigationManager Navigation
+@inject ProductoService productoService
+
 
 
 <h3 style="text-align: center; padding-top: 10px;">✅ Confirmación de Compra</h3>
@@ -47,12 +49,13 @@ else
     @code {
     private DatosCliente datosCliente = new();
 
-    private void ConfirmarCompra()
+    private async void ConfirmarCompra()
     {
         Console.WriteLine($"Compra confirmada por {datosCliente.Nombre} {datosCliente.Apellido} ({datosCliente.Email})");
         Console.WriteLine($"Total: ${CarritoService.CalcularTotal()}");
 
         CarritoService.LimpiarCarrito();
+        var productos = await productoService.ObtenerProductosAsync(); // Refresca productos tras confirmar                                                              
         Navigation.NavigateTo("/");
     }
 }

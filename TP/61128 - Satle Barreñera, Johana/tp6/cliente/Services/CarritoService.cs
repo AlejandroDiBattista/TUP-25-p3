@@ -9,31 +9,33 @@ public class CarritoService
     public event Action? OnChange;
 
     public void AgregarProducto(Producto producto)
+{
+    if (producto.Stock <= 0)
+        return; // No hay stock disponible, no se puede agregar más
+
+    var existente = ProductosEnCarrito.FirstOrDefault(p => p.Id == producto.Id);
+
+    if (existente != null)
     {
-        var existente = ProductosEnCarrito.FirstOrDefault(p => p.Id == producto.Id);
-
-        if (existente != null)
+        existente.Cantidad += 1;
+    }
+    else
+    {
+        ProductosEnCarrito.Add(new Producto
         {
-            existente.Cantidad += 1;
-        }
-        else
-        {
-            // Clonamos el producto con cantidad inicial 1
-            ProductosEnCarrito.Add(new Producto
-            {
-                Id = producto.Id,
-                Nombre = producto.Nombre,
-                Descripcion = producto.Descripcion,
-                Precio = producto.Precio,
-                Stock = producto.Stock,
-                ImagenUrl = producto.ImagenUrl,
-                Cantidad = 1
-            });
-        }
-
-        OnChange?.Invoke();
+            Id = producto.Id,
+            Nombre = producto.Nombre,
+            Descripcion = producto.Descripcion,
+            Precio = producto.Precio,
+            Stock = producto.Stock,
+            ImagenUrl = producto.ImagenUrl,
+            Cantidad = 1
+        });
     }
 
+    producto.Stock--; // Restar solo si se agregó al carrito
+    OnChange?.Invoke();
+}
     public void EliminarProducto(int id)
     {
         var producto = ProductosEnCarrito.FirstOrDefault(p => p.Id == id);

@@ -16,7 +16,7 @@ namespace servidor.Modelos
 
             // Semilla de productos (10 productos de ejemplo)
             modelBuilder.Entity<Producto>().HasData(
-                new Producto { Id = 1, Nombre = "Mouse Gamer", Descripcion = "Mouse RGB con 6 botones", Precio = 5000, Stock = 20, ImagenUrl = "https://via.placeholder.com/150" },
+                new Producto { Id = 1, Nombre = "Mouse Gamer", Descripcion = "Mouse RGB con 6 botones", Precio = 5000, Stock = 20, ImagenUrl = "/assets/Mouse_Gamer.jpeg" },
                 new Producto { Id = 2, Nombre = "Teclado Mecánico", Descripcion = "Switch blue", Precio = 12000, Stock = 15, ImagenUrl = "https://via.placeholder.com/150" },
                 new Producto { Id = 3, Nombre = "Auriculares Inalámbricos", Descripcion = "Bluetooth 5.0", Precio = 8000, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
                 new Producto { Id = 4, Nombre = "Monitor 24''", Descripcion = "Full HD 75Hz", Precio = 35000, Stock = 8, ImagenUrl = "https://via.placeholder.com/150" },
