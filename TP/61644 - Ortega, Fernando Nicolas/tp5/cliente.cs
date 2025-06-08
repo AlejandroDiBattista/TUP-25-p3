@@ -11,21 +11,49 @@ var jsonOpt = new JsonSerializerOptions {
     PropertyNameCaseInsensitive = true
 };
 
-// Codigo de ejemplo: Reemplazar por la implementacion real 
-
-async Task<List<Producto>> TraerAsync(){
-    var json = await http.GetStringAsync($"{baseUrl}/productos");
-    return JsonSerializer.Deserialize<List<Producto>>(json, jsonOpt)!;
+app.MapGet("/productos", async (AppDb db) =>
+    await db.Productos.ToListAsync()
+);
+app.MapGet("/productos/reponer", async (AppDb db) =>
+    await db.Productos.Where(p => p.Stock < 3).ToListAsync()
+);
+app.MapPost("/productos/{id}/agregar", async (int id, int cantidad, AppDb db) => {
+    var prod = await db.Productos.FindAsync(id);
+    if (prod is null) return Results.NotFound();
+    prod.Stock += cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(prod);
+});
+app.MapPost("/productos/{id}/quitar", async (int id, int cantidad, AppDb db) => {
+    var prod = await db.Productos.FindAsync(id);
+    if (prod is null) return Results.NotFound();
+    if (prod.Stock < cantidad) return Results.BadRequest("Stock insuficiente");
+    prod.Stock -= cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(prod);
+});
+var db = app.Services.GetRequiredService<AppDb>();
+db.Database.EnsureCreated();
+if (!db.Productos.Any()) {
+    db.Productos.AddRange(
+        Enumerable.Range(1, 10).Select(i =>
+            new Producto {
+                Nombre = $"Producto {i}",
+                Precio = i * 10,
+                Stock = 10
+            }
+        )
+    );
+    db.SaveChanges();
 }
-
-Console.WriteLine("=== Productos ===");
-foreach (var p in await TraerAsync()) {
-    Console.WriteLine($"{p.Id} {p.Nombre,-20} {p.Precio,15:c}");
+app.Run("http://localhost:5000");
+class AppDb : DbContext {
+    public AppDb(DbContextOptions<AppDb> options) : base(options) { }
+    public DbSet<Producto> Productos => Set<Producto>();
 }
 class Producto {
     public int Id { get; set; }
     public string Nombre { get; set; } = null!;
     public decimal Precio { get; set; }
+    public int Stock { get; set; }
 }
-
-// Fin del ejemplo

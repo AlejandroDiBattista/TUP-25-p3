@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo React Inline JSX - Últimas versiones</title>
+
+  <!-- React y ReactDOM desde umd-react para React 19 -->
+  <script crossorigin src="https://unpkg.com/umd-react/dist/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/umd-react/dist/react-dom.development.js"></script>
+
+  <!-- Babel Standalone última versión (7.27.5) -->
+  <script src="https://unpkg.com/@babel/standalone@7.27.5/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Bloque inline con JSX y desestructuración de hooks -->
+  <script type="text/babel">
+    // Desestructuramos los hooks de React
+    const { useState, useEffect } = React;
+    function Contador({inicial}) {
+      let [cuenta, setCuenta] = useState(+inicial);
+      return <>
+        <div>
+          Contador: {cuenta} <button onClick={() => setCuenta(cuenta + 1)}>Incrementar</button>
+        </div>
+      </>
+    }
+    function App() {
+      const [contador, setContador] = useState(0);
+
+      useEffect(() => {
+        console.log('El contador cambió a', contador);
+      }, [contador]);
+
+      return (
+        <div style={{ textAlign: 'center', marginTop: '2rem', fontFamily: 'Arial, sans-serif' }}>
+          <h1>React + JSX Inline (React 19, Babel 7.27.5)</h1>
+          <Contador inicial={10} />
+          <Contador inicial={20} />
+          <p>Has hecho clic {contador} veces.</p>
+          <button onClick={() => setContador((c) => c + 1)}>
+            Incrementar
+          </button>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

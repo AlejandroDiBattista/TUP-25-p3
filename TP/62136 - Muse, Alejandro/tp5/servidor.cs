@@ -12,30 +12,121 @@ using Microsoft.Extensions.DependencyInjection;
 
 //  CONFIGURACIÓN
 var builder = WebApplication.CreateBuilder();
-builder.Services.AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=./tienda.db")); // agregar servicios : Instalar EF Core y SQLite
+builder.Services.AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=./tienda.db"));
 builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 var app = builder.Build();
 
-app.MapGet("/productos", async (AppDb db) => await db.Productos.ToListAsync());
+// Crear base de datos y datos de ejemplo
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDb>();
+    db.Database.EnsureCreated();
+    
+    // Solo agregar productos si la tabla está vacía
+    if (!db.Productos.Any())
+    {
+        var productos = new List<Producto>
+        {
+            new() { Nombre = "Laptop Dell", Precio = 800000, Stock = 10 },
+            new() { Nombre = "Mouse Logitech", Precio = 15000, Stock = 10 },
+            new() { Nombre = "Teclado Mecánico", Precio = 25000, Stock = 10 },
+            new() { Nombre = "Monitor 24\"", Precio = 120000, Stock = 10 },
+            new() { Nombre = "Auriculares", Precio = 35000, Stock = 10 },
+            new() { Nombre = "Webcam HD", Precio = 20000, Stock = 10 },
+            new() { Nombre = "Disco SSD 1TB", Precio = 45000, Stock = 10 },
+            new() { Nombre = "Memoria RAM 16GB", Precio = 30000, Stock = 10 },
+            new() { Nombre = "Impresora HP", Precio = 85000, Stock = 10 },
+            new() { Nombre = "Router WiFi", Precio = 18000, Stock = 10 }
+        };
+        
+        db.Productos.AddRange(productos);
+        db.SaveChanges();
+        Console.WriteLine("✅ Productos de ejemplo creados");
+    }
+}
 
-var db = app.Services.GetRequiredService<AppDb>();
-db.Database.EnsureCreated(); // crear BD si no existe
-// Agregar productos de ejemplo al crear la base de datos
+// ENDPOINTS
+// 1. Listar todos los productos
+app.MapGet("/productos", async (AppDb db) => 
+{
+    var productos = await db.Productos.ToListAsync();
+    return Results.Ok(productos);
+});
 
-app.Run("http://localhost:5000"); 
-// NOTA: Si falla la primera vez, corralo nuevamente.
+// 2. Listar productos que necesitan reposición (stock < 3)
+app.MapGet("/productos/reponer", async (AppDb db) => 
+{
+    var productos = await db.Productos.Where(p => p.Stock < 3).ToListAsync();
+    return Results.Ok(productos);
+});
 
+// 3. Agregar stock a un producto
+app.MapPut("/productos/{id}/agregar-stock", async (int id, StockRequest request, AppDb db) => 
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto == null)
+        return Results.NotFound($"Producto con ID {id} no encontrado");
+    
+    if (request.Cantidad <= 0)
+        return Results.BadRequest("La cantidad debe ser mayor a 0");
+    
+    producto.Stock += request.Cantidad;
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { 
+        mensaje = $"Se agregaron {request.Cantidad} unidades al producto {producto.Nombre}",
+        producto = producto 
+    });
+});
 
+// 4. Quitar stock a un producto
+app.MapPut("/productos/{id}/quitar-stock", async (int id, StockRequest request, AppDb db) => 
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto == null)
+        return Results.NotFound($"Producto con ID {id} no encontrado");
+    
+    if (request.Cantidad <= 0)
+        return Results.BadRequest("La cantidad debe ser mayor a 0");
+    
+    if (producto.Stock < request.Cantidad)
+        return Results.BadRequest($"Stock insuficiente. Stock actual: {producto.Stock}");
+    
+    producto.Stock -= request.Cantidad;
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { 
+        mensaje = $"Se quitaron {request.Cantidad} unidades del producto {producto.Nombre}",
+        producto = producto 
+    });
+});
 
-// Modelo de datos
-class AppDb : DbContext {
+Console.WriteLine("🚀 Servidor iniciado en http://localhost:5000");
+Console.WriteLine("📝 Endpoints disponibles:");
+Console.WriteLine("   GET /productos - Listar todos los productos");
+Console.WriteLine("   GET /productos/reponer - Productos que necesitan reposición");
+Console.WriteLine("   PUT /productos/{id}/agregar-stock - Agregar stock");
+Console.WriteLine("   PUT /productos/{id}/quitar-stock - Quitar stock");
+
+app.Run("http://localhost:5000");
+
+// MODELOS
+class AppDb : DbContext 
+{
     public AppDb(DbContextOptions<AppDb> options) : base(options) { }
     public DbSet<Producto> Productos => Set<Producto>();
 }
 
-class Producto{
+class Producto
+{
     public int Id { get; set; }
     public string Nombre { get; set; } = null!;
     public decimal Precio { get; set; }
+    public int Stock { get; set; }  // ✅ Agregué la propiedad Stock
+}
+
+class StockRequest
+{
+    public int Cantidad { get; set; }
 }

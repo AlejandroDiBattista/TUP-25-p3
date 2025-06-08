@@ -1,0 +1,24 @@
+@page "/resumen"
+
+@inject NavigationManager Navegar
+@inject ContadoresServicio Contar
+
+<h1>Resumen</h1>
+<ul>
+    @foreach (var contador in Contar.Contadores)
+    {
+        <li>
+            @contador.Nombre: @contador.Cantidad
+            (por hora: @(contador.Cantidad * 3600 / Contar.SegundosTranscurridos))
+        </li>
+    }
+</ul>
+<button @onclick="IrInicio">Reiniciar</button>
+
+@code {
+    void IrInicio()
+    {
+        Contar.Contadores.Clear();
+        Navegar.NavigateTo("/");
+    }
+}

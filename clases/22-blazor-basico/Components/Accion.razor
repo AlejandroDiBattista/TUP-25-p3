@@ -1,0 +1,12 @@
+@* Componente reutilizable para un botón de acción *@
+
+<div class="actions">
+    <button class="btn" @onclick="onClick">
+        @ChildContent
+    </button>
+</div>
+
+@code {
+    [Parameter] public EventCallback onClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

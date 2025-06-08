@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de textos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        #lista { margin-top: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Agregar texto a la lista</h1>
+    <input type="text" id="texto" placeholder="Ingrese texto...">
+    <button id="agregar">Agregar</button>
+    <ul id="lista"></ul>
+    <script>
+        const input = document.getElementById('texto');
+        const boton = document.getElementById('agregar');
+        const lista = document.getElementById('lista');
+
+        boton.addEventListener('click', function() {
+            const valor = input.value.trim();
+            if (valor !== '') {
+                const li = document.createElement('li');
+                li.textContent = valor;
+                lista.appendChild(li);
+                input.value = '';
+                input.focus();
+            }
+        });
+    </script>
+</body>
+</html>
