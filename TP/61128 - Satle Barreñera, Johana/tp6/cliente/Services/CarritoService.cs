@@ -211,7 +211,6 @@ public class CarritoService
     {
         ProductosEnCarrito.Clear();
         OnChange?.Invoke();
-        Console.WriteLine("DEBUG: Carrito local limpiado.");
     }
 
     public decimal CalcularTotal() =>
@@ -224,11 +223,9 @@ public class CarritoService
     {
         if (carritoId == null)
         {
-            Console.WriteLine("DEBUG: No hay carrito ID para confirmar.");
             return false;
         }
 
-        Console.WriteLine($"DEBUG: Confirmando con carritoId: '{carritoId}'"); // Usando comillas simples para depuración
 
         var response = await _http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", cliente);
         if (response.IsSuccessStatusCode)
