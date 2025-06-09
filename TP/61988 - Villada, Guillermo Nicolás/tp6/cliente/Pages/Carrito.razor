@@ -1,0 +1,51 @@
+@page "/carrito"
+@inject cliente.Services.ApiService ApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<h3>Carrito de compras</h3>
+
+@if (items is null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (!items.Any())
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.ProductoId</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.ProductoId)">-</button>
+                        @item.Cantidad
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.ProductoId)">+</button>
+                    </td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => Quitar(item.ProductoId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
+    </div>
+    <button class="btn btn-warning" @onclick="Vaciar">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+}
