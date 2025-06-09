@@ -16,7 +16,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Original",
             Precio = 20000,
             Stock = 50,
-            ImagenUrl = "/imagenes/NickzOriginal.jpg"
+            ImagenUrl = "NickzOriginal.jpg"
         },
         new Producto
         {
@@ -25,7 +25,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Reflectiva (Limited Edition)",
             Precio = 25000,
             Stock = 10,
-            ImagenUrl = "/imagenes/NickzReflectiva.jpg"
+            ImagenUrl = "NickzReflectiva.jpg"
         },
         new Producto
         {
@@ -34,7 +34,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Violeta (CR Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "/imagenes/NickzVioleta.jpg"
+            ImagenUrl = "NickzVioleta.jpg"
         },
         new Producto
         {
@@ -43,7 +43,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Verde (Argentina Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "/imagenes/NickzVerde.jpg"
+            ImagenUrl = "NickzVerde.jpg"
         },
         new Producto
         {
@@ -52,7 +52,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Naranja (Halloween Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "/imagenes/NickzNaranja.jpg"
+            ImagenUrl = "NickzNaranja.jpg"
         },
         new Producto
         {
@@ -61,7 +61,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Chicle (Candy Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "/imagenes/NickzChicle.jpg"
+            ImagenUrl = "NickzChicle.jpg"
         },
         new Producto
         {
@@ -70,7 +70,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Colores Invertidos (Ultra Limited Edition)",
             Precio = 20000,
             Stock = 3,
-            ImagenUrl = "/imagenes/NickzInvertida.jpg"
+            ImagenUrl = "NickzInvertida.jpg"
         },
     };
 
