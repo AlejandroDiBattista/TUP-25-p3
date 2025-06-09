@@ -1,0 +1,64 @@
+@page "/confirmar"
+@inject cliente.Services.ApiService ApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Nav
+
+<h3>Confirmar compra</h3>
+
+@if (items is null)
+{
+    <p>Cargando resumen...</p>
+}
+else if (!items.Any())
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.ProductoId</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
+    </div>
+
+    <EditForm Model="cliente" OnValidSubmit="Confirmar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-2">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" required />
+        </div>
+        <div class="mb-2">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="cliente.Apellido" required />
+        </div>
+        <div class="mb-2">
+            <label>Email:</label>
+            <InputText class="form-control" @bind-Value="cliente.Telefono" required />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-success mt-2">@mensaje</div>
+    }
+}
