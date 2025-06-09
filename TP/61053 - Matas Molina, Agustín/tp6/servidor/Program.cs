@@ -82,7 +82,7 @@ app.MapGet("/api/carrito/{carritoId=int}", async (int carritoId, TiendaDbContext
 
 
 });
-app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, [FromBody] int cantidad, TiendaDbContext db) =>
+app.MapPut("/api/carrito/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, [FromBody] int cantidad, TiendaDbContext db) =>
 {
     if (cantidad <= 0) return Results.BadRequest("La Cantidad debe ser mayor a 0.");
 
@@ -116,6 +116,18 @@ app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}", async (int carritoI
     return Results.Ok(compra);
 });
 
+app.MapDelete("/api/carrito/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
+
+    var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item == null) return Results.NotFound();
+
+    compra.Items.Remove(item);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
 
 
 app.Run();
