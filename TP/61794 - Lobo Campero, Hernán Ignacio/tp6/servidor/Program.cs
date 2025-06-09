@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Servidor.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -8,6 +11,10 @@ builder.Services.AddCors(options => {
               .AllowAnyMethod();
     });
 });
+
+// Configuración de EF Core con SQLite
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
