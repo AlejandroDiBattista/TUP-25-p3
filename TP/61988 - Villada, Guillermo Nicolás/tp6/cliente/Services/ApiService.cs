@@ -21,47 +21,41 @@ public class ApiService
         return await _httpClient.GetFromJsonAsync<List<Producto>>(url) ?? new List<Producto>();
     }
 
-    // Crear un nuevo carrito y devolver el Guid
+    // Crear un nuevo carrito
     public async Task<Guid> CrearCarritoAsync()
     {
-        return await _httpClient.GetFromJsonAsync<Guid>("/api/carrito/crear");
+        var response = await _httpClient.PostAsync("/api/carritos", null);
+        return await response.Content.ReadFromJsonAsync<Guid>();
     }
 
     // Obtener el carrito por ID
     public async Task<List<ItemCarrito>> ObtenerCarritoAsync(Guid carritoId)
     {
-        return await _httpClient.GetFromJsonAsync<List<ItemCarrito>>($"/api/carrito/{carritoId}") ?? new List<ItemCarrito>();
+        return await _httpClient.GetFromJsonAsync<List<ItemCarrito>>($"/api/carritos/{carritoId}") ?? new List<ItemCarrito>();
     }
 
     // Agregar producto al carrito
     public async Task AgregarAlCarritoAsync(Guid carritoId, int productoId)
     {
-        await _httpClient.PostAsync($"/api/carrito/{carritoId}/agregar/{productoId}", null);
+        await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}", null);
     }
 
     // Quitar producto del carrito
     public async Task QuitarDelCarritoAsync(Guid carritoId, int productoId)
     {
-        await _httpClient.PostAsync($"/api/carrito/{carritoId}/quitar/{productoId}", null);
+        await _httpClient.DeleteAsync($"/api/carritos/{carritoId}/{productoId}");
     }
 
     // Vaciar carrito
     public async Task VaciarCarritoAsync(Guid carritoId)
     {
-        await _httpClient.PostAsync($"/api/carrito/{carritoId}/vaciar", null);
+        await _httpClient.DeleteAsync($"/api/carritos/{carritoId}");
     }
 
     // Confirmar compra
     public async Task<Compra> ConfirmarCompraAsync(Guid carritoId, Cliente cliente)
     {
-        var response = await _httpClient.PostAsJsonAsync($"/api/carrito/{carritoId}/confirmar", cliente);
+        var response = await _httpClient.PostAsJsonAsync($"/api/compras?carritoId={carritoId}", cliente);
         return await response.Content.ReadFromJsonAsync<Compra>() ?? new Compra();
-    }
-
-    // Obtener datos generales (para Home.razor)
-    public async Task<DatosRespuesta> ObtenerDatosAsync()
-    {
-        var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-        return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
     }
 }

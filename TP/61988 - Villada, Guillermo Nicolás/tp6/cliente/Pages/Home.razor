@@ -1,15 +1,30 @@
 ﻿@page "/"
-@using cliente.Services
-@using cliente.Models
-@inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
 
 <div class="container">
     <div class="row mb-4">
-        <div class="col-12">
-            <h1>Bienvenido a la Tienda Online</h1>
+        <div class="col-12 text-center">
+            <h1>Bienvenido a Nickz Online Store</h1>
             <p>¡Explorá nuestros productos y agregá lo que quieras al carrito!</p>
+        </div>
+    </div>
+
+    <div class="row mb-4 justify-content-center">
+        <div class="col-md-3">
+            <img src="imagenes/inicio1.jpg" class="img-fluid rounded shadow" alt="Imagen 1" />
+        </div>
+        <div class="col-md-3">
+            <img src="imagenes/inicio2.jpg" class="img-fluid rounded shadow" alt="Imagen 2" />
+        </div>
+        <div class="col-md-3">
+            <img src="imagenes/inicio3.jpg" class="img-fluid rounded shadow" alt="Imagen 3" />
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="/productos" class="btn btn-primary btn-lg">Ver productos</a>
         </div>
     </div>
 </div>

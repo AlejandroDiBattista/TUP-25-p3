@@ -2,7 +2,6 @@ using servidor.Models;
 using servidor.Data;
 using Microsoft.AspNetCore.Mvc;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // CORS
@@ -24,31 +23,31 @@ app.UseCors("AllowClientApp");
 // Ruta raíz
 app.MapGet("/", () => "Servidor API en funcionamiento");
 
-// GET /productos
-app.MapGet("/productos", ([FromQuery] string? q) => {
+// GET /api/productos
+app.MapGet("/api/productos", ([FromQuery] string? q) => {
     var productos = TiendaData.Productos
         .Where(p => string.IsNullOrEmpty(q) || p.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase))
         .ToList();
     return Results.Ok(productos);
 });
 
-// POST /carritos → crea un nuevo carrito
-app.MapPost("/carritos", () => {
+// POST /api/carritos → crea un nuevo carrito
+app.MapPost("/api/carritos", () => {
     var id = Guid.NewGuid();
     TiendaData.Carritos[id] = new List<ItemCarrito>();
     return Results.Ok(id);
 });
 
-// GET /carritos/{id}
-app.MapGet("/carritos/{id}", (Guid id) => {
+// GET /api/carritos/{id}
+app.MapGet("/api/carritos/{id}", (Guid id) => {
     if (!TiendaData.Carritos.ContainsKey(id))
         return Results.NotFound("Carrito no encontrado");
 
     return Results.Ok(TiendaData.Carritos[id]);
 });
 
-// PUT /carritos/{id}/{productoId}
-app.MapPut("/carritos/{id}/{productoId}", (Guid id, int productoId) => {
+// PUT /api/carritos/{id}/{productoId}
+app.MapPut("/api/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     var producto = TiendaData.Productos.FirstOrDefault(p => p.Id == productoId);
     if (producto is null)
         return Results.NotFound("Producto no encontrado");
@@ -75,8 +74,8 @@ app.MapPut("/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     return Results.Ok(carrito);
 });
 
-// DELETE /carritos/{id}/{productoId}
-app.MapDelete("/carritos/{id}/{productoId}", (Guid id, int productoId) => {
+// DELETE /api/carritos/{id}/{productoId}
+app.MapDelete("/api/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     if (!TiendaData.Carritos.ContainsKey(id))
         return Results.NotFound("Carrito no encontrado");
 
@@ -98,8 +97,8 @@ app.MapDelete("/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     return Results.Ok(carrito);
 });
 
-// DELETE /carritos/{id}
-app.MapDelete("/carritos/{id}", (Guid id) => {
+// DELETE /api/carritos/{id}
+app.MapDelete("/api/carritos/{id}", (Guid id) => {
     if (!TiendaData.Carritos.ContainsKey(id))
         return Results.NotFound("Carrito no encontrado");
 
@@ -115,8 +114,8 @@ app.MapDelete("/carritos/{id}", (Guid id) => {
     return Results.Ok();
 });
 
-// POST /compras → confirmar compra
-app.MapPost("/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente cliente) => {
+// POST /api/compras → confirmar compra
+app.MapPost("/api/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente cliente) => {
     if (!TiendaData.Carritos.ContainsKey(carritoId))
         return Results.NotFound("Carrito no encontrado");
 
@@ -143,8 +142,8 @@ app.MapPost("/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente cliente)
     return Results.Ok(compra);
 });
 
-// GET /compras → ver todas las compras
-app.MapGet("/compras", () => {
+// GET /api/compras → ver todas las compras
+app.MapGet("/api/compras", () => {
     return Results.Ok(TiendaData.Compras);
 });
 

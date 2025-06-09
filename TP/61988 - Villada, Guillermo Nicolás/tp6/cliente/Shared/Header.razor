@@ -6,6 +6,14 @@
     <a class="navbar-brand" href="" @onclick="IrHome" style="cursor:pointer;">
         <img src="LogoNickzP.png" alt="Logo" style="height:100px;" /> Store Online
     </a>
+
+    <div class="navbar-nav">
+        <a class="nav-item nav-link" href="" @onclick="IrHome">Inicio</a>
+        <a class="nav-item nav-link" href="/productos">Productos</a>
+        <a class="nav-item nav-link" href="/carrito">Carrito</a>
+        <a class="nav-item nav-link" href="/confirmar">Confirmar compra</a>
+    </div>>
+
     <form class="form-inline my-2 my-lg-0" @onsubmit="Buscar">
         <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Buscar" @bind="busqueda" />
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
