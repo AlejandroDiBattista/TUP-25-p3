@@ -35,6 +35,21 @@ app.UseStaticFiles();
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
+app.MapGet("/api/productos", async (TiendaDbContext db, string? q) =>
+{
+    var productos = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(q))
+    {
+        productos = productos.Where(p =>
+            p.Nombre.Contains(q) ||
+            p.Descripcion.Contains(q)
+        );
+    }
+
+    return await productos.ToListAsync();
+});
+
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
