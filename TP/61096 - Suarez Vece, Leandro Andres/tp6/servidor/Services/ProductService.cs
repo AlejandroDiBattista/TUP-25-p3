@@ -121,15 +121,40 @@ public class ProductService : IPruductServices
     }
     public async Task ConfirmarCompra(int id, ConfirmarCompraDto dto)
     {
-        var res = await _context.Compras.FindAsync(id);
-        if (res != null)
+
+        var compra = await _context.Compras
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.Id_compra == id);
+
+        if (compra == null) return;
+
+        // Actualizar datos del cliente
+        compra.NombreCliente = dto.NombreCliente;
+        compra.ApellidoCliente = dto.ApellidoCliente;
+        compra.EmailCliente = dto.EmailCliente;
+        compra.Entregado = true;
+
+        foreach (var detalle in compra.Items)
         {
-            res.NombreCliente = dto.NombreCliente;
-            res.ApellidoCliente = dto.ApellidoCliente;
-            res.EmailCliente = dto.EmailCliente;
-            res.Entregado = true;
-            await _context.SaveChangesAsync();
+            var producto = await _context.Productos.FindAsync(detalle.ProductoId);
+            if (producto != null)
+            {
+                producto.Stock -= detalle.Cantidad;
+            }
         }
+
+        await _context.SaveChangesAsync();
+
+
+        // var res = await _context.Compras.FindAsync(id);
+        // if (res != null)
+        // {
+        //     res.NombreCliente = dto.NombreCliente;
+        //     res.ApellidoCliente = dto.ApellidoCliente;
+        //     res.EmailCliente = dto.EmailCliente;
+        //     res.Entregado = true;
+        //     await _context.SaveChangesAsync();
+        // }
     }
     public async Task ActualizarCarrito(int id, ItemCompraDto dto)
     {
