@@ -12,7 +12,6 @@ public class Compra
 
   public string ApellidoCliente { get; set; }
 
-  [EmailAddress]
   public string EmailCliente { get; set; }
 
   public List<ItemCompra> Items { get; set; } = new List<ItemCompra>();
