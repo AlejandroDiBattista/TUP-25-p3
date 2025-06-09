@@ -69,7 +69,7 @@ app.MapPost("/api/carrito", async (TiendaDbContext db) =>
     await db.SaveChangesAsync();
     return Results.Ok(new { carritoId = compra.Id });
 });
-app.MapGet("/api/carrito/{carritoId=int}", async(int carritoId, TiendaDbContext db) =>
+app.MapGet("/api/carrito/{carritoId=int}", async (int carritoId, TiendaDbContext db) =>
 {
     var compra = await db.Compras
     .Include(c => c.Items)
@@ -78,9 +78,42 @@ app.MapGet("/api/carrito/{carritoId=int}", async(int carritoId, TiendaDbContext 
     if (compra == null)
 
         return Results.NotFound();
-            return Results.Ok(compra);
-        
-      
+    return Results.Ok(compra);
+
+
+});
+app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, [FromBody] int cantidad, TiendaDbContext db) =>
+{
+    if (cantidad <= 0) return Results.BadRequest("La Cantidad debe ser mayor a 0.");
+
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    var producto = await db.Productos.FindAsync(productoId);
+
+    if (compra == null || producto == null)
+        return Results.NotFound();
+
+    if (producto.Stock < cantidad)
+        return Results.BadRequest("No hay suficiente stock.");
+
+    var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (item == null)
+    {
+        item = new ItemCompra
+        {
+            ProductoId = productoId,
+            Cantidad = cantidad,
+            PrecioUnitario = producto.Precio
+        };
+        compra.Items.Add(item);
+    }
+    else
+    {
+        item.Cantidad = cantidad;
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(compra);
 });
 
 
