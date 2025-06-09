@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Compartido; 
 
@@ -16,6 +18,7 @@ builder.Services.AddControllers();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tienda.db";
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite(connectionString));
+
 
 var app = builder.Build();
 
@@ -81,4 +84,122 @@ app.MapGet("/api/carritos/{carritoId:guid}", async (Guid carritoId, TiendaDbCont
     return Results.Ok(itemsDto);
 });
 
+app.MapPost("/api/carritos/{carritoId:guid}/items", async (Guid carritoId, ItemCarrito item, TiendaDbContext dbContext) =>
+{
+    var carrito = await dbContext.Carritos.FindAsync(carritoId);
+    if (carrito == null)
+    {
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
+    }
+
+    var producto = await dbContext.Productos.FindAsync(item.ProductoId);
+    if (producto == null)
+    {
+        return Results.NotFound(new { Mensaje = "Producto no encontrado" });
+    }
+
+    item.CarritoId = carritoId;
+    item.Carrito = carrito;
+    item.Producto = producto;
+
+    dbContext.ItemsCarrito.Add(item);
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok(item);
+});
+
+app.MapPut("/api/carritos/{carritoId:guid}/{productoId:int}", 
+    async (Guid carritoId, int productoId, AgregarActualizarItemCarritoRequest request, TiendaDbContext dbContext) =>
+{
+    if (request.Cantidad <= 0)
+    {
+        return Results.BadRequest(new { Mensaje = "La cantidad debe ser mayor que cero." });
+    }
+
+    var carrito = await dbContext.Carritos
+                                 .Include(c => c.Items)
+                                 .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito == null)
+    {
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado." });
+    }
+
+    var producto = await dbContext.Productos.FindAsync(productoId);
+
+    if (producto == null)
+    {
+        return Results.NotFound(new { Mensaje = "Producto no encontrado." });
+    }
+    
+   
+    if (producto.Stock < request.Cantidad)
+    {
+        return Results.BadRequest(new { Mensaje = $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {request.Cantidad}." });
+    }
+
+    var itemCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (itemCarrito == null) 
+    {
+        itemCarrito = new ItemCarrito
+        {
+            CarritoId = carritoId,
+            ProductoId = productoId,
+            Cantidad = request.Cantidad,
+        };
+        dbContext.ItemsCarrito.Add(itemCarrito); 
+    }
+    else 
+    {
+        itemCarrito.Cantidad = request.Cantidad;
+    }
+
+    await dbContext.SaveChangesAsync();
+
+    if (itemCarrito.Producto == null)
+    {
+        itemCarrito.Producto = producto; 
+    }
+    
+    var itemDto = new 
+    {
+        ItemCarritoId = itemCarrito.Id,
+        itemCarrito.ProductoId,
+        NombreProducto = itemCarrito.Producto?.Nombre,
+        itemCarrito.Cantidad,
+        PrecioUnitario = itemCarrito.Producto?.Precio,
+        ImagenUrl = itemCarrito.Producto?.ImagenUrl
+    };
+
+    return Results.Ok(itemDto);
+});
+
+app.MapDelete("/api/carritos/{carritoId:guid}/{productoId:int}", 
+    async (Guid carritoId, int productoId, TiendaDbContext dbContext) =>
+{
+    var carrito = await dbContext.Carritos
+                                 .Include(c => c.Items) 
+                                 .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito == null)
+    {
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado." });
+    }
+
+    var itemCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (itemCarrito == null)
+    {
+        return Results.NotFound(new { Mensaje = "Producto no encontrado en el carrito." });
+    }
+
+    dbContext.ItemsCarrito.Remove(itemCarrito);
+    await dbContext.SaveChangesAsync();
+
+    return Results.NoContent(); 
+});
+
 app.Run();
+
+public record AgregarActualizarItemCarritoRequest(int Cantidad);
