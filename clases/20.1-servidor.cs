@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder();
 
 builder.Services
-    .AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=agenda.db")); // agregar servicios : Instalar EF Core y SQLite
+    .AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=agenda.db")) // agregar servicios : Instalar EF Core y SQLite
     .Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 var app = builder.Build();
