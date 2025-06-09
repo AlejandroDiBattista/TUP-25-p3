@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Builder;
+using Proyecto_Tienda_Online.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -29,3 +31,15 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 app.Run();
+
+public class Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public string NombreCliente { get; set; } = "";
+    public string ApellidoCliente { get; set; } = "";
+    public string EmailCliente { get; set; } = "";
+
+    public List<ItemCompra> Items { get; set; } = new();
+}
