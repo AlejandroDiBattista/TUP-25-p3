@@ -38,4 +38,28 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Se inicializa la base de datos y se cargan los productos.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    db.Database.EnsureCreated();
+
+    if (!db.Productos.Any())
+    {
+        db.Productos.AddRange(
+            new Producto { Nombre = "Aceite Natura 900cc", Descripcion = "Aceite vegetal comestible", Precio = 1800, Stock = 15, ImagenUrl = "/images/Aceite Natura 900cc.jpg" },
+            new Producto { Nombre = "Arroz Lucchetti 500grs", Descripcion = "Arroz blanco premium", Precio = 950, Stock = 20, ImagenUrl = "/images/Arroz Lucchetti 500grs.jpg" },
+            new Producto { Nombre = "Azucar Ledesma 1kg", Descripcion = "Azúcar refinada", Precio = 1300, Stock = 10, ImagenUrl = "/images/Azucar Ledesma 1kg.jpg" },
+            new Producto { Nombre = "Coca-Cola 1.5 ltrs", Descripcion = "Bebida gaseosa cola", Precio = 2800, Stock = 25, ImagenUrl = "/images/Coca-Cola 1.5 ltrs.jpg" },
+            new Producto { Nombre = "Fernet Branca 750cc", Descripcion = "Fernet Branca", Precio = 11000, Stock = 18, ImagenUrl = "/images/Fernet Branca 750cc.jpg" },
+            new Producto { Nombre = "Galleta TerrabuSi 400grs", Descripcion = "Galletas surtidas", Precio = 2700, Stock = 30, ImagenUrl = "/images/Galleta TerrabuSi.jpg" },
+            new Producto { Nombre = "Harina 000 Cañuelas 1kg", Descripcion = "Harina 000 Cañuelas", Precio = 800, Stock = 22, ImagenUrl = "/images/Harina 000 Cañuelas 1kg.jpg" },
+            new Producto { Nombre = "Pure de Tomate Mora 520grs", Descripcion = "Pure de tomate", Precio = 600, Stock = 12, ImagenUrl = "/images/Pure de Tomate Mora 520grs.jpg" },
+            new Producto { Nombre = "Spaghetti La Providencia 500grs", Descripcion = "Fideo tipo Spaghetti", Precio = 750, Stock = 16, ImagenUrl = "/images/Spaghetti La Providencia 500grs.jpg" },
+            new Producto { Nombre = "Té La Virginia x 25 unidades", Descripcion = "Té La Virginia x 25 unidades", Precio = 650, Stock = 8, ImagenUrl = "/images/Té La Virginia x 25 unidades.jpg" }
+        );
+        db.SaveChanges();
+    }
+}
+
 app.Run();
