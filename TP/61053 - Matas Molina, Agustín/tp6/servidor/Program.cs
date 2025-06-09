@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using TuProyecto.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -37,9 +39,11 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
     db.Database.EnsureCreated();
     if (!db.Productos.any())
+    if (!db.Productos.Any())
     {
         db.Productos.Addrange(
-        
+        db.Productos.AddRange(
+
            new Producto { Nombre = "Procesador Intel Core i7-14700K", Descripcion = "CPU de alto rendimiento para gaming y creación de contenido, 20 núcleos, 28 hilos.", Precio = 350000, Stock = 15, ImagenUrl = "https://ejemplo.com/imagenes/intel-i7.jpg" },
            new Producto { Nombre = "Tarjeta Gráfica NVIDIA GeForce RTX 4070 SUPER", Descripcion = "Potente GPU para juegos en 1440p y 4K con Ray Tracing y DLSS.", Precio = 600000, Stock = 10, ImagenUrl = "https://ejemplo.com/imagenes/rtx4070super.jpg" },
            new Producto { Nombre = "Placa Base ASUS ROG Strix Z790-E Gaming WiFi II", Descripcion = "Placa madre ATX de alta gama para procesadores Intel de 12ª, 13ª y 14ª generación.", Precio = 280000, Stock = 8, ImagenUrl = "https://ejemplo.com/imagenes/asus-z790.jpg" },
@@ -56,9 +60,19 @@ using (var scope = app.Services.CreateScope())
            new Producto { Nombre = "Auriculares Gamer SteelSeries Arctis Nova 7 Wireless", Descripcion = "Auriculares inalámbricos multiplataforma con audio de alta fidelidad y batería de larga duración.", Precio = 160000, Stock = 8, ImagenUrl = "https://ejemplo.com/imagenes/steelseries-nova7.jpg" },
            new Producto { Nombre = "Pasta Térmica Arctic MX-6 (4g)", Descripcion = "Compuesto térmico de alto rendimiento para mejorar la transferencia de calor entre el CPU/GPU y el disipador.", Precio = 18000, Stock = 30, ImagenUrl = "https://ejemplo.com/imagenes/arctic-mx6.jpg" }
         );
+        db.SaveChanges();
     }
 
 }
+app.MapPost("/api/carrito", async (TiendaDbContext db) =>
+{
+    var compra = new compra { fecha = DateTime.now, total = 0 };
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Ok(new { carritoId = compra.Id });
+});
+
+
 
 app.Run();
 
