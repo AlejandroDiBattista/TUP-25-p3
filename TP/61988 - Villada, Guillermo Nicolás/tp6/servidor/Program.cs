@@ -20,6 +20,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowClientApp");
 
+// Cargar stock persistente al iniciar
+TiendaData.CargarStock();
+
 // Ruta raíz
 app.MapGet("/", () => "Servidor API en funcionamiento");
 
@@ -75,6 +78,7 @@ app.MapPut("/api/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     }
 
     producto.Stock--;
+    TiendaData.GuardarStock(); // <--- Guarda el stock
     return Results.Ok(carrito);
 });
 
@@ -98,6 +102,7 @@ app.MapDelete("/api/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     if (producto is not null)
         producto.Stock++;
 
+    TiendaData.GuardarStock(); // <--- Guarda el stock
     return Results.Ok(carrito);
 });
 
@@ -115,6 +120,7 @@ app.MapDelete("/api/carritos/{id}", (Guid id) => {
     }
 
     carrito.Clear();
+    TiendaData.GuardarStock(); // <--- Guarda el stock
     return Results.Ok();
 });
 
@@ -143,6 +149,7 @@ app.MapPost("/api/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente clie
     // Vaciar el carrito
     TiendaData.Carritos[carritoId] = new List<ItemCarrito>();
 
+    TiendaData.GuardarStock(); // <--- Guarda el stock por si acaso
     return Results.Ok(compra);
 });
 
