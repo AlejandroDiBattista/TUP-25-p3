@@ -9,11 +9,7 @@ public class TiendaContext : DbContext
     public TiendaContext(DbContextOptions<TiendaContext> options) : base(options) { }
 //Para las entidades de la Base de Datos
     public DbSet<Producto> Productos => Set<Producto>();
-    //Compras y sus detalles
-    public DbSet<Compra> Compras => Set<Compra>();
-    //Detalles de la compra 
-    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
-    // Para compatibilidad con convenciones de EF Core
+    // Deja solo una definición para cada DbSet
     public DbSet<Compra> Compras { get; set; }
     public DbSet<ItemCompra> ItemsCompra { get; set; }
 //Configuracion de la Base de Datos

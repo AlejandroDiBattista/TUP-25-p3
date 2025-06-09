@@ -149,12 +149,12 @@ app.MapPut("/carritos/{id}/finalizar", async (Guid id, ClienteDTO infoCliente, T
             prod.Stock -= item.Cantidad;
         }
     }
-
+// Guarda los cambios en la base de datos
     db.Compras.Add(nuevaCompra);
     await db.SaveChangesAsync();
-
+//Limpia el carrito al finalizar la compra
     carrito.Items.Clear();
-
+// Devuelve la respuesta con los detalles de la compra
     return Results.Ok(new
     {
         Mensaje = "Compra realizada, Quiere seguir comprando?",
@@ -163,6 +163,51 @@ app.MapPut("/carritos/{id}/finalizar", async (Guid id, ClienteDTO infoCliente, T
         nuevaCompra.Total,
         Cliente = new { infoCliente.Nombre, infoCliente.Apellido, infoCliente.Email }
     });
+// Agrega un producto al carrito
+app.MapPut("/carritos/{carritoId}/{productoId}", async (
+    Guid carritoId,
+    string productoId,
+    AgregarProductoDTO body,
+    TiendaContext db
+) =>
+{//Busca al carrito por el Id
+    var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
+    if (carrito == null)
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
+//Lanza un error si no se encuentra
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+        return Results.NotFound(new { Mensaje = "Producto no encontrado" });
+//manda un msj diciendo que el stock es insuficiente
+    if (producto.Stock < body.Cantidad)
+        return Results.BadRequest(new { Mensaje = "Stock insuficiente" });
+//Busca producto por la Id y si no lo encuentra devuelve error
+    var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (itemExistente != null)
+    {
+        // Cantidad total al actualizar la base de datos
+        //y si el producto ya existe en el carrito, actualiza la cantidad
+        var total = itemExistente.Cantidad + body.Cantidad;
+        if (producto.Stock < total)
+            return Results.BadRequest(new { Mensaje = "Stock insuficiente al actualizar cantidad" });
+
+        itemExistente.Cantidad = total;
+    }
+    else
+    {
+        //Agrega el producto al carrito
+        carrito.Items.Add(new ItemCarrito
+        {
+            ProductoId = producto.Id,
+            Nombre = producto.Nombre,
+            Cantidad = body.Cantidad,
+            PrecioUnitario = producto.Precio
+        });
+    }
+//lanza el msj que el carrito fue actualizado
+    return Results.Ok(new { Mensaje = "Producto agregado/actualizado al carrito" });
 });
+});
+
 
 app.Run();
