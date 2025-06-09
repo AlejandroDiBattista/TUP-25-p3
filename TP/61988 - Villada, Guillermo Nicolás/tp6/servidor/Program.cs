@@ -114,4 +114,37 @@ app.MapDelete("/carritos/{id}", (Guid id) => {
     return Results.Ok();
 });
 
+// POST /compras → confirmar compra
+app.MapPost("/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente cliente) => {
+    if (!TiendaData.Carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var items = TiendaData.Carritos[carritoId];
+    if (!items.Any())
+        return Results.BadRequest("El carrito está vacío");
+
+    var compra = new Compra {
+        Id = Guid.NewGuid(),
+        Cliente = cliente,
+        Items = items.Select(i => new ItemCarrito {
+            ProductoId = i.ProductoId,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+        }).ToList(),
+        Fecha = DateTime.Now
+    };
+
+    TiendaData.Compras.Add(compra);
+
+    // Vaciar el carrito
+    TiendaData.Carritos[carritoId] = new List<ItemCarrito>();
+
+    return Results.Ok(compra);
+});
+
+// GET /compras → ver todas las compras
+app.MapGet("/compras", () => {
+    return Results.Ok(TiendaData.Compras);
+});
+
 app.Run();
