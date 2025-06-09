@@ -53,6 +53,38 @@ app.MapGet("/api/productos", async (TiendaDbContext db, string? q) =>
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Endpoint: Crear un nuevo carrito
+app.MapPost("/api/carritos", () =>
+{
+    var carritoId = Guid.NewGuid();
+    CarritoStore.Carritos[carritoId] = new Dictionary<int, int>();
+    return Results.Ok(new { carritoId });
+});
+
+// Endpoint: Obtener los ítems de un carrito
+app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db) =>
+{
+    if (!CarritoStore.Carritos.ContainsKey(carritoId))
+        return Results.NotFound(new { error = "Carrito no encontrado" });
+
+    var items = CarritoStore.Carritos[carritoId];
+    var productos = await db.Productos
+        .Where(p => items.Keys.Contains(p.Id))
+        .ToListAsync();
+
+    var resultado = productos.Select(p => new {
+        p.Id,
+        p.Nombre,
+        p.Descripcion,
+        p.Precio,
+        p.ImagenUrl,
+        Cantidad = items[p.Id],
+        Subtotal = items[p.Id] * p.Precio
+    });
+
+    return Results.Ok(resultado);
+});
+
 // Se inicializa la base de datos y se cargan los productos.
 using (var scope = app.Services.CreateScope())
 {
