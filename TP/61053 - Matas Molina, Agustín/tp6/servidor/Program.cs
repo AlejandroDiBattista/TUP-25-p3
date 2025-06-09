@@ -128,7 +128,15 @@ app.MapDelete("/api/carrito/{carritoId:int}/{productoId:int}", async (int carrit
     await db.SaveChangesAsync();
     return Results.Ok();
 });
+app.MapDelete("/api/carrito/{carritoId:int}", async (int carritoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
 
+    compra.Items.Clear();
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
 
 app.Run();
 
