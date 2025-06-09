@@ -152,3 +152,8 @@ public class TiendaDbContext : DbContext
     public DbSet<Compra> Compras => Set<Compra>();
     public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
 }
+
+public static class CarritoStore
+{
+    public static Dictionary<Guid, Dictionary<int, int>> Carritos { get; } = new();
+}
