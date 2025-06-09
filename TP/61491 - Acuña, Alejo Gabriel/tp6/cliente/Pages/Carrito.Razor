@@ -1,0 +1,43 @@
+@page "/carrito"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService carrito
+
+<h1 class="text-center my-4">Carrito de Compras</h1>
+
+@if (carrito.Items.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito.Items)
+            {
+                <tr>
+                    <td>@item.producto.Nombre</td>
+                    <td>$@item.producto.Precio</td>
+                    <td>@item.cantidad</td>
+                    <td>$@(item.producto.Precio * item.cantidad)</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => carrito.QuitarProducto(item.producto)">
+                            Quitar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="text-end">Total de productos: @carrito.TotalItems()</h4>
+}
