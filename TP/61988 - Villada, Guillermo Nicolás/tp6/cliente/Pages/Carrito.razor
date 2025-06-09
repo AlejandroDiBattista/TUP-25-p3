@@ -1,6 +1,7 @@
 @page "/carrito"
 @inject cliente.Services.ApiService ApiService
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Nav
 
 <h3>Carrito de compras</h3>
 
@@ -88,11 +89,8 @@ else
         await CargarCarrito();
     }
 
-    private async Task ConfirmarCompra()
+    private void ConfirmarCompra()
     {
-        // Redirigir a la página de confirmación o mostrar formulario de cliente
-        // Por ahora, solo muestra un mensaje
-        await Task.Yield();
-        // navegar a /confirmar o mostrar un formulario
+        Nav.NavigateTo("/confirmar");
     }
 }
