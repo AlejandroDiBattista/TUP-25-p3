@@ -5,7 +5,7 @@
 
 <h3>Carrito de compras</h3>
 
-@if (items is null)
+@if (items is null || productos is null)
 {
     <p>Cargando carrito...</p>
 }
@@ -18,6 +18,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Imagen</th>
                 <th>Producto</th>
                 <th>Cantidad</th>
                 <th>Precio unitario</th>
@@ -28,24 +29,34 @@ else
         <tbody>
             @foreach (var item in items)
             {
-                <tr>
-                    <td>@item.ProductoId</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.ProductoId)">-</button>
-                        @item.Cantidad
-                        <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.ProductoId)">+</button>
-                    </td>
-                    <td>$@item.PrecioUnitario</td>
-                    <td>$@(item.PrecioUnitario * item.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => Quitar(item.ProductoId)">Eliminar</button>
-                    </td>
-                </tr>
+                var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                if (producto is not null)
+                {
+                    <tr>
+                        <td>
+                            <img src="@producto.ImagenUrl" alt="@producto.Nombre" style="height:50px;width:50px;object-fit:cover;" />
+                        </td>
+                        <td>@producto.Nombre</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.ProductoId)">-</button>
+                            @item.Cantidad
+                            <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.ProductoId)">+</button>
+                        </td>
+                        <td>$@producto.Precio</td>
+                        <td>$@(producto.Precio * item.Cantidad)</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" @onclick="() => Quitar(item.ProductoId)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
     <div>
-        <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
+        <b>Total: $@items.Sum(i => {
+            var prod = productos.FirstOrDefault(p => p.Id == i.ProductoId);
+            return prod is not null ? prod.Precio * i.Cantidad : 0;
+        })</b>
     </div>
     <button class="btn btn-warning" @onclick="Vaciar">Vaciar carrito</button>
     <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
@@ -53,15 +64,17 @@ else
 
 @code {
     List<cliente.Models.ItemCarrito>? items;
+    List<cliente.Models.Producto>? productos;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarCarrito();
+        await CargarDatos();
     }
 
-    private async Task CargarCarrito()
+    private async Task CargarDatos()
     {
         var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        productos = await ApiService.GetProductosAsync();
         if (carritoId != null && carritoId != Guid.Empty)
             items = await ApiService.ObtenerCarritoAsync(carritoId.Value);
         else
@@ -72,21 +85,24 @@ else
     {
         var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
         await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
-        await CargarCarrito();
+        await CargarDatos();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 
     private async Task Quitar(int productoId)
     {
         var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
         await ApiService.QuitarDelCarritoAsync(carritoId, productoId);
-        await CargarCarrito();
+        await CargarDatos();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 
     private async Task Vaciar()
     {
         var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
         await ApiService.VaciarCarritoAsync(carritoId);
-        await CargarCarrito();
+        await CargarDatos();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 
     private void ConfirmarCompra()
