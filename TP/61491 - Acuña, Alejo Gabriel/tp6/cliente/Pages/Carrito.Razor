@@ -41,3 +41,16 @@ else
 
     <h4 class="text-end">Total de productos: @carrito.TotalItems()</h4>
 }
+@implements IDisposable
+
+@code {
+    protected override void OnInitialized()
+    {
+        carrito.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        carrito.OnChange -= StateHasChanged;
+    }
+}
