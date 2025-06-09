@@ -27,5 +27,5 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
-
+app.UseStaticFiles(); // Permitir archivos estáticos
 app.Run();
