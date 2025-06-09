@@ -62,3 +62,28 @@ else
         <div class="alert alert-success mt-2">@mensaje</div>
     }
 }
+
+@code {
+    List<cliente.Models.ItemCarrito>? items;
+    cliente.Models.Cliente cliente = new();
+    string mensaje = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        if (carritoId != null && carritoId != Guid.Empty)
+            items = await ApiService.ObtenerCarritoAsync(carritoId.Value);
+        else
+            items = new();
+    }
+
+    private async Task Confirmar()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        var compra = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
+        mensaje = "¡Compra confirmada!";
+        await LocalStorage.RemoveItemAsync("carritoId");
+        await Task.Delay(2000);
+        Nav.NavigateTo("/");
+    }
+}
