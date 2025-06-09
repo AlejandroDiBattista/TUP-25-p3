@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace cliente.Models;
 
 public class CompraPendienteDto
@@ -19,11 +21,15 @@ public class CompraGetDto
 }
 public class ConfirmarCompraDto
 {
+    [Required, MaxLength(50)]
+
     public string? NombreCliente { get; set; }
 
+    [Required, MaxLength(50)]
 
     public string? ApellidoCliente { get; set; }
 
+    [Required, EmailAddress]
 
     public string? EmailCliente { get; set; }
 }

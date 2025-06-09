@@ -41,6 +41,26 @@ public class ApiService
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 
+    public async Task ConfirmarCompra(ConfirmarCompraDto dto)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync($"carrito/{Compra.Id_compra}/confirmar", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Compra confirmada");
+                EliminarTodoProductMemoria();
+                OnChange?.Invoke();
+            }
+
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"Error al obtener datos: {ex.Message}");
+        }
+
+    }
+
     public async Task VaciarCarrito()
     {
         try

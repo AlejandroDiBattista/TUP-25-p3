@@ -14,7 +14,7 @@
     </div>
 @if (datos.Response.Count > 0)
 {
-        <div class="d-flex flex-wrap gap-4 justify-content-start">
+        @* <div class="d-flex flex-wrap gap-4 justify-content-start">
             @foreach (var p in datos.Response)
             {
                 <div class="carta-home">
@@ -52,6 +52,12 @@
                     </div>
                 </div>
             }
+
+        </div> *@
+
+         <div class="d-flex flex-wrap gap-4 justify-content-start"> 
+            <Card Items="datos.Response"/>
+
         </div>
 }
 else
@@ -68,17 +74,14 @@ else
 @implements IDisposable 
 @code {
 
-    private Dictionary<int, int> cantidades = new Dictionary<int, int>();
-    private DatosRespuesta<List<Producto>> datos ;
+    private DatosRespuesta<List<Producto>> datos;
     private string error = null;
-
 
     protected override async Task OnInitializedAsync()
     {
         ApiService.OnChange += StateHasChanged;
         await ObtenerDatosDelServidor();
-        InicializarListaCantidades();
-    
+
     }
 
     public void Dispose()
@@ -86,50 +89,12 @@ else
         ApiService.OnChange -= StateHasChanged;
     }
 
-    void CapturarCantidad(int productoId, object valor)
-    {
-        if (int.TryParse(valor.ToString(), out int cantidad))
-        {
-            cantidades[productoId] = Math.Max(0, cantidad); // Evita valores negativos
-        }
-    }
-
-    void ModificarCantidad(int productoId, int cambio)
-    {
-        if (!cantidades.ContainsKey(productoId))
-        {
-            cantidades[productoId] = 0;
-        }
-        cantidades[productoId] = Math.Max(0, cantidades[productoId] + cambio);
-    }
-
-
-    public async Task AgregarCarrito(int id, decimal precio, int stock, string nombre){
-        try{
-            var cantidad = cantidades[id];
-            if(cantidad <= stock){
-                var data = new ItemCompraDto
-                {
-                    ProductoId = id,
-                    Cantidad = cantidades[id],
-                    PrecioUnitario = precio
-                };
-                await ApiService.AgregarProductoAlCarrito(data, nombre, stock);
-                
-            }else{
-                Console.WriteLine($"Sobrepasa el stock disponible");
-            }
-
-        }catch (Exception ex){
-            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
-        }
-    }
-
     private async Task ObtenerDatosDelServidor()
     {
         try
         {
             datos = await ApiService.ObtenerProductos();
+
         }
         catch (Exception ex)
         {
@@ -138,22 +103,7 @@ else
 
     }
 
-    private async Task InicairCarrito(){
-        try{
-            await ApiService.IniciarCarrito();
-        }
-        catch (Exception ex){
-            Console.WriteLine($"Error al Iniciar al carrito: {ex.Message}");
-        }
-    }
 
-    public void InicializarListaCantidades(){
-        foreach (var p in datos.Response)
-        {
-            if (!cantidades.ContainsKey(p.Id_producto))
-            {
-                cantidades[p.Id_producto] = 0; // Inicializa con 0
-            }
-        }
-    }
+   
+   
 }

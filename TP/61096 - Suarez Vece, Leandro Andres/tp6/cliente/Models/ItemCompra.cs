@@ -7,7 +7,7 @@ public class ItemCompraDto
     public decimal PrecioUnitario { get; set; }
 }
 
-public class ItemCompraGtDto
+public class ItemCompraGtDto : ICardItem
 {
     public int? Id_iten { get; set; }
     public int Cantidad { get; set; }
@@ -18,4 +18,10 @@ public class ItemCompraGtDto
     public decimal PrecioProducto { get; set; }
 
     public decimal subTotal => Cantidad * PrecioProducto;
+    public string Nombre => NombreProducto;
+    public decimal Precio => PrecioProducto;
+    public string? ImagenUrl => null; // No tiene imagen
+    public string? Descripcion => null;
+    public int Id => ProductoId;
+
 }
