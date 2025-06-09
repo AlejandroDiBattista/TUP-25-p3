@@ -40,7 +40,7 @@ else
         <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
     </div>
 
-    <EditForm Model="cliente" OnValidSubmit="Confirmar">
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompraAsync">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="mb-2">
@@ -77,7 +77,7 @@ else
             items = new();
     }
 
-    private async Task Confirmar()
+    private async Task ConfirmarCompraAsync()
     {
         var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
         var compra = await ApiService.ConfirmarCompraAsync(carritoId, cliente);

@@ -2,6 +2,7 @@ using servidor.Models;
 using servidor.Data;
 using Microsoft.AspNetCore.Mvc;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // CORS
@@ -147,4 +148,5 @@ app.MapGet("/compras", () => {
     return Results.Ok(TiendaData.Compras);
 });
 
+app.UseStaticFiles();
 app.Run();

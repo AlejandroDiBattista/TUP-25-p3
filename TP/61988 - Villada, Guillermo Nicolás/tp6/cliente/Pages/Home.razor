@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
@@ -7,53 +8,8 @@
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
+            <h1>Bienvenido a la Tienda Online</h1>
+            <p>¡Explorá nuestros productos y agregá lo que quieras al carrito!</p>
         </div>
     </div>
 </div>
-
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
-
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
-    }
-}

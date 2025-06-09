@@ -1,4 +1,4 @@
-@page "/"
+@page "/productos"
 @inject cliente.Services.ApiService ApiService
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject NavigationManager Nav
@@ -40,6 +40,7 @@ else
 }
 
 @code {
+    string mensaje = "";
     [Parameter]
     [SupplyParameterFromQuery(Name = "q")]
     public string? q { get; set; }

@@ -12,30 +12,66 @@ public static class TiendaData
         new Producto
         {
             Id = 1,
-            Nombre = "Celular",
-            Descripcion = "Xiaomi Redmi Note 12",
-            Precio = 150000,
-            Stock = 10,
-            ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_2X_739446-MLA54965116941_042023-F.webp"
+            Nombre = "Remera",
+            Descripcion = "Remera Nickz Original",
+            Precio = 20000,
+            Stock = 50,
+            ImagenUrl = "/imagenes/NickzOriginal.jpg"
         },
         new Producto
         {
             Id = 2,
-            Nombre = "Notebook",
-            Descripcion = "HP 15s Intel Core i5 11va Gen",
-            Precio = 420000,
-            Stock = 5,
-            ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_2X_948737-MLA51829376989_102022-F.webp"
+            Nombre = "Remera",
+            Descripcion = "Remera Nickz Reflectiva (Limited Edition)",
+            Precio = 25000,
+            Stock = 10,
+            ImagenUrl = "/imagenes/NickzReflectiva.jpg"
         },
         new Producto
         {
             Id = 3,
-            Nombre = "Auriculares",
-            Descripcion = "Logitech G435 Lightspeed",
-            Precio = 70000,
+            Nombre = "Remera Nickz Violeta",
+            Descripcion = "Remera Nickz Violeta (CR Edition)",
+            Precio = 20000,
             Stock = 15,
-            ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_2X_947731-MLA46930967287_082021-F.webp"
-        }
+            ImagenUrl = "/imagenes/NickzVioleta.jpg"
+        },
+        new Producto
+        {
+            Id = 4,
+            Nombre = "Remera Nickz Verde",
+            Descripcion = "Remera Nickz Verde (Argentina Edition)",
+            Precio = 20000,
+            Stock = 15,
+            ImagenUrl = "/imagenes/NickzVerde.jpg"
+        },
+        new Producto
+        {
+            Id = 5,
+            Nombre = "Remera Nickz Naranja",
+            Descripcion = "Remera Nickz Naranja (Halloween Edition)",
+            Precio = 20000,
+            Stock = 15,
+            ImagenUrl = "/imagenes/NickzNaranja.jpg"
+        },
+        new Producto
+        {
+            Id = 6,
+            Nombre = "Remera Nickz Candy",
+            Descripcion = "Remera Nickz Chicle (Candy Edition)",
+            Precio = 20000,
+            Stock = 15,
+            ImagenUrl = "/imagenes/NickzChicle.jpg"
+        },
+        new Producto
+        {
+            Id = 7,
+            Nombre = "Remera Nickz Invertida",
+            Descripcion = "Remera Nickz Colores Invertidos (Ultra Limited Edition)",
+            Precio = 20000,
+            Stock = 3,
+            ImagenUrl = "/imagenes/NickzInvertida.jpg"
+        },
     };
 
     // Diccionario que guarda los carritos por ID
