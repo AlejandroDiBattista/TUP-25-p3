@@ -22,10 +22,13 @@ if (app.Environment.IsDevelopment()) {
 // Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
+// Habilitar archivos estáticos
+app.UseStaticFiles();
+
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
-app.UseStaticFiles(); // Permitir archivos estáticos
+
 app.Run();
