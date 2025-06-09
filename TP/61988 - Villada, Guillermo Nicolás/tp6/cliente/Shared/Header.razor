@@ -6,6 +6,10 @@
     <a class="navbar-brand" href="" @onclick="IrHome" style="cursor:pointer;">
         <img src="logo.png" alt="Logo" style="height:40px;" /> Tienda Online
     </a>
+    <form class="form-inline my-2 my-lg-0" @onsubmit="Buscar">
+        <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Buscar" @bind="busqueda" />
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
+    </form>
     <div class="ml-auto">
         <button class="btn btn-outline-primary" @onclick="IrCarrito">
             <span class="oi oi-cart"></span>
@@ -17,6 +21,7 @@
 
 @code {
     int contador = 0;
+    string busqueda = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,5 +51,13 @@
     private void IrHome()
     {
         Nav.NavigateTo("/");
+    }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            Nav.NavigateTo($"/?q={Uri.EscapeDataString(busqueda)}");
+        else
+            Nav.NavigateTo("/");
     }
 }

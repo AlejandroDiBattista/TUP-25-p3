@@ -3,6 +3,8 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject NavigationManager Nav
 
+@using Microsoft.AspNetCore.Components
+
 <h3>Catálogo de Productos</h3>
 
 @if (!string.IsNullOrEmpty(mensaje))
@@ -38,12 +40,15 @@ else
 }
 
 @code {
-    List<cliente.Models.Producto>? productos;
-        string mensaje = ""
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? q { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    List<cliente.Models.Producto>? productos;
+
+    protected override async Task OnParametersSetAsync()
     {
-        productos = await ApiService.GetProductosAsync();
+        productos = await ApiService.GetProductosAsync(q);
     }
 
     private async Task<Guid> ObtenerOCrearCarritoIdAsync()
@@ -67,5 +72,7 @@ else
     await Task.Delay(1500);
     mensaje = "";
     StateHasChanged();
+
+    Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 }
