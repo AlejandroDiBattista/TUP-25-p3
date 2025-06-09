@@ -12,7 +12,7 @@
         <a class="nav-item nav-link" href="/productos">Productos</a>
         <a class="nav-item nav-link" href="/carrito">Carrito</a>
         <a class="nav-item nav-link" href="/confirmar">Confirmar compra</a>
-    </div>>
+    </div>
 
     <form class="form-inline my-2 my-lg-0" @onsubmit="Buscar">
         <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Buscar" @bind="busqueda" />
@@ -64,8 +64,8 @@
     private void Buscar()
     {
         if (!string.IsNullOrWhiteSpace(busqueda))
-            Nav.NavigateTo($"/?q={Uri.EscapeDataString(busqueda)}");
+            Nav.NavigateTo($"/productos?q={Uri.EscapeDataString(busqueda)}");
         else
-            Nav.NavigateTo("/");
+            Nav.NavigateTo("/productos");
     }
 }

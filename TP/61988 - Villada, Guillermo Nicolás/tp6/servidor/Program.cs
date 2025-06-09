@@ -26,7 +26,11 @@ app.MapGet("/", () => "Servidor API en funcionamiento");
 // GET /api/productos
 app.MapGet("/api/productos", ([FromQuery] string? q) => {
     var productos = TiendaData.Productos
-        .Where(p => string.IsNullOrEmpty(q) || p.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase))
+        .Where(p =>
+            string.IsNullOrEmpty(q) ||
+            p.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            p.Descripcion.Contains(q, StringComparison.OrdinalIgnoreCase)
+        )
         .ToList();
     return Results.Ok(productos);
 });

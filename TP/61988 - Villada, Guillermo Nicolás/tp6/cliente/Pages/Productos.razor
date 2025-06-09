@@ -10,11 +10,15 @@
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <div class="alert alert-success">@mensaje</div>
-    }
+}
 
 @if (productos is null)
 {
     <p>Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <div class="alert alert-warning text-center">Producto no encontrado</div>
 }
 else
 {
@@ -66,14 +70,14 @@ else
 
     private async Task AgregarAlCarrito(int productoId)
     {
-         var carritoId = await ObtenerOCrearCarritoIdAsync();
-    await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
-    mensaje = "Producto agregado al carrito";
-    StateHasChanged();
-    await Task.Delay(1500);
-    mensaje = "";
-    StateHasChanged();
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
+        await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
+        mensaje = "Producto agregado al carrito";
+        StateHasChanged();
+        await Task.Delay(1500);
+        mensaje = "";
+        StateHasChanged();
 
-    Nav.NavigateTo(Nav.Uri, forceLoad: true);
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 }
