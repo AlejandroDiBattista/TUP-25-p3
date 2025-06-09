@@ -38,10 +38,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
     db.Database.EnsureCreated();
-    if (!db.Productos.any())
     if (!db.Productos.Any())
     {
-        db.Productos.Addrange(
         db.Productos.AddRange(
 
            new Producto { Nombre = "Procesador Intel Core i7-14700K", Descripcion = "CPU de alto rendimiento para gaming y creación de contenido, 20 núcleos, 28 hilos.", Precio = 350000, Stock = 15, ImagenUrl = "https://ejemplo.com/imagenes/intel-i7.jpg" },
@@ -70,6 +68,19 @@ app.MapPost("/api/carrito", async (TiendaDbContext db) =>
     db.Compras.Add(compra);
     await db.SaveChangesAsync();
     return Results.Ok(new { carritoId = compra.Id });
+});
+app.MapGet("/api/carrito/{carritoId=int}", async(int carritoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+    .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null)
+
+        return Results.NotFound();
+            return Results.Ok(compra);
+        
+      
 });
 
 
