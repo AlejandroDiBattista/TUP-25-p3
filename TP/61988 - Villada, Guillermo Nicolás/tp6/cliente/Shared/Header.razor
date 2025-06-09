@@ -1,0 +1,50 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Nav
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <a class="navbar-brand" href="" @onclick="IrHome" style="cursor:pointer;">
+        <img src="logo.png" alt="Logo" style="height:40px;" /> Tienda Online
+    </a>
+    <div class="ml-auto">
+        <button class="btn btn-outline-primary" @onclick="IrCarrito">
+            <span class="oi oi-cart"></span>
+            Carrito
+            <span class="badge badge-pill badge-danger">@contador</span>
+        </button>
+    </div>
+</nav>
+
+@code {
+    int contador = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarContador();
+    }
+
+    public async Task ActualizarContador()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        if (carritoId != null && carritoId != Guid.Empty)
+        {
+            var items = await ApiService.ObtenerCarritoAsync(carritoId.Value);
+            contador = items.Sum(i => i.Cantidad);
+        }
+        else
+        {
+            contador = 0;
+        }
+        StateHasChanged();
+    }
+
+    private void IrCarrito()
+    {
+        Nav.NavigateTo("/carrito");
+    }
+
+    private void IrHome()
+    {
+        Nav.NavigateTo("/");
+    }
+}
