@@ -137,7 +137,32 @@ app.MapDelete("/api/carrito/{carritoId:int}", async (int carritoId, TiendaDbCont
     await db.SaveChangesAsync();
     return Results.Ok();
 });
+app.MapPut("/api/carrito/{carritoId:int}/confirmar", async (int carritoId, [FromBody] Compra datos, TiendaDbContext db) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
 
+ 
+    foreach (var item in compra.Items)
+    {
+        if (item.Producto.Stock < item.Cantidad)
+            return Results.BadRequest($"No hay suficiente stock para {item.Producto.Nombre}");
+    }
+
+
+    foreach (var item in compra.Items)
+    {
+        item.Producto.Stock -= item.Cantidad;
+    }
+    compra.NombreCliente = datos.NombreCliente;
+    compra.ApellidoCliente = datos.ApellidoCliente;
+    compra.EmailCliente = datos.EmailCliente;
+    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+    compra.Fecha = DateTime.Now;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(compra);
+});
 app.Run();
 
 
