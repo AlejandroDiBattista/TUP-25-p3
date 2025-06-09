@@ -50,8 +50,9 @@
                 </li>
             </ul>
 
-            <form class="d-flex mx-4" role="search">
-                <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" />
+            <form class="d-flex mx-4" role="search" @onsubmit="OnSubmitBuscar" @onsubmit:preventDefault>
+                <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar"
+                    @bind="textoBusqueda" />
                 <button class="btn btn-outline-light" type="submit">Buscar</button>
             </form>
         </div>
@@ -75,5 +76,17 @@
     {
         ApiService.OnChange -= ActualizarVista;
     }
+
+    private string textoBusqueda = string.Empty;
+
+    private void OnSubmitBuscar()
+    {
+        ApiService.Buscar(textoBusqueda);
+    }
+
+
+
+
+
 
 }

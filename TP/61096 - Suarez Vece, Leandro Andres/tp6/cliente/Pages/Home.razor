@@ -12,51 +12,11 @@
             <h1 class="text-center">Lista de productos </h1>
         </div>
     </div>
-@if (datos.Response.Count > 0)
+@if (datos.Count > 0)
 {
-        @* <div class="d-flex flex-wrap gap-4 justify-content-start">
-            @foreach (var p in datos.Response)
-            {
-                <div class="carta-home">
-                    <div class="card h-100">
-                        <img src="@p.ImagenUrl" class="card-img-top" alt="Imagen de @p.Nombre">
-                        <div class="card-body">
-                            <h5 class="card-title">@p.Nombre</h5>
-                            <p class="card-text">@p.Descripcion</p>
-                            <p class="card-text"><strong>Stock:</strong> @p.Stock unidades</p>
-                            <p class="card-text text-success"><strong>Precio:</strong> @p.Precio.ToString()</p>
-                            <div class="d-grid gap-2">
-                                @if(ApiService.Compra != null){
-                                <div class="d-flex justify-content-center align-items-center gap-2">
-                                    <button type="button" class="btn btn-outline-primary"
-                                         @onclick="()=>ModificarCantidad(p.Id_producto, -1)">-</button>
-
-                                    <input type="number" meta-id="@p.Id_producto" value="@cantidades[p.Id_producto]" min="0" max="@p.Stock" 
-                                        @onchange="(e) => CapturarCantidad(p.Id_producto, e.Value)"
-                                        class="form-control text-center w-auto border-bottom border-primary" style="max-width: 80px;">
-
-                                    <button type="button" class="btn btn-outline-primary"
-                                        @onclick="()=>ModificarCantidad(p.Id_producto, 1)">+</button>
-                                </div>
-
-                                <button type="button" class="btn btn-primary"
-                                    @onclick="async () => AgregarCarrito(p.Id_producto, p.Precio, p.Stock, p.Nombre)" >Agregar Carrito</button>
-                                }else{
-
-                                <button type="button" class="btn btn-primary" 
-                                    @onclick="InicairCarrito">Iniciar compra</button>
-
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-
-        </div> *@
-
+    
          <div class="d-flex flex-wrap gap-4 justify-content-start"> 
-            <Card Items="datos.Response"/>
+            <Card Items="datos"/>
 
         </div>
 }
@@ -64,7 +24,7 @@ else
 {
     <div class="alert alert-danger" role="alert">
         <h4 class="alert-heading">Error al cargar los productos</h4>
-        <p>@datos.Message</p>
+        <p>@error</p>
     </div>
 
 }
@@ -73,27 +33,28 @@ else
 
 @implements IDisposable 
 @code {
-
-    private DatosRespuesta<List<Producto>> datos;
-    private string error = null;
-
+    private List<Producto> datos;
+    private string? error;
+    
     protected override async Task OnInitializedAsync()
     {
         ApiService.OnChange += StateHasChanged;
-        await ObtenerDatosDelServidor();
+        ApiService.OnBuscar += OnBuscar;
+        await ObtenerDatosDelServidor(null);
 
     }
 
     public void Dispose()
     {
         ApiService.OnChange -= StateHasChanged;
+        ApiService.OnBuscar -= OnBuscar;
     }
 
-    private async Task ObtenerDatosDelServidor()
+    private async Task ObtenerDatosDelServidor(string? texto)
     {
         try
         {
-            datos = await ApiService.ObtenerProductos();
+            datos = await ApiService.ObtenerProductos(texto);
 
         }
         catch (Exception ex)
@@ -103,7 +64,11 @@ else
 
     }
 
-
-   
+    private async void OnBuscar(string texto)
+    {
+        await ObtenerDatosDelServidor(texto);
+        StateHasChanged();
+    }
+  
    
 }

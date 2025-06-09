@@ -58,7 +58,7 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 
-app.MapGet("/productos", async (string? busqueda, IPruductServices servicio) =>
+app.MapGet("/productos/{busqueda?}", async (string? busqueda, IPruductServices servicio) =>
 {
     var productos = await servicio.GetPorducts(busqueda);
     return productos is null ? Results.NotFound("No se encontró productos.") : Results.Ok(productos);

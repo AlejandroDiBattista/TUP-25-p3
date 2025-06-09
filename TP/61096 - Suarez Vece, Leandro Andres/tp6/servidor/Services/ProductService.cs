@@ -38,9 +38,8 @@ public class ProductService : IPruductServices
 
         if (!string.IsNullOrWhiteSpace(busqueda))
         {
-            query = query.Where(p =>
-                p.Nombre.Contains(busqueda)
-               );
+            query = query.Where(p => p.Nombre.ToLower().Contains(busqueda.ToLower()));
+
         }
 
         return await query.ToListAsync();
@@ -144,17 +143,6 @@ public class ProductService : IPruductServices
         }
 
         await _context.SaveChangesAsync();
-
-
-        // var res = await _context.Compras.FindAsync(id);
-        // if (res != null)
-        // {
-        //     res.NombreCliente = dto.NombreCliente;
-        //     res.ApellidoCliente = dto.ApellidoCliente;
-        //     res.EmailCliente = dto.EmailCliente;
-        //     res.Entregado = true;
-        //     await _context.SaveChangesAsync();
-        // }
     }
     public async Task ActualizarCarrito(int id, ItemCompraDto dto)
     {

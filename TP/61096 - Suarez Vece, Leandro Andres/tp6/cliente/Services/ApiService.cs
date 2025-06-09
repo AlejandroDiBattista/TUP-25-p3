@@ -14,6 +14,11 @@ public class ApiService
         _httpClient = httpClient;
     }
 
+    public event Action<string>? OnBuscar;
+    public void Buscar(string texto)
+    {
+        OnBuscar?.Invoke(texto);
+    }
     public event Action OnChange;
     public int Count => ListaProductos?.Count ?? 0;
     private List<ItemCompraGtDto> _listaProductos = new List<ItemCompraGtDto>();
@@ -174,18 +179,19 @@ public class ApiService
     }
 
 
-    public async Task<DatosRespuesta<List<Producto>>> ObtenerProductos()
+    public async Task<List<Producto>> ObtenerProductos(string? filtro = null)
     {
+
         try
         {
-            var res = await _httpClient.GetFromJsonAsync<List<Producto>>("productos");
-
-            return new DatosRespuesta<List<Producto>> { Message = "exito", Response = res };
+            Console.WriteLine(filtro);
+            var res = await _httpClient.GetFromJsonAsync<List<Producto>>($"productos/{filtro}");
+            return res;
         }
         catch (System.Exception ex)
         {
             Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta<List<Producto>> { Message = ex.Message, Response = new List<Producto>() };
+            return new List<Producto>();
         }
     }
 
