@@ -12,6 +12,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 
 // Registrar el servicio API
 builder.Services.AddScoped<ApiService>();
+//el blazor local storage paa!
+builder.Services.AddBlazoredLocalStorage();
 
 await builder.Build().RunAsync();
 

@@ -1,7 +1,13 @@
 @page "/"
 @inject cliente.Services.ApiService ApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <h3>Catálogo de Productos</h3>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success">@mensaje</div>
+    }
 
 @if (productos is null)
 {
@@ -32,18 +38,33 @@ else
 
 @code {
     List<cliente.Models.Producto>? productos;
+        string mensaje = ""
 
     protected override async Task OnInitializedAsync()
     {
         productos = await ApiService.GetProductosAsync();
     }
 
+    private async Task<Guid> ObtenerOCrearCarritoIdAsync()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        if (carritoId == null || carritoId == Guid.Empty)
+        {
+            var nuevoId = await ApiService.CrearCarritoAsync();
+            await LocalStorage.SetItemAsync("carritoId", nuevoId);
+            return nuevoId;
+        }
+        return carritoId.Value;
+    }
+
     private async Task AgregarAlCarrito(int productoId)
     {
-        // Aquí deberías obtener o crear el carritoId (puede ser desde localStorage o una variable)
-        // Por ahora, solo muestra un mensaje
-        await Task.Yield();
-        // Ejemplo: await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
-        Console.WriteLine($"Producto {productoId} agregado al carrito (falta implementar lógica de carrito)");
+         var carritoId = await ObtenerOCrearCarritoIdAsync();
+    await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
+    mensaje = "Producto agregado al carrito";
+    StateHasChanged();
+    await Task.Delay(1500);
+    mensaje = "";
+    StateHasChanged();
     }
 }
