@@ -75,3 +75,14 @@ public class Producto
     public string ImagenUrl { get; set; } = null!;
 }
 
+public class Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public string NombreCliente { get; set; } = null!;
+    public string ApellidoCliente { get; set; } = null!;
+    public string EmailCliente { get; set; } = null!;
+    public List<ItemCompra> Items { get; set; } = new();
+}
+
