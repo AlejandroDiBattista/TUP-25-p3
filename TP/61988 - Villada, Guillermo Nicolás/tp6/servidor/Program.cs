@@ -1,6 +1,10 @@
+using servidor.Models;
+using servidor.Data;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -9,23 +13,105 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
-}
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
-// Mapear rutas básicas
-app.MapGet("/", () => "Servidor API está en funcionamiento");
+// Ruta raíz
+app.MapGet("/", () => "Servidor API en funcionamiento");
 
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+// GET /productos
+app.MapGet("/productos", ([FromQuery] string? q) => {
+    var productos = TiendaData.Productos
+        .Where(p => string.IsNullOrEmpty(q) || p.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+    return Results.Ok(productos);
+});
+
+// POST /carritos → crea un nuevo carrito
+app.MapPost("/carritos", () => {
+    var id = Guid.NewGuid();
+    TiendaData.Carritos[id] = new List<ItemCarrito>();
+    return Results.Ok(id);
+});
+
+// GET /carritos/{id}
+app.MapGet("/carritos/{id}", (Guid id) => {
+    if (!TiendaData.Carritos.ContainsKey(id))
+        return Results.NotFound("Carrito no encontrado");
+
+    return Results.Ok(TiendaData.Carritos[id]);
+});
+
+// PUT /carritos/{id}/{productoId}
+app.MapPut("/carritos/{id}/{productoId}", (Guid id, int productoId) => {
+    var producto = TiendaData.Productos.FirstOrDefault(p => p.Id == productoId);
+    if (producto is null)
+        return Results.NotFound("Producto no encontrado");
+
+    if (producto.Stock < 1)
+        return Results.BadRequest("Sin stock");
+
+    if (!TiendaData.Carritos.ContainsKey(id))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = TiendaData.Carritos[id];
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item is null) {
+        carrito.Add(new ItemCarrito {
+            ProductoId = productoId,
+            Cantidad = 1,
+            PrecioUnitario = producto.Precio
+        });
+    } else {
+        item.Cantidad++;
+    }
+
+    producto.Stock--;
+    return Results.Ok(carrito);
+});
+
+// DELETE /carritos/{id}/{productoId}
+app.MapDelete("/carritos/{id}/{productoId}", (Guid id, int productoId) => {
+    if (!TiendaData.Carritos.ContainsKey(id))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = TiendaData.Carritos[id];
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item is null)
+        return Results.NotFound("Producto no está en el carrito");
+
+    if (item.Cantidad > 1) {
+        item.Cantidad--;
+    } else {
+        carrito.Remove(item);
+    }
+
+    var producto = TiendaData.Productos.FirstOrDefault(p => p.Id == productoId);
+    if (producto is not null)
+        producto.Stock++;
+
+    return Results.Ok(carrito);
+});
+
+// DELETE /carritos/{id}
+app.MapDelete("/carritos/{id}", (Guid id) => {
+    if (!TiendaData.Carritos.ContainsKey(id))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = TiendaData.Carritos[id];
+    foreach (var item in carrito)
+    {
+        var producto = TiendaData.Productos.FirstOrDefault(p => p.Id == item.ProductoId);
+        if (producto is not null)
+            producto.Stock += item.Cantidad;
+    }
+
+    carrito.Clear();
+    return Results.Ok();
+});
 
 app.Run();
