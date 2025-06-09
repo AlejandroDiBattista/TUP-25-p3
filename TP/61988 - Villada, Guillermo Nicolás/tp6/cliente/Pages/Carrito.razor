@@ -49,3 +49,50 @@ else
     <button class="btn btn-warning" @onclick="Vaciar">Vaciar carrito</button>
     <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
 }
+
+@code {
+    List<cliente.Models.ItemCarrito>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        if (carritoId != null && carritoId != Guid.Empty)
+            items = await ApiService.ObtenerCarritoAsync(carritoId.Value);
+        else
+            items = new();
+    }
+
+    private async Task Agregar(int productoId)
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
+        await CargarCarrito();
+    }
+
+    private async Task Quitar(int productoId)
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        await ApiService.QuitarDelCarritoAsync(carritoId, productoId);
+        await CargarCarrito();
+    }
+
+    private async Task Vaciar()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        await ApiService.VaciarCarritoAsync(carritoId);
+        await CargarCarrito();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        // Redirigir a la página de confirmación o mostrar formulario de cliente
+        // Por ahora, solo muestra un mensaje
+        await Task.Yield();
+        // navegar a /confirmar o mostrar un formulario
+    }
+}
