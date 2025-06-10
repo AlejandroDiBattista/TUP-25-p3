@@ -75,9 +75,39 @@ public class ApiService
     }
 }
 
+// --- DTOs para el cliente ---
+public class ProductoDto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = "";
+    public string Descripcion { get; set; } = "";
+    public decimal Precio { get; set; }
+    public int Stock { get; set; }
+    public string ImagenUrl { get; set; } = "";
+}
+
+public class CarritoIdDto
+{
+    public Guid carritoId { get; set; }
 }
 
 public class DatosRespuesta {
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
+public class CarritoItemDto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = "";
+    public string Descripcion { get; set; } = "";
+    public decimal Precio { get; set; }
+    public string ImagenUrl { get; set; } = "";
+    public int Cantidad { get; set; }
+    public decimal Subtotal { get; set; }
+}
+
+public class ConfirmarCompraDto
+{
+    public string Nombre { get; set; } = "";
+    public string Apellido { get; set; } = "";
+    public string Email { get; set; } = "";
 }
