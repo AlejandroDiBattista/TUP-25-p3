@@ -1,0 +1,66 @@
+@page "/"
+@inject Cliente.Services.ApiService ApiService
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="fw-bold mb-3">Catálogo de Productos</h2>
+            <div class="d-flex justify-content-center align-items-center gap-2">
+                <input @bind="busqueda" @bind:event="oninput" class="form-control w-50" placeholder="Buscar productos..." style="max-width:400px;" />
+            </div>
+        </div>
+    </div>
+
+    @if (productos is null)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3">Cargando productos...</p>
+        </div>
+    }
+    else if (productos.Count == 0)
+    {
+        <div class="alert alert-warning text-center">No se encontraron productos.</div>
+    }
+    else
+    {
+        <div class="row g-4 justify-content-center">
+            @foreach (var prod in productos)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="images/@prod.ImagenUrl" class="card-img-top p-3 bg-light" alt="@prod.Nombre" style="height:180px;object-fit:contain;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-semibold">@prod.Nombre</h5>
+                            <p class="card-text small text-secondary">@prod.Descripcion</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-success">Stock: @prod.Stock</span>
+                                    <span class="fw-bold text-primary">$@prod.Precio</span>
+                                </div>
+                                <button class="btn btn-primary w-100" disabled>Agregar al carrito</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Cliente.Models.Producto>? productos;
+    private string? busqueda;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    private async Task Buscar()
+    {
+        productos = await ApiService.GetProductosAsync(busqueda);
+    }
+}

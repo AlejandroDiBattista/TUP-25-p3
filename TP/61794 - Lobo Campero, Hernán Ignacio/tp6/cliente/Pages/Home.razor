@@ -1,8 +1,7 @@
-﻿@page "/"
-@using cliente.Services
+﻿@using Cliente.Services
 @inject ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
+<!-- <PageTitle>Inicio</PageTitle> -->
 
 <div class="container">
     <div class="row mb-4">
@@ -40,7 +39,7 @@
 </div>
 
 @code {
-    private DatosRespuesta datos;
+    private Cliente.Services.DatosRespuesta datos;
     private string error;
     private bool cargando = false;
 

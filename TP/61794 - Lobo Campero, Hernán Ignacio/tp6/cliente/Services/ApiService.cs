@@ -1,6 +1,8 @@
+#nullable enable
 using System.Net.Http.Json;
+using Cliente.Models;
 
-namespace cliente.Services;
+namespace Cliente.Services;
 
 public class ApiService {
     private readonly HttpClient _httpClient;
@@ -17,6 +19,12 @@ public class ApiService {
             Console.WriteLine($"Error al obtener datos: {ex.Message}");
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
+    }
+
+    public async Task<List<Producto>> GetProductosAsync(string? query = null)
+    {
+        var url = "/productos" + (string.IsNullOrWhiteSpace(query) ? "" : $"?q={query}");
+        return await _httpClient.GetFromJsonAsync<List<Producto>>(url) ?? new();
     }
 }
 
