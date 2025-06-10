@@ -8,6 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+// Configuración EF Core con SQLite
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
@@ -19,12 +24,22 @@ builder.Services.AddCors(options => {
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
+}
+
+// Habilitar Swagger para documentación de la API
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tienda API v1"));
 }
 
 // Usar CORS con la política definida
@@ -32,6 +47,7 @@ app.UseCors("AllowClientApp");
 
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
+app.MapGet("/productos", async (TiendaDbContext db) => await db.Productos.ToListAsync());
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
@@ -87,8 +103,8 @@ public class TiendaDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Producto>().HasData(
-            new Producto { Id = 1, Nombre = "Celular Samsung A14", Descripcion = "Pantalla 6.6”, 128GB", Precio = 450, Stock = 20, ImagenUrl = "https://via.placeholder.com/200" },
-            new Producto { Id = 2, Nombre = "Auriculares Bluetooth", Descripcion = "Cancelación de ruido", Precio = 60, Stock = 50, ImagenUrl = "https://via.placeholder.com/200" },
+            new Producto { Id = 1, Nombre = "Celular Samsung A14", Descripcion = "Pantalla 6.6”, 128GB", Precio = 450, Stock = 20, ImagenUrl = "https://images.samsung.com/is/image/samsung/p6pim/ar/sm-a145mzsearo/gallery/ar-galaxy-a14-sm-a145-sm-a145mzsearo-535983519?$684_547_PNG$" },
+            /*new Producto { Id = 2, Nombre = "Auriculares Bluetooth", Descripcion = "Cancelación de ruido", Precio = 60, Stock = 50, ImagenUrl = "https://via.placeholder.com/200" },
             new Producto { Id = 3, Nombre = "Smart TV 43” LG", Descripcion = "Full HD, WebOS", Precio = 310, Stock = 10, ImagenUrl = "https://via.placeholder.com/200" },
             new Producto { Id = 4, Nombre = "Gaseosa Cola 2L", Descripcion = "Pack de 6 unidades", Precio = 9, Stock = 100, ImagenUrl = "https://via.placeholder.com/200" },
             new Producto { Id = 5, Nombre = "Notebook Lenovo i5", Descripcion = "8GB RAM, 512GB SSD", Precio = 700, Stock = 15, ImagenUrl = "https://via.placeholder.com/200" },
@@ -97,6 +113,7 @@ public class TiendaDbContext : DbContext
             new Producto { Id = 8, Nombre = "Powerbank 10.000mAh", Descripcion = "Carga rápida USB-C", Precio = 35, Stock = 35, ImagenUrl = "https://via.placeholder.com/200" },
             new Producto { Id = 9, Nombre = "Tablet 10”", Descripcion = "Android 13, 64GB", Precio = 220, Stock = 12, ImagenUrl = "https://via.placeholder.com/200" },
             new Producto { Id = 10, Nombre = "Teclado Inalámbrico", Descripcion = "Compacto, multimedia", Precio = 18, Stock = 25, ImagenUrl = "https://via.placeholder.com/200" }
+        */
         );
     }
 }
