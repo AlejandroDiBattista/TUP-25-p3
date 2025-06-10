@@ -49,7 +49,7 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 //Endpoint devuelve los productos desde la base de datos
-app.MapGet("/api/producto", async (TiendaContext db, string? buscar) =>
+app.MapGet("/api/producto", async (TiendaContext db, string buscar) =>
 {
     // Busca productos por nombre, descripción, marca o precio
     if (string.IsNullOrEmpty(buscar))
@@ -61,8 +61,7 @@ app.MapGet("/api/producto", async (TiendaContext db, string? buscar) =>
             p.Descripcion.Contains(buscar) ||
             p.Marca.Contains(buscar) ||
             p.Precio.ToString().Contains(buscar)
-        )
-        .ToListAsync();
+        ).ToListAsync();
 
     return Results.Ok(filtrados);
 });
@@ -163,6 +162,8 @@ app.MapPut("/carritos/{id}/finalizar", async (Guid id, ClienteDTO infoCliente, T
         nuevaCompra.Total,
         Cliente = new { infoCliente.Nombre, infoCliente.Apellido, infoCliente.Email }
     });
+});
+
 // Agrega un producto al carrito
 app.MapPut("/carritos/{carritoId}/{productoId}", async (
     Guid carritoId,
@@ -174,15 +175,17 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
     var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
     if (carrito == null)
         return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
-//Lanza un error si no se encuentra
+    //Lanza un error si no se encuentra
     var producto = await db.Productos.FindAsync(productoId);
     if (producto == null)
         return Results.NotFound(new { Mensaje = "Producto no encontrado" });
-//manda un msj diciendo que el stock es insuficiente
+    //manda un msj diciendo que el stock es insuficiente
     if (producto.Stock < body.Cantidad)
         return Results.BadRequest(new { Mensaje = "Stock insuficiente" });
-//Busca producto por la Id y si no lo encuentra devuelve error
-    var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    //Busca producto por la Id y si no lo encuentra devuelve error
+    if (!int.TryParse(productoId, out int productoIdInt))
+        return Results.BadRequest(new { Mensaje = "El id del producto no es válido" });
+    var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoIdInt);
     if (itemExistente != null)
     {
         // Cantidad total al actualizar la base de datos
@@ -204,9 +207,40 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
             PrecioUnitario = producto.Precio
         });
     }
-//lanza el msj que el carrito fue actualizado
+    //lanza el msj que el carrito fue actualizado
     return Results.Ok(new { Mensaje = "Producto agregado/actualizado al carrito" });
 });
+
+//Elimir un producto del carrito
+app.MapDelete("/carritos/{carritoId}/{productoId}", (
+    Guid carritoId,
+    string productoId,
+    int? cantidad
+) =>
+{ //Busca el carrito por el ID
+    var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
+    if (carrito == null)
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
+    //Lanza un error si no se encuentra
+    if (!int.TryParse(productoId, out int productoIdInt))
+        return Results.BadRequest(new { Mensaje = "El id del producto no es válido" });
+    //Busca el producto por la Id
+    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoIdInt);
+    if (item == null)
+        return Results.NotFound(new { Mensaje = "Producto no está en el carrito" });
+    //Si no se encuentra el producto, devuelve error
+    if (cantidad == null || cantidad >= item.Cantidad)
+    {
+        // Quitar completamente
+        carrito.Items.Remove(item);
+        return Results.Ok(new { Mensaje = "Producto eliminado del carrito" });
+    }
+    else
+    {
+        // Reducir cantidad
+        item.Cantidad -= cantidad.Value;
+        return Results.Ok(new { Mensaje = $"Cantidad reducida. Quedan {item.Cantidad}" });
+    }
 });
 
 
