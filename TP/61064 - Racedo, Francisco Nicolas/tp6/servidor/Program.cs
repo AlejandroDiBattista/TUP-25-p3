@@ -62,6 +62,7 @@ app.MapPost("/api/carritos", () =>
 });
 
 // Endpoint: Obtener los ítems de un carrito
+// Endpoint: Obtener los ítems(Productos) de un carrito
 app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db) =>
 {
     if (!CarritoStore.Carritos.ContainsKey(carritoId))
@@ -84,6 +85,109 @@ app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext d
 
     return Results.Ok(resultado);
 });
+
+
+// Endpoint: Agregar o actualizar producto en el carrito
+app.MapPut("/api/carritos/{carritoId}/{productoId}", async (Guid carritoId, int productoId, CantidadDto dto, TiendaDbContext db) =>
+{
+    if (!CarritoStore.Carritos.ContainsKey(carritoId))
+        return Results.NotFound(new { error = "Carrito no encontrado" });
+
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+        return Results.NotFound(new { error = "Producto no encontrado" });
+
+    if (dto.Cantidad < 1)
+        return Results.BadRequest(new { error = "La cantidad debe ser mayor a cero" });
+
+    // Validar stock disponible
+    int enCarrito = CarritoStore.Carritos[carritoId].ContainsKey(productoId) ? CarritoStore.Carritos[carritoId][productoId] : 0;
+    if (dto.Cantidad > producto.Stock)
+        return Results.BadRequest(new { error = "No hay suficiente stock disponible" });
+
+    CarritoStore.Carritos[carritoId][productoId] = dto.Cantidad;
+    return Results.Ok(new { mensaje = "Producto agregado/actualizado en el carrito" });
+});
+
+// Endpoint: Eliminar o reducir cantidad de un producto del carrito
+app.MapDelete("/api/carritos/{carritoId}/{productoId}", (Guid carritoId, int productoId) =>
+{
+    if (!CarritoStore.Carritos.ContainsKey(carritoId))
+        return Results.NotFound(new { error = "Carrito no encontrado" });
+
+    if (!CarritoStore.Carritos[carritoId].ContainsKey(productoId))
+        return Results.NotFound(new { error = "Producto no está en el carrito" });
+
+    CarritoStore.Carritos[carritoId].Remove(productoId);
+    return Results.Ok(new { mensaje = "Producto eliminado del carrito" });
+});
+
+// Endpoint: Vaciar el carrito
+app.MapDelete("/api/carritos/{carritoId}", (Guid carritoId) =>
+{
+    if (!CarritoStore.Carritos.ContainsKey(carritoId))
+        return Results.NotFound(new { error = "Carrito no encontrado" });
+
+    CarritoStore.Carritos[carritoId].Clear();
+    return Results.Ok(new { mensaje = "Carrito vaciado" });
+});
+
+// Endpoint: Confirmar compra
+app.MapPut("/api/carritos/{carritoId}/confirmar", async (Guid carritoId, ConfirmarCompraDto datos, TiendaDbContext db) =>
+{
+    if (!CarritoStore.Carritos.ContainsKey(carritoId))
+        return Results.NotFound(new { error = "Carrito no encontrado" });
+
+    var items = CarritoStore.Carritos[carritoId];
+    if (items.Count == 0)
+        return Results.BadRequest(new { error = "El carrito está vacío" });
+
+    // Validar stock y calcular total
+    var productos = await db.Productos.Where(p => items.Keys.Contains(p.Id)).ToListAsync();
+    foreach (var p in productos)
+    {
+        if (items[p.Id] > p.Stock)
+            return Results.BadRequest(new { error = $"No hay suficiente stock para {p.Nombre}" });
+    }
+
+    decimal total = productos.Sum(p => p.Precio * items[p.Id]);
+
+    // Registrar la compra
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        Total = total,
+        NombreCliente = datos.Nombre,
+        ApellidoCliente = datos.Apellido,
+        EmailCliente = datos.Email,
+        Items = productos.Select(p => new ItemCompra
+        {
+            ProductoId = p.Id,
+            Cantidad = items[p.Id],
+            PrecioUnitario = p.Precio
+        }).ToList()
+    };
+    db.Compras.Add(compra);
+
+    // Descontar stock
+    foreach (var p in productos)
+    {
+        p.Stock -= items[p.Id];
+    }
+
+    await db.SaveChangesAsync();
+
+    // Limpiar carrito
+    CarritoStore.Carritos[carritoId].Clear();
+
+    return Results.Ok(new { mensaje = "Compra confirmada", compraId = compra.Id });
+});
+
+// DTO para cantidad
+public class CantidadDto
+{
+    public int Cantidad { get; set; }
+}
 
 // Se inicializa la base de datos y se cargan los productos.
 using (var scope = app.Services.CreateScope())
