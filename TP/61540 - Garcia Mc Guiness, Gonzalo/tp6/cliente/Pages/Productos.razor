@@ -1,7 +1,9 @@
 @page "/productos"
 @inject ProductoService ProductoService
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
 
-<h3>Catalogo de Productos</h3>
+<h3>Catálogo de Productos</h3>
 
 @if (productos is null)
 {
@@ -24,17 +26,25 @@ else
                 <br />
                 <b>Stock:</b> @prod.Stock
                 <br />
-                <button class="btn btn-primary" disabled="@(@prod.Stock == 0)">Agregar al carrito</button>
+                <button class="btn btn-primary" disabled="@(@prod.Stock == 0)" @onclick="() => AgregarAlCarrito(prod.Id)">
+                    Agregar al carrito
+                </button>
             </div>
         }
     </div>
 }
-@code 
-{
+
+@code {
     List<Producto>? productos;
-    
+
     protected override async Task OnInitializedAsync()
     {
         productos = await ProductoService.GetProductosAsync();
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        await CarritoService.AgregarProductoAsync(productoId, 1);
+        NavigationManager.NavigateTo("/carrito");
     }
 }
