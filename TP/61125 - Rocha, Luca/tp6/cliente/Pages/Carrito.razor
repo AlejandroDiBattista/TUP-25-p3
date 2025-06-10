@@ -1,20 +1,20 @@
-@page "/carrito"
-@inject HttpClient Http
-
-<h3>Carrito de compras</h3>
+<h3 class="text-center mt-3">Carrito de Compras</h3>
 
 @if (itemsCarrito == null)
 {
-    <p>Cargando...</p>
+    <div class="text-center">
+        <div class="spinner-border" role="status"></div>
+        <p>Cargando carrito...</p>
+    </div>
 }
 else if (itemsCarrito.Count == 0)
 {
-    <p>Tu carrito está vacío.</p>
+    <p class="text-center text-muted">Tu carrito está vacío.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
+    <table class="table table-hover">
+        <thead class="table-dark">
             <tr>
                 <th>Producto</th>
                 <th>Cantidad</th>
@@ -28,76 +28,24 @@ else
             {
                 <tr>
                     <td>@item.Producto.Nombre</td>
-                    <td>
-                        <button @onclick="()=>ModificarCantidad(item.ProductoId, -1)">➖</button>
+                    <td class="text-center">
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="()=>ModificarCantidad(item.ProductoId, -1)">➖</button>
                         @item.Cantidad
-                        <button @onclick="()=>ModificarCantidad(item.ProductoId, 1)">➕</button>
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="()=>ModificarCantidad(item.ProductoId, 1)">➕</button>
                     </td>
                     <td>$@item.PrecioUnitario</td>
-                    <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                    <td class="fw-bold">$@(item.Cantidad * item.PrecioUnitario)</td>
                     <td>
-                        <button class="btn btn-danger" @onclick="()=>EliminarProducto(item.ProductoId)">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" @onclick="()=>EliminarProducto(item.ProductoId)">Eliminar</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <h4>Total: $@total</h4>
-    <button class="btn btn-secondary" @onclick="VaciarCarrito">Vaciar carrito</button>
-
-    <hr />
-
-    <h3>Confirmación de compra</h3>
-
-    <form>
-        <label>Nombre:</label>
-        <input type="text" @bind="nombreCliente" class="form-control" />
-
-        <label>Apellido:</label>
-        <input type="text" @bind="apellidoCliente" class="form-control" />
-
-        <label>Email:</label>
-        <input type="email" @bind="emailCliente" class="form-control" />
-    </form>
-
-    <button class="btn btn-primary" @onclick="ConfirmarCompra">Confirmar compra</button>
-}
-
-@code {
-    private List<ItemCompra> itemsCarrito;
-    private decimal total = 0;
-    private string nombreCliente = "";
-    private string apellidoCliente = "";
-    private string emailCliente = "";
-
-    protected override async Task OnInitializedAsync()
-    {
-        itemsCarrito = await Http.GetFromJsonAsync<List<ItemCompra>>("api/carritos/1");
-        total = itemsCarrito.Sum(item => item.Cantidad * item.PrecioUnitario);
-    }
-
-    private async Task ModificarCantidad(int productoId, int cambio)
-    {
-        await Http.PutAsync($"api/carritos/1/{productoId}", null);
-        await OnInitializedAsync();
-    }
-
-    private async Task EliminarProducto(int productoId)
-    {
-        await Http.DeleteAsync($"api/carritos/1/{productoId}");
-        await OnInitializedAsync();
-    }
-
-    private async Task VaciarCarrito()
-    {
-        await Http.DeleteAsync("api/carritos/1");
-        await OnInitializedAsync();
-    }
-
-    private async Task ConfirmarCompra()
-    {
-        var compra = new { NombreCliente = nombreCliente, ApellidoCliente = apellidoCliente, EmailCliente = emailCliente };
-        await Http.PutAsJsonAsync("api/carritos/1/confirmar", compra);
-    }
+    <h4 class="text-end fw-bold">Total: $@total</h4>
+    <div class="text-end">
+        <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+    </div>
 }
