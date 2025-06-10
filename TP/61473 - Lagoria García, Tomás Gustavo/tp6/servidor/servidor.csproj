@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="microsoft.entityframeworkcore" Version="9.0.5" />
     <PackageReference Include="microsoft.entityframeworkcore.sqlite" Version="9.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
   </ItemGroup>
 
 </Project>
