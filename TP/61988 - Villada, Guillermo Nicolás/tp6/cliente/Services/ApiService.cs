@@ -58,4 +58,10 @@ public class ApiService
         var response = await _httpClient.PostAsJsonAsync($"/api/compras?carritoId={carritoId}", cliente);
         return await response.Content.ReadFromJsonAsync<Compra>() ?? new Compra();
     }
+
+    // Obtener historial de compras
+    public async Task<List<Compra>> ObtenerComprasAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<Compra>>("/api/compras") ?? new List<Compra>();
+    }
 }
