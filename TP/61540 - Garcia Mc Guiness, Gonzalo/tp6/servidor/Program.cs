@@ -1,3 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using servidor.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -9,15 +14,27 @@ builder.Services.AddCors(options => {
     });
 });
 
+
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
-    app.UseDeveloperExceptionPage();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
+    db.Database.EnsureCreated();
 }
+
+    // Configurar el pipeline de solicitudes HTTP
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
 
 // Usar CORS con la política definida
 app.UseCors("AllowClientApp");
