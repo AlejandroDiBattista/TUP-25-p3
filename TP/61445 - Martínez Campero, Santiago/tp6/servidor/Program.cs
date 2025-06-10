@@ -22,6 +22,24 @@ builder.Services.AddDbContext<TiendaDbContext>(options =>
 
 var app = builder.Build();
 
+// Seed data (cargar productos de ejemplo)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<TiendaDbContext>();
+        // Asegurarse que la base de datos esté creada
+        context.Database.EnsureCreated(); 
+        SeedData.Initialize(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Un error ocurrió al cargar datos de ejemplo (seeding the DB).");
+    }
+}
+
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
@@ -200,6 +218,116 @@ app.MapDelete("/api/carritos/{carritoId:guid}/{productoId:int}",
     return Results.NoContent(); 
 });
 
+app.MapDelete("/api/carritos/{carritoId:guid}", 
+    async (Guid carritoId, TiendaDbContext dbContext) =>
+{
+    var carrito = await dbContext.Carritos
+                                 .Include(c => c.Items)
+                                 .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito == null)
+    {
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado." });
+    }
+
+    if (carrito.Items.Any())
+    {
+        dbContext.ItemsCarrito.RemoveRange(carrito.Items);
+    }
+    
+    await dbContext.SaveChangesAsync();
+
+    return Results.NoContent();
+});
+
+app.MapPut("/api/carritos/{carritoId:guid}/confirmar", 
+    async (Guid carritoId, ConfirmarCompraRequest request, TiendaDbContext dbContext) => 
+{
+    if (string.IsNullOrWhiteSpace(request.NombreCliente) || 
+        string.IsNullOrWhiteSpace(request.ApellidoCliente) || 
+        string.IsNullOrWhiteSpace(request.EmailCliente))
+    {
+        return Results.BadRequest(new { Mensaje = "Nombre, Apellido y Email del cliente son obligatorios." });
+    }
+
+    var carrito = await dbContext.Carritos
+                                 .Include(c => c.Items)
+                                 .ThenInclude(ic => ic.Producto)
+                                 .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito == null)
+    {
+        return Results.NotFound(new { Mensaje = "Carrito no encontrado." });
+    }
+
+    if (!carrito.Items.Any())
+    {
+        return Results.BadRequest(new { Mensaje = "El carrito está vacío." });
+    }
+
+    var erroresStock = new List<string>();
+    foreach (var item in carrito.Items)
+    {
+        if (item.Producto == null)
+        {
+            return Results.Problem($"Error interno: Producto con ID {item.ProductoId} no encontrado para el item del carrito.");
+        }
+        if (item.Producto.Stock < item.Cantidad)
+        {
+            erroresStock.Add($"Stock insuficiente para '{item.Producto.Nombre}'. Disponible: {item.Producto.Stock}, Solicitado: {item.Cantidad}.");
+        }
+    }
+
+    if (erroresStock.Any())
+    {
+        return Results.BadRequest(new { Mensaje = "Error de stock.", Errores = erroresStock });
+    }
+
+    var nuevaCompra = new Compra
+    {
+        Fecha = DateTime.UtcNow,
+        NombreCliente = request.NombreCliente,
+        ApellidoCliente = request.ApellidoCliente,
+        EmailCliente = request.EmailCliente,
+        Items = new List<ItemCompra>(),
+        Total = 0
+    };
+
+    decimal totalCompra = 0;
+
+    foreach (var itemCarrito in carrito.Items)
+    {
+        var producto = itemCarrito.Producto;
+        var itemCompra = new ItemCompra
+        {
+            ProductoId = producto.Id,
+            Compra = nuevaCompra,
+            Cantidad = itemCarrito.Cantidad,
+            PrecioUnitario = producto.Precio
+        };
+        nuevaCompra.Items.Add(itemCompra);
+        totalCompra += itemCompra.Cantidad * itemCompra.PrecioUnitario;
+
+        producto.Stock -= itemCarrito.Cantidad;
+    }
+
+    nuevaCompra.Total = totalCompra;
+    dbContext.Compras.Add(nuevaCompra);
+
+    dbContext.ItemsCarrito.RemoveRange(carrito.Items);
+
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok(new 
+    {
+        Mensaje = "Compra confirmada exitosamente.",
+        CompraId = nuevaCompra.Id,
+        nuevaCompra.Total,
+        ItemsComprados = nuevaCompra.Items.Count
+    });
+});
+
 app.Run();
 
 public record AgregarActualizarItemCarritoRequest(int Cantidad);
+public record ConfirmarCompraRequest(string NombreCliente, string ApellidoCliente, string EmailCliente);
