@@ -1,0 +1,61 @@
+@* filepath: c:\Users\franc\Documents\GitHub\TUP-25-p3\TP\61064 - Racedo, Francisco Nicolas\tp6\cliente\Pages\Catalogo.razor *@
+@page "/catalogo"
+@inject cliente.Services.ApiService Api
+@inject IJSRuntime JS
+
+<h2>Catálogo de Productos</h2>
+
+@if (productos is null)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <p>No hay productos disponibles.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var prod in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:200px;object-fit:contain;">
+                    <div class="card-body">
+                        <h5 class="card-title">@prod.Nombre</h5>
+                        <p class="card-text">@prod.Descripcion</p>
+                        <p><b>Precio:</b> $@prod.Precio</p>
+                        <p><b>Stock:</b> @prod.Stock</p>
+                        <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(prod.Id)" disabled="@(!puedeAgregar)">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<ProductoDto>? productos;
+    Guid carritoId;
+    bool puedeAgregar = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Api.GetProductosAsync();
+        // Crear un carrito si no existe (en una app real, deberías guardar el carritoId en localStorage)
+        carritoId = await Api.CrearCarritoAsync();
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        puedeAgregar = false;
+        var ok = await Api.AgregarProductoAlCarritoAsync(carritoId, productoId, 1);
+        puedeAgregar = true;
+        if (ok)
+            await JS.InvokeVoidAsync("alert", "Producto agregado al carrito");
+        else
+            await JS.InvokeVoidAsync("alert", "No se pudo agregar el producto (verifica stock)");
+    }
+}
