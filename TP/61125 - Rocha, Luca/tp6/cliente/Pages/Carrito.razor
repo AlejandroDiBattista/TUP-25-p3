@@ -45,12 +45,31 @@ else
 
     <h4>Total: $@total</h4>
     <button class="btn btn-secondary" @onclick="VaciarCarrito">Vaciar carrito</button>
+
+    <hr />
+
+    <h3>Confirmación de compra</h3>
+
+    <form>
+        <label>Nombre:</label>
+        <input type="text" @bind="nombreCliente" class="form-control" />
+
+        <label>Apellido:</label>
+        <input type="text" @bind="apellidoCliente" class="form-control" />
+
+        <label>Email:</label>
+        <input type="email" @bind="emailCliente" class="form-control" />
+    </form>
+
     <button class="btn btn-primary" @onclick="ConfirmarCompra">Confirmar compra</button>
 }
 
 @code {
     private List<ItemCompra> itemsCarrito;
     private decimal total = 0;
+    private string nombreCliente = "";
+    private string apellidoCliente = "";
+    private string emailCliente = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,8 +97,7 @@ else
 
     private async Task ConfirmarCompra()
     {
-        var compra = new { NombreCliente = "Luca", ApellidoCliente = "Apellido", EmailCliente = "email@example.com" };
+        var compra = new { NombreCliente = nombreCliente, ApellidoCliente = apellidoCliente, EmailCliente = emailCliente };
         await Http.PutAsJsonAsync("api/carritos/1/confirmar", compra);
-        await OnInitializedAsync();
     }
 }
