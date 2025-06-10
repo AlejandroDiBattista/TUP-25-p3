@@ -216,6 +216,18 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 
 
+public class CantidadDto
+{
+    public int Cantidad { get; set; }
+}
+
+public class ConfirmarCompraDto
+{
+    public string Nombre { get; set; } = null!;
+    public string Apellido { get; set; } = null!;
+    public string Email { get; set; } = null!;
+}
+
 public class Producto
 {
     public int Id { get; set; }
