@@ -17,8 +17,13 @@ public class ApiService
     public event Action<string>? OnBuscar;
     public void Buscar(string texto)
     {
+        StringBusqueda = texto;
         OnBuscar?.Invoke(texto);
     }
+
+    public string? StringBusqueda { get; set; }
+
+
     public event Action OnChange;
     public int Count => ListaProductos?.Count ?? 0;
     private List<ItemCompraGtDto> _listaProductos = new List<ItemCompraGtDto>();
@@ -179,13 +184,12 @@ public class ApiService
     }
 
 
-    public async Task<List<Producto>> ObtenerProductos(string? filtro = null)
+    public async Task<List<Producto>> ObtenerProductos()
     {
 
         try
         {
-            Console.WriteLine(filtro);
-            var res = await _httpClient.GetFromJsonAsync<List<Producto>>($"productos/{filtro}");
+            var res = await _httpClient.GetFromJsonAsync<List<Producto>>($"productos/{StringBusqueda}");
             return res;
         }
         catch (System.Exception ex)
@@ -193,6 +197,27 @@ public class ApiService
             Console.WriteLine($"Error al obtener datos: {ex.Message}");
             return new List<Producto>();
         }
+    }
+
+    public async Task<List<CompraGetDto>> ObtenerHistorial(Page page)
+    {
+
+        try
+        {
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync("historial", page);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var res = await response.Content.ReadFromJsonAsync<List<CompraGetDto>>();
+                return res ?? new List<CompraGetDto>();
+            }
+
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"Error al obtener datos del historial de compra: {ex.Message}");
+        }
+        return new List<CompraGetDto>();
     }
 
     public async Task IniciarCarrito()

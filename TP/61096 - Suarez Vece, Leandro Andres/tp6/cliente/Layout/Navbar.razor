@@ -1,7 +1,7 @@
 @using cliente.Services
 @using cliente.Models
 @implements IDisposable
-
+@inject NavigationManager Navigation
 @inject ApiService ApiService
 
 
@@ -82,6 +82,7 @@
     private void OnSubmitBuscar()
     {
         ApiService.Buscar(textoBusqueda);
+        Navigation.NavigateTo("/");
     }
 
 
