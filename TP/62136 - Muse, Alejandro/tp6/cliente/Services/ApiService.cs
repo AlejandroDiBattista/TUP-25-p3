@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using cliente.Models; // Asegurate de tener el modelo Producto en cliente
 
 namespace cliente.Services;
 
@@ -7,6 +8,17 @@ public class ApiService {
 
     public ApiService(HttpClient httpClient) {
         _httpClient = httpClient;
+    }
+
+    // Método para obtener los productos del backend
+    public async Task<List<Producto>> ObtenerProductosAsync(string? busqueda = null)
+    {
+        string url = "/productos";
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            url += $"?q={Uri.EscapeDataString(busqueda)}";
+
+        var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+        return productos ?? new List<Producto>();
     }
 
     public async Task<DatosRespuesta> ObtenerDatosAsync() {
