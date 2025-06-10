@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using TiendaOnline.Server.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -9,23 +12,25 @@ builder.Services.AddCors(options => {
     });
 });
 
+// Agregar DbContext con SQLite
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
-
-// Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
+// Aquí luego se agregaran los endpoints para productos y carritop
 
 app.Run();
