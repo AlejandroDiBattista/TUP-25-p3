@@ -1,0 +1,102 @@
+@* filepath: c:\Users\franc\Documents\GitHub\TUP-25-p3\TP\61064 - Racedo, Francisco Nicolas\tp6\cliente\Pages\Carrito.razor *@
+@page "/carrito"
+@inject cliente.Services.ApiService Api
+@inject IJSRuntime JS
+
+<h2>Carrito de Compras</h2>
+
+@if (items is null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>
+                        <img src="@item.ImagenUrl" alt="@item.Nombre" style="width:50px;height:50px;object-fit:contain;" />
+                        @item.Nombre
+                    </td>
+                    <td>$@item.Precio</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, item.Cantidad - 1)" disabled="@(item.Cantidad <= 1)">-</button>
+                        <span class="mx-2">@item.Cantidad</span>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, item.Cantidad + 1)">+</button>
+                    </td>
+                    <td>$@item.Subtotal</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="mb-3">
+        <b>Total: $@items.Sum(i => i.Subtotal)</b>
+    </div>
+    <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+}
+
+@code {
+    List<CarritoItemDto>? items;
+    Guid carritoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // En una app real, deberías obtener el carritoId desde localStorage o un servicio compartido
+        carritoId = await Api.CrearCarritoAsync();
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        items = await Api.GetCarritoAsync(carritoId);
+    }
+
+    async Task CambiarCantidad(CarritoItemDto item, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1) return;
+        var ok = await Api.AgregarProductoAlCarritoAsync(carritoId, item.Id, nuevaCantidad);
+        if (ok)
+            await CargarCarrito();
+        else
+            await JS.InvokeVoidAsync("alert", "No se pudo actualizar la cantidad (verifica stock)");
+    }
+
+    async Task Eliminar(CarritoItemDto item)
+    {
+        var ok = await Api.EliminarProductoDelCarritoAsync(carritoId, item.Id);
+        if (ok)
+            await CargarCarrito();
+    }
+
+    async Task VaciarCarrito()
+    {
+        var ok = await Api.VaciarCarritoAsync(carritoId);
+        if (ok)
+            await CargarCarrito();
+    }
+
+    async Task ConfirmarCompra()
+    {
+        // Aquí podrías navegar a una página de confirmación o mostrar un formulario para los datos del cliente
+        await JS.InvokeVoidAsync("alert", "Implementa la confirmación de compra aquí.");
+    }
+}
