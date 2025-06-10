@@ -4,7 +4,7 @@ namespace servidor.Data;
 
 public static class DbInitializer {
     public static void Inicializar(TiendaContext context) {
-        if (context.Productos.Any()) return; // Ya hay productos
+        if (context.Productos.Any()) return;
 
         var productos = new List<Producto> {
             new Producto { Nombre = "Camiseta Argentina 1986", Descripcion = "Replica oficial del mundial 86", Precio = 15000, Stock = 10, ImagenUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Camiseta_Argentina_Mundial_1986.svg/512px-Camiseta_Argentina_Mundial_1986.svg.png" },

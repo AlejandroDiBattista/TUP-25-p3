@@ -63,7 +63,7 @@ app.MapPost("/carritos", async (TiendaContext db) =>
     return Results.Ok(carrito.Id);
 });
 
-app.MapGet("/carritos/{carritoId:int}", async (int carritoId, TiendaContext db) =>
+app.MapGet("/carritos/{carritoId:guid}", async (Guid carritoId, TiendaContext db) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
@@ -82,7 +82,7 @@ app.MapGet("/carritos/{carritoId:int}", async (int carritoId, TiendaContext db) 
     }));
 });
 
-app.MapDelete("/carritos/{carritoId:int}", async (int carritoId, TiendaContext db) =>
+app.MapDelete("/carritos/{carritoId:guid}", async (Guid carritoId, TiendaContext db) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
@@ -97,7 +97,7 @@ app.MapDelete("/carritos/{carritoId:int}", async (int carritoId, TiendaContext d
     return Results.Ok("Carrito vaciado");
 });
 
-app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, TiendaContext db) =>
+app.MapPut("/carritos/{carritoId:guid}/{productoId:int}", async (Guid carritoId, int productoId, TiendaContext db) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
@@ -136,7 +136,7 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, i
     return Results.Ok("Producto agregado o actualizado en el carrito");
 });
 
-app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, TiendaContext db) =>
+app.MapDelete("/carritos/{carritoId:guid}/{productoId:int}", async (Guid carritoId, int productoId, TiendaContext db) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
@@ -163,7 +163,7 @@ app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId
     return Results.Ok("Producto actualizado o eliminado del carrito");
 });
 
-app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, TiendaContext db) =>
+app.MapPut("/carritos/{carritoId:guid}/confirmar", async (Guid carritoId, TiendaContext db) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
