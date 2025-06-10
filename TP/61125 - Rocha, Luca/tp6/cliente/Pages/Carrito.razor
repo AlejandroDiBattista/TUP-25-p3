@@ -1,0 +1,85 @@
+@page "/carrito"
+@inject HttpClient Http
+
+<h3>Carrito de compras</h3>
+
+@if (itemsCarrito == null)
+{
+    <p>Cargando...</p>
+}
+else if (itemsCarrito.Count == 0)
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in itemsCarrito)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>
+                        <button @onclick="()=>ModificarCantidad(item.ProductoId, -1)">➖</button>
+                        @item.Cantidad
+                        <button @onclick="()=>ModificarCantidad(item.ProductoId, 1)">➕</button>
+                    </td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="()=>EliminarProducto(item.ProductoId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Total: $@total</h4>
+    <button class="btn btn-secondary" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="btn btn-primary" @onclick="ConfirmarCompra">Confirmar compra</button>
+}
+
+@code {
+    private List<ItemCompra> itemsCarrito;
+    private decimal total = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        itemsCarrito = await Http.GetFromJsonAsync<List<ItemCompra>>("api/carritos/1");
+        total = itemsCarrito.Sum(item => item.Cantidad * item.PrecioUnitario);
+    }
+
+    private async Task ModificarCantidad(int productoId, int cambio)
+    {
+        await Http.PutAsync($"api/carritos/1/{productoId}", null);
+        await OnInitializedAsync();
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        await Http.DeleteAsync($"api/carritos/1/{productoId}");
+        await OnInitializedAsync();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await Http.DeleteAsync("api/carritos/1");
+        await OnInitializedAsync();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var compra = new { NombreCliente = "Luca", ApellidoCliente = "Apellido", EmailCliente = "email@example.com" };
+        await Http.PutAsJsonAsync("api/carritos/1/confirmar", compra);
+        await OnInitializedAsync();
+    }
+}
