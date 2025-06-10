@@ -170,3 +170,80 @@ app.MapPut("Carrito/{CarritoID}/Confirmar", async (TiendaDb db, int CarritoID) =
     await db.SaveChangesAsync();
     return Results.Ok(compra);
 });
+
+class TiendaDb : DbContext
+{
+    public TiendaDb(DbContextOptions<TiendaDb> options) : base(options) { }
+
+    public DbSet<Producto> Productos => Set<Producto>();
+    public DbSet<Carrito> Carritos => Set<Carrito>();
+    public DbSet<Compra> Compras => Set<Compra>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Producto>().HasData(
+            new Producto { Id = 1, Nombre = "Iphone 15", Descripcion = "Celular con la mejor autonomia", Stock = 10, Precio = 780000 },
+            new Producto { Id = 2, Nombre = "Iphone 15 Plus", Descripcion = "Celular con bateria resistente", Stock = 5, Precio = 820000 },
+            new Producto { Id = 3, Nombre = "Iphone 16", Descripcion = "Celular de ultima generacion", Stock = 13, Precio = 980000 },
+            new Producto { Id = 4, Nombre = "Iphone 16 Pro MAX", Descripcion = "Celular mas demandado del mercado", Stock = 6, Precio = 120000000 },
+            new Producto { Id = 5, Nombre = "AirPods Pro", Descripcion = "Auriculares bluetooth", Stock = 20, Precio = 200000 },
+            new Producto { Id = 6, Nombre = "MacBook Air", Descripcion = "Notebook eficaz", Stock = 12, Precio = 220000000 },
+            new Producto { Id = 7, Nombre = "MacBook Pro", Descripcion = "Notebook mas potente", Stock = 8, Precio = 390000000 },
+            new Producto { Id = 8, Nombre = "Apple Watch", Descripcion = "Reloj inteligente", Stock = 15, Precio = 340000 },
+            new Producto { Id = 9, Nombre = "Ipad Air", Descripcion = "Pantalla inteligente", Stock = 11, Precio = 720000 },
+            new Producto { Id = 10, Nombre = "Ipad Pro", Descripcion = "Ipad mas potente y avanzado", Stock = 9, Precio = 130000000 }
+        );
+    }
+
+    }
+
+record Producto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; }
+    public string Descripcion { get; set; }
+    public int Stock { get; set; }
+    public int Precio { get; set; }
+}
+
+record ItemCarrito
+{
+    public int Id { get; set; }
+    public int ProductoId { get; set; }
+    public Producto Producto { get; set; }
+    public int Cantidad { get; set; }
+    public int PrecioUnitario { get; set; }
+}
+
+record Carrito
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public List<ItemCarrito> Items { get; set; } = new();
+}
+
+record Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public int Total { get; set; }
+    public string NombreCliente { get; set; }
+    public string ApellidoCliente { get; set; }
+    public string EmailCliente { get; set; }
+    public List<ItemCompra> Items { get; set; } = new();
+}
+
+record ItemCompra
+{
+    public int Id { get; set; }
+    public int ProductoId { get; set; }
+    public int CompraId { get; set; }
+    public int Cantidad { get; set; }
+    public int PrecioUnitario { get; set; }
+}
+
+record CompraDto
+{
+    [Required] public string Nombre { get; set; }
+    [Required] public string Apellido { get; set; }
+    [Required, EmailAddress] public string Email { get; set; }
+}
