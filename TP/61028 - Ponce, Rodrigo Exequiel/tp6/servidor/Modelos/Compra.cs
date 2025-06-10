@@ -10,6 +10,6 @@ namespace servidor.Modelos
         public string ApellidoCliente { get; set; } = string.Empty;
         public string EmailCliente { get; set; } = string.Empty;
 
-        public ICollection<ItemCompra>? Items { get; set; }
+        public ICollection<ItemCompra> Items { get; set; }
     }
 }

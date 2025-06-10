@@ -1,4 +1,14 @@
+using servidor.Modelos;
+using Microsoft.EntityFrameworkCore;
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Conexión con SQLite
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
+
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
@@ -27,5 +37,7 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
+app.MapControllers();
 
 app.Run();

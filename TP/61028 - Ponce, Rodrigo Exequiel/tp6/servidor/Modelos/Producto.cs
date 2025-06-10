@@ -1,3 +1,4 @@
+
 namespace servidor.Modelos
 {
     public class Producto
@@ -9,6 +10,6 @@ namespace servidor.Modelos
         public int Stock { get; set; }
         public string ImagenUrl { get; set; } = string.Empty;
 
-        public ICollection<ItemCompra>? ItemsCompra { get; set; }
+        public ICollection<ItemCompra> ItemsCompra { get; set; }
     }
 }
