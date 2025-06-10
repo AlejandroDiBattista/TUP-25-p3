@@ -1,4 +1,38 @@
 ﻿@inherits LayoutComponentBase
+
+<div class="navbar navbar-dark bg-dark px-3 d-flex justify-content-between align-items-center">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="img/f1logo.svg" alt="F1 Logo" style="height: 40px;" />
+        <span class="ms-2">Tienda Formula 1</span>
+    </a>
+    <form class="d-flex" @onsubmit="Buscar">
+        <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
+        <button class="btn btn-outline-light" type="submit">Buscar</button>
+    </form>
+    <a href="/carrito" class="btn btn-outline-light position-relative ms-3">
+        <span style="font-size: 1.5rem;">🛒</span>
+        <span class="visually-hidden">Carrito</span>
+        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+            @contadorCarrito
+        </span>
+    </a>
+</div>
+
 <div class="page">
     @Body
 </div>
+
+@code {
+    string? busqueda;
+    int contadorCarrito = 0;
+
+    void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            NavigationManager.NavigateTo($"/productos?q={busqueda}");
+        else
+            NavigationManager.NavigateTo("/productos");
+    }
+
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+}
