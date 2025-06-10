@@ -20,8 +20,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowClientApp");
 
-// Cargar stock persistente al iniciar
+// Cargar stock y compras persistentes al iniciar
 TiendaData.CargarStock();
+TiendaData.CargarCompras();
 
 // Ruta raíz
 app.MapGet("/", () => "Servidor API en funcionamiento");
@@ -78,7 +79,7 @@ app.MapPut("/api/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     }
 
     producto.Stock--;
-    TiendaData.GuardarStock(); // <--- Guarda el stock
+    TiendaData.GuardarStock();
     return Results.Ok(carrito);
 });
 
@@ -102,7 +103,7 @@ app.MapDelete("/api/carritos/{id}/{productoId}", (Guid id, int productoId) => {
     if (producto is not null)
         producto.Stock++;
 
-    TiendaData.GuardarStock(); // <--- Guarda el stock
+    TiendaData.GuardarStock();
     return Results.Ok(carrito);
 });
 
@@ -120,7 +121,7 @@ app.MapDelete("/api/carritos/{id}", (Guid id) => {
     }
 
     carrito.Clear();
-    TiendaData.GuardarStock(); // <--- Guarda el stock
+    TiendaData.GuardarStock();
     return Results.Ok();
 });
 
@@ -133,10 +134,12 @@ app.MapPost("/api/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente clie
     if (!items.Any())
         return Results.BadRequest("El carrito está vacío");
 
-    var compra = new Compra {
+    var compra = new Compra
+    {
         Id = Guid.NewGuid(),
         Cliente = cliente,
-        Items = items.Select(i => new ItemCarrito {
+        Items = items.Select(i => new ItemCarrito
+        {
             ProductoId = i.ProductoId,
             Cantidad = i.Cantidad,
             PrecioUnitario = i.PrecioUnitario
@@ -145,17 +148,30 @@ app.MapPost("/api/compras", ([FromQuery] Guid carritoId, [FromBody] Cliente clie
     };
 
     TiendaData.Compras.Add(compra);
+    TiendaData.GuardarCompras();
 
     // Vaciar el carrito
     TiendaData.Carritos[carritoId] = new List<ItemCarrito>();
 
-    TiendaData.GuardarStock(); // <--- Guarda el stock por si acaso
+    TiendaData.GuardarStock();
     return Results.Ok(compra);
 });
 
 // GET /api/compras → ver todas las compras
 app.MapGet("/api/compras", () => {
     return Results.Ok(TiendaData.Compras);
+});
+
+// POST /api/productos/{id}/agregar-stock → sumar stock a un producto
+app.MapPost("/api/productos/{id}/agregar-stock", ([FromRoute] int id, [FromQuery] int cantidad) =>
+{
+    var producto = TiendaData.Productos.FirstOrDefault(p => p.Id == id);
+    if (producto is null)
+        return Results.NotFound("Producto no encontrado");
+
+    producto.Stock += cantidad;
+    TiendaData.GuardarStock();
+    return Results.Ok(producto);
 });
 
 app.UseStaticFiles();

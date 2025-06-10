@@ -12,6 +12,7 @@
         <a class="nav-item nav-link" href="/productos">Productos</a>
         <a class="nav-item nav-link" href="/carrito">Carrito</a>
         <a class="nav-item nav-link" href="/confirmar">Confirmar compra</a>
+        <a class="nav-item nav-link" href="/historial">Historial de compras</a>
     </div>
 
     <form class="form-inline my-2 my-lg-0" @onsubmit="Buscar">
@@ -38,16 +39,25 @@
 
     public async Task ActualizarContador()
     {
-        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
-        if (carritoId != null && carritoId != Guid.Empty)
+        var carritoIdStr = await LocalStorage.GetItemAsync<string>("carritoId");
+
+        if (!Guid.TryParse(carritoIdStr, out var carritoId) || carritoId == Guid.Empty)
         {
-            var items = await ApiService.ObtenerCarritoAsync(carritoId.Value);
+            // Crear uno nuevo si el existente es inválido
+            carritoId = await ApiService.CrearCarritoAsync();
+            await LocalStorage.SetItemAsync("carritoId", carritoId.ToString());
+        }
+
+        try
+        {
+            var items = await ApiService.ObtenerCarritoAsync(carritoId);
             contador = items.Sum(i => i.Cantidad);
         }
-        else
+        catch
         {
             contador = 0;
         }
+
         StateHasChanged();
     }
 

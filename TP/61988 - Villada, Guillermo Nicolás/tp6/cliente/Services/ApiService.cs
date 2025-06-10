@@ -64,4 +64,10 @@ public class ApiService
     {
         return await _httpClient.GetFromJsonAsync<List<Compra>>("/api/compras") ?? new List<Compra>();
     }
+
+    // Agregar stock a un producto
+    public async Task AgregarStockAsync(int productoId, int cantidad)
+    {
+        await _httpClient.PostAsync($"/api/productos/{productoId}/agregar-stock?cantidad={cantidad}", null);
+    }
 }

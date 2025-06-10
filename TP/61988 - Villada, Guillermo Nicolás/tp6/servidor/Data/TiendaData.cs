@@ -19,7 +19,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Original",
             Precio = 20000,
             Stock = 50,
-            ImagenUrl = "imagenes/NickzOriginal.jpg"
+            ImagenUrl = "NickzOriginal.jpg"
         },
         new Producto
         {
@@ -28,7 +28,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Reflectiva (Limited Edition)",
             Precio = 25000,
             Stock = 10,
-            ImagenUrl = "imagenes/NickzReflectiva.jpg"
+            ImagenUrl = "NickzReflectiva.jpg"
         },
         new Producto
         {
@@ -37,7 +37,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Violeta (CR Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "imagenes/NickzVioleta.jpg"
+            ImagenUrl = "NickzVioleta.jpg"
         },
         new Producto
         {
@@ -46,7 +46,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Verde (Argentina Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "imagenes/NickzVerde.jpg"
+            ImagenUrl = "NickzVerde.jpg"
         },
         new Producto
         {
@@ -55,7 +55,7 @@ public static class TiendaData
             Descripcion = "Remera Nickz Naranja (Halloween Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "imagenes/NickzNaranja.jpg"
+            ImagenUrl = "NickzNaranja.jpg"
         },
         new Producto
         {
@@ -64,16 +64,52 @@ public static class TiendaData
             Descripcion = "Remera Nickz Chicle (Candy Edition)",
             Precio = 20000,
             Stock = 15,
-            ImagenUrl = "imagenes/NickzChicle.jpg"
+            ImagenUrl = "NickzChicle.jpg"
         },
         new Producto
         {
             Id = 7,
             Nombre = "Remera Nickz Invertida",
             Descripcion = "Remera Nickz Colores Invertidos (Ultra Limited Edition)",
-            Precio = 20000,
+            Precio = 100000,
             Stock = 3,
-            ImagenUrl = "imagenes/NickzInvertida.jpg"
+            ImagenUrl = "NickzInvertida.jpg"
+        },
+        new Producto
+        {
+            Id = 8,
+            Nombre = "Zapatillas Tommy Hilfiger",
+            Descripcion = "Zapatillas Tommy (B&N Edition)",
+            Precio = 200000,
+            Stock = 15,
+            ImagenUrl = "ZapatillasTommy.jpg"
+        },
+        new Producto
+        {
+            Id = 9,
+            Nombre = "Pod Desechable Elfbar",
+            Descripcion = "Elfbar Ice King (40.000 Puffs)",
+            Precio = 35000,
+            Stock = 200,
+            ImagenUrl = "Elfbar.jpg"
+        },
+        new Producto
+        {
+            Id = 10,
+            Nombre = "Pod Desechable Lost Mary",
+            Descripcion = "Lost Mary Mixer doble sabor (30.000 Puffs)",
+            Precio = 35000,
+            Stock = 200,
+            ImagenUrl = "LostMaryMixer.jpg"
+        },
+        new Producto
+        {
+            Id = 11,
+            Nombre = "Cartera Louis Vuitton",
+            Descripcion = "Cartera Louis Vuitton de Dama",
+            Precio = 500000,
+            Stock = 3,
+            ImagenUrl = "BolsoLv.jpg"
         },
     };
 
@@ -81,6 +117,7 @@ public static class TiendaData
     public static List<Compra> Compras { get; set; } = new();
 
     private static string StockFile => "stock.json";
+    private static string ComprasFile => "compras.json";
 
     public static void GuardarStock()
     {
@@ -98,6 +135,19 @@ public static class TiendaData
             var prod = Productos.FirstOrDefault(p => p.Id == stock.Id);
             if (prod != null) prod.Stock = stock.Stock;
         }
+    }
+
+    public static void GuardarCompras()
+    {
+        File.WriteAllText(ComprasFile, JsonSerializer.Serialize(Compras));
+    }
+
+    public static void CargarCompras()
+    {
+        if (!File.Exists(ComprasFile)) return;
+        var compras = JsonSerializer.Deserialize<List<Compra>>(File.ReadAllText(ComprasFile));
+        if (compras is not null)
+            Compras = compras;
     }
 
     private class StockData
