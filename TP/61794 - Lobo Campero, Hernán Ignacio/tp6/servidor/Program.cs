@@ -35,6 +35,96 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// ENDPOINTS API TIENDA ONLINE
+
+// GET /productos (+ búsqueda por query)
+app.MapGet("/productos", async (TiendaDbContext db, string? q) =>
+{
+    var productos = db.Productos.AsQueryable();
+    if (!string.IsNullOrWhiteSpace(q))
+        productos = productos.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+    return await productos.ToListAsync();
+});
+
+// POST /carritos (inicializa el carrito)
+app.MapPost("/carritos", async (TiendaDbContext db) =>
+{
+    var compra = new Compra { Fecha = DateTime.Now, Total = 0 };
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Ok(compra.Id);
+});
+
+// GET /carritos/{carrito} (trae los ítems del carrito)
+app.MapGet("/carritos/{carritoId}", async (TiendaDbContext db, int carritoId) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
+    return Results.Ok(compra);
+});
+
+// DELETE /carritos/{carrito} (vacía el carrito)
+app.MapDelete("/carritos/{carritoId}", async (TiendaDbContext db, int carritoId) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
+    db.ItemsCompra.RemoveRange(compra.Items);
+    compra.Items.Clear();
+    compra.Total = 0;
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+// PUT /carritos/{carrito}/confirmar (detalle + datos cliente)
+app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaDbContext db, int carritoId, Compra datos) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
+    compra.NombreCliente = datos.NombreCliente;
+    compra.ApellidoCliente = datos.ApellidoCliente;
+    compra.EmailCliente = datos.EmailCliente;
+    compra.Fecha = DateTime.Now;
+    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+// PUT /carritos/{carrito}/{producto} (agrega producto o actualiza cantidad)
+app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaDbContext db, int carritoId, int productoId, int cantidad) =>
+{
+    if (cantidad < 1) return Results.BadRequest("Cantidad inválida");
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    var producto = await db.Productos.FindAsync(productoId);
+    if (compra == null || producto == null) return Results.NotFound();
+    if (producto.Stock < cantidad) return Results.BadRequest("Sin stock suficiente");
+    var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item == null)
+    {
+        item = new ItemCompra { ProductoId = productoId, Cantidad = cantidad, PrecioUnitario = producto.Precio };
+        compra.Items.Add(item);
+    }
+    else
+    {
+        if (producto.Stock < cantidad) return Results.BadRequest("Sin stock suficiente");
+        item.Cantidad = cantidad;
+    }
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+// DELETE /carritos/{carrito}/{producto} (elimina producto o reduce cantidad)
+app.MapDelete("/carritos/{carritoId}/{productoId}", async (TiendaDbContext db, int carritoId, int productoId) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (compra == null) return Results.NotFound();
+    var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item == null) return Results.NotFound();
+    compra.Items.Remove(item);
+    db.ItemsCompra.Remove(item);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
 // Cargar productos de ejemplo al iniciar
 using (var scope = app.Services.CreateScope())
 {
