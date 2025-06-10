@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -102,3 +105,136 @@ public class AppDbContext : DbContext
         );
     }
 }
+
+// Crear carrito (POST /carritos)
+var carritos = new Dictionary<Guid, List<ItemCompra>>();
+
+app.MapPost("/carritos", () =>
+{
+    var carritoId = Guid.NewGuid();
+    carritos[carritoId] = new List<ItemCompra>();
+    return Results.Ok(carritoId);
+});
+
+// Traer ítems del carrito (GET /carritos/{carrito})
+app.MapGet("/carritos/{carritoId:guid}", (Guid carritoId) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    return Results.Ok(carritos[carritoId]);
+});
+
+// Vaciar carrito (DELETE /carritos/{carrito})
+app.MapDelete("/carritos/{carritoId:guid}", (Guid carritoId) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    carritos[carritoId].Clear();
+    return Results.Ok();
+});
+
+// Agregar producto al carrito o actualizar cantidad (PUT /carritos/{carrito}/{producto})
+app.MapPut("/carritos/{carritoId:guid}/{productoId:int}", async (Guid carritoId, int productoId, AppDbContext db) =>
+{
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+        return Results.NotFound("Producto no encontrado");
+
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = carritos[carritoId];
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (producto.Stock <= 0)
+        return Results.BadRequest("Sin stock");
+
+    if (item != null)
+    {
+        if (producto.Stock <= item.Cantidad)
+            return Results.BadRequest("Stock insuficiente");
+
+        item.Cantidad++;
+    }
+    else
+    {
+        carrito.Add(new ItemCompra
+        {
+            ProductoId = producto.Id,
+            Producto = producto,
+            Cantidad = 1,
+            PrecioUnitario = producto.Precio
+        });
+    }
+
+    return Results.Ok();
+});
+
+// Eliminar producto del carrito o reducir cantidad (DELETE /carritos/{carrito}/{producto})
+app.MapDelete("/carritos/{carritoId:guid}/{productoId:int}", (Guid carritoId, int productoId) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = carritos[carritoId];
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (item == null)
+        return Results.NotFound("Producto no está en el carrito");
+
+    item.Cantidad--;
+
+    if (item.Cantidad <= 0)
+        carrito.Remove(item);
+
+    return Results.Ok();
+});
+
+// Confirmar compra (PUT /carritos/{carrito}/confirmar)
+app.MapPut("/carritos/{carritoId:guid}/confirmar", async (
+    Guid carritoId,
+    [FromBody] Compra compraData,
+    AppDbContext db) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var items = carritos[carritoId];
+    if (!items.Any())
+        return Results.BadRequest("El carrito está vacío");
+
+    foreach (var item in items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            return Results.BadRequest($"Stock insuficiente para {producto?.Nombre}");
+
+        producto.Stock -= item.Cantidad;
+    }
+
+    compraData.Fecha = DateTime.Now;
+    compraData.Total = items.Sum(i => i.Cantidad * i.PrecioUnitario);
+    compraData.Items = items;
+
+    db.Compras.Add(compraData);
+    await db.SaveChangesAsync();
+
+    carritos[carritoId].Clear();
+    return Results.Ok("Compra confirmada");
+});
+
+// Listado de productos (GET /productos?query=)
+app.MapGet("/productos", async (string? query, AppDbContext db) =>
+{
+    var productos = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(query))
+    {
+        productos = productos.Where(p =>
+            p.Nombre.Contains(query) || p.Descripcion.Contains(query));
+    }
+
+    return await productos.ToListAsync();
+});
