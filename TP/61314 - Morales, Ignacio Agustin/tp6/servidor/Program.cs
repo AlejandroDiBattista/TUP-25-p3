@@ -1,4 +1,13 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.DataAnnotations;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<TiendaDb>(opt => opt.UseSqlite("Data Source=tienda.db"));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
@@ -9,24 +18,41 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
-    app.UseDeveloperExceptionPage();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaDb>();
+    db.Database.EnsureCreated();
 }
 
-// Usar CORS con la política definida
-app.UseCors("AllowClientApp");
+app.UseSwagger();
+app.UseSwaggerUI();
 
-// Mapear rutas básicas
-app.MapGet("/", () => "Servidor API está en funcionamiento");
+//app.UseCors("AllowClientApp")
 
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+app.MapGet("/productos", async (TiendaDb db) ) =>
+{
+  return await db.Producotos
+  .Where(p => p.Stock > 0)  
+  .ToListAsync();
+}
 
-app.Run();
+app.MapPost ("/Carrito", async (TiendaDb db, Producto producto) =>
+{
+    if (producto.Stock <= 0)
+    {
+        return Results.BadRequest("Producto sin stock");
+    }
 
+    var carrito = new Carrito
+    {
+        ProductoId = producto.Id,
+        Cantidad = 1
+    };
+
+    db.Carritos.Add(carrito);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(carrito);
+});
