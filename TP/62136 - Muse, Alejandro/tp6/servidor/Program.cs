@@ -34,6 +34,18 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Endpoint para obtener todos los productos (con búsqueda opcional por nombre)
+app.MapGet("/productos", async (TiendaDbContext db, string? q) =>
+{
+    var query = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(q))
+        query = query.Where(p => p.Nombre.Contains(q));
+
+    var productos = await query.ToListAsync();
+    return Results.Ok(productos);
+});
+
 // Cargar productos 
 using (var scope = app.Services.CreateScope())
 {
