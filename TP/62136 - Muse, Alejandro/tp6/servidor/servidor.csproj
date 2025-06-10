@@ -8,7 +8,16 @@
 
   <ItemGroup>
     <PackageReference Include="microsoft.entityframeworkcore" Version="9.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="microsoft.entityframeworkcore.sqlite" Version="9.0.5" />
   </ItemGroup>
+
+  <Target Name="ApplyMigrations" AfterTargets="Build">
+    <Exec Command="dotnet ef migrations add InitialCreate" />
+    <Exec Command="dotnet ef database update" />
+  </Target>
 
 </Project>
