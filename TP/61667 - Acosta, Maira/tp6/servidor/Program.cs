@@ -22,10 +22,12 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 // Crear DB y cargar datos de ejemplo si está vacía
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
     db.Database.EnsureCreated(); // crea la base si no existe
+    db.Database.EnsureCreated(); 
 
     if (!db.Productos.Any())
     {
@@ -39,6 +41,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configurar middleware
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -47,11 +50,17 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowClientApp");
 
 // Endpoint de prueba
+
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Endpoint para obtener productos (puede servirte como primer API real)
+
 app.MapGet("/api/productos", async (TiendaContext db) =>
     await db.Productos.ToListAsync()
 );
+{
+    return await db.Productos.ToListAsync();
+});
+
 
 app.Run();
