@@ -231,7 +231,4 @@ app.MapPut("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId, 
     return Results.Ok(new { compra.Id, compra.Total });
 });
 
-// DTO para recibir datos del cliente
-public record DatosClienteDto(string Nombre, string Apellido, string Email);
-
 app.Run();
