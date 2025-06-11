@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 
+
 namespace cliente.Services
 {
     public class CarritoService
@@ -42,6 +43,12 @@ namespace cliente.Services
         {
             if (!CarritoId.HasValue) return;
             await _http.DeleteAsync($"/carritos/{CarritoId}");
+        }
+
+        public async Task ConfirmarCompraAsync(object datosCliente)
+        {
+            if (!CarritoId.HasValue) return;
+            await _http.PostAsJsonAsync($"/carritos/{CarritoId}/confirmar", datosCliente);
         }
 
     }

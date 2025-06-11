@@ -1,0 +1,71 @@
+@page "/confirmar"
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Forms
+@using cliente.Services
+
+<h3>Confirmar compra</h3>
+
+@if (carrito is null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (carrito.Items.Count == 0)
+{
+    <p>El carrito esta vacio.</p>
+}
+else
+{
+    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Nombre:</label>
+            <InputText @bind-Value="datosCliente.Nombre" class="form-control"/>
+        </div>
+        <div>
+            <label>Apellido:</label>
+            <InputText @bind-Value="datosCliente.Apellido" class="form-control"/>
+        </div>
+        <div>
+            <label>Email:</label>
+            <InputText @bind-Value="datosCliente.Email" class="form-control"/>
+        </div>
+
+        <h5>Resumen de compra</h5>
+        <ul>
+            @foreach (var item in carrito.Items)
+            {
+                <li>@item.Producto.Nombre x @item.Cantidad - @((item.Cantidad * item.PrecioUnitario).ToString("C"))</li>
+            }
+        </ul>
+        <b>Total: @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</b>
+        <br />
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+}
+
+@code
+{
+    cliente.Services.Carrito? carrito;
+    ClienteDto datosCliente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        carrito = await CarritoService.GetCarritoAsync();
+    }
+
+    async Task ConfirmarCompra()
+    {
+        await CarritoService.ConfirmarCompraAsync(datosCliente);
+        NavigationManager.NavigateTo("/comprado");
+    }
+
+    public class ClienteDto
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+}
