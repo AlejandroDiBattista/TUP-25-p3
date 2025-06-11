@@ -70,4 +70,18 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Endpoint para obtener el listado de productos y permitir búsqueda por nombre o descripción
+// Ejemplo de uso: GET /productos?query=notebook
+app.MapGet("/productos", (TiendaContext db, string? query) =>
+{
+    // Si no se envía query, devuelve todos los productos
+    if (string.IsNullOrWhiteSpace(query))
+        return db.Productos.ToList();
+    // Si se envía query, filtra por nombre o descripción (no sensible a mayúsculas)
+    query = query.ToLower();
+    return db.Productos
+        .Where(p => p.Nombre.ToLower().Contains(query) || p.Descripcion.ToLower().Contains(query))
+        .ToList();
+});
+
 app.Run();
