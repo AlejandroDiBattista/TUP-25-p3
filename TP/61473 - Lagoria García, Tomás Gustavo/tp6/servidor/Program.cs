@@ -102,6 +102,26 @@ app.MapGet("/carritos/{carritoId}", (Guid carritoId) =>
 
     return Results.Ok(carritos[carritoId]);
 });
+// DELETE /carritos/{carritoId}
+app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaContext db) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = carritos[carritoId];
+    foreach (var item in carrito)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto != null)
+            producto.Stock += item.Cantidad;
+    }
+
+    await db.SaveChangesAsync();
+    carritos.Remove(carritoId);
+
+    return Results.NoContent();
+});
+
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
