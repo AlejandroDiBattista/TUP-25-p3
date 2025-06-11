@@ -1,52 +1,78 @@
 using cliente.Models;
+using System.Net.Http.Json;
 
 namespace cliente.Services;
 
 public class CarritoService
 {
+    private readonly HttpClient http;
+    private Guid carritoId = Guid.Empty;
+
     public event Action? OnChange;
 
-    private readonly List<(Producto producto, int cantidad)> _items = new();
-
-    public IReadOnlyList<(Producto producto, int cantidad)> Items => _items;
-
-    public void AgregarProducto(Producto producto)
+    public CarritoService(HttpClient http)
     {
-        var item = _items.FirstOrDefault(i => i.producto.Id == producto.Id);
+        this.http = http;
+    }
 
-        if (item.producto != null)
+    private async Task AsegurarCarritoInicializado()
+    {
+        if (carritoId == Guid.Empty)
         {
-            var index = _items.IndexOf(item);
-            _items[index] = (item.producto, item.cantidad + 1);
+            var response = await http.PostAsync("carritos", null);
+            carritoId = await response.Content.ReadFromJsonAsync<Guid>();
         }
-        else
-        {
-            _items.Add((producto, 1));
-        }
+    }
 
+    public async Task AgregarProducto(Producto producto)
+    {
+        if (producto.Stock <= 0)
+            return;
+
+        await AsegurarCarritoInicializado();
+        await http.PutAsync($"carritos/{carritoId}/{producto.Id}", null);
         OnChange?.Invoke();
     }
 
-    public void QuitarProducto(Producto producto)
+    public async Task QuitarProducto(Producto producto)
     {
-        var item = _items.FirstOrDefault(i => i.producto.Id == producto.Id);
-        if (item.producto != null)
-        {
-            var index = _items.IndexOf(item);
-            if (item.cantidad > 1)
-                _items[index] = (item.producto, item.cantidad - 1);
-            else
-                _items.Remove(item);
-        }
+        if (carritoId == Guid.Empty) return;
 
+        await http.DeleteAsync($"carritos/{carritoId}/{producto.Id}");
         OnChange?.Invoke();
     }
 
-    public void Vaciar()
+    public async Task<List<ItemCarritoDto>> ObtenerCarrito()
     {
-        _items.Clear();
+        if (carritoId == Guid.Empty)
+            return new List<ItemCarritoDto>();
+
+        return await http.GetFromJsonAsync<List<ItemCarritoDto>>($"carritos/{carritoId}") ?? new();
+    }
+
+    public async Task ConfirmarCompra()
+    {
+        if (carritoId == Guid.Empty) return;
+
+        await http.PutAsync($"carritos/{carritoId}/confirmar", null);
+        carritoId = Guid.Empty;
         OnChange?.Invoke();
     }
 
-    public int TotalItems() => _items.Sum(i => i.cantidad);
+    public async Task ConfirmarCompra(DatosClienteDto datos)
+    {
+        if (carritoId == Guid.Empty) return;
+
+        await http.PutAsJsonAsync($"carritos/{carritoId}/confirmar", datos);
+        carritoId = Guid.Empty;
+        OnChange?.Invoke();
+    }
+
+    public async Task VaciarCarrito()
+    {
+        if (carritoId == Guid.Empty) return;
+
+        await http.DeleteAsync($"carritos/{carritoId}");
+        OnChange?.Invoke();
+    }
 }

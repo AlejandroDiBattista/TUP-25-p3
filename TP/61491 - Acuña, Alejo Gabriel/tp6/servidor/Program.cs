@@ -191,7 +191,7 @@ app.MapPut("/carritos/{carritoId:guid}/confirmar", async (Guid carritoId, Tienda
 
     var compra = new Compra
     {
-        Cliente = "Anónimo", // valor fijo porque no se recibe del cliente
+        Cliente = "Anónimo", 
         Fecha = DateTime.UtcNow,
         Items = carrito.Items.Select(i => new ItemCompra
         {

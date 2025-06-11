@@ -4,6 +4,7 @@ namespace servidor.Data;
 
 public static class DbInitializer {
     public static void Inicializar(TiendaContext context) {
+        context.Database.EnsureCreated();
         if (context.Productos.Any()) return;
 
         var productos = new List<Producto> {

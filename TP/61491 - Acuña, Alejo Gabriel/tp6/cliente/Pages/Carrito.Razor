@@ -2,10 +2,11 @@
 @using cliente.Models
 @using cliente.Services
 @inject CarritoService carrito
+@inject NavigationManager nav
 
 <h1 class="text-center my-4">Carrito de Compras</h1>
 
-@if (carrito.Items.Count == 0)
+@if (items.Count == 0)
 {
     <p>No hay productos en el carrito.</p>
 }
@@ -22,15 +23,15 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in carrito.Items)
+            @foreach (var item in items)
             {
                 <tr>
-                    <td>@item.producto.Nombre</td>
-                    <td>$@item.producto.Precio</td>
-                    <td>@item.cantidad</td>
-                    <td>$@(item.producto.Precio * item.cantidad)</td>
+                    <td>@item.Nombre</td>
+                    <td>$@item.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => carrito.QuitarProducto(item.producto)">
+                        <button class="btn btn-danger btn-sm" @onclick="() => QuitarProducto(item.ProductoId)">
                             Quitar
                         </button>
                     </td>
@@ -39,18 +40,58 @@ else
         </tbody>
     </table>
 
-    <h4 class="text-end">Total de productos: @carrito.TotalItems()</h4>
+    <h4 class="text-end">Total de productos: @totalItems</h4>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <button class="btn btn-outline-secondary" @onclick="VaciarCarrito">Vaciar Carrito</button>
+        <button class="btn btn-success" @onclick="IrAConfirmacion">Confirmar Compra</button>
+    </div>
 }
+
 @implements IDisposable
 
 @code {
-    protected override void OnInitialized()
+    private List<ItemCarritoDto> items = new();
+    private int totalItems = 0;
+
+    protected override async Task OnInitializedAsync()
     {
-        carrito.OnChange += StateHasChanged;
+        await CargarCarrito();
+        carrito.OnChange += ActualizarCarrito;
+    }
+
+    private async void ActualizarCarrito()
+    {
+        await CargarCarrito();
+        StateHasChanged();
+    }
+
+    private async Task CargarCarrito()
+    {
+        items = await carrito.ObtenerCarrito();
+        totalItems = items.Sum(i => i.Cantidad);
+    }
+
+    private async Task QuitarProducto(int productoId)
+    {
+        var producto = new Producto { Id = productoId };
+        await carrito.QuitarProducto(producto);
+        await CargarCarrito();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await carrito.VaciarCarrito();
+        await CargarCarrito();
+    }
+
+    private void IrAConfirmacion()
+    {
+        nav.NavigateTo("/confirmacion");
     }
 
     public void Dispose()
     {
-        carrito.OnChange -= StateHasChanged;
+        carrito.OnChange -= ActualizarCarrito;
     }
 }

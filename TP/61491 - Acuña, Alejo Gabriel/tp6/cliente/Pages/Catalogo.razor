@@ -19,10 +19,10 @@
                     <p class="card-text">@producto.Descripcion</p>
                     <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
                     <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-                    <button class=""
-                            @onclick="() =>carrito.AgregarProducto(producto)"
-                           disabled="@producto.Stock == 0">
-                        Agregar al carrito
+                    <button class="btn btn-primary"
+                 @onclick="() => AgregarAlCarritoAsync(producto)"
+                 disabled="@producto.Stock == 0">
+                    Agregar al carrito
                     </button>
                 </div>
             </div>
@@ -44,8 +44,12 @@
             ? productos
             : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
             
-     private void AgregarAlCarrito(Producto producto)
+         private void AgregarAlCarrito(Producto producto)
         {
             carrito.AgregarProducto(producto);
+        }
+        private async Task AgregarAlCarritoAsync(Producto producto)
+        {
+            await carrito.AgregarProducto(producto);
         }
 }   

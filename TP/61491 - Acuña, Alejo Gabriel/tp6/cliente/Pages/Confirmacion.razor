@@ -1,0 +1,74 @@
+@page "/confirmacion"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService carrito
+@inject NavigationManager nav
+
+<h3 class="my-4">Confirmación de Compra</h3>
+
+@if (items.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>$@item.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="text-end">Total: $@items.Sum(i => i.Precio * i.Cantidad)</h4>
+
+    <EditForm Model="@datosCliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="datosCliente.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="datosCliente.Apellido" />
+        </div>
+        <div class="mb-3">
+            <label>Email:</label>
+            <InputText type="email" class="form-control" @bind-Value="datosCliente.Email" />
+        </div>
+
+        <button class="btn btn-success" type="submit">Confirmar Compra</button>
+    </EditForm>
+}
+
+@code {
+    private List<ItemCarritoDto> items = new();
+    private DatosClienteDto datosCliente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await carrito.ObtenerCarrito();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        await carrito.ConfirmarCompra(datosCliente);
+        nav.NavigateTo("/catalogo");
+    }
+}
