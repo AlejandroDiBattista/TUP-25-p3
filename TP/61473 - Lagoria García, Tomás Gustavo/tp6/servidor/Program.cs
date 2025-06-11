@@ -42,12 +42,6 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
     context.Database.EnsureCreated(); // 🔸 Acá, no usa migraciones, pero crea la base si no existe.
 }
-// Habilitar Swagger para documentación de la API
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tienda API v1"));
-}
 
 // Usar CORS con la política definida
 app.UseCors("AllowClientApp");
