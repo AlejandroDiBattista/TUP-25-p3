@@ -2,6 +2,7 @@
 @using cliente.Services
 @inject ApiService ApiService
 @inject Cliente.Services.ProductoService ProductoService
+@inject Cliente.Services.CarritoService CarritoService
 
 <PageTitle>Inicio</PageTitle>
 
@@ -39,10 +40,15 @@
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <h3>Catálogo de productos</h3>
-        </div>
+    <div style="background: #e0f7fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <h2 style="color: #00796b;">¡Bienvenido a la Tienda Online!</h2>
+        <p>Este frontend Blazor está funcionando correctamente.</p>
+    </div>
+
+    <div style="margin-bottom:1.5rem;">
+        <input type="text" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." style="padding:0.5rem; width:250px; border-radius:4px; border:1px solid #ccc;" />
+        <button @onclick="Buscar" style="margin-left:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#00796b; color:#fff; border:none;">Buscar</button>
+        <button @onclick="Limpiar" style="margin-left:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#bdbdbd; color:#333; border:none;">Limpiar</button>
     </div>
 
     <div class="row">
@@ -66,6 +72,7 @@
                             <p class="card-text">@prod.Descripcion</p>
                             <p><b>Precio:</b> $@prod.Precio</p>
                             <p><b>Stock:</b> @prod.Stock</p>
+                            <button @onclick="() => AgregarAlCarrito(prod.Id)" style="margin-top:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#388e3c; color:#fff; border:none;">Agregar al carrito</button>
                         </div>
                     </div>
                 </div>
@@ -73,10 +80,10 @@
         }
     </div>
 
-    <div style="background: #e0f7fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <h2 style="color: #00796b;">¡Bienvenido a la Tienda Online!</h2>
-        <p>Este frontend Blazor está funcionando correctamente.</p>
-    </div>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div style="margin-top:1rem; color:green; font-weight:bold;">@mensaje</div>
+    }
 </div>
 
 @code {
@@ -84,6 +91,8 @@
     private string error;
     private bool cargando = false;
     List<Cliente.Services.ProductoDto>? productos;
+    string busqueda = string.Empty;
+    string mensaje = string.Empty;
 
     private async Task ObtenerDatosDelServidor() {
         try {
@@ -101,5 +110,26 @@
     protected override async Task OnInitializedAsync()
     {
         productos = await ProductoService.GetProductosAsync();
+    }
+
+    async Task Buscar()
+    {
+        productos = await ProductoService.GetProductosAsync(busqueda);
+    }
+
+    async Task Limpiar()
+    {
+        busqueda = string.Empty;
+        productos = await ProductoService.GetProductosAsync();
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        var ok = await CarritoService.AgregarProductoAsync(productoId, 1);
+        mensaje = ok ? "Producto agregado al carrito" : "No se pudo agregar el producto";
+        StateHasChanged();
+        await Task.Delay(1500);
+        mensaje = string.Empty;
+        StateHasChanged();
     }
 }
