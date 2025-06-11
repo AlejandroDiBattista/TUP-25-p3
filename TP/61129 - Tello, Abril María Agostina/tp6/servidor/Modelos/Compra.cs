@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+
 namespace Servidor.Modelos  
 {
     public class Compra 
