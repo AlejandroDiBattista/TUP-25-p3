@@ -83,6 +83,9 @@ app.MapGet("/productos", async (
     return Results.Ok(productos);
 });
 
+// Diccionario temporal para carritos
+var carritos = new Dictionary<Guid, List<ItemCarrito>>();
+
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
@@ -90,6 +93,13 @@ app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha 
 app.Run();
 
 //MODELOS DE DATOS
+record ItemCarrito
+{
+    public int ProductoId { get; set; }
+    public string Nombre { get; set; } = "";
+    public decimal PrecioUnitario { get; set; }
+    public int Cantidad { get; set; }
+}
 public class Compra
 {
     public int Id { get; set; }
