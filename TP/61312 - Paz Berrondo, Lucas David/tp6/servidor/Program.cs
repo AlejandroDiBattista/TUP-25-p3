@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using servidor.Data;
+using servidor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,7 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Crear y migrar la base de datos al iniciar la aplicación
+// Crear, migrar y poblar la base de datos al iniciar la aplicación
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TiendaContext>();
@@ -29,7 +30,8 @@ using (var scope = app.Services.CreateScope())
     // Crear la base de datos si no existe
     context.Database.EnsureCreated();
     
-    // TODO: Agregar datos iniciales (seeding) en el próximo commit
+    // Poblar la base de datos con datos iniciales
+    DatabaseSeeder.SeedDatabase(context);
 }
 
 // Configurar el pipeline de solicitudes HTTP

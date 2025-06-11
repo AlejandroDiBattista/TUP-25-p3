@@ -3,7 +3,7 @@
 
 ---
 
-##**Estado actual**: 🟢 Commit 2 completado - Entity Framework configurado y BD creada🎯 **OBJETIVO**
+**Estado actual**: 🟢 Commit 3 completado - Datos iniciales implementados (10 productos de tecnología)# 🎯 **OBJETIVO**
 Desarrollar una aplicación web completa de tienda online que demuestre dominio de:
 - **Frontend**: Blazor WebAssembly 
 - **Backend**: Minimal API en C#
@@ -52,19 +52,17 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 ### **✅ COMPLETADOS:**
 - [x] **Commit 1**: Creación de modelos de datos (Producto, Compra, ItemCompra, Carrito + DTOs)
 - [x] **Commit 2**: Configuración de Entity Framework y DbContext
-- [ ] **Commit 2**: Configuración de Entity Framework y DbContext
-- [ ] **Commit 3**: Implementación de datos iniciales (Seeding) - 10 productos
+- [x] **Commit 3**: Implementación de datos iniciales (Seeding) - 10 productos de tecnología
 - [ ] **Commit 4**: Implementación de endpoints de productos (GET /productos)
-- [ ] **Commit 5**: Implementación de endpoints de productos (GET /productos)
-- [ ] **Commit 6**: Implementación de endpoints de carrito (POST, GET, DELETE)
-- [ ] **Commit 7**: Implementación de endpoints de items de carrito (PUT, DELETE)
-- [ ] **Commit 8**: Actualización de ApiService en cliente para nuevos endpoints
-- [ ] **Commit 9**: Implementación de página de catálogo de productos
-- [ ] **Commit 10**: Implementación de página de carrito de compra
-- [ ] **Commit 11**: Implementación de página de confirmación de compra
-- [ ] **Commit 12**: Implementación de navegación y header con buscador
-- [ ] **Commit 13**: Mejoras de UI/UX y validaciones
-- [ ] **Commit 14**: Testing final y documentación de código
+- [ ] **Commit 5**: Implementación de endpoints de carrito (POST, GET, DELETE)
+- [ ] **Commit 6**: Implementación de endpoints de items de carrito (PUT, DELETE)
+- [ ] **Commit 7**: Actualización de ApiService en cliente para nuevos endpoints
+- [ ] **Commit 8**: Implementación de página de catálogo de productos
+- [ ] **Commit 9**: Implementación de página de carrito de compra
+- [ ] **Commit 10**: Implementación de página de confirmación de compra
+- [ ] **Commit 11**: Implementación de navegación y header con buscador
+- [ ] **Commit 12**: Mejoras de UI/UX y validaciones
+- [ ] **Commit 13**: Testing final y documentación de código
 
 ### **📝 NOTAS DE DESARROLLO:**
 - **Simplicidad**: Código claro y bien documentado para defensa oral
@@ -163,4 +161,31 @@ dotnet run
 - ✅ Creación automática de base de datos
 - ✅ Verificación exitosa: servidor ejecutándose y BD creada
 
-**Próximo paso**: Implementación de datos iniciales (10 productos consistentes)
+**Próximo paso**: Implementación de endpoints de productos (GET /productos)
+
+### **✅ Commit 3: Implementación de datos iniciales (Seeding)**
+**Archivos creados/modificados:**
+- `servidor/Services/DatabaseSeeder.cs` - Servicio de seeding con 10 productos
+- `servidor/Program.cs` - Integración del seeding al iniciar la aplicación
+
+**Funcionalidad implementada:**
+- ✅ Servicio DatabaseSeeder con 10 productos de tecnología consistentes
+- ✅ Productos con datos realistas: iPhone, Samsung, MacBook, iPad, etc.
+- ✅ Imágenes representativas usando URLs de Unsplash
+- ✅ Verificación que no se dupliquen datos en ejecuciones posteriores
+- ✅ Seeding automático al iniciar la aplicación
+- ✅ Verificación exitosa: 10 productos insertados correctamente
+
+**Productos incluidos:**
+1. iPhone 15 Pro ($1299.99, Stock: 15)
+2. Samsung Galaxy S24 Ultra ($1199.99, Stock: 12)  
+3. MacBook Air M3 ($1099.99, Stock: 8)
+4. AirPods Pro 2 ($249.99, Stock: 25)
+5. iPad Pro 11" ($799.99, Stock: 10)
+6. Apple Watch Series 9 ($399.99, Stock: 18)
+7. Sony WH-1000XM5 ($399.99, Stock: 14)
+8. Nintendo Switch OLED ($349.99, Stock: 20)
+9. Logitech MX Master 3S ($99.99, Stock: 30)
+10. Samsung 4K Monitor 27" ($329.99, Stock: 6)
+
+**Próximo paso**: Implementación de endpoints de productos (GET /productos con búsqueda)
