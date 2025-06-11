@@ -86,7 +86,13 @@ app.MapGet("/productos", async (
 // Diccionario temporal para carritos
 var carritos = new Dictionary<Guid, List<ItemCarrito>>();
 
-
+// POST /carritos → crea un nuevo carrito
+app.MapPost("/carritos", () =>
+{
+    var id = Guid.NewGuid();
+    carritos[id] = new List<ItemCarrito>();
+    return Results.Ok(id);
+});
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
