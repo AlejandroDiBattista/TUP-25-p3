@@ -84,4 +84,80 @@ app.MapGet("/productos", (TiendaContext db, string? query) =>
         .ToList();
 });
 
+// Endpoint para crear un nuevo carrito
+// POST /carritos
+app.MapPost("/carritos", (TiendaContext db) =>
+{
+    var carrito = new Carrito();
+    db.Carritos.Add(carrito);
+    db.SaveChanges();
+    return Results.Ok(new { carrito.Id });
+});
+
+// Endpoint para obtener los ítems de un carrito
+// GET /carritos/{carritoId}
+app.MapGet("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
+{
+    var carrito = db.Carritos
+        .Where(c => c.Id == carritoId)
+        .Select(c => new {
+            c.Id,
+            Items = c.Items.Select(i => new {
+                i.Id,
+                i.ProductoId,
+                i.Producto.Nombre,
+                i.Producto.Precio,
+                i.Cantidad,
+                i.Producto.ImagenUrl
+            })
+        })
+        .FirstOrDefault();
+    return carrito is null ? Results.NotFound() : Results.Ok(carrito);
+});
+
+// Endpoint para vaciar un carrito
+// DELETE /carritos/{carritoId}
+app.MapDelete("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
+{
+    var carrito = db.Carritos.Include(c => c.Items).FirstOrDefault(c => c.Id == carritoId);
+    if (carrito is null) return Results.NotFound();
+    db.ItemsCarrito.RemoveRange(carrito.Items);
+    db.SaveChanges();
+    return Results.Ok();
+});
+
+// Endpoint para agregar o actualizar un producto en el carrito
+// PUT /carritos/{carritoId}/{productoId}
+app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoId, int productoId, int cantidad) =>
+{
+    if (cantidad < 1) return Results.BadRequest("La cantidad debe ser mayor a cero.");
+    var carrito = db.Carritos.Include(c => c.Items).FirstOrDefault(c => c.Id == carritoId);
+    var producto = db.Productos.FirstOrDefault(p => p.Id == productoId);
+    if (carrito is null || producto is null) return Results.NotFound();
+    if (producto.Stock < cantidad) return Results.BadRequest("Stock insuficiente.");
+    var item = db.ItemsCarrito.FirstOrDefault(i => i.CarritoId == carritoId && i.ProductoId == productoId);
+    if (item is null)
+    {
+        item = new ItemCarrito { CarritoId = carritoId, ProductoId = productoId, Cantidad = cantidad };
+        db.ItemsCarrito.Add(item);
+    }
+    else
+    {
+        item.Cantidad = cantidad;
+    }
+    db.SaveChanges();
+    return Results.Ok();
+});
+
+// Endpoint para quitar un producto del carrito
+// DELETE /carritos/{carritoId}/{productoId}
+app.MapDelete("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoId, int productoId) =>
+{
+    var item = db.ItemsCarrito.FirstOrDefault(i => i.CarritoId == carritoId && i.ProductoId == productoId);
+    if (item is null) return Results.NotFound();
+    db.ItemsCarrito.Remove(item);
+    db.SaveChanges();
+    return Results.Ok();
+});
+
 app.Run();
