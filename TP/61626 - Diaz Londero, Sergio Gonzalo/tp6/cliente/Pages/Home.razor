@@ -8,7 +8,6 @@
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">NextGen</a>
-
       <button
         class="navbar-toggler"
         type="button"
@@ -20,14 +19,12 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="#">Home</a>
           </li>
         </ul>
-
         <form class="d-flex" role="search">
           <input
             class="form-control me-2"
@@ -42,150 +39,30 @@
   </nav>
 
   <div class="row my-4 row-gap-4">
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/zapatilla2.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
+    @if (productos.Count == 0 && !cargando)
+    {
+      <p>No hay productos cargados. Presiona el botón para cargar productos.</p>
+    }
+    @foreach (var producto in productos)
+    {
+      <div class="col-4">
+        <div class="card" style="width: 18rem;">
+          <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
+          <div class="card-body">
+            <h5 class="card-title">@producto.Nombre</h5>
+            <p class="card-text">@producto.Descripcion</p>
+            <p class="card-text"><strong>Precio: </strong>$@producto.Precio</p>
+            <a href="#" class="btn btn-primary">Agregar al carrito</a>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/pantalon.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/buzo.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/remera.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/zapatilla.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/short.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/remera2.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/catHombre/botin2.jpg" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/remera1.webp" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card" style="width: 18rem;">
-        <img src="https://nextgen-grupo2.netlify.app/img/remera3.webp" class="card-img-top" alt="..." />
-        <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">
-            Some quick example text to build on the card title and make up the bulk
-            of the card’s content.
-          </p>
-          <a href="#" class="btn btn-primary">Agregar al carrito</a>
-        </div>
-      </div>
-    </div>
+    }
   </div>
 
   <div class="row mb-4">
     <div class="col-12">
-      <h1>Comunicación Cliente-servidor</h1>
-    </div>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col-12">
-      <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">
-        Obtener datos del servidor
+      <button class="btn btn-primary" @onclick="ObtenerProductos">
+        Cargar productos
       </button>
     </div>
   </div>
@@ -194,17 +71,7 @@
     <div class="col-12">
       @if (cargando)
       {
-        <div class="alert alert-info">Cargando datos...</div>
-      }
-      else if (datos != null)
-      {
-        <div class="card" style="width: 300px;">
-          <div class="card-header">Respuesta del servidor</div>
-          <div class="card-body">
-            <h5 class="card-title">@datos.Mensaje</h5>
-            <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-          </div>
-        </div>
+        <div class="alert alert-info">Cargando productos...</div>
       }
       else if (error != null)
       {
@@ -215,22 +82,22 @@
 </div>
 
 @code {
-  private DatosRespuesta datos;
+  private List<Producto> productos = new();
   private string error;
   private bool cargando = false;
 
-  private async Task ObtenerDatosDelServidor()
+  private async Task ObtenerProductos()
   {
     try
     {
       cargando = true;
       error = null;
-      datos = await ApiService.ObtenerDatosAsync();
+      productos = await ApiService.ObtenerProductosAsync();
     }
     catch (Exception ex)
     {
       error = ex.Message;
-      datos = null;
+      productos = new();
     }
     finally
     {
