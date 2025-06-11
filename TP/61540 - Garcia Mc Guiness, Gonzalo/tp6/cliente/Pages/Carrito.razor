@@ -1,0 +1,90 @@
+@page "/carrito"
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h3>carrito de Compras</h3>
+
+@if (carrito is null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (carrito.Items.Count == 0)
+{
+    <p>El carrito esta vacio.</p>
+    <a class="btn btn-secondary" href="/productos">Volver al catalogo</a>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                 <th>Stock</th> 
+                <th>Importe</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito.Items)
+            {
+                <tr>
+                    <td>
+                        <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="height:40px;width:40px;object-fit:cover;" />
+                        @item.Producto.Nombre
+                    </td>
+                    <td>@item.PrecioUnitario.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad - 1)" disabled="@(item.Cantidad == 1)">-</button>
+                        <span class="mx-2">@item.Cantidad</span>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                    </td>
+                    <td>@item.Producto.Stock</td>
+                    <td>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => QuitarProducto(item.ProductoId)">Quitar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        <b>Total: </b> @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")
+    </div>
+    <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Confirmar compra</button>
+}
+
+@code
+{
+    cliente.Services.Carrito? carrito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        carrito = await CarritoService.GetCarritoAsync();
+    }
+
+    async Task CambiarCantidad(int productoId, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1) return;
+        await CarritoService.AgregarProductoAsync(productoId, nuevaCantidad);
+        carrito = await CarritoService.GetCarritoAsync();
+        StateHasChanged();
+    }
+
+    async Task QuitarProducto(int productoId)
+    {
+        await CarritoService.QuitarProductoAsync(productoId);
+        carrito = await CarritoService.GetCarritoAsync();
+        StateHasChanged();
+    }
+
+    async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarritoAsync();
+        carrito = await CarritoService.GetCarritoAsync();
+        StateHasChanged();
+    }
+}

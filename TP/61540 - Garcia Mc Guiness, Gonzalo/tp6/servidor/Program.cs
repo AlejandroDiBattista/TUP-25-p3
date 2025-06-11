@@ -22,7 +22,11 @@ builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
 // Agregar controladores si es necesario
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    });
 
 var app = builder.Build();
 
@@ -83,12 +87,33 @@ app.MapGet("/carritos/{carritoId}", async (TiendaContext db, int carritoId) =>
     if (compra == null)
         return Results.NotFound();
 
-    return Results.Ok(compra);
+    return Results.Ok(new {
+        compra.Id,
+        compra.Fecha,
+        compra.Total,
+        compra.NombreCliente,
+        compra.ApellidoCliente,
+        compra.EmailCliente,
+        Items = compra.Items.Select(i => new {
+            i.Id,
+            i.ProductoId,
+            Producto = new {
+                i.Producto?.Id,
+                i.Producto?.Nombre,
+                i.Producto?.Descripcion,
+                i.Producto?.Precio,
+                i.Producto?.Stock,
+                i.Producto?.ImagenUrl
+            },
+            i.Cantidad,
+            i.PrecioUnitario
+        })
+    });
 });
 
 app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, int carritoId, int productoId, int cantidad) =>
 {
-    if (cantidad < 1) return Results.BadRequest("La cantidad debe ser mañor a 0");
+    if (cantidad < 1) return Results.BadRequest("La cantidad debe ser mayor a 0");
 
     var producto = await db.Productos.FindAsync(productoId);
     if (producto == null) return Results.NotFound("Producto no encontrado");
@@ -119,8 +144,6 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, int ca
     {
         item.Cantidad = cantidad;
     }
-
-    producto.Stock = stockDisponible - cantidad;
 
     await db.SaveChangesAsync();
     return Results.Ok(new
@@ -163,7 +186,6 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", async (TiendaContext db, int
     var producto = await db.Productos.FindAsync(productoId);
     if (producto == null) return Results.NotFound("Producto no encontrado");
 
-    producto.Stock += item.Cantidad;
 
     if (cantidad == null || cantidad >= item.Cantidad)
     {
@@ -172,7 +194,6 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", async (TiendaContext db, int
     else
     {
         item.Cantidad -= cantidad.Value;
-        producto.Stock -= item.Cantidad;
     }
 
     await db.SaveChangesAsync();
@@ -207,13 +228,6 @@ app.MapDelete("/carritos/{carritoId}", async (TiendaContext db, int carritoId) =
         .Include(c => c.Items)
         .FirstOrDefaultAsync(c => c.Id == carritoId);
     if (compra == null) return Results.NotFound("Carrito no encontrado");
-
-    foreach (var item in compra.Items)
-    {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto != null)
-            producto.Stock += item.Cantidad;
-    }
 
     compra.Items.Clear();
     await db.SaveChangesAsync();
@@ -255,6 +269,16 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, int carri
 
     if (compra == null) return Results.NotFound("Carrito no encontrado");
     if (compra.Items.Count == 0) return Results.BadRequest("El carrito está vacío");
+
+    foreach (var item in compra.Items)
+    {
+        if (item.Producto != null)
+        {
+            if (item.Producto.Stock < item.Cantidad)
+                return Results.BadRequest($"No hay suficiente stock para {item.Producto.Nombre}");
+            item.Producto.Stock -= item.Cantidad;
+        }
+    }
 
     compra.NombreCliente = datos.Nombre;
     compra.ApellidoCliente = datos.Apellido;

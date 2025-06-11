@@ -1,54 +1,68 @@
 using System.Net.Http.Json;
 
-public class CarritoService
+namespace cliente.Services
 {
-    private readonly HttpClient _http;
-    public int? CarritoId { get; private set; }
-
-    public CarritoService(HttpClient http)
+    public class CarritoService
     {
-        _http = http;
+        private readonly HttpClient _http;
+        public int? CarritoId { get; private set; }
+
+        public CarritoService(HttpClient http)
+        {
+            _http = http;
+        }
+
+        public async Task<int> GetOClearCarritoAsync()
+        {
+            if (CarritoId.HasValue) return CarritoId.Value;
+            var resp = await _http.PostAsync("/carritos", null);
+            var data = await resp.Content.ReadFromJsonAsync<CarritoIdResponse>();
+            CarritoId = data?.CarritoId ?? 0;
+            return CarritoId.Value;
+        }
+
+        public async Task AgregarProductoAsync(int productoId, int cantidad)
+        {
+            var carritoId = await GetOClearCarritoAsync();
+            await _http.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+        }
+
+        public async Task<Carrito?> GetCarritoAsync()
+        {
+            if (!CarritoId.HasValue) return null;
+            return await _http.GetFromJsonAsync<Carrito>($"/carritos/{CarritoId}");
+        }
+        public async Task QuitarProductoAsync(int productoId)
+        {
+            if (!CarritoId.HasValue) return;
+            await _http.DeleteAsync($"/carritos/{CarritoId}/{productoId}");
+        }
+
+        public async Task VaciarCarritoAsync()
+        {
+            if (!CarritoId.HasValue) return;
+            await _http.DeleteAsync($"/carritos/{CarritoId}");
+        }
+
     }
 
-    public async Task<int> GetOClearCarritoAsync()
+    public class CarritoIdResponse
     {
-        if (CarritoId.HasValue) return CarritoId.Value;
-        var resp = await _http.PostAsync("/carritos", null);
-        var data = await resp.Content.ReadFromJsonAsync<CarritoIdResponse>();
-        CarritoId = data?.CarritoId ?? 0;
-        return CarritoId.Value;
+        public int CarritoId { get; set; }
     }
 
-    public async Task AgregarProductoAsync(int productoId, int cantidad)
+    public class Carrito
     {
-        var carritoId = await GetOClearCarritoAsync();
-        await _http.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+        public int Id { get; set; }
+        public List<ItemCarrito> Items { get; set; } = new();
     }
 
-    public async Task<Carrito?> GetCarritoAsync()
+    public class ItemCarrito
     {
-        if (!CarritoId.HasValue) return null;
-        return await _http.GetFromJsonAsync<Carrito>($"/carritos/{CarritoId}");
+        public int Id { get; set; }
+        public int ProductoId { get; set; }
+        public Producto Producto { get; set; } = new();
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
     }
-
-}
-
-public class CarritoIdResponse
-{
-    public int CarritoId { get; set; }
-}
-
-public class Carrito
-{
-    public int Id { get; set; }
-    public List<ItemCarrito> Items { get; set; } = new();
-}
-
-public class ItemCarrito
-{
-    public int Id { get; set; }
-    public int ProductoId { get; set; }
-    public Producto Producto { get; set; } = new();
-    public int Cantidad { get; set; }
-    public decimal PrecioUnitario { get; set; }
 }
