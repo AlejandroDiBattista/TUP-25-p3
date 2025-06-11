@@ -15,23 +15,29 @@ builder.Services.AddCors(options => {
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 
-var app = builder.Build();
-
+// ⬅️ MOVER AQUÍ el DbContext (antes de Build)
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
+
+// Construir la aplicación
+var app = builder.Build();
+
+// ⬅️ CREAR la base de datos si no existe
+using (var scope = app.Services.CreateScope()) {
+    var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    db.Database.EnsureCreated(); // Esto crea la DB y carga las gorras
+}
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
-// Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
-// Ejemplo de endpoint de API
+// Endpoint de prueba
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 app.Run();
