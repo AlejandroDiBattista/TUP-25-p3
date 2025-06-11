@@ -1,6 +1,9 @@
 var builder = WebApplication.CreateBuilder(args);
 
 
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
 
 builder.Services.AddCors(options =>
 {
@@ -11,7 +14,6 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
-
 
 builder.Services.AddControllers();
 
