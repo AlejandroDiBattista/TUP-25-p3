@@ -67,7 +67,7 @@ else
         string.IsNullOrWhiteSpace(Customer.LastName) ||
         string.IsNullOrWhiteSpace(Customer.Email))
     {
-        return; // validación básica
+        return;
     }
 
     var cartId = await GetOrCreateCartId();
@@ -75,7 +75,7 @@ else
 
     if (result > 0)
     {
-        await Storage.SetCartIdAsync(""); // limpia el carrito
+        await Storage.SetCartIdAsync("");
         Nav.NavigateTo("/");
     }
 }
