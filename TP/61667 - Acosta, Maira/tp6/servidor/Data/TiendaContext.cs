@@ -8,7 +8,7 @@ namespace servidor.Data
         {
         }
 
-        public Dbset<Producto> Productos => Set<Producto>();
+        public DbSet<Producto> Productos => Set<Producto>();
         public DbSet<Compra> Compras => Set<Compra>();
         public DbSet<Articulocompra> ArticulosCompras => Set<Articulocompra>();
     }

@@ -1,6 +1,6 @@
 namespace servidor.Models
 {
-    public class Producto
+    public class Compra 
     {
         public int Id { get; set; }
         public DateTime Fecha { get; set; }
