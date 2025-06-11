@@ -52,4 +52,21 @@ public class CarritoService
         public int Cantidad { get; set; }
         public string ImagenUrl { get; set; } = string.Empty;
     }
+
+    // DTO para datos del cliente
+    public class DatosClienteDto
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+    }
+
+    // Confirmar compra
+    public async Task<bool> ConfirmarCompraAsync(DatosClienteDto datos)
+    {
+        if (CarritoId == null) return false;
+        var url = $"{ApiUrl}/{CarritoId}/confirmar";
+        var resp = await _http.PostAsJsonAsync(url, datos);
+        return resp.IsSuccessStatusCode;
+    }
 }

@@ -1,3 +1,4 @@
+
 @page "/carrito"
 @inject Cliente.Services.CarritoService CarritoService
 
@@ -44,7 +45,30 @@ else
     <div style="text-align:right; font-size:1.2rem; font-weight:bold; color:#00796b;">Total: $@items.Sum(x => x.Precio * x.Cantidad)</div>
     <div style="margin-top:1.5rem; text-align:right;">
         <button @onclick="VaciarCarrito" style="background:#e57373; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem; margin-right:1rem;">Vaciar carrito</button>
-        <button @onclick="ConfirmarCompra" style="background:#388e3c; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Confirmar compra</button>
+        <button @onclick="() => mostrarFormulario = !mostrarFormulario" style="background:#388e3c; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Confirmar compra</button>
+    </div>
+}
+
+@if (mostrarFormulario)
+{
+    <div style="background:#f1f8e9; border:1px solid #388e3c; border-radius:8px; padding:1.5rem; max-width:400px; margin:2rem auto;">
+        <h3 style="color:#388e3c;">Datos del cliente</h3>
+        <EditForm Model="datosCliente" OnValidSubmit="OnConfirmarCompra">
+            <div style="margin-bottom:1rem;">
+                <label>Nombre:</label><br />
+                <InputText @bind-Value="datosCliente.Nombre" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Apellido:</label><br />
+                <InputText @bind-Value="datosCliente.Apellido" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label>Email:</label><br />
+                <InputText @bind-Value="datosCliente.Email" type="email" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+            </div>
+            <button type="submit" style="background:#388e3c; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Confirmar</button>
+            <button type="button" @onclick="() => mostrarFormulario = false" style="margin-left:1rem; background:#bdbdbd; color:#333; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Cancelar</button>
+        </EditForm>
     </div>
 }
 
@@ -57,6 +81,8 @@ else
     List<Cliente.Services.CarritoService.ItemCarritoDto> items = new();
     bool cargando = true;
     string mensaje = string.Empty;
+    bool mostrarFormulario = false;
+    Cliente.Services.CarritoService.DatosClienteDto datosCliente = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,7 +101,6 @@ else
     {
         int nuevaCantidad = item.Cantidad + delta;
         if (nuevaCantidad < 1) return;
-        // Lógica para actualizar cantidad (requiere endpoint en backend)
         await CarritoService.AgregarProductoAsync(item.ProductoId, delta);
         await CargarCarrito();
     }
@@ -86,9 +111,18 @@ else
         mensaje = "Funcionalidad de vaciar carrito pendiente de implementación.";
     }
 
-    async Task ConfirmarCompra()
+    async Task OnConfirmarCompra()
     {
-        // Lógica para confirmar compra (requiere endpoint y formulario)
-        mensaje = "Funcionalidad de confirmación pendiente de implementación.";
+        var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
+        if (ok)
+        {
+            mensaje = "¡Compra confirmada!";
+            mostrarFormulario = false;
+            await CargarCarrito();
+        }
+        else
+        {
+            mensaje = "No se pudo confirmar la compra.";
+        }
     }
 }

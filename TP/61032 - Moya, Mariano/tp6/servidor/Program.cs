@@ -171,10 +171,16 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carri
 });
 
 // Endpoint para confirmar la compra y limpiar el carrito
-// PUT /carritos/{carritoId}/confirmar
+// POST /carritos/{carritoId}/confirmar
 // Registra la compra, descuenta stock y limpia el carrito. Recibe datos del cliente.
-app.MapPut("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId, DatosClienteDto datos) =>
+app.MapPost("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId, DatosClienteDto datos) =>
 {
+    // Validar que nombre y apellido no contengan números
+    if (string.IsNullOrWhiteSpace(datos.Nombre) || string.IsNullOrWhiteSpace(datos.Apellido))
+        return Results.BadRequest("Nombre y apellido son obligatorios.");
+    if (datos.Nombre.Any(char.IsDigit) || datos.Apellido.Any(char.IsDigit))
+        return Results.BadRequest("Nombre y apellido no pueden contener números.");
+
     // Buscar el carrito con sus ítems y productos
     var carrito = db.Carritos
         .Where(c => c.Id == carritoId)
