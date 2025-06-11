@@ -49,15 +49,38 @@ public class Compra
 
 public class ItemCompra
 {
-    public int Id { get; set; }
-    public int ProductoId { get; set; }
-    public int CompraId { get; set; }
-    public int Cantidad { get; set; }
-    public decimal PrecioUnitario { get; set; }
+  public int Id { get; set; }
+  public int ProductoId { get; set; }
+  public int CompraId { get; set; }
+  public int Cantidad { get; set; }
+  public decimal PrecioUnitario { get; set; }
 
-    public Producto? Producto { get; set; }
-    public Compra? Compra { get; set; }
+  public Producto? Producto { get; set; }
+  public Compra? Compra { get; set; }
 }
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+    public DbSet<Producto> Productos => Set<Producto>();
+    public DbSet<Compra> Compras => Set<Compra>();
+    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+}
+
+public class CarritoItem
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+}
+
+public class Carrito
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public List<CarritoItem> Items { get; set; } = new();
+}
+
+var carritos = new Dictionary<Guid, Carrito>();
 
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
