@@ -160,4 +160,67 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carri
     return Results.Ok();
 });
 
+// Endpoint para confirmar la compra y limpiar el carrito
+// PUT /carritos/{carritoId}/confirmar
+app.MapPut("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId, DatosClienteDto datos) =>
+{
+    // Buscar el carrito con sus ítems y productos
+    var carrito = db.Carritos
+        .Where(c => c.Id == carritoId)
+        .Select(c => new {
+            c.Id,
+            Items = c.Items.Select(i => new {
+                i.ProductoId,
+                i.Cantidad,
+                Producto = i.Producto
+            }).ToList()
+        })
+        .FirstOrDefault();
+    if (carrito is null || !carrito.Items.Any())
+        return Results.BadRequest("Carrito vacío o no encontrado");
+
+    // Validar stock de todos los productos
+    foreach (var item in carrito.Items)
+    {
+        if (item.Producto.Stock < item.Cantidad)
+            return Results.BadRequest($"Stock insuficiente para {item.Producto.Nombre}");
+    }
+
+    // Calcular total
+    decimal total = carrito.Items.Sum(i => i.Producto.Precio * i.Cantidad);
+
+    // Registrar la compra
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        Total = total,
+        NombreCliente = datos.Nombre,
+        ApellidoCliente = datos.Apellido,
+        EmailCliente = datos.Email,
+        ItemsCompra = carrito.Items.Select(i => new ItemCompra
+        {
+            ProductoId = i.ProductoId,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.Producto.Precio
+        }).ToList()
+    };
+    db.Compras.Add(compra);
+
+    // Descontar stock
+    foreach (var item in carrito.Items)
+    {
+        item.Producto.Stock -= item.Cantidad;
+    }
+
+    // Limpiar el carrito
+    var itemsCarrito = db.ItemsCarrito.Where(i => i.CarritoId == carritoId);
+    db.ItemsCarrito.RemoveRange(itemsCarrito);
+    db.SaveChanges();
+
+    return Results.Ok(new { compra.Id, compra.Total });
+});
+
+// DTO para recibir datos del cliente
+public record DatosClienteDto(string Nombre, string Apellido, string Email);
+
 app.Run();
