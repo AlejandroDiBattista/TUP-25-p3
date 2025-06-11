@@ -1,5 +1,7 @@
 using servidor;
 using Microsoft.EntityFrameworkCore;
+using servidor.Models;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,4 +67,18 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 }
+
+app.MapGet("/productos", async (AppDbContext db, string? search) =>
+{
+    var query = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        query = query.Where(p => p.Nombre.Contains(search));
+    }
+
+    var productos = await query.ToListAsync();
+    return Results.Ok(productos);
+});
+
 
