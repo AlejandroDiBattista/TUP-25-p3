@@ -1,3 +1,4 @@
+
 using System.Net.Http.Json;
 
 namespace Cliente.Services;
@@ -11,6 +12,15 @@ public class CarritoService
     public CarritoService(HttpClient http)
     {
         _http = http;
+    }
+
+    // Vacía el carrito
+    public async Task<bool> VaciarCarritoAsync()
+    {
+        if (CarritoId == null) return false;
+        var url = $"{ApiUrl}/{CarritoId}";
+        var resp = await _http.DeleteAsync(url);
+        return resp.IsSuccessStatusCode;
     }
 
     // Inicializa un carrito y guarda el Id

@@ -57,10 +57,18 @@ else
             <div style="margin-bottom:1rem;">
                 <label>Nombre:</label><br />
                 <InputText @bind-Value="datosCliente.Nombre" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+                @if (!string.IsNullOrEmpty(nombreError))
+                {
+                    <div style="color:#d32f2f; font-size:0.95rem;">@nombreError</div>
+                }
             </div>
             <div style="margin-bottom:1rem;">
                 <label>Apellido:</label><br />
                 <InputText @bind-Value="datosCliente.Apellido" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+                @if (!string.IsNullOrEmpty(apellidoError))
+                {
+                    <div style="color:#d32f2f; font-size:0.95rem;">@apellidoError</div>
+                }
             </div>
             <div style="margin-bottom:1rem;">
                 <label>Email:</label><br />
@@ -83,6 +91,8 @@ else
     string mensaje = string.Empty;
     bool mostrarFormulario = false;
     Cliente.Services.CarritoService.DatosClienteDto datosCliente = new();
+    string nombreError = string.Empty;
+    string apellidoError = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,12 +117,38 @@ else
 
     async Task VaciarCarrito()
     {
-        // Lógica para vaciar carrito (requiere endpoint en backend)
-        mensaje = "Funcionalidad de vaciar carrito pendiente de implementación.";
+        var ok = await CarritoService.VaciarCarritoAsync();
+        if (ok)
+        {
+            mensaje = "Carrito vaciado correctamente.";
+            await CargarCarrito();
+        }
+        else
+        {
+            mensaje = "No se pudo vaciar el carrito.";
+        }
     }
 
     async Task OnConfirmarCompra()
     {
+        nombreError = string.Empty;
+        apellidoError = string.Empty;
+        bool valido = true;
+        if (string.IsNullOrWhiteSpace(datosCliente.Nombre) || datosCliente.Nombre.Any(char.IsDigit))
+        {
+            nombreError = "El nombre no puede estar vacío ni contener números.";
+            valido = false;
+        }
+        if (string.IsNullOrWhiteSpace(datosCliente.Apellido) || datosCliente.Apellido.Any(char.IsDigit))
+        {
+            apellidoError = "El apellido no puede estar vacío ni contener números.";
+            valido = false;
+        }
+        if (!valido)
+        {
+            StateHasChanged();
+            return;
+        }
         var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
         if (ok)
         {
