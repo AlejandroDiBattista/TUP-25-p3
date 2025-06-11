@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins("http://localhost:5177", "https://localhost:7221") // URLs del cliente
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -22,16 +23,14 @@ builder.Services.AddDbContext<TiendaDbContext>(options =>
 
 var app = builder.Build();
 
-// Seed data (cargar productos de ejemplo)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<TiendaDbContext>();
-        // Asegurarse que la base de datos esté creada
-        context.Database.EnsureCreated(); 
-        SeedData.Initialize(context);
+        context.Database.EnsureCreated(); // Asegura que la BD exista
+        SeedData.Initialize(context);     // Llama al seeder
     }
     catch (Exception ex)
     {
