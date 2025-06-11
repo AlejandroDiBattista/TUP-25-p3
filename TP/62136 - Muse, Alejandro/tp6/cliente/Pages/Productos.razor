@@ -1,6 +1,7 @@
 @page "/productos"
 @using cliente.Models
 @inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
 
 <h3>Catálogo de Productos</h3>
 
@@ -26,6 +27,9 @@ else
                 <p>@p.Descripcion</p>
                 <p><b>Precio:</b> $@p.Precio</p>
                 <p><b>Stock:</b> @p.Stock</p>
+                <button class="btn btn-success" @onclick="() => CarritoService.Agregar(p)" disabled="@((p.Stock == 0))">
+                    Agregar al carrito
+                </button>
             </div>
         }
     </div>
@@ -35,6 +39,9 @@ else
     List<Producto>? productos;
     string? busqueda;
 
+    // Simulación de carrito local (luego se hará con API)
+    List<Producto> carrito = new();
+
     protected override async Task OnInitializedAsync()
     {
         productos = await ApiService.ObtenerProductosAsync();
@@ -43,5 +50,12 @@ else
     async Task Buscar()
     {
         productos = await ApiService.ObtenerProductosAsync(busqueda);
+    }
+
+    void AgregarAlCarrito(Producto producto)
+    {
+        // Por ahora solo lo agregamos a una lista local
+        carrito.Add(producto);
+        // Más adelante esto se hará con el backend
     }
 }

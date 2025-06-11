@@ -1,0 +1,29 @@
+@page "/carrito"
+@inject cliente.Services.CarritoService CarritoService
+
+<h3>Carrito de compras</h3>
+
+@if (CarritoService.ProductosEnCarrito.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in CarritoService.ProductosEnCarrito)
+            {
+                <tr>
+                    <td>@p.Nombre</td>
+                    <td>$@p.Precio</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
