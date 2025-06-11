@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TiendaDb>(opt => opt.UseSqlite("Data Source=tienda.db"));
 builder.Services.AddEndpointsApiExplorer();
@@ -12,7 +13,7 @@ builder.Services.AddSwaggerGen();
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins("https://localhost:7295", "http://localhost:5184")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -31,12 +32,12 @@ app.UseSwaggerUI();
 
 //app.UseCors("AllowClientApp")
 
-app.MapGet("/productos", async (TiendaDb db) ) =>
+app.MapGet("/productos", async (TiendaDb db) =>
 {
-     return await db.Producotos
-      .Where(p => p.Stock > 0)
-      .ToListAsync();
-}
+    return await db.Productos
+        .Where(p => p.Stock > 0)
+        .ToListAsync();
+});
 
 app.MapPost("/Carrito", async (TiendaDb db, Producto producto) =>
 {
@@ -45,10 +46,16 @@ app.MapPost("/Carrito", async (TiendaDb db, Producto producto) =>
         return Results.BadRequest("Producto sin stock");
     }
 
-    var carrito = new Carrito
+    var item = new ItemCarrito
     {
         ProductoId = producto.Id,
-        Cantidad = 1
+        Cantidad = 1,
+        PrecioUnitario = producto.Precio
+    };
+
+    var carrito = new Carrito
+    {
+        Items = new List<ItemCarrito> { item }
     };
 
     db.Carritos.Add(carrito);
@@ -57,10 +64,11 @@ app.MapPost("/Carrito", async (TiendaDb db, Producto producto) =>
     return Results.Ok(carrito);
 });
 
-app.MapGet("/Carrito/{CarritoID}", async (TiendaDb db, int CarritoID) =>
+app.MapGet("/Carrito/{CarritoID}", async (TiendaDb db, Guid CarritoID) =>
 {
     var carrito = await db.Carritos
-        .Include(c => c.Producto)
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
         .FirstOrDefaultAsync(c => c.Id == CarritoID);
 
     if (carrito == null)
@@ -71,24 +79,15 @@ app.MapGet("/Carrito/{CarritoID}", async (TiendaDb db, int CarritoID) =>
     return Results.Ok(carrito);
 });
 
-app.MapDelete("/Carrito/{CarritoID}", async (TiendaDb db, int CarritoID) =>
+app.MapDelete("/Carrito/{CarritoID}", async (TiendaDb db, Guid CarritoID) =>
 {
-    var carrito = await db.Carritos.FindAsync(CarritoID);
+    var carrito = await db.Carritos
+        .Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+
     if (carrito == null)
     {
         return Results.NotFound();
-    }
-
-    foreach (var item in db.Carritos)
-    {
-        if (item.ProductoId == carrito.ProductoId)
-        {
-            item.Cantidad--;
-            if (item.Cantidad <= 0)
-            {
-                db.Carritos.Remove(item);
-            }
-        }
     }
 
     db.Carritos.Remove(carrito);
@@ -97,54 +96,72 @@ app.MapDelete("/Carrito/{CarritoID}", async (TiendaDb db, int CarritoID) =>
     return Results.NoContent();
 });
 
-app.MapPut("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, int CarritoID, int ProductoID) =>
+app.MapPut("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, Guid CarritoID, int ProductoID) =>
 {
-    var carrito = await db.Carritos.FindAsync(CarritoID);
+    var carrito = await db.Carritos
+        .Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+
     if (carrito == null)
     {
         return Results.NotFound();
     }
 
-    var producto = await db.Producotos.FindAsync(ProductoID);
+    var producto = await db.Productos.FindAsync(ProductoID);
     if (producto == null || producto.Stock <= 0)
     {
         return Results.BadRequest("Producto no disponible");
     }
 
-    carrito.ProductoId = ProductoID;
+    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == ProductoID);
+    if (item != null)
+    {
+        item.Cantidad++;
+    }
+    else
+    {
+        carrito.Items.Add(new ItemCarrito
+        {
+            ProductoId = ProductoID,
+            Cantidad = 1,
+            PrecioUnitario = producto.Precio
+        });
+    }
+
     await db.SaveChangesAsync();
 
     return Results.Ok(carrito);
 });
 
-app.MapDelete("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, int CarritoID, int ProductoID) =>
+app.MapDelete("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, Guid CarritoID, int ProductoID) =>
 {
-    var carrito = await db.Carritos.FindAsync(CarritoID);
+    var carrito = await db.Carritos
+        .Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+
     if (carrito == null)
     {
         return Results.NotFound();
     }
 
-    var producto = await db.Producotos.FindAsync(ProductoID);
-    if (producto == null)
-    {
-        return Results.BadRequest("Producto no encontrado");
-    }
-
-    if (carrito.ProductoId != ProductoID)
+    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == ProductoID);
+    if (item == null)
     {
         return Results.BadRequest("El producto no está en el carrito");
     }
 
-    db.Carritos.Remove(carrito);
+    carrito.Items.Remove(item);
     await db.SaveChangesAsync();
 
     return Results.NoContent();
 });
 
-app.MapPut("Carrito/{CarritoID}/Confirmar", async (TiendaDb db, int CarritoID) =>
+app.MapPut("/Carrito/{CarritoID}/Confirmar", async (TiendaDb db, Guid CarritoID, CompraDto dto) =>
 {
-    var carrito = await db.Carritos.FindAsync(CarritoID);
+    var carrito = await db.Carritos
+        .Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+
     if (carrito == null)
     {
         return Results.NotFound();
@@ -178,35 +195,119 @@ class TiendaDb : DbContext
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<Carrito> Carritos => Set<Carrito>();
     public DbSet<Compra> Compras => Set<Compra>();
+    public DbSet<ItemCarrito> ItemsCarrito => Set<ItemCarrito>();
+    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Producto>().HasData(
-            new Producto { Id = 1, Nombre = "Iphone 15", Descripcion = "Celular con la mejor autonomia", Stock = 10, Precio = 780000 },
-            new Producto { Id = 2, Nombre = "Iphone 15 Plus", Descripcion = "Celular con bateria resistente", Stock = 5, Precio = 820000 },
-            new Producto { Id = 3, Nombre = "Iphone 16", Descripcion = "Celular de ultima generacion", Stock = 13, Precio = 980000 },
-            new Producto { Id = 4, Nombre = "Iphone 16 Pro MAX", Descripcion = "Celular mas demandado del mercado", Stock = 6, Precio = 120000000 },
-            new Producto { Id = 5, Nombre = "AirPods Pro", Descripcion = "Auriculares bluetooth", Stock = 20, Precio = 200000 },
-            new Producto { Id = 6, Nombre = "MacBook Air", Descripcion = "Notebook eficaz", Stock = 12, Precio = 220000000 },
-            new Producto { Id = 7, Nombre = "MacBook Pro", Descripcion = "Notebook mas potente", Stock = 8, Precio = 390000000 },
-            new Producto { Id = 8, Nombre = "Apple Watch", Descripcion = "Reloj inteligente", Stock = 15, Precio = 340000 },
-            new Producto { Id = 9, Nombre = "Ipad Air", Descripcion = "Pantalla inteligente", Stock = 11, Precio = 720000 },
-            new Producto { Id = 10, Nombre = "Ipad Pro", Descripcion = "Ipad mas potente y avanzado", Stock = 9, Precio = 130000000 }
+            new Producto
+            {
+                Id = 1,
+                Nombre = "Iphone 15",
+                Descripcion = "Celular con la mejor autonomia",
+                Stock = 10,
+                Precio = 780000,
+                ImagenUrl = "imagenes/iphone15.jpg"
+            },
+
+            new Producto
+            {
+                Id = 2,
+                Nombre = "Iphone 15 Plus",
+                Descripcion = "Celular con bateria resistente",
+                Stock = 5,
+                Precio = 820000,
+                ImagenUrl = "imagenes/iphone15plus.jpg"
+            },
+            new Producto
+            {
+                Id = 3,
+                Nombre = "Iphone 16",
+                Descripcion = "Celular de ultima generacion",
+                Stock = 13,
+                Precio = 980000,
+                ImagenUrl = "imagenes/iphone16.jpg"
+            },
+            new Producto
+            {
+                Id = 4,
+                Nombre = "Iphone 16 Pro MAX",
+                Descripcion = "Celular mas demandado del mercado",
+                Stock = 6,
+                Precio = 120000000,
+                ImagenUrl = "imagenes/iphone16promax.jpg"   
+            },
+            new Producto
+            {
+                Id = 5,
+                Nombre = "AirPods Pro",
+                Descripcion = "Auriculares bluetooth",
+                Stock = 20,
+                Precio = 200000,
+                ImagenUrl = "imagenes/airpodspro.jpg"
+            },
+            new Producto
+            {
+                Id = 6,
+                Nombre = "MacBook Air",
+                Descripcion = "Notebook eficaz",
+                Stock = 12,
+                Precio = 220000000,
+                ImagenUrl = "imagenes/macbookair.jpg"
+            },
+            new Producto
+            {
+                Id = 7,
+                Nombre = "MacBook Pro",
+                Descripcion = "Notebook mas potente",
+                Stock = 8,
+                Precio = 390000000,
+                ImagenUrl = "imagenes/macbookpro.jpg"   
+            },
+            new Producto
+            {
+                Id = 8,
+                Nombre = "Apple Watch",
+                Descripcion = "Reloj inteligente",
+                Stock = 15,
+                Precio = 340000,
+                ImagenUrl = "imagenes/applewatch.jpg"   
+            },
+            new Producto
+            {
+                Id = 9,
+                Nombre = "Ipad Air",
+                Descripcion = "Pantalla inteligente",
+                Stock = 11,
+                Precio = 720000,
+                ImagenUrl = "imagenes/ipadair.jpg"
+            },
+            new Producto
+            {
+                Id = 10,
+                Nombre = "Ipad Pro",
+                Descripcion = "Ipad mas potente y avanzado",
+                Stock = 9,
+                Precio = 130000000,
+                ImagenUrl = "imagenes/ipadpro.jpg"
+            }
         );
     }
+}
 
-    }
-
-record Producto
+public class Producto
 {
     public int Id { get; set; }
     public string Nombre { get; set; }
     public string Descripcion { get; set; }
     public int Stock { get; set; }
     public int Precio { get; set; }
+    public string ImagenUrl { get; set; }
+    public List<ItemCarrito> ItemsCarrito { get; set; } = new();
 }
 
-record ItemCarrito
+public class ItemCarrito
 {
     public int Id { get; set; }
     public int ProductoId { get; set; }
@@ -215,13 +316,13 @@ record ItemCarrito
     public int PrecioUnitario { get; set; }
 }
 
-record Carrito
+public class Carrito
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public List<ItemCarrito> Items { get; set; } = new();
 }
 
-record Compra
+public class Compra
 {
     public int Id { get; set; }
     public DateTime Fecha { get; set; }
@@ -232,7 +333,7 @@ record Compra
     public List<ItemCompra> Items { get; set; } = new();
 }
 
-record ItemCompra
+public class ItemCompra
 {
     public int Id { get; set; }
     public int ProductoId { get; set; }
@@ -241,7 +342,7 @@ record ItemCompra
     public int PrecioUnitario { get; set; }
 }
 
-record CompraDto
+public class CompraDto
 {
     [Required] public string Nombre { get; set; }
     [Required] public string Apellido { get; set; }

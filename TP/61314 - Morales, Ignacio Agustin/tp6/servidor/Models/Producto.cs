@@ -1,3 +1,4 @@
+namespace servidor.Models;
 public class Product
 {
     public int Id { get; set; }
@@ -7,5 +8,5 @@ public class Product
     public int Stock { get; set; }
     public string ImagenUrl { get; set; }
 
-    public List<ItemCarrito> ItemsCarrito{ get; set; } = new();
+    public List<ItemCompra> Items{ get; set; } = new();
 }
