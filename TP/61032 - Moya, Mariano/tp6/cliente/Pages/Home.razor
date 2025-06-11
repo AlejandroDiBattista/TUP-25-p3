@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject Cliente.Services.ProductoService ProductoService
 
 <PageTitle>Inicio</PageTitle>
 
@@ -37,12 +38,52 @@
             }
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Catálogo de productos</h3>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (productos is null)
+        {
+            <p>Cargando productos...</p>
+        }
+        else if (productos.Count == 0)
+        {
+            <p>No hay productos disponibles.</p>
+        }
+        else
+        {
+            @foreach (var prod in productos)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:180px;object-fit:contain;">
+                        <div class="card-body">
+                            <h5 class="card-title">@prod.Nombre</h5>
+                            <p class="card-text">@prod.Descripcion</p>
+                            <p><b>Precio:</b> $@prod.Precio</p>
+                            <p><b>Stock:</b> @prod.Stock</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div style="background: #e0f7fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <h2 style="color: #00796b;">¡Bienvenido a la Tienda Online!</h2>
+        <p>Este frontend Blazor está funcionando correctamente.</p>
+    </div>
 </div>
 
 @code {
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
+    List<Cliente.Services.ProductoDto>? productos;
 
     private async Task ObtenerDatosDelServidor() {
         try {
@@ -55,5 +96,10 @@
         } finally {
             cargando = false;
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.GetProductosAsync();
     }
 }
