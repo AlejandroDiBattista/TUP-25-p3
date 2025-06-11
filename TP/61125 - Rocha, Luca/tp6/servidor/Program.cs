@@ -34,7 +34,7 @@ app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha 
 // Aquí luego se agregaran los endpoints para productos y carritop
 
 
-app.MapControllers()
+app.MapControllers();
 
 
 app.Run();
