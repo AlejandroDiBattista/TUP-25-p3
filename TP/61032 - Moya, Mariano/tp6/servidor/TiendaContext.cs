@@ -8,6 +8,8 @@ public class TiendaContext : DbContext
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<Compra> Compras => Set<Compra>();
     public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+    public DbSet<Carrito> Carritos => Set<Carrito>();
+    public DbSet<ItemCarrito> ItemsCarrito => Set<ItemCarrito>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,5 +22,17 @@ public class TiendaContext : DbContext
             .HasOne(i => i.Compra)
             .WithMany(c => c.ItemsCompra)
             .HasForeignKey(i => i.CompraId);
+
+        // Relación ItemCarrito - Producto
+        modelBuilder.Entity<ItemCarrito>()
+            .HasOne(i => i.Producto)
+            .WithMany()
+            .HasForeignKey(i => i.ProductoId);
+
+        // Relación ItemCarrito - Carrito
+        modelBuilder.Entity<ItemCarrito>()
+            .HasOne(i => i.Carrito)
+            .WithMany(c => c.Items)
+            .HasForeignKey(i => i.CarritoId);
     }
 }
