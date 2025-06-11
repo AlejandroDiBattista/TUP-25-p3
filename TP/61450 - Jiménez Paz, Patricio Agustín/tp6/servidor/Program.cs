@@ -186,6 +186,65 @@ app.MapDelete(
     }
 );
 
+// Endpoints compras (carrito a compra)
+app.MapPut(
+    "/carritos/{id:int}/confirmar",
+    async (AppDb db, int id, CompraDto compraDto) =>
+    {
+        var carrito = await db
+            .Carritos.Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (carrito == null)
+            return Results.NotFound(new { message = "Carrito no encontrado." });
+
+        if (!carrito.Items.Any())
+            return Results.BadRequest(new { message = "El carrito está vacío." });
+
+        // Validar datos del cliente
+        if (
+            string.IsNullOrWhiteSpace(compraDto.Cliente.Nombre)
+            || string.IsNullOrWhiteSpace(compraDto.Cliente.Apellido)
+            || string.IsNullOrWhiteSpace(compraDto.Cliente.Email)
+        )
+        {
+            return Results.BadRequest(new { message = "Datos del cliente incompletos." });
+        }
+        if (!compraDto.Cliente.Email.Contains("@"))
+        {
+            return Results.BadRequest(new { message = "Email del cliente inválido." });
+        }
+
+        // Crear la compra
+        Compra compra = new Compra
+        {
+            Total = carrito.Items.Sum(i => i.Cantidad * i.Producto.Precio),
+            Items = carrito
+                .Items.Select(i => new ItemCompra
+                {
+                    Cantidad = i.Cantidad,
+                    PrecioUnitario = i.Producto.Precio,
+                    ProductoId = i.ProductoId,
+                })
+                .ToList(),
+            NombreCliente = compraDto.Cliente.Nombre,
+            ApellidoCliente = compraDto.Cliente.Apellido,
+            EmailCliente = compraDto.Cliente.Email,
+            Fecha = compraDto.Fecha ?? DateTime.Now,
+        };
+
+        db.Compras.Add(compra);
+
+        // Eliminar el carrito y sus items
+        db.Carritos.Remove(carrito);
+        db.ItemsCarrito.RemoveRange(carrito.Items);
+
+        await db.SaveChangesAsync();
+        return Results.Ok(new { message = "Compra confirmada.", compra });
+    }
+);
+
 // Inicializar la base de datos
 using (var scope = app.Services.CreateScope())
 {
@@ -330,6 +389,10 @@ class Compra
     public string EmailCliente { get; set; }
     public List<ItemCompra> Items { get; set; } = new List<ItemCompra>();
 }
+
+record CompraDto(ClienteDto Cliente, DateTime? Fecha);
+
+record ClienteDto(string Nombre, string Apellido, string Email);
 
 class ItemCompra
 {
