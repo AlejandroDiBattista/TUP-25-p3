@@ -265,6 +265,109 @@ app.MapDelete("/api/carritos/{carritoId}", (CarritoService carritoService, strin
 .WithDescription("Endpoint para eliminar todos los items de un carrito específico.");
 
 /// <summary>
+/// Endpoint para agregar o actualizar un producto en el carrito.
+/// PUT /api/carritos/{carritoId}/{productoId} - Agrega/actualiza un producto en el carrito
+/// Cuerpo de la solicitud: { "cantidad": 2 }
+/// </summary>
+app.MapPut("/api/carritos/{carritoId}/{productoId:int}", async (
+    CarritoService carritoService, 
+    string carritoId, 
+    int productoId, 
+    ActualizarItemCarritoDto request) =>
+{
+    try
+    {
+        // Validar que la cantidad sea positiva
+        if (request.Cantidad <= 0)
+        {
+            return Results.BadRequest(new 
+            {
+                Mensaje = "La cantidad debe ser mayor a cero",
+                Cantidad = request.Cantidad
+            });
+        }
+
+        var resultado = await carritoService.AgregarProductoAsync(carritoId, productoId, request.Cantidad);
+        
+        if (!resultado.Exito)
+        {
+            // Determinar el código de estado apropiado según el tipo de error
+            return resultado.Mensaje.Contains("no encontrado") ? 
+                Results.NotFound(new { Mensaje = resultado.Mensaje, CarritoId = carritoId, ProductoId = productoId }) :
+                Results.BadRequest(new { Mensaje = resultado.Mensaje, CarritoId = carritoId, ProductoId = productoId });
+        }
+        
+        return Results.Ok(new 
+        {
+            Mensaje = "Producto agregado/actualizado exitosamente en el carrito",
+            CarritoId = carritoId,
+            ProductoId = productoId,
+            CantidadFinal = request.Cantidad,
+            FechaActualizacion = DateTime.Now
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al agregar producto {productoId} al carrito {carritoId}: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al actualizar carrito",
+            detail: $"Ocurrió un error al agregar el producto {productoId} al carrito {carritoId}.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("AgregarProductoAlCarrito")
+.WithSummary("Agrega o actualiza un producto en el carrito")
+.WithDescription("Endpoint para agregar un producto al carrito o actualizar su cantidad. Valida stock disponible.");
+
+/// <summary>
+/// Endpoint para eliminar un producto específico del carrito.
+/// DELETE /api/carritos/{carritoId}/{productoId} - Elimina un producto del carrito
+/// </summary>
+app.MapDelete("/api/carritos/{carritoId}/{productoId:int}", async (
+    CarritoService carritoService, 
+    string carritoId, 
+    int productoId) =>
+{
+    try
+    {
+        var resultado = await carritoService.EliminarProductoCompletoAsync(carritoId, productoId);
+        
+        if (!resultado.Exito)
+        {
+            return Results.NotFound(new 
+            { 
+                Mensaje = resultado.Mensaje, 
+                CarritoId = carritoId, 
+                ProductoId = productoId 
+            });
+        }
+        
+        return Results.Ok(new 
+        {
+            Mensaje = "Producto eliminado exitosamente del carrito",
+            CarritoId = carritoId,
+            ProductoId = productoId,
+            FechaEliminacion = DateTime.Now
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al eliminar producto {productoId} del carrito {carritoId}: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al eliminar producto del carrito",
+            detail: $"Ocurrió un error al eliminar el producto {productoId} del carrito {carritoId}.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("EliminarProductoDelCarrito")
+.WithSummary("Elimina un producto específico del carrito")
+.WithDescription("Endpoint para eliminar completamente un producto del carrito de compras.");
+
+/// <summary>
 /// Endpoint de debugging para obtener estadísticas de carritos activos.
 /// GET /api/carritos/estadisticas - Información general del sistema de carritos
 /// </summary>
@@ -296,7 +399,7 @@ app.MapGet("/api/carritos/estadisticas", (CarritoService carritoService) =>
 .WithSummary("Obtiene estadísticas de carritos activos")
 .WithDescription("Endpoint de debugging para monitorear el estado del sistema de carritos.");
 
-// Ejemplo de endpoint de API (se reemplazará con endpoints reales)
+// Ejemplo de endpoint de API (se reemplazará con endpoints reales)  
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 app.Run();

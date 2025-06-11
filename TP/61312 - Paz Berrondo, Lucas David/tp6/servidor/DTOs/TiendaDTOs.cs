@@ -40,6 +40,14 @@ public class ItemCarritoDto
 }
 
 /// <summary>
+/// DTO para actualizar la cantidad de un producto en el carrito.
+/// </summary>
+public class ActualizarItemCarritoDto
+{
+    public int Cantidad { get; set; }
+}
+
+/// <summary>
 /// DTO para confirmar una compra.
 /// Incluye datos del cliente necesarios para completar la transacción.
 /// </summary>

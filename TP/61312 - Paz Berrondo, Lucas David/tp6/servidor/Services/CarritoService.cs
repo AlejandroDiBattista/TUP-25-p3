@@ -132,9 +132,7 @@ public class CarritoService
             ItemsTotales = _carritos.Values.Sum(c => c.TotalItems),
             ValorTotal = _carritos.Values.Sum(c => c.Total)
         };
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Limpia carritos antiguos (más de 24 horas) para liberar memoria.
     /// Se puede ejecutar periódicamente en un background service.
     /// </summary>
@@ -158,5 +156,147 @@ public class CarritoService
         }
 
         return carritosAEliminar.Count;
+    }    /// <summary>
+    /// Agrega un producto al carrito o actualiza la cantidad si ya existe.
+    /// Valida stock disponible antes de agregar.
+    /// </summary>
+    /// <param name="carritoId">ID del carrito</param>
+    /// <param name="productoId">ID del producto a agregar</param>
+    /// <param name="cantidad">Cantidad a establecer (reemplaza la cantidad existente)</param>
+    /// <returns>Resultado de la operación con detalles</returns>
+    public async Task<(bool Exito, string Mensaje, CarritoDto? Carrito)> AgregarProductoAsync(string carritoId, int productoId, int cantidad = 1)
+    {
+        // Validar que el carrito existe
+        if (!_carritos.TryGetValue(carritoId, out var carrito))
+        {
+            return (false, $"Carrito con ID {carritoId} no encontrado", null);
+        }
+
+        // Validar cantidad positiva
+        if (cantidad <= 0)
+        {
+            return (false, "La cantidad debe ser mayor a 0", null);
+        }
+
+        // Buscar el producto en la base de datos
+        var producto = await _context.Productos.FindAsync(productoId);
+        if (producto == null)
+        {
+            return (false, $"Producto con ID {productoId} no encontrado", null);
+        }
+
+        // Verificar si el producto ya está en el carrito
+        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+
+        // Validar stock disponible (usar la cantidad que se quiere establecer, no sumar)
+        if (cantidad > producto.Stock)
+        {
+            return (false, $"Stock insuficiente. Stock disponible: {producto.Stock}, cantidad solicitada: {cantidad}", null);
+        }        // Agregar o actualizar item en el carrito
+        if (itemExistente != null)
+        {
+            // Actualizar cantidad del item existente (reemplazar, no sumar)
+            itemExistente.Cantidad = cantidad;
+            itemExistente.PrecioUnitario = producto.Precio; // Actualizar precio por si cambió
+            itemExistente.Producto = producto;
+            
+            Console.WriteLine($"🛒 Producto {producto.Nombre} actualizado en carrito {carritoId}. Nueva cantidad: {cantidad}");
+        }
+        else
+        {
+            // Crear nuevo item en el carrito
+            var nuevoItem = new ItemCarrito
+            {
+                ProductoId = productoId,
+                Producto = producto,
+                Cantidad = cantidad,
+                PrecioUnitario = producto.Precio
+            };
+            
+            carrito.Items.Add(nuevoItem);
+            Console.WriteLine($"🛒 Producto {producto.Nombre} agregado al carrito {carritoId}. Cantidad: {cantidad}");
+        }
+
+        var carritoDto = ConvertirADto(carrito);
+        return (true, "Producto agregado exitosamente", carritoDto);
+    }
+
+    /// <summary>
+    /// Elimina un producto del carrito o reduce su cantidad.
+    /// </summary>
+    /// <param name="carritoId">ID del carrito</param>
+    /// <param name="productoId">ID del producto a eliminar</param>
+    /// <param name="cantidad">Cantidad a eliminar (opcional, por defecto 1)</param>
+    /// <returns>Resultado de la operación con detalles</returns>
+    public async Task<(bool Exito, string Mensaje, CarritoDto? Carrito)> EliminarProductoAsync(string carritoId, int productoId, int cantidad = 1)
+    {
+        // Validar que el carrito existe
+        if (!_carritos.TryGetValue(carritoId, out var carrito))
+        {
+            return (false, $"Carrito con ID {carritoId} no encontrado", null);
+        }
+
+        // Validar cantidad positiva
+        if (cantidad <= 0)
+        {
+            return (false, "La cantidad debe ser mayor a 0", null);
+        }
+
+        // Buscar el item en el carrito
+        var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item == null)
+        {
+            return (false, $"Producto con ID {productoId} no está en el carrito", null);
+        }
+
+        // Obtener datos actualizados del producto
+        var producto = await _context.Productos.FindAsync(productoId);
+        var nombreProducto = producto?.Nombre ?? $"Producto {productoId}";
+
+        // Determinar si eliminar completamente o solo reducir cantidad
+        if (cantidad >= item.Cantidad)
+        {
+            // Eliminar completamente el item del carrito
+            carrito.Items.Remove(item);
+            Console.WriteLine($"🗑️ Producto {nombreProducto} eliminado completamente del carrito {carritoId}");
+        }
+        else
+        {
+            // Reducir cantidad del item
+            item.Cantidad -= cantidad;
+            Console.WriteLine($"🗑️ Cantidad reducida del producto {nombreProducto} en carrito {carritoId}. Nueva cantidad: {item.Cantidad}");
+        }
+
+        var carritoDto = ConvertirADto(carrito);
+        return (true, "Producto actualizado exitosamente", carritoDto);
+    }
+
+    /// <summary>
+    /// Elimina completamente un producto del carrito sin importar la cantidad.
+    /// </summary>
+    /// <param name="carritoId">ID del carrito</param>
+    /// <param name="productoId">ID del producto a eliminar completamente</param>
+    /// <returns>Resultado de la operación</returns>
+    public async Task<(bool Exito, string Mensaje, CarritoDto? Carrito)> EliminarProductoCompletoAsync(string carritoId, int productoId)
+    {
+        if (!_carritos.TryGetValue(carritoId, out var carrito))
+        {
+            return (false, $"Carrito con ID {carritoId} no encontrado", null);
+        }
+
+        var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item == null)
+        {
+            return (false, $"Producto con ID {productoId} no está en el carrito", null);
+        }
+
+        var producto = await _context.Productos.FindAsync(productoId);
+        var nombreProducto = producto?.Nombre ?? $"Producto {productoId}";
+
+        carrito.Items.Remove(item);
+        Console.WriteLine($"🗑️ Producto {nombreProducto} eliminado completamente del carrito {carritoId}");
+
+        var carritoDto = ConvertirADto(carrito);
+        return (true, "Producto eliminado completamente", carritoDto);
     }
 }
