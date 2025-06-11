@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,11 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    context.Database.EnsureCreated(); // 🔸 Acá, no usa migraciones, pero crea la base si no existe.
+}
 // Habilitar Swagger para documentación de la API
 if (app.Environment.IsDevelopment())
 {
