@@ -1,0 +1,54 @@
+@page "/carrito"
+@using cliente.Modelos
+@using cliente.Services
+@inject ServicioCarrito Carritoo 
+
+<h3>Carritoo
+ de compras</h3>
+
+@if (Carritoo.Items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Carritoo.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button @onclick="() => QuitarDelCarrito(item.Producto)">Quitar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><b>Total: $@Carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</b></p>
+    <button @onclick="VaciarCarrito">Vaciar carrito</button>
+}
+
+@code {
+    void QuitarDelCarrito(Producto producto)
+    {
+        Carritoo.QuitarDelCarrito(producto);
+    }
+
+    void VaciarCarrito()
+    {
+        Carritoo.VaciarCarrito();
+    }
+}

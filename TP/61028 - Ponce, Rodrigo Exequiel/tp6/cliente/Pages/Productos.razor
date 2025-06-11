@@ -1,7 +1,8 @@
 @page "/productos"
 @using cliente.Modelos
 @using cliente.Services
-@inject ServicioProductos Servicio
+@inject ServicioProductos Services
+@inject ServicioCarrito Carrito
 
 <h3>Productos</h3>
 
@@ -14,7 +15,10 @@ else
     <ul>
         @foreach (var prod in productos)
         {
-            <li>@prod.Nombre - $@prod.Precio (Stock: @prod.Stock)</li>
+            <li>
+                @prod.Nombre - $@prod.Precio (Stock: @prod.Stock)
+                <button @onclick="() => AgregarAlCarrito(prod)">Agregar al carrito</button>
+            </li>
         }
     </ul>
 }
@@ -24,6 +28,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Servicio.ObtenerProductosAsync();
+        productos = await Services.ObtenerProductosAsync();
+    }
+
+    void AgregarAlCarrito(Producto producto)
+    {
+        Carrito.AgregarAlCarrito(producto);
     }
 }
