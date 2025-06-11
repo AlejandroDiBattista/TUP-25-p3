@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Sqlite;
 
@@ -5,6 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Base de datos usando Entity Framework Core y SQLite
 builder.Services.AddDbContext<AppDb>(opt => opt.UseSqlite("Data Source=./tienda.db"));
+
+// Configurar opciones JSON para usar camelCase
+builder.Services.Configure<JsonOptions>(opt =>
+{
+    opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options =>
@@ -37,6 +46,145 @@ if (app.Environment.IsDevelopment())
 
 // Usar CORS con la política definida
 app.UseCors("AllowClientApp");
+
+// Endpoints productos
+app.MapGet(
+    "/productos",
+    async (AppDb db, string? search) =>
+    {
+        if (string.IsNullOrWhiteSpace(search))
+            return await db.Productos.ToListAsync();
+
+        return await db
+            .Productos.Where(p =>
+                p.Nombre.ToLower().Contains(search.ToLower())
+                || p.Descripcion.ToLower().Contains(search.ToLower())
+            )
+            .ToListAsync();
+    }
+);
+
+// Endpoints carrito
+// Inicializar un carrito vacío
+app.MapPost(
+    "/carritos",
+    async (AppDb db) =>
+    {
+        Carrito carrito = new Carrito();
+        db.Carritos.Add(carrito);
+        await db.SaveChangesAsync();
+        return Results.Created($"/carrito/{carrito.Id}", carrito);
+    }
+);
+
+// Obtener productos del carrito
+app.MapGet(
+    "/carritos/{id:int}",
+    async (AppDb db, int id) =>
+    {
+        var carrito = await db
+            .Carritos.Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (carrito == null)
+            return Results.NotFound(new { message = "Carrito no encontrado." });
+
+        return Results.Ok(carrito);
+    }
+);
+
+// Vaciar el carrito
+app.MapDelete(
+    "/carritos/{id:int}",
+    async (AppDb db, int id) =>
+    {
+        var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+
+        if (carrito == null)
+            return Results.NotFound(new { message = "Carrito no encontrado." });
+
+        if (!carrito.Items.Any())
+            return Results.BadRequest(new { message = "El carrito ya está vacío." });
+
+        db.ItemsCarrito.RemoveRange(carrito.Items);
+        await db.SaveChangesAsync();
+        return Results.NoContent();
+    }
+);
+
+// Agregar un producto al carrito
+app.MapPut(
+    "/carritos/{id:int}/{productoId:int}",
+    async (AppDb db, int id, int productoId) =>
+    {
+        var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+
+        if (carrito == null)
+            return Results.NotFound(new { message = "Carrito no encontrado." });
+
+        var producto = await db.Productos.FirstOrDefaultAsync(p => p.Id == productoId);
+        if (producto == null || producto.Stock == 0)
+            return Results.BadRequest(
+                new { message = "Producto no disponible o stock insuficiente." }
+            );
+
+        var itemCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (itemCarrito != null)
+        {
+            itemCarrito.Cantidad += 1;
+        }
+        else
+        {
+            itemCarrito = new ItemCarrito
+            {
+                Producto = producto,
+                Cantidad = 1,
+                Carrito = carrito,
+            };
+            carrito.Items.Add(itemCarrito);
+        }
+
+        producto.Stock -= 1; // Reducir el stock del producto
+        await db.SaveChangesAsync();
+        return Results.Ok(carrito);
+    }
+);
+
+// Eliminar un producto del carrito
+app.MapDelete(
+    "/carritos/{id:int}/{productoId:int}",
+    async (AppDb db, int id, int productoId) =>
+    {
+        var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+
+        if (carrito == null)
+            return Results.NotFound(new { message = "Carrito no encontrado." });
+
+        var itemCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (itemCarrito == null)
+            return Results.NotFound(new { message = "Producto no encontrado en el carrito." });
+
+        if (itemCarrito.Cantidad > 1)
+        {
+            itemCarrito.Cantidad -= 1;
+        }
+        else
+        {
+            carrito.Items.Remove(itemCarrito);
+            db.ItemsCarrito.Remove(itemCarrito);
+        }
+
+        var producto = await db.Productos.FindAsync(productoId);
+        if (producto != null)
+        {
+            producto.Stock += 1; // Devolver el stock del producto
+        }
+
+        await db.SaveChangesAsync();
+        return Results.Ok(carrito);
+    }
+);
 
 // Inicializar la base de datos
 using (var scope = app.Services.CreateScope())
@@ -191,6 +339,8 @@ class ItemCompra
     public int ProductoId { get; set; }
     public Producto Producto { get; set; } = null!;
     public int CompraId { get; set; }
+
+    [JsonIgnore]
     public Compra Compra { get; set; } = null!;
 }
 
@@ -207,5 +357,7 @@ class ItemCarrito
     public int ProductoId { get; set; }
     public Producto Producto { get; set; } = null!;
     public int CarritoId { get; set; }
+
+    [JsonIgnore]
     public Carrito Carrito { get; set; } = null!;
 }
