@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using servidor.Data;
+using Servidor.Data;
+using Servidor.Models;
+using Servidor.Endpoints; 
+
+using Servidor.Data; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,25 +15,34 @@ builder.Services.AddCors(options => {
               .AllowAnyMethod();
     });
 });
-builder.Services.AddDbContext<TiendaContext>(options =>
-    options.Usesqlite("Data Source=tienda.db"));
-// Agregar controladores si es necesario
+
+// Agregar controllers si querés usar [ApiController]
 builder.Services.AddControllers();
+
+// Configurar EF Core con SQLite
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 var app = builder.Build();
 
+// Asegurarse de que la base de datos se cree automáticamente si no existe
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
+    db.Database.EnsureCreated(); // 👈 CREA la base si no existe
+}
+
 // Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
+app.MapProductoEndpoints(); // Asegúrate de que este método esté definido en tu clase ProductoApi
 
-// Mapear rutas básicas
+app.MapControllers(); // si usás controladores
 app.MapGet("/", () => "Servidor API está en funcionamiento");
-
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 app.Run();
