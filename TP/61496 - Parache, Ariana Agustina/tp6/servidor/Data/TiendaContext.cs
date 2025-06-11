@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using servidor.Models;
 
-namespace TuProyecto.Data 
+namespace servidor.Data 
 {
     public class TiendaContext : DbContext
     {
