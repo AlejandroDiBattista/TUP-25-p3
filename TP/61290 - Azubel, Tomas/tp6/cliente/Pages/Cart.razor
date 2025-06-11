@@ -73,7 +73,7 @@ public int? Add { get; set; }
     if (int.TryParse(add, out int productId))
     {
         await Api.UpdateCartItemAsync(CartId, productId, 1);
-        Nav.NavigateTo("/cart", forceLoad: false); // limpia la URL
+        Nav.NavigateTo("/cart", forceLoad: false);
     }
 
     await LoadCart();
