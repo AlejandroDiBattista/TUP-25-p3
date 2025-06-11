@@ -1,20 +1,19 @@
 using System.Net.Http.Json;
 using cliente.Modelos;
 
-namespace cliente.Servicios
+namespace cliente.Services;
+
+public class ServicioProductos
 {
-    public class ServicioProductos
+    private readonly HttpClient _http;
+
+    public ServicioProductos(HttpClient http)
     {
-        private readonly HttpClient _http;
+        _http = http;
+    }
 
-        public ServicioProductos(HttpClient http)
-        {
-            _http = http;
-        }
-
-        public async Task<List<Producto>> ObtenerProductosAsync()
-        {
-            return await _http.GetFromJsonAsync<List<Producto>>("productos");
-        }
+    public async Task<List<Producto>> ObtenerProductosAsync()
+    {
+        return await _http.GetFromJsonAsync<List<Producto>>("productos");
     }
 }

@@ -1,3 +1,4 @@
+
 namespace servidor.Modelos
 {
     public class Compra

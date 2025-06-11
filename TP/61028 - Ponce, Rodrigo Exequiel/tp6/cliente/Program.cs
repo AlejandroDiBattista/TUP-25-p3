@@ -11,7 +11,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:7000") });
 
 // Registrar el servicio API
-builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<ServicioProductos>();
 
 await builder.Build().RunAsync();
