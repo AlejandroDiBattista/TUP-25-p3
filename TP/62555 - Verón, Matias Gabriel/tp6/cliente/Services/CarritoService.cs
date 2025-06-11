@@ -1,5 +1,5 @@
 using cliente.Models;
-using System.Colletions.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace cliente.Services
@@ -25,6 +25,27 @@ namespace cliente.Services
                 _carrito.Add(new CarritoItem { Producto = producto, Cantidad = cantidad });
             }
         }
+        public void QuitarDelCarrito(Producto producto)
+        {
+            var itemExistente = _carrito.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            if (itemExistente != null)
+            {
+                _carrito.Remove(itemExistente);
+            }
+        }
 
+        public List<CarritoItem> ObtenerCarrito()
+        {
+            return _carrito;
+        }
+
+        public void VaciarCarrito()
+        {
+            _carrito.Clear();
+        }
+        public decimal CalcularTotal()
+        {
+            return _carrito.Sum(item => item.Producto.Precio * item.Cantidad);
+        }
     }
 }

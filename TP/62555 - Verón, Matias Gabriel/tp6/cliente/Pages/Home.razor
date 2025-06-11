@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
 @inject ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
 
 <PageTitle>Inicio</PageTitle>
 
@@ -10,49 +12,141 @@
             <h1>Comunicación Cliente-Servidor</h1>
         </div>
     </div>
-    
+
     <div class="row mb-4">
         <div class="col-12">
             <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-12">
+            <button class="btn btn-success" @onclick="ObtenerProductos">Cargar productos</button>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
+        <div class="col-12">
+            @if (cargando)
+            {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
+            }
+            else if (datos != null)
+            {
+                <div class="card" style="width: 300px;">
+                    <div class="card-header">Respuesta del servidor</div>
                     <div class="card-body">
                         <h5 class="card-title">@datos.Mensaje</h5>
                         <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
+            }
+            else if (error != null)
+            {
+                <div class="alert alert-danger">Error: @error</div>
             }
         </div>
     </div>
+     <div class="row mt-4">
+        <div class="col-12">
+            <input class=" form-control" type="text" placeholder="Buscar productos..." @bind="textoBusqueda" @bind:event= "oninput"/>
+        </div>
+
+     </div>
+    @if (productos is not null && productos.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <h2>Productos disponibles</h2>
+            </div>
+            @foreach (var producto in ProductosFiltrados)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p><strong>Precio:</strong> $@producto.Precio</p>
+                            <p><strong>Stock:</strong> @producto.Stock unidades</p>
+                            <button class="btn btn-primary" @onclick="() => CarritoService.AgregarAlCarrito(producto, 1)">Agregar al carrito</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
+<h2>Carrito de tus Compras</h2>
+
+@if (CarritoService.ObtenerCarrito().Any())
+{
+    <ul>
+        @foreach (var item in CarritoService.ObtenerCarrito())
+        {
+            <li>
+                @item.Producto.Nombre - Cantidad: @item.Cantidad - Subtotal: $@(item.Producto.Precio * item.Cantidad)
+                <button @onclick="() => CarritoService.QuitarDelCarrito(item.Producto)">Quitar</button>
+            </li>
+        }
+    </ul>
+    <p><strong>Total: $@CarritoService.CalcularTotal()</strong></p>
+    <button @onclick="CarritoService.VaciarCarrito">Vaciar carrito</button>
+}
+else
+{
+    <p>El carrito está vacío.</p>
+}
 
 @code {
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
+    private List<Producto> productos;
+    
+   private string textoBusqueda = "";
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+private IEnumerable<Producto> ProductosFiltrados =>
+    string.IsNullOrWhiteSpace(textoBusqueda)
+        ? productos
+        : productos?.Where(p =>
+            (!string.IsNullOrEmpty(p.Nombre) && p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(p.Descripcion) && p.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
+        );
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task ObtenerProductos()
+    {
+        try
+        {
+            cargando = true;
+            error = null;
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            productos = null;
+        }
+        finally
+        {
             cargando = false;
         }
     }
