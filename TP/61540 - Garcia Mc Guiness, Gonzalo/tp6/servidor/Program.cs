@@ -57,7 +57,13 @@ app.MapGet("/productos", async (TiendaContext db, string? q) =>
     var query = db.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(q))
     {
-        query = query.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+        var qNorm = q.ToLower().Replace(" ", "");
+        query = query.Where(p =>
+            p.Nombre.ToLower().Contains(q.ToLower()) ||
+            p.Descripcion.ToLower().Contains(q.ToLower()) ||
+            p.Nombre.ToLower().Replace(" ", "").Contains(qNorm) ||
+            p.Descripcion.ToLower().Replace(" ", "").Contains(qNorm)
+        );
     }
     return await query.ToListAsync();
 });

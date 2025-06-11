@@ -3,6 +3,8 @@
 @inject CarritoService CarritoService
 @inject NavigationManager NavigationManager
 @using cliente.Services
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
 
 <h3>Catálogo de Productos</h3>
 
@@ -38,9 +40,13 @@ else
 @code {
     List<Producto>? productos;
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? q { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
-        productos = await ProductoService.GetProductosAsync();
+        productos = await ProductoService.GetProductosAsync(q);
     }
 
     async Task AgregarAlCarrito(int productoId)
