@@ -35,4 +35,51 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Obtener todos los productos
+app.MapGet("/api/productos", async (ModelsTiendaContext db) =>
+    await db.Productos.ToListAsync());
+
+// Obtener un producto por ID
+app.MapGet("/api/productos/{id}", async (int id, ModelsTiendaContext db) =>
+    await db.Productos.FindAsync(id) is Producto producto
+        ? Results.Ok(producto)
+        : Results.NotFound());
+
+// Crear un nuevo producto
+app.MapPost("/api/productos", async (Producto prod, ModelsTiendaContext db) =>
+{
+    db.Productos.Add(prod);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/productos/{prod.Id}", prod);
+});
+
+// Actualizar un producto existente
+app.MapPut("/api/productos/{id}", async (int id, Producto prodActualizado, ModelsTiendaContext db) =>
+{
+    var prodExistente = await db.Productos.FindAsync(id);
+    if (prodExistente is null)
+        return Results.NotFound();
+
+    prodExistente.Nombre = prodActualizado.Nombre;
+    prodExistente.Descripcion = prodActualizado.Descripcion;
+    prodExistente.Precio = prodActualizado.Precio;
+    prodExistente.Stock = prodActualizado.Stock;
+    prodExistente.ImagenUrl = prodActualizado.ImagenUrl;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(prodExistente);
+});
+
+// Eliminar un producto
+app.MapDelete("/api/productos/{id}", async (int id, ModelsTiendaContext db) =>
+{
+    var prod = await db.Productos.FindAsync(id);
+    if (prod is null)
+        return Results.NotFound();
+
+    db.Productos.Remove(prod);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 app.Run();
