@@ -59,7 +59,7 @@ app.MapGet("/productos", async (
     var query = db.Productos.AsQueryable();
 
     if (!string.IsNullOrWhiteSpace(q))
-        query = query.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+        query = query.Where(p => p.Nombre.ToLower().Contains(qLower) || p.Descripcion.ToLower().Contains(qLower));
 
     if (precioMin.HasValue)
         query = query.Where(p => p.Precio >= precioMin.Value);
@@ -82,6 +82,7 @@ app.MapGet("/productos", async (
     var productos = await query.ToListAsync();
     return Results.Ok(productos);
 });
+
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
