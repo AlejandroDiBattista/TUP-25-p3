@@ -1,0 +1,99 @@
+@using cliente.Models
+
+@page "/confirm"
+@inject ApiService Api
+@inject CartStorage Storage
+@inject NavigationManager Nav
+
+<h3>Confirm Purchase</h3>
+
+@if (CartItems == null || CartItems.Count == 0)
+{
+    <p>Your cart is empty.</p>
+}
+else
+{
+    <div class="mb-3">
+        <label class="form-label">First Name</label>
+        <input class="form-control" @bind="Customer.FirstName" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Last Name</label>
+        <input class="form-control" @bind="Customer.LastName" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" @bind="Customer.Email" required type="email" />
+    </div>
+
+    <h5>Total: $@CartItems.Sum(i => i.Product.Price * i.Quantity)</h5>
+
+    <button class="btn btn-primary" @onclick="ConfirmPurchase">Confirm Purchase</button>
+}
+
+@code {
+    private List<CartItemDisplay> CartItems = new();
+    private string CartId = "";
+    private CustomerInfo Customer = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartId = await GetOrCreateCartId();
+        await LoadCart();
+    }
+
+    private async Task LoadCart()
+    {
+        var cartData = await Api.GetCartAsync(CartId);
+        CartItems.Clear();
+
+        foreach (var entry in cartData)
+        {
+            var product = await Api.GetProductByIdAsync(entry.Key);
+            if (product != null)
+            {
+                CartItems.Add(new CartItemDisplay
+                {
+                    Product = product,
+                    Quantity = entry.Value
+                });
+            }
+        }
+    }
+
+    private async Task ConfirmPurchase()
+{
+    if (string.IsNullOrWhiteSpace(Customer.FirstName) ||
+        string.IsNullOrWhiteSpace(Customer.LastName) ||
+        string.IsNullOrWhiteSpace(Customer.Email))
+    {
+        return; // validación básica
+    }
+
+    var cartId = await GetOrCreateCartId();
+    var result = await Api.ConfirmPurchaseAsync(cartId, Customer);
+
+    if (result > 0)
+    {
+        await Storage.SetCartIdAsync(""); // limpia el carrito
+        Nav.NavigateTo("/");
+    }
+}
+
+    private async Task<string> GetOrCreateCartId()
+{
+    var existing = await Storage.GetCartIdAsync();
+    if (!string.IsNullOrEmpty(existing))
+        return existing;
+
+    var id = await Api.CreateCartAsync();
+    await Storage.SetCartIdAsync(id);
+    return id;
+}
+
+    public class CartItemDisplay
+    {
+        public Product Product { get; set; } = default!;
+        public int Quantity { get; set; }
+    }
+}
