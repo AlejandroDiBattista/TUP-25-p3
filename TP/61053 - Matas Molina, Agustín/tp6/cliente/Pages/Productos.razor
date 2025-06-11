@@ -1,0 +1,47 @@
+@page "/productos"
+@using cliente.Services
+@inject ApiService ApiService
+
+<h2>Todos los productos</h2>
+
+@if (productos == null)
+{
+    <div>Cargando productos...</div>
+}
+else if (productos.Count == 0)
+{
+    <div>No hay productos disponibles.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var prod in productos)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:180px;object-fit:contain;">
+                    <div class="card-body">
+                        <h5>@prod.Nombre</h5>
+                        <p>@prod.Descripcion</p>
+                        <p><b>$@prod.Precio</b></p>
+                        <button class="btn btn-success" @onclick="() => ComprarProducto(prod.Id)">Comprar</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Producto> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.GetProductosAsync();
+    }
+
+    private void ComprarProducto(int productoId)
+    {
+        // Lógica para agregar al carrito
+    }
+}
