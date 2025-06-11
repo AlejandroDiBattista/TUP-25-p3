@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using servidor.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -13,6 +16,9 @@ builder.Services.AddCors(options => {
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
