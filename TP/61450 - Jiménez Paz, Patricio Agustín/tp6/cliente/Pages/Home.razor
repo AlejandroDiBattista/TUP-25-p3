@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
@@ -13,7 +14,7 @@
     
     <div class="row mb-4">
         <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+            <button class="btn bg-blue-600" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
         </div>
     </div>
 
@@ -26,8 +27,8 @@
                         Respuesta del servidor
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                        <h5 class="card-title">@datos.Count</h5>
+                        <p class="card-text">Cantidad de productos obtenidos.</p>
                     </div>
                 </div>
             } else if (error != null) {
@@ -40,7 +41,7 @@
 </div>
 
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> datos;
     private string error;
     private bool cargando = false;
 
