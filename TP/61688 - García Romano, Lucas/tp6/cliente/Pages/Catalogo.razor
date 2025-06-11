@@ -1,0 +1,43 @@
+@page "/catalogo"
+@inject cliente.Services.ProductoService ProductoService
+
+<h1>Catálogo</h1>
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <p>No hay productos disponibles.</p>
+}
+else
+{
+    <div class="catalogo" style="display:flex; flex-wrap:wrap; gap:1rem;">
+        @foreach (var producto in productos)
+        {
+            <div class="producto-card" style="border:1px solid #ccc; border-radius:8px; padding:1rem; width:220px; text-align:center; background:#fafafa;">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" style="max-width:150px;max-height:150px; margin-bottom:10px;" />
+                <h3>@producto.Nombre</h3>
+                <p>@producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@producto.Precio</p>
+                <p><strong>Stock:</strong> @producto.Stock</p>
+                <button class="btn btn-success" disabled="@(!ProductoDisponible(producto))">Agregar al carrito</button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<cliente.Services.Producto> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.ObtenerProductosAsync();
+    }
+
+    private bool ProductoDisponible(cliente.Services.Producto producto)
+    {
+        return producto.Stock > 0;
+    }
+}
