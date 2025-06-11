@@ -6,6 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
+
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
@@ -30,10 +35,8 @@ app.UseCors("AllowClientApp");
 
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
-
-// Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
-
+app.MapCompraEndpoints();
 app.MapProductoEndpoints();
 app.Run();
