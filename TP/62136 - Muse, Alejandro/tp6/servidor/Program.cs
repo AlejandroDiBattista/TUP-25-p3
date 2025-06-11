@@ -72,4 +72,47 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.MapPut("/carritos/confirmar", async (TiendaDbContext db, CompraDTO compraDto) =>
+{
+    if (compraDto.Items == null || compraDto.Items.Count == 0)
+        return Results.BadRequest("El carrito está vacío.");
+
+    // Validar stock
+    foreach (var item in compraDto.Items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            return Results.BadRequest($"No hay stock suficiente para {producto?.Nombre ?? "producto desconocido"}.");
+    }
+
+    // Crear la compra
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        Total = compraDto.Total,
+        NombreCliente = compraDto.NombreCliente,
+        ApellidoCliente = compraDto.ApellidoCliente,
+        EmailCliente = compraDto.EmailCliente,
+        Items = new List<ItemCompra>()
+    };
+
+    foreach (var item in compraDto.Items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        producto.Stock -= item.Cantidad;
+
+        compra.Items.Add(new ItemCompra
+        {
+            ProductoId = item.ProductoId,
+            Cantidad = item.Cantidad,
+            PrecioUnitario = producto.Precio
+        });
+    }
+
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+
+    return Results.Ok("Compra registrada correctamente.");
+});
+
 app.Run();

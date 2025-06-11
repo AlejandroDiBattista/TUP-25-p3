@@ -1,5 +1,6 @@
 @page "/confirmar"
 @inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
 @using System.ComponentModel.DataAnnotations
 
 <h3>Confirmar compra</h3>
@@ -73,9 +74,30 @@ else
     Cliente cliente = new();
     string? mensaje;
 
-    void ConfirmarCompra()
+    async Task ConfirmarCompra()
     {
-        CarritoService.Vaciar();
-        mensaje = "¡Compra confirmada! Gracias por tu pedido.";
+        var compra = new
+        {
+            NombreCliente = cliente.Nombre,
+            ApellidoCliente = cliente.Apellido,
+            EmailCliente = cliente.Email,
+            Total = CarritoService.Total,
+            Items = CarritoService.Items.Select(i => new {
+                ProductoId = i.Producto.Id,
+                Cantidad = i.Cantidad
+            }).ToList()
+        };
+
+        var response = await ApiService.Http.PutAsJsonAsync("/carritos/confirmar", compra);
+
+        if (response.IsSuccessStatusCode)
+        {
+            CarritoService.Vaciar();
+            mensaje = "¡Compra confirmada y guardada!";
+        }
+        else
+        {
+            mensaje = "Error al confirmar la compra: " + await response.Content.ReadAsStringAsync();
+        }
     }
 }

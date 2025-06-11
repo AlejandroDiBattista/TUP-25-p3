@@ -31,4 +31,20 @@ namespace servidor.Models
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
     }
+
+    // Agrega aquí las DTOs:
+    public class CompraDTO
+    {
+        public string NombreCliente { get; set; }
+        public string ApellidoCliente { get; set; }
+        public string EmailCliente { get; set; }
+        public decimal Total { get; set; }
+        public List<ItemCompraDTO> Items { get; set; }
+    }
+
+    public class ItemCompraDTO
+    {
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+    }
 }
