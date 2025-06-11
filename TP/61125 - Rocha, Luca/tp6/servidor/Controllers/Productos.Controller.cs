@@ -1,35 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TiendaOnline.Server.Data;
-using TiendaOnline.Server.Models;
+using servidor.Data;
+using servidor.Modelos;
 
-namespace TiendaOnline.Server.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class ProductosController : ControllerBase
 {
-    [ApiController]
-    [Route("api/productos")]
-    public class ProductosController : ControllerBase
+    private readonly AppDbContext _context;
+
+    public ProductosController(AppDbContext context)
     {
-        private readonly AppDbContext _context;
+        _context = context;
+    }
 
-        public ProductosController(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        // Obtener todos los productos
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Producto>>> GetProductos()
-        {
-            return await _context.Productos.ToListAsync();
-        }
-
-        // Obtener un producto por ID
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Producto>> GetProducto(int id)
-        {
-            var producto = await _context.Productos.FindAsync(id);
-            if (producto == null) return NotFound();
-            return producto;
-        }
+    [HttpGet]
+    public IActionResult GetProductos()
+    {
+        return Ok(_context.Productos.ToList());
     }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using servidor.Data;
+using servidor.Modelos;
 
-namespace TiendaOnline.Server.Models
+namespace servidor.Controllers
 {
     public class Compra
     {
