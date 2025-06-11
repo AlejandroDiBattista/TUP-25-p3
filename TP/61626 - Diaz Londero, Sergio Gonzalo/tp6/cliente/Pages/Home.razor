@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject CarritoService CarritoService
+
 
 <PageTitle>Inicio</PageTitle>
 
@@ -33,6 +35,13 @@
             aria-label="Search"
           />
           <button class="btn btn-outline-primary" type="submit">Buscar</button>
+          <li class="nav-item px-3">
+          </li>
+          <li class="nav-item">
+    <a class="nav-link" href="/carrito">Carrito</a>
+</li>
+
+
         </form>
       </div>
     </div>
@@ -52,7 +61,7 @@
             <h5 class="card-title">@producto.Nombre</h5>
             <p class="card-text">@producto.Descripcion</p>
             <p class="card-text"><strong>Precio: </strong>$@producto.Precio</p>
-            <a href="#" class="btn btn-primary">Agregar al carrito</a>
+            <a href="#" class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</a>
           </div>
         </div>
       </div>
@@ -81,10 +90,19 @@
   </div>
 </div>
 
+
+
+
+
+
+
+
 @code {
   private List<Producto> productos = new();
   private string error;
   private bool cargando = false;
+
+  
 
   private async Task ObtenerProductos()
   {
@@ -104,4 +122,12 @@
       cargando = false;
     }
   }
+
+
+
+  private void AgregarAlCarrito(Producto producto)
+{
+    CarritoService.AgregarProducto(producto);
+}
+  
 }
