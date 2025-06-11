@@ -24,3 +24,26 @@ public class DatosRespuesta {
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
 }
+
+public class ServicioProductos
+{
+    private readonly HttpClient _http;
+
+    public ServicioProductos(HttpClient http)
+    {
+        _http = http;
+    }
+
+    public async Task<List<Producto>> ObtenerProductosAsync()
+    {
+        return await _http.GetFromJsonAsync<List<Producto>>("productos");
+    }
+}
+
+public class Producto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; }
+    public decimal Precio { get; set; }
+    public int Stock { get; set; }
+}

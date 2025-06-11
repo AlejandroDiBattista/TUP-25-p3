@@ -1,0 +1,29 @@
+@page "/productos"
+@using cliente.Modelos
+@using cliente.Servicios
+@inject ServicioProductos Servicio
+
+<h3>Productos</h3>
+
+@if (productos == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <ul>
+        @foreach (var prod in productos)
+        {
+            <li>@prod.Nombre - $@prod.Precio (Stock: @prod.Stock)</li>
+        }
+    </ul>
+}
+
+@code {
+    List<Producto> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Servicio.ObtenerProductosAsync();
+    }
+}
