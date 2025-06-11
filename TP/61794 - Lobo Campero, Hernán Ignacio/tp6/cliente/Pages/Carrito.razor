@@ -1,7 +1,7 @@
 @page "/carrito"
 @inject Cliente.Services.ApiService ApiService
 @inject Cliente.Services.CarritoService CarritoService
-@inject IJSRuntime JS
+@inject Cliente.Services.ToastService ToastService
 @inject NavigationManager Navigation
 
 <div class="container py-4">
@@ -97,10 +97,32 @@
                         </a>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div>        </div>
     }
 </div>
+
+<!-- Modal de confirmación para vaciar carrito -->
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar acción</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea vaciar el carrito?</p>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalConfirmacion">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmarVaciarCarrito">Vaciar carrito</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
@@ -109,6 +131,7 @@
     private List<Cliente.Models.ItemCompra> items = new();
     private decimal total = 0;
     private bool cargando = true;
+    private bool mostrarModalConfirmacion = false;
     private int carritoId = 1; // Por ahora usamos ID fijo, en una app real vendría de sesión
 
     protected override async Task OnInitializedAsync()
@@ -150,59 +173,85 @@
         {
             await EliminarProducto(productoId);
             return;
-        }        try
+        }
+
+        try
         {
             var exito = await CarritoService.ModificarCantidadAsync(productoId, nuevaCantidad);
             if (exito)
             {
                 await CargarCarrito();
                 await ActualizarContadorCarrito();
+                ToastService.ShowSuccess("Cantidad actualizada correctamente");
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Error al actualizar la cantidad. Verifique el stock disponible.");
+                ToastService.ShowError("Error al actualizar la cantidad. Verifique el stock disponible.");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al modificar cantidad: {ex.Message}");
+            ToastService.ShowError("Error al actualizar la cantidad");
         }
-    }
-
-    private async Task EliminarProducto(int productoId)
-    {        try
+    }    private async Task EliminarProducto(int productoId)
+    {
+        try
         {
             var exito = await CarritoService.EliminarProductoAsync(productoId);
             if (exito)
             {
                 await CargarCarrito();
                 await ActualizarContadorCarrito();
+                ToastService.ShowSuccess("Producto eliminado del carrito");
+            }
+            else
+            {
+                ToastService.ShowError("Error al eliminar el producto");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al eliminar producto: {ex.Message}");
+            ToastService.ShowError("Error al eliminar el producto");
         }
+    }    private async Task VaciarCarrito()
+    {
+        mostrarModalConfirmacion = true;
+        StateHasChanged();
     }
 
-    private async Task VaciarCarrito()
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmarVaciarCarrito()
     {
         try
         {
-            var confirmacion = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea vaciar el carrito?");
-            if (!confirmacion) return;            var exito = await CarritoService.VaciarCarritoAsync();
+            mostrarModalConfirmacion = false;
+            StateHasChanged();
+
+            var exito = await CarritoService.VaciarCarritoAsync();
             if (exito)
             {
                 await CargarCarrito();
                 await ActualizarContadorCarrito();
-                await JS.InvokeVoidAsync("alert", "Carrito vaciado exitosamente");
+                ToastService.ShowSuccess("Carrito vaciado exitosamente");
+            }
+            else
+            {
+                ToastService.ShowError("Error al vaciar el carrito");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al vaciar carrito: {ex.Message}");
+            ToastService.ShowError("Error al vaciar el carrito");
         }
-    }    private async Task ActualizarContadorCarrito()
+    }private async Task ActualizarContadorCarrito()
     {
         try
         {
@@ -217,7 +266,7 @@
     {
         if (!items.Any())
         {
-            await JS.InvokeVoidAsync("alert", "El carrito está vacío");
+            ToastService.ShowWarning("El carrito está vacío");
             return;
         }
 

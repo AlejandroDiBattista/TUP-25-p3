@@ -1,6 +1,6 @@
 @page "/confirmacion"
 @inject Cliente.Services.CarritoService CarritoService
-@inject IJSRuntime JS
+@inject Cliente.Services.ToastService ToastService
 @inject NavigationManager Navigation
 
 <div class="container py-4">
@@ -173,26 +173,18 @@
             {
                 // Actualizar el contador del carrito a 0 después de la compra exitosa
                 ActualizarCarrito?.Invoke(0);
-                
-                // Crear mensaje de éxito personalizado
-                var mensaje = $"🎉 ¡Compra confirmada exitosamente!\n\n" +
-                             $"✅ Cliente: {formulario.Nombre} {formulario.Apellido}\n" +
-                             $"💰 Total pagado: ${total:N0}\n" +
-                             $"📧 Confirmación enviada a: {formulario.Email}\n\n" +
-                             $"¡Gracias por tu compra! Tu pedido será procesado pronto.";
-                
-                await JS.InvokeVoidAsync("alert", mensaje);
+                  // Mostrar toast de éxito
+                ToastService.ShowSuccess($"¡Compra confirmada exitosamente!", 6000);
                 Navigation.NavigateTo("/");
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", "Error al confirmar la compra. Inténtalo nuevamente.");
+                ToastService.ShowError("Error al confirmar la compra. Inténtalo nuevamente.");
             }
-        }
-        catch (Exception ex)
+        }        catch (Exception ex)
         {
             Console.WriteLine($"Error al confirmar compra: {ex.Message}");
-            await JS.InvokeVoidAsync("alert", "Error al procesar la compra. Inténtalo nuevamente.");
+            ToastService.ShowError("Error al procesar la compra. Inténtalo nuevamente.");
         }
         finally
         {
