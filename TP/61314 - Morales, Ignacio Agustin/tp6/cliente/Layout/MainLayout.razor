@@ -1,5 +1,35 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+
+<div class="main-layout">
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">
+                <img src="apple-logo.png" alt="Apple Store" />
+                <span class="store-name">Apple Store</span>
+            </a>
+
+            <input @bind="busqueda" @bind:event="oninput" type="text" placeholder="Buscar productos..." class="search-box" />
+
+            <a href="/carrito" class="carrito-icono">
+                🛒 (@CantidadCarrito)
+            </a>
+        </div>
+    </header>
+
+    <main class="contenido">
+        @Body
+    </main>
+
+    <footer class="footer">
+        <p>&copy; Apple Store</p>
+    </footer>
 </div>
+
+@code {
+    private string busqueda = string.Empty;
+
+    // Esto podría vincularse a un servicio real en el futuro
+    private int CantidadCarrito => 3; // Reemplazalo con tu estado real del carrito
+}
+
 

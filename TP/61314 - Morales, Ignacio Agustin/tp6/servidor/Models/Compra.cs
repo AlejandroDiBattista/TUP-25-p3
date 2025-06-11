@@ -1,4 +1,4 @@
-namespace servidor.Models;
+namespace servidor.shared;
 
 public class Compra
 {

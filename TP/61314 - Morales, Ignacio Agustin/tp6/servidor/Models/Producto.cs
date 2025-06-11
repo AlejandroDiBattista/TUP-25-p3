@@ -1,4 +1,5 @@
-namespace servidor.Models;
+namespace servidor.shared;
+
 public class Product
 {
     public int Id { get; set; }

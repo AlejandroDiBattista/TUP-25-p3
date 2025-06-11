@@ -1,3 +1,5 @@
+namespace cliente.shared;
+
 public class ItemCompra
 {
     public int Id { get; set; }
