@@ -3,7 +3,11 @@
 
 ---
 
-**Estado actual**: 🟢 Commit 5 completado - Endpoints de carrito implementados (crear, obtener, vaciar)# 🎯 **OBJETIVO**
+**Estado actual**: 🟢 Commit 8-9 completados - Frontend completo implementado (Catálogo + Carrito)
+
+---
+
+# 🎯 **OBJETIVO**
 Desarrollar una aplicación web completa de tienda online que demuestre dominio de:
 - **Frontend**: Blazor WebAssembly 
 - **Backend**: Minimal API en C#
@@ -56,13 +60,12 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - [x] **Commit 4**: Implementación de endpoints de productos (GET /productos)
 - [x] **Commit 5**: Implementación de endpoints de carrito (POST, GET, DELETE)
 - [x] **Commit 6**: Implementación de endpoints de items de carrito (PUT, DELETE)
-- [ ] **Commit 7**: Actualización de ApiService en cliente para nuevos endpoints
-- [ ] **Commit 8**: Implementación de página de catálogo de productos
-- [ ] **Commit 9**: Implementación de página de carrito de compra
-- [ ] **Commit 10**: Implementación de página de confirmación de compra
-- [ ] **Commit 11**: Implementación de navegación y header con buscador
-- [ ] **Commit 12**: Mejoras de UI/UX y validaciones
-- [ ] **Commit 13**: Testing final y documentación de código
+- [x] **Commit 7**: Implementación de endpoint de confirmación de compra (PUT /confirmar)
+- [x] **Commit 8**: Implementación de página de catálogo de productos (Frontend completo)
+- [x] **Commit 9**: Implementación de página de carrito de compra (Frontend completo)
+- [ ] **Commit 10**: Mejoras de UI/UX, navegación y validaciones finales
+- [ ] **Commit 11**: Testing final y documentación de código
+- [ ] **Commit 12**: Optimizaciones y pulido final
 
 ### **📝 NOTAS DE DESARROLLO:**
 - **Simplicidad**: Código claro y bien documentado para defensa oral
@@ -79,31 +82,86 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 tp6/
 ├── cliente/                 # Blazor WebAssembly
 │   ├── Pages/
-│   │   ├── Home.razor      # Catálogo de productos
-│   │   ├── Carrito.razor   # Carrito de compra
-│   │   └── Compra.razor    # Confirmación de compra
+│   │   ├── Home.razor      # Catálogo de productos (✅ IMPLEMENTADO)
+│   │   └── Carrito.razor   # Carrito de compra (✅ IMPLEMENTADO)
 │   ├── Services/
-│   │   └── ApiService.cs   # Servicios HTTP
-│   └── Shared/
-│       └── Header.razor    # Navegación y buscador
+│   │   └── ApiService.cs   # Servicios HTTP (✅ IMPLEMENTADO)
+│   ├── Models/
+│   │   └── TiendaDTOs.cs   # DTOs del cliente (✅ IMPLEMENTADO)
+│   └── Program.cs          # Configuración cliente (✅ IMPLEMENTADO)
 └── servidor/               # ASP.NET Core Minimal API
-    ├── Models/             # Modelos de datos
-    ├── Data/               # DbContext y configuración EF
-    └── Program.cs          # Endpoints de la API
+    ├── Models/             # Modelos de datos (✅ IMPLEMENTADO)
+    │   ├── Producto.cs
+    │   ├── Compra.cs
+    │   ├── ItemCompra.cs
+    │   └── Carrito.cs
+    ├── DTOs/               # DTOs de transferencia (✅ IMPLEMENTADO)
+    │   └── TiendaDTOs.cs
+    ├── Data/               # DbContext y EF (✅ IMPLEMENTADO)
+    │   └── TiendaContext.cs
+    ├── Services/           # Servicios de negocio (✅ IMPLEMENTADO)
+    │   ├── DatabaseSeeder.cs
+    │   └── CarritoService.cs
+    ├── Program.cs          # Endpoints API (✅ IMPLEMENTADO)
+    └── appsettings.json    # Configuración BD (✅ IMPLEMENTADO)
 ```
 
 ---
 
-## 🔧 **COMANDOS DE EJECUCIÓN**
-```bash
-# Terminal 1 - Servidor
-cd servidor
-dotnet run
+## 🔧 **COMANDOS DE EJECUCIÓN Y TESTING**
 
-# Terminal 2 - Cliente  
-cd cliente
+### **🚀 Para iniciar la aplicación completa:**
+
+**1. Abrir DOS terminales separadas en VS Code**
+
+**2. Terminal 1 - Iniciar Servidor API:**
+```powershell
+cd "TP\61312 - Paz Berrondo, Lucas David\tp6\servidor"
+dotnet run --urls="http://localhost:5055"
+```
+*Esperá ver: "Now listening on: http://localhost:5055"*
+
+**3. Terminal 2 - Iniciar Cliente Blazor:**
+```powershell
+cd "TP\61312 - Paz Berrondo, Lucas David\tp6\cliente"  
 dotnet run
 ```
+*Esperá ver: "Now listening on: http://localhost:5177"*
+
+**4. Abrir en navegador:**
+- **Aplicación principal**: http://localhost:5177
+- **API endpoints** (opcional): http://localhost:5055/api/productos
+
+### **🧪 Testing rápido de funcionalidad:**
+
+**✅ Verificar que el servidor responde:**
+```powershell
+# En cualquier terminal (PowerShell):
+Invoke-WebRequest -Uri http://localhost:5055/api/productos
+```
+*Debería retornar: StatusCode 200 con 10 productos*
+
+**✅ Verificar creación de carrito:**
+```powershell
+Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
+```
+*Debería retornar: StatusCode 201 con CarritoId*
+
+### **📋 Checklist de testing manual:**
+1. **Catálogo**: ✅ Ver 10 productos con imágenes
+2. **Búsqueda**: ✅ Buscar "apple" o "samsung" 
+3. **Agregar al carrito**: ✅ Seleccionar cantidad y agregar producto
+4. **Ver carrito**: ✅ Hacer clic en "Ver Carrito" (debe mostrar productos)
+5. **Modificar cantidades**: ✅ Usar botones +/- en el carrito
+6. **Eliminar producto**: ✅ Usar botón de eliminar (🗑️)
+7. **Formulario cliente**: ✅ Completar nombre, apellido, email
+8. **Confirmar compra**: ✅ Ver modal de confirmación
+9. **Navegación**: ✅ Volver al catálogo y verificar nuevo carrito vacío
+
+### **🚨 Troubleshooting:**
+- **Error "Failed to fetch"**: Verificar que el servidor esté ejecutándose en puerto 5055
+- **Página en blanco**: Verificar que el cliente esté en puerto 5177 y servidor en 5055
+- **No aparecen productos**: Verificar logs del servidor, debería mostrar seeding exitoso
 
 ---
 
@@ -124,7 +182,7 @@ dotnet run
 
 ---
 
-**Estado actual**: � Commit 1 completado - Modelos de datos implementados
+**Estado actual**: 🟢 Commit 8-9 completados - Frontend completo implementado (Catálogo + Carrito)
 
 ---
 
@@ -291,3 +349,128 @@ dotnet run
 - **Pruebas exhaustivas**: 15 casos de prueba cubriendo éxito y errores
 
 **Próximo paso**: Implementación de endpoints de confirmación de compra y registro en base de datos
+
+### **✅ Commit 7: Implementación de endpoint de confirmación de compra**
+**Archivos creados/modificados:**
+- `servidor/Program.cs` - Endpoint PUT /api/carritos/{carritoId}/confirmar
+- `servidor/test-confirmar-compra.http` - Archivo de pruebas completas
+
+**Funcionalidad implementada:**
+- ✅ **PUT /api/carritos/{carritoId}/confirmar** - Confirmar compra y persistir en BD
+- ✅ **Validación de datos del cliente** - Nombre, apellido y email obligatorios
+- ✅ **Validación de carrito** - Verificar existencia y que no esté vacío
+- ✅ **Validación de stock** - Verificar disponibilidad antes de confirmar
+- ✅ **Transacción completa** - Crear Compra e ItemsCompra en base de datos
+- ✅ **Actualización de stock** - Descontar productos vendidos del inventario
+- ✅ **Limpieza de carrito** - Eliminar carrito temporal después de confirmar
+- ✅ **Respuesta detallada** - CompraConfirmadaDto con ID, total, fecha y mensaje
+
+**Endpoints probados exitosamente:**
+- ✅ Confirmación exitosa con datos válidos ✅
+- ✅ Error 400 para carrito vacío ✅
+- ✅ Error 400 para datos de cliente incompletos ✅
+- ✅ Error 400 para stock insuficiente ✅
+- ✅ Error 404 para carrito inexistente ✅
+- ✅ Verificación en BD: Compra e ItemsCompra registrados ✅
+- ✅ Verificación de stock actualizado correctamente ✅
+
+**Características técnicas:**
+- **Transacciones BD**: Operaciones atómicas con Entity Framework
+- **Validaciones robustas**: Cliente, carrito, stock en tiempo real
+- **Persistencia completa**: Modelos Compra e ItemCompra guardados
+- **Stock dinámico**: Actualización inmediata del inventario
+- **Limpieza automática**: Carrito temporal eliminado post-confirmación
+
+### **✅ Commit 8: Implementación de catálogo de productos (Frontend completo)**
+**Archivos creados/modificados:**
+- `cliente/Pages/Home.razor` - Página principal transformada en catálogo completo
+- `cliente/Services/ApiService.cs` - Servicio HTTP completo para todos los endpoints
+- `cliente/Models/TiendaDTOs.cs` - DTOs sincronizados con el backend
+
+**Funcionalidad implementada:**
+- ✅ **Catálogo completo de productos** - Grid responsive con 10 productos
+- ✅ **Header con buscador** - Búsqueda en tiempo real integrada
+- ✅ **Tarjetas de productos** - Imagen, nombre, descripción, precio, stock
+- ✅ **Selector de cantidad** - Botones +/- con validación de stock máximo
+- ✅ **Botón agregar al carrito** - Integración completa con backend
+- ✅ **Gestión de carrito** - Creación automática y persistencia en localStorage
+- ✅ **Contador de carrito** - Badge dinámico en botón "Ver Carrito"
+- ✅ **Estados de carga** - Spinners y feedback visual para operaciones async
+- ✅ **Manejo de errores** - Alertas y mensajes informativos
+- ✅ **Búsqueda avanzada** - Filtrado por nombre con limpieza de resultados
+
+**Características técnicas del catálogo:**
+- **ApiService complejo**: 8+ métodos para todos los endpoints del backend
+- **Gestión de estado**: Carrito en localStorage, cantidades por producto
+- **UI responsiva**: Grid Bootstrap adaptable, cards con hover effects
+- **Validaciones frontend**: Stock máximo, cantidades mínimas
+- **Navegación fluida**: Transición suave entre catálogo y carrito
+- **Performance**: Lazy loading de imágenes, búsqueda optimizada
+
+### **✅ Commit 9: Implementación de carrito de compras (Frontend completo)**
+**Archivos creados:**
+- `cliente/Pages/Carrito.razor` - Página completa del carrito con checkout
+
+**Funcionalidad implementada:**
+- ✅ **Vista detallada del carrito** - Lista completa con imágenes y detalles
+- ✅ **Actualización de cantidades** - Controles +/- inline con validación
+- ✅ **Eliminación de productos** - Botón eliminar individual con confirmación
+- ✅ **Vaciar carrito completo** - Opción para limpiar todo con confirmación
+- ✅ **Formulario de cliente** - Nombre, apellido, email con validación
+- ✅ **Confirmación de compra** - Proceso completo de checkout
+- ✅ **Modal de confirmación** - Pantalla post-compra con detalles
+- ✅ **Resumen dinámico** - Total de items, precios y cálculos en tiempo real
+- ✅ **Estados de carga** - Spinners específicos para cada operación
+- ✅ **Navegación integrada** - Botones para volver al catálogo
+
+**Características técnicas del carrito:**
+- **Integración completa**: Consumo de todos los endpoints de carrito
+- **Validaciones robustas**: Datos de cliente, cantidades, disponibilidad
+- **UI avanzada**: Sticky sidebar, cards interactivas, responsive design
+- **Gestión de estado**: Sincronización con backend, localStorage management
+- **UX optimizada**: Confirmaciones, feedbacks, transiciones suaves
+- **Error handling**: Manejo completo de errores con mensajes descriptivos
+
+**Flujo completo implementado:**
+1. **Inicialización**: Recuperar carrito existente o crear nuevo
+2. **Visualización**: Mostrar productos con detalles e imágenes
+3. **Modificación**: Actualizar cantidades o eliminar productos
+4. **Validación**: Verificar datos del cliente y disponibilidad
+5. **Confirmación**: Procesar compra y mostrar resultado
+6. **Limpieza**: Crear nuevo carrito para futuras compras
+7. **Navegación**: Retorno fluido al catálogo
+
+**Próximo paso**: Mejoras finales de UI/UX y testing completo de la aplicación
+
+---
+
+## 🎉 **RESUMEN ESTADO ACTUAL**
+
+### **✅ APLICACIÓN COMPLETAMENTE FUNCIONAL**
+- 🟢 **Backend completo**: Todos los endpoints implementados y probados
+- 🟢 **Frontend completo**: Catálogo y carrito totalmente funcionales  
+- 🟢 **Base de datos**: SQLite con 10 productos iniciales
+- 🟢 **Integración**: Comunicación cliente-servidor establecida
+- 🟢 **Testing**: Endpoints verificados individualmente
+
+### **🚀 FUNCIONALIDADES IMPLEMENTADAS:**
+1. **Catálogo de productos** con búsqueda y agregar al carrito ✅
+2. **Carrito de compras** con modificación de cantidades ✅
+3. **Checkout completo** con confirmación de compra ✅
+4. **Gestión de stock** en tiempo real ✅
+5. **Validaciones** de formularios y datos ✅
+6. **UI responsiva** con Bootstrap ✅
+7. **Navegación fluida** entre páginas ✅
+
+### **📊 COMMITS COMPLETADOS: 7-9 de 12**
+- **Commit 7**: ✅ Endpoint confirmación de compra
+- **Commit 8**: ✅ Catálogo de productos (Frontend)
+- **Commit 9**: ✅ Carrito de compras (Frontend)
+
+### **🎯 PRÓXIMOS PASOS OPCIONALES:**
+- Mejoras adicionales de UI/UX
+- Testing más exhaustivo  
+- Optimizaciones de rendimiento
+- Documentación adicional
+
+**La aplicación está lista para ser usada y demostrada** 🎊

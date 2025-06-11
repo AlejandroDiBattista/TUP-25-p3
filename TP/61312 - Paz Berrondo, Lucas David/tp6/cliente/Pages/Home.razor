@@ -1,59 +1,355 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
 @inject ApiService ApiService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Tienda Online - Catálogo</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
+<!-- Header con buscador -->
+<div class="bg-primary text-white py-3 mb-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="mb-0">🛒 Tienda Online</h1>
+                <small>Encuentra los mejores productos de tecnología</small>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar productos..." 
+                           @bind="terminoBusqueda" @onkeypress="OnBuscarKeyPress">
+                    <button class="btn btn-light" type="button" @onclick="BuscarProductos">
+                        🔍 Buscar
+                    </button>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
+            </div>
         </div>
     </div>
 </div>
 
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+<div class="container">
+    <!-- Barra de acciones -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            @if (!string.IsNullOrEmpty(terminoBusquedaActual))
+            {
+                <div class="d-flex align-items-center">
+                    <span class="me-3">Resultados para: <strong>"@terminoBusquedaActual"</strong></span>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="LimpiarBusqueda">
+                        ❌ Limpiar
+                    </button>
+                </div>
+            }
+            else
+            {
+                <h2>📦 Catálogo de Productos</h2>
+            }
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success" @onclick="IrAlCarrito">
+                🛒 Ver Carrito
+                @if (carritoId != null)
+                {
+                    <span class="badge bg-light text-dark ms-1">@totalItemsCarrito</span>
+                }
+            </button>
+        </div>
+    </div>
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    <!-- Estado de carga -->
+    @if (cargando)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando productos...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">❌ Error</h4>
+            <p>@error</p>
+            <button class="btn btn-outline-danger" @onclick="CargarProductos">
+                🔄 Reintentar
+            </button>
+        </div>
+    }
+    else
+    {
+        <!-- Grid de productos -->
+        <div class="row">
+            @if (productos == null || !productos.Any())
+            {
+                <div class="col-12 text-center py-5">
+                    <div class="text-muted">
+                        <h3>📭 No se encontraron productos</h3>
+                        <p>@(string.IsNullOrEmpty(terminoBusquedaActual) ? "No hay productos disponibles." : "Intenta con otros términos de búsqueda.")</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @foreach (var producto in productos)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm producto-card">
+                            <img src="@producto.ImagenUrl" class="card-img-top producto-imagen" 
+                                 alt="@producto.Nombre" loading="lazy">
+                            
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@producto.Nombre</h5>
+                                <p class="card-text flex-grow-1">@producto.Descripcion</p>
+                                
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="h4 text-success mb-0">$@producto.Precio.ToString("N2")</span>
+                                        <span class="badge @(producto.Stock > 0 ? "bg-success" : "bg-danger")">
+                                            @(producto.Stock > 0 ? $"Stock: {producto.Stock}" : "Sin stock")
+                                        </span>
+                                    </div>
+                                    
+                                    @if (producto.Stock > 0)
+                                    {
+                                        <div class="input-group mb-2">
+                                            <button class="btn btn-outline-secondary btn-sm" 
+                                                    @onclick="() => DecrementarCantidad(producto.Id)">-</button>
+                                            <input type="number" class="form-control text-center" 
+                                                   @bind="cantidadesSeleccionadas[producto.Id]" 
+                                                   min="1" max="@producto.Stock">
+                                            <button class="btn btn-outline-secondary btn-sm" 
+                                                    @onclick="() => IncrementarCantidad(producto.Id, producto.Stock)">+</button>
+                                        </div>
+                                        
+                                        <button class="btn btn-primary w-100" 
+                                                @onclick="() => AgregarAlCarrito(producto)"
+                                                disabled="@agregandoProducto">
+                                            @if (agregandoProducto)
+                                            {
+                                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                            }
+                                            🛒 Agregar al Carrito
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-secondary w-100" disabled>
+                                            ❌ Sin Stock
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .producto-card {
+        transition: transform 0.2s;
+    }
+    
+    .producto-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .producto-imagen {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .input-group input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    
+    .input-group input[type="number"]::-webkit-outer-spin-button,
+    .input-group input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+
+@code {
+    private List<ProductoDto> productos = new();
+    private Dictionary<int, int> cantidadesSeleccionadas = new();
+    private string terminoBusqueda = "";
+    private string terminoBusquedaActual = "";
+    private string? error;
+    private bool cargando = false;
+    private bool agregandoProducto = false;
+    
+    // Estado del carrito
+    private string? carritoId;
+    private int totalItemsCarrito = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InicializarCarrito();
+        await CargarProductos();
+    }
+
+    private async Task InicializarCarrito()
+    {
+        // Intentar recuperar carrito existente del localStorage
+        try
+        {
+            carritoId = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "carritoId");
+            
+            // Si no hay carrito, crear uno nuevo
+            if (string.IsNullOrEmpty(carritoId))
+            {
+                carritoId = await ApiService.CrearCarritoAsync();
+                if (!string.IsNullOrEmpty(carritoId))
+                {
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
+                }
+            }
+            
+            // Actualizar contador del carrito
+            await ActualizarContadorCarrito();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al inicializar carrito: {ex.Message}");
+        }
+    }
+
+    private async Task CargarProductos()
+    {
+        try
+        {
             cargando = true;
             error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
+            
+            if (string.IsNullOrEmpty(terminoBusquedaActual))
+            {
+                productos = await ApiService.ObtenerProductosAsync();
+            }
+            else
+            {
+                productos = await ApiService.BuscarProductosAsync(terminoBusquedaActual);
+            }
+            
+            // Inicializar cantidades seleccionadas
+            cantidadesSeleccionadas.Clear();
+            foreach (var producto in productos)
+            {
+                cantidadesSeleccionadas[producto.Id] = 1;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error al cargar productos: {ex.Message}";
+            productos = new List<ProductoDto>();
+        }
+        finally
+        {
             cargando = false;
         }
+    }
+
+    private async Task BuscarProductos()
+    {
+        terminoBusquedaActual = terminoBusqueda.Trim();
+        await CargarProductos();
+    }
+
+    private async Task LimpiarBusqueda()
+    {
+        terminoBusqueda = "";
+        terminoBusquedaActual = "";
+        await CargarProductos();
+    }
+
+    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await BuscarProductos();
+        }
+    }
+
+    private void IncrementarCantidad(int productoId, int stockMaximo)
+    {
+        if (cantidadesSeleccionadas[productoId] < stockMaximo)
+        {
+            cantidadesSeleccionadas[productoId]++;
+        }
+    }
+
+    private void DecrementarCantidad(int productoId)
+    {
+        if (cantidadesSeleccionadas[productoId] > 1)
+        {
+            cantidadesSeleccionadas[productoId]--;
+        }
+    }
+
+    private async Task AgregarAlCarrito(ProductoDto producto)
+    {
+        if (string.IsNullOrEmpty(carritoId))
+        {
+            error = "Error: No se pudo inicializar el carrito";
+            return;
+        }
+
+        try
+        {
+            agregandoProducto = true;
+            var cantidad = cantidadesSeleccionadas[producto.Id];
+            
+            var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
+            
+            if (exito)
+            {
+                await ActualizarContadorCarrito();
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    $"✅ {producto.Nombre} agregado al carrito (Cantidad: {cantidad})");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    "❌ Error al agregar el producto al carrito");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", 
+                $"❌ Error: {ex.Message}");
+        }
+        finally
+        {
+            agregandoProducto = false;
+        }
+    }
+
+    private async Task ActualizarContadorCarrito()
+    {
+        if (string.IsNullOrEmpty(carritoId)) return;
+        
+        try
+        {
+            var carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+            totalItemsCarrito = carrito?.TotalItems ?? 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar contador del carrito: {ex.Message}");
+        }
+    }    private async Task IrAlCarrito()
+    {
+        if (string.IsNullOrEmpty(carritoId))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "❌ No hay un carrito activo");
+            return;
+        }
+
+        // Navegar a la página del carrito
+        Navigation.NavigateTo("/carrito");
     }
 }
