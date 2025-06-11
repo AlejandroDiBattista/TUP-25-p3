@@ -1,0 +1,20 @@
+@* Cabecera fija con Bootstrap *@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+            <img src="favicon.png" alt="Logo" width="32" height="32" class="d-inline-block align-text-top">
+            Tienda Online
+        </a>
+        <form class="d-flex mx-auto w-50" role="search">
+            <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" disabled>
+        </form>
+        <div class="d-flex align-items-center gap-3">
+            <a href="/carrito" class="btn btn-outline-light position-relative">
+                <i class="bi bi-cart3"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.8em;">
+                    0
+                </span>
+            </a>
+        </div>
+    </div>
+</nav>

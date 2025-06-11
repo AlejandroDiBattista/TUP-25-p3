@@ -1,4 +1,26 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
-</div>
+
+<CascadingValue Value="(Action<int>)ActualizarCarrito">
+    <CascadingValue Value="CarritoCantidad">
+        <Navbar CarritoCantidad="@CarritoCantidad" OnBuscar="RealizarBusqueda" />
+        <div class="page">
+            @Body
+        </div>
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    private int CarritoCantidad = 0;
+    public event Action<string?>? OnBusquedaChanged;
+
+    public void ActualizarCarrito(int cantidad)
+    {
+        CarritoCantidad = cantidad;
+        StateHasChanged();
+    }
+
+    private async Task RealizarBusqueda(string? query)
+    {
+        OnBusquedaChanged?.Invoke(query);
+    }
+}

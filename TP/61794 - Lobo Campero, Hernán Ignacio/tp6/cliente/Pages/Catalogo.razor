@@ -1,13 +1,59 @@
 @page "/"
 @inject Cliente.Services.ApiService ApiService
+@inject IJSRuntime JS
+
+@code {
+    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
+    [CascadingParameter] public int CarritoCantidad { get; set; }
+
+    private List<Cliente.Models.Producto>? productos;
+    private int carritoCantidad = 0;
+    private int carritoId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+        await InicializarCarrito();
+    }
+
+    public async Task Buscar(string? query = null)
+    {
+        productos = await ApiService.GetProductosAsync(query);
+        StateHasChanged();
+    }
+
+    private async Task InicializarCarrito()
+    {
+        if (carritoId == 0)
+        {
+            var response = await ApiService.HttpClient.PostAsync("/carritos", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var id = await response.Content.ReadFromJsonAsync<int>();
+                carritoId = id;
+            }
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        await InicializarCarrito();
+        var response = await ApiService.HttpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad=1", null);
+        if (response.IsSuccessStatusCode)
+        {
+            carritoCantidad++;
+            ActualizarCarrito?.Invoke(carritoCantidad);
+            // Feedback visual
+            await JS.InvokeVoidAsync("eval", $"document.getElementById('btn-cart-{productoId}').classList.add('btn-warning'); setTimeout(()=>document.getElementById('btn-cart-{productoId}').classList.remove('btn-warning'), 500)");
+            StateHasChanged();
+        }
+    }
+}
 
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col-12 text-center">
             <h2 class="fw-bold mb-3">Catálogo de Productos</h2>
-            <div class="d-flex justify-content-center align-items-center gap-2">
-                <input @bind="busqueda" @bind:event="oninput" class="form-control w-50" placeholder="Buscar productos..." style="max-width:400px;" />
-            </div>
         </div>
     </div>
 
@@ -40,7 +86,9 @@
                                     <span class="badge bg-success">Stock: @prod.Stock</span>
                                     <span class="fw-bold text-primary">$@prod.Precio</span>
                                 </div>
-                                <button class="btn btn-primary w-100" disabled>Agregar al carrito</button>
+                                <button class="btn btn-success w-100 animate__animated animate__pulse" id="btn-cart-@prod.Id" @onclick="() => AgregarAlCarrito(prod.Id)">
+                                    <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -49,18 +97,3 @@
         </div>
     }
 </div>
-
-@code {
-    private List<Cliente.Models.Producto>? productos;
-    private string? busqueda;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await Buscar();
-    }
-
-    private async Task Buscar()
-    {
-        productos = await ApiService.GetProductosAsync(busqueda);
-    }
-}

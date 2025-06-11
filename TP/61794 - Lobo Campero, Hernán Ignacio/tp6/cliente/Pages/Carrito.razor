@@ -1,0 +1,131 @@
+@page "/carrito"
+@inject Cliente.Services.ApiService ApiService
+@inject IJSRuntime JS
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="fw-bold mb-3">
+                <i class="bi bi-cart3 me-2"></i>Carrito de Compras
+            </h2>
+        </div>
+    </div>
+
+    @if (cargando)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando carrito...</span>
+            </div>
+            <p class="mt-3">Cargando tu carrito...</p>
+        </div>
+    }
+    else if (items == null || items.Count == 0)
+    {
+        <div class="text-center my-5">
+            <div class="alert alert-info">
+                <i class="bi bi-cart-x fs-1 d-block mb-3"></i>
+                <h4>Tu carrito está vacío</h4>
+                <p>¡Explora nuestro catálogo y encuentra productos increíbles!</p>
+                <a href="/" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al catálogo
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Productos en tu carrito</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @foreach (var item in items)
+                        {
+                            <div class="border-bottom p-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-1">@item.Producto?.Nombre</h6>
+                                        <small class="text-muted">Cantidad: @item.Cantidad</small>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <span class="fw-bold text-primary">$@(item.PrecioUnitario * item.Cantidad)</span>
+                                        <br>
+                                        <small class="text-muted">$@item.PrecioUnitario c/u</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Resumen de compra</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total de productos:</span>
+                            <span>@items.Sum(i => i.Cantidad)</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total a pagar:</strong>
+                            <strong class="text-success">$@total</strong>
+                        </div>
+                        <button class="btn btn-success w-100" @onclick="ProcesarCompra">
+                            <i class="bi bi-credit-card me-2"></i>Procesar compra
+                        </button>
+                        <a href="/" class="btn btn-outline-primary w-100 mt-2">
+                            <i class="bi bi-arrow-left me-2"></i>Seguir comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Cliente.Models.ItemCompra>? items;
+    private decimal total = 0;
+    private bool cargando = true;
+    private int carritoId = 1; // Simulamos que siempre usamos carrito ID 1
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        try
+        {
+            cargando = true;
+            // Simulamos obtener los items del carrito desde la API
+            // En una implementación real, esto vendría del servidor
+            items = new List<Cliente.Models.ItemCompra>();
+            total = 0;
+
+            if (items.Any())
+            {
+                total = items.Sum(i => i.PrecioUnitario * i.Cantidad);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar carrito: {ex.Message}");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task ProcesarCompra()
+    {
+        await JS.InvokeVoidAsync("alert", "¡Compra procesada con éxito! (Funcionalidad simulada)");
+    }
+}
