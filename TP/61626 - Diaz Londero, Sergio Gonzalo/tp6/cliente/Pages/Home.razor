@@ -1,12 +1,12 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
-@inject CarritoService CarritoService
+ @using cliente.Services
+ @inject ApiService ApiService
+ @inject CarritoService CarritoService
 
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
+ <PageTitle>Inicio</PageTitle>
+ 
+ <div class="container">
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">NextGen</a>
@@ -31,16 +31,14 @@
           <input
             class="form-control me-2"
             type="search"
-            placeholder="Search"
+            placeholder="Buscar"
             aria-label="Search"
           />
           <button class="btn btn-outline-primary" type="submit">Buscar</button>
-          <li class="nav-item px-3">
-          </li>
-          <li class="nav-item">
-    <a class="nav-link" href="/carrito">Carrito</a>
-</li>
+         
+          <a class="btn btn-outline-primary ms-5" href="/carrito">Carrito</a>
 
+         
 
         </form>
       </div>
@@ -61,6 +59,7 @@
             <h5 class="card-title">@producto.Nombre</h5>
             <p class="card-text">@producto.Descripcion</p>
             <p class="card-text"><strong>Precio: </strong>$@producto.Precio</p>
+            <p class="card-text"><strong>Stock: </strong>@producto.Stock</p>
             <a href="#" class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</a>
           </div>
         </div>
@@ -88,7 +87,7 @@
       }
     </div>
   </div>
-</div>
+ </div>
 
 
 
@@ -97,7 +96,7 @@
 
 
 
-@code {
+ @code {
   private List<Producto> productos = new();
   private string error;
   private bool cargando = false;
@@ -125,9 +124,19 @@
 
 
 
-  private void AgregarAlCarrito(Producto producto)
+ private async Task AgregarAlCarrito(Producto producto)
 {
-    CarritoService.AgregarProducto(producto);
+    var exito = await ApiService.AgregarProductoAlCarritoAsync(producto);
+    if (exito)
+    {
+        CarritoService.AgregarProducto(producto);
+        producto.Stock--; 
+        StateHasChanged();
+    }
+    else
+    {
+        error = "No se pudo agregar al carrito. Sin stock.";
+    }
 }
-  
+
 }

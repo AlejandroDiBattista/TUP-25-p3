@@ -1,41 +1,87 @@
 @page "/carrito"
 @using cliente.Services
 @inject CarritoService CarritoService
+@inject NavigationManager Navigation
 
-<h3 class="text-center">Carrito de Compras</h3>
+<PageTitle>Carrito de Compras</PageTitle>
 
-@if (CarritoService.Items.Count == 0)
-{
-    <p class="mt-2 mx-5">No hay productos en el carrito.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
+<div class="container-fluid">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Carrito de compras</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+        </ul>
+        <form class="d-flex" role="search">
+          <input
+            class="form-control me-2"
+            type="search"
+            placeholder="Search"
+            aria-label="Search"
+          />
+          <button class="btn btn-outline-primary" type="submit">Buscar</button>
+          <a class="btn btn-outline-primary ms-5" href="/">Volver</a>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid mt-4">
+    @if (CarritoService.Items.Count == 0)
+    {
+        <p class="mt-2 mx-5">No hay productos en el carrito.</p>
+    }
+    else
+    {
+        <table class="table">
+          <thead>
             <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-                <th></th>
+              <th>Producto</th>
+              <th>Precio</th>
+              <th>Cantidad</th>
+              <th>Total</th>
+              <th></th>
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             @foreach (var item in CarritoService.Items)
             {
                 <tr>
-                    <td>@item.Producto.Nombre</td>
-                    <td>$@item.Producto.Precio</td>
-                    <td>@item.Cantidad</td>
-                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => CarritoService.EliminarProducto(item.Producto.Id)">Eliminar</button>
-                    </td>
+                  <td>@item.Producto.Nombre</td>
+                  <td>$@item.Producto.Precio</td>
+                  <td>@item.Cantidad</td>
+                  <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                  <td>
+                    <button
+                      class="btn btn-danger btn-sm"
+                      @onclick="() => CarritoService.EliminarProducto(item.Producto.Id)"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
                 </tr>
             }
-        </tbody>
-    </table>
+          </tbody>
+        </table>
 
-    <h4>Total: $@CarritoService.CalcularTotal()</h4>
-    <button class="btn btn-warning" @onclick="CarritoService.VaciarCarrito">Vaciar Carrito</button>
-}
+        <h4>Total: $@CarritoService.CalcularTotal()</h4>
+        <button class="btn btn-warning" @onclick="CarritoService.VaciarCarrito">
+          Vaciar Carrito
+        </button>
+    }
+  </div>
+</div>

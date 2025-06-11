@@ -24,7 +24,19 @@ namespace cliente.Services
                 return new List<Producto>();
             }
         }
+    
+    
+    
+    public async Task<bool> AgregarProductoAlCarritoAsync(Producto producto)
+{
+    var response = await _httpClient.PostAsJsonAsync("/api/carrito/agregar", producto);
+    return response.IsSuccessStatusCode;
+}
+
+    
+    
     }
+
 
     public class Producto
     {
@@ -35,4 +47,9 @@ namespace cliente.Services
         public int Stock { get; set; }
         public string ImagenUrl { get; set; }
     }
+
+
+
+
+    
 }

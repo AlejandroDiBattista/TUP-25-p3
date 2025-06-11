@@ -1,7 +1,5 @@
 namespace cliente.Services;
 
-
-
 public class CarritoService
 {
     public List<ItemCarrito> Items { get; set; } = new();
