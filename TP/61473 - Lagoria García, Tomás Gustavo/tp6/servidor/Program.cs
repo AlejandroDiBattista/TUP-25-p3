@@ -93,6 +93,15 @@ app.MapPost("/carritos", () =>
     carritos[id] = new List<ItemCarrito>();
     return Results.Ok(id);
 });
+
+// GET /carritos/{carritoId}
+app.MapGet("/carritos/{carritoId}", (Guid carritoId) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    return Results.Ok(carritos[carritoId]);
+});
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
