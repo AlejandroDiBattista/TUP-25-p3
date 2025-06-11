@@ -1,1 +1,145 @@
+@page "/cart"
+@inject ApiService Api
+@inject CartStorage Storage
+@inject NavigationManager Nav
 
+<h3>Shopping Cart</h3>
+
+@if (CartItems == null || CartItems.Count == 0)
+{
+    <p>Your cart is empty.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CartItems)
+            {
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity - 1)">-</button>
+                        @item.Quantity
+                        <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity + 1)">+</button>
+                    </td>
+                    <td>$@item.Product.Price</td>
+                    <td>$@(item.Product.Price * item.Quantity)</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveItem(item.Product.Id)">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h5>Total: $@CartItems.Sum(i => i.Product.Price * i.Quantity)</h5>
+
+    <div class="mt-3">
+        <button class="btn btn-outline-danger me-2" @onclick="ClearCart">Clear Cart</button>
+        <button class="btn btn-primary" @onclick="GoToConfirm">Confirm Purchase</button>
+    </div>
+}
+
+@inject NavigationManager Nav
+
+@code {
+    private List<CartItemDisplay> CartItems = new();
+    private string CartId = "";
+
+    private int? AddProductId { get; set; }
+
+[Parameter]
+[SupplyParameterFromQuery]
+public int? Add { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+{
+    CartId = await GetOrCreateCartId();
+
+    var uri = Nav.ToAbsoluteUri(Nav.Uri);
+    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+    var add = query["add"];
+
+    if (int.TryParse(add, out int productId))
+    {
+        await Api.UpdateCartItemAsync(CartId, productId, 1);
+        Nav.NavigateTo("/cart", forceLoad: false); // limpia la URL
+    }
+
+    await LoadCart();
+}
+    private async Task LoadCart()
+    {
+        var cartData = await Api.GetCartAsync(CartId);
+        CartItems.Clear();
+
+        foreach (var entry in cartData)
+        {
+            var product = await Api.GetProductByIdAsync(entry.Key);
+            if (product != null)
+            {
+                CartItems.Add(new CartItemDisplay
+                {
+                    Product = product,
+                    Quantity = entry.Value
+                });
+            }
+        }
+    }
+
+    private async Task UpdateQuantity(int productId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            await RemoveItem(productId);
+        }
+        else
+        {
+            await Api.UpdateCartItemAsync(CartId, productId, quantity);
+            await LoadCart();
+        }
+    }
+
+    private async Task RemoveItem(int productId)
+    {
+        await Api.RemoveCartItemAsync(CartId, productId);
+        await LoadCart();
+    }
+
+    private async Task ClearCart()
+    {
+        await Api.ClearCartAsync(CartId);
+        await LoadCart();
+    }
+
+    private void GoToConfirm()
+    {
+        Nav.NavigateTo("/confirm");
+    }
+
+    private async Task<string> GetOrCreateCartId()
+{
+    var existing = await Storage.GetCartIdAsync();
+    if (!string.IsNullOrEmpty(existing))
+        return existing;
+
+    var id = await Api.CreateCartAsync();
+    await Storage.SetCartIdAsync(id);
+    return id;
+}
+    public class CartItemDisplay
+    {
+        public Product Product { get; set; } = default!;
+        public int Quantity { get; set; }
+    }
+}
