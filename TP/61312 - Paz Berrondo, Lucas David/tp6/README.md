@@ -55,7 +55,7 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - [x] **Commit 3**: Implementación de datos iniciales (Seeding) - 10 productos de tecnología
 - [x] **Commit 4**: Implementación de endpoints de productos (GET /productos)
 - [x] **Commit 5**: Implementación de endpoints de carrito (POST, GET, DELETE)
-- [ ] **Commit 6**: Implementación de endpoints de items de carrito (PUT, DELETE)
+- [x] **Commit 6**: Implementación de endpoints de items de carrito (PUT, DELETE)
 - [ ] **Commit 7**: Actualización de ApiService en cliente para nuevos endpoints
 - [ ] **Commit 8**: Implementación de página de catálogo de productos
 - [ ] **Commit 9**: Implementación de página de carrito de compra
@@ -248,4 +248,46 @@ dotnet run
 - **Precios actualizados**: Consulta en tiempo real a la BD para precios actuales
 - **Estadísticas**: Monitoreo de carritos activos, items totales y valor total
 
-**Próximo paso**: Implementación de endpoints para manejar items dentro de los carritos
+**Próximo paso**: Implementación de endpoints para confirmación de compra y persistencia en BD
+
+### **✅ Commit 6: Implementación de endpoints PUT/DELETE para gestión de items en carrito**
+**Archivos creados/modificados:**
+- `servidor/Program.cs` - Nuevos endpoints PUT/DELETE para items de carrito
+- `servidor/DTOs/TiendaDTOs.cs` - Agregado ActualizarItemCarritoDto
+- `servidor/Services/CarritoService.cs` - Corrección de lógica para reemplazar cantidad
+- `servidor/test-endpoints-carrito.http` - Archivo de pruebas exhaustivas
+
+**Funcionalidad implementada:**
+- ✅ **PUT /api/carritos/{carritoId}/{productoId}** - Agregar/actualizar producto en carrito
+- ✅ **DELETE /api/carritos/{carritoId}/{productoId}** - Eliminar producto específico del carrito
+- ✅ **ActualizarItemCarritoDto** - DTO para enviar cantidad en requests PUT
+- ✅ **Validación de stock** - Verificar disponibilidad antes de agregar productos
+- ✅ **Validación de cantidades** - Rechazar cantidades ≤ 0 con error 400
+- ✅ **Manejo de productos inexistentes** - Error 404 para productos no encontrados
+- ✅ **Manejo de carritos inexistentes** - Error 404 para carritos no válidos
+- ✅ **Eliminación completa** - DELETE remueve producto independiente de cantidad
+
+**Correcciones implementadas:**
+- ✅ **AgregarProductoAsync**: Cambiado de sumar a reemplazar cantidad (comportamiento PUT correcto)
+- ✅ **EliminarProductoCompletoAsync**: Usado en endpoint DELETE para eliminación total
+- ✅ **Validación de stock**: Verificar contra stock actual, no cantidad previa
+
+**Endpoints probados exitosamente:**
+- ✅ PUT agregar producto nuevo (iPhone 15 Pro × 2) ✅
+- ✅ PUT actualizar cantidad (iPhone 15 Pro × 5, no × 7) ✅  
+- ✅ PUT agregar segundo producto (Samsung Galaxy × 1) ✅
+- ✅ DELETE eliminar producto específico completamente ✅
+- ✅ Error 400 para cantidad negativa (-1) ✅
+- ✅ Error 400 para cantidad cero (0) ✅
+- ✅ Error 404 para producto inexistente (ID 999) ✅
+- ✅ Error 404 para eliminar producto no en carrito ✅
+
+**Características técnicas:**
+- **Comportamiento REST correcto**: PUT reemplaza/establece, POST agrega, DELETE elimina
+- **Validaciones robustas**: Stock, existencia de productos/carritos, cantidades válidas
+- **Códigos HTTP apropiados**: 200 OK, 400 Bad Request, 404 Not Found, 500 Internal Error
+- **Mensajes descriptivos**: Respuestas JSON con detalles del error y contexto
+- **Logging detallado**: Actividad de carritos registrada para debugging
+- **Pruebas exhaustivas**: 15 casos de prueba cubriendo éxito y errores
+
+**Próximo paso**: Implementación de endpoints de confirmación de compra y registro en base de datos

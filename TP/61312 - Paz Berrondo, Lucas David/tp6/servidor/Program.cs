@@ -399,6 +399,57 @@ app.MapGet("/api/carritos/estadisticas", (CarritoService carritoService) =>
 .WithSummary("Obtiene estadísticas de carritos activos")
 .WithDescription("Endpoint de debugging para monitorear el estado del sistema de carritos.");
 
+/// <summary>
+/// Endpoint para confirmar una compra convirtiendo el carrito en una compra persistente.
+/// PUT /api/carritos/{carritoId}/confirmar - Confirma la compra con datos del cliente
+/// Cuerpo de la solicitud: { "nombreCliente": "Juan", "apellidoCliente": "Pérez", "emailCliente": "juan@email.com" }
+/// </summary>
+app.MapPut("/api/carritos/{carritoId}/confirmar", async (
+    CarritoService carritoService,
+    string carritoId,
+    ConfirmarCompraDto datosCliente) =>
+{
+    try
+    {
+        var resultado = await carritoService.ConfirmarCompraAsync(carritoId, datosCliente);
+        
+        if (!resultado.Exito)
+        {
+            // Determinar el código de estado según el tipo de error
+            if (resultado.Mensaje.Contains("no encontrado") || 
+                resultado.Mensaje.Contains("carrito vacío"))
+            {
+                return Results.NotFound(new 
+                { 
+                    Mensaje = resultado.Mensaje, 
+                    CarritoId = carritoId 
+                });
+            }
+            
+            return Results.BadRequest(new 
+            { 
+                Mensaje = resultado.Mensaje, 
+                CarritoId = carritoId 
+            });
+        }
+        
+        return Results.Ok(resultado.Compra);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al confirmar compra del carrito {carritoId}: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al confirmar compra",
+            detail: $"Ocurrió un error interno al procesar la compra del carrito {carritoId}.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("ConfirmarCompra")
+.WithSummary("Confirma una compra convirtiendo el carrito en compra persistente")
+.WithDescription("Endpoint para finalizar una compra. Valida datos del cliente, verifica stock, actualiza BD y limpia el carrito.");
+
 // Ejemplo de endpoint de API (se reemplazará con endpoints reales)  
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 

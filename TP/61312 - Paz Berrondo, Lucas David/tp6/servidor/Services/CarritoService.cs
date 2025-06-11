@@ -294,9 +294,158 @@ public class CarritoService
         var nombreProducto = producto?.Nombre ?? $"Producto {productoId}";
 
         carrito.Items.Remove(item);
-        Console.WriteLine($"🗑️ Producto {nombreProducto} eliminado completamente del carrito {carritoId}");
-
-        var carritoDto = ConvertirADto(carrito);
+        Console.WriteLine($"🗑️ Producto {nombreProducto} eliminado completamente del carrito {carritoId}");        var carritoDto = ConvertirADto(carrito);
         return (true, "Producto eliminado completamente", carritoDto);
+    }
+
+    /// <summary>
+    /// Confirma una compra convirtiendo el carrito en una compra persistente.
+    /// Actualiza stock, crea registros en BD y limpia el carrito.
+    /// </summary>
+    /// <param name="carritoId">ID del carrito a confirmar</param>
+    /// <param name="datosCliente">Datos del cliente para la compra</param>
+    /// <returns>Resultado de la confirmación con detalles de la compra</returns>
+    public async Task<(bool Exito, string Mensaje, CompraConfirmadaDto? Compra)> ConfirmarCompraAsync(string carritoId, ConfirmarCompraDto datosCliente)
+    {
+        // Validar que el carrito existe
+        if (!_carritos.TryGetValue(carritoId, out var carrito))
+        {
+            return (false, $"Carrito con ID {carritoId} no encontrado", null);
+        }
+
+        // Validar que el carrito no esté vacío
+        if (!carrito.Items.Any())
+        {
+            return (false, "No se puede confirmar una compra con el carrito vacío", null);
+        }
+
+        // Validar datos del cliente
+        if (string.IsNullOrWhiteSpace(datosCliente.NombreCliente) ||
+            string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente) ||
+            string.IsNullOrWhiteSpace(datosCliente.EmailCliente))
+        {
+            return (false, "Todos los datos del cliente son obligatorios (Nombre, Apellido, Email)", null);
+        }
+
+        // Validar formato de email básico
+        if (!datosCliente.EmailCliente.Contains("@") || !datosCliente.EmailCliente.Contains("."))
+        {
+            return (false, "El formato del email no es válido", null);
+        }
+
+        // Verificar stock disponible para todos los productos
+        var validacionStock = await ValidarStockDisponibleAsync(carrito);
+        if (!validacionStock.Exito)
+        {
+            return (false, validacionStock.Mensaje, null);
+        }
+
+        // Usar transacción para asegurar consistencia
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // Crear la compra
+            var compra = new Compra
+            {
+                Fecha = DateTime.Now,
+                NombreCliente = datosCliente.NombreCliente.Trim(),
+                ApellidoCliente = datosCliente.ApellidoCliente.Trim(),
+                EmailCliente = datosCliente.EmailCliente.Trim().ToLower(),
+                Items = new List<ItemCompra>()
+            };
+
+            // Agregar la compra al contexto para obtener el ID
+            _context.Compras.Add(compra);
+            await _context.SaveChangesAsync();
+
+            decimal totalCompra = 0;
+
+            // Crear items de compra y actualizar stock
+            foreach (var item in carrito.Items)
+            {
+                var producto = await _context.Productos.FindAsync(item.ProductoId);
+                if (producto == null)
+                {
+                    await transaction.RollbackAsync();
+                    return (false, $"Producto con ID {item.ProductoId} no encontrado", null);
+                }
+
+                // Verificar stock una vez más (por si cambió durante la transacción)
+                if (producto.Stock < item.Cantidad)
+                {
+                    await transaction.RollbackAsync();
+                    return (false, $"Stock insuficiente para {producto.Nombre}. Disponible: {producto.Stock}, solicitado: {item.Cantidad}", null);
+                }
+
+                // Crear item de compra
+                var itemCompra = new ItemCompra
+                {
+                    CompraId = compra.Id,
+                    ProductoId = item.ProductoId,
+                    Cantidad = item.Cantidad,
+                    PrecioUnitario = producto.Precio // Usar precio actual del producto
+                };
+
+                compra.Items.Add(itemCompra);
+                totalCompra += itemCompra.Subtotal;
+
+                // Actualizar stock del producto
+                producto.Stock -= item.Cantidad;
+                
+                Console.WriteLine($"📦 Stock actualizado para {producto.Nombre}: {producto.Stock + item.Cantidad} → {producto.Stock}");
+            }
+
+            // Actualizar el total de la compra
+            compra.Total = totalCompra;
+
+            // Guardar todos los cambios
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            // Limpiar el carrito de memoria
+            _carritos.Remove(carritoId);
+
+            Console.WriteLine($"🎉 Compra #{compra.Id} confirmada exitosamente para {datosCliente.NombreCliente} {datosCliente.ApellidoCliente}. Total: ${totalCompra:F2}");
+
+            var compraConfirmada = new CompraConfirmadaDto
+            {
+                CompraId = compra.Id,
+                Total = totalCompra,
+                Fecha = compra.Fecha,
+                Mensaje = $"Compra confirmada exitosamente. ¡Gracias {datosCliente.NombreCliente}!"
+            };
+
+            return (true, "Compra confirmada exitosamente", compraConfirmada);
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"❌ Error al confirmar compra: {ex.Message}");
+            return (false, "Error interno al procesar la compra. Inténtalo nuevamente.", null);
+        }
+    }
+
+    /// <summary>
+    /// Valida que haya stock suficiente para todos los productos del carrito.
+    /// </summary>
+    /// <param name="carrito">Carrito a validar</param>
+    /// <returns>Resultado de la validación</returns>
+    private async Task<(bool Exito, string Mensaje)> ValidarStockDisponibleAsync(Carrito carrito)
+    {
+        foreach (var item in carrito.Items)
+        {
+            var producto = await _context.Productos.FindAsync(item.ProductoId);
+            if (producto == null)
+            {
+                return (false, $"Producto con ID {item.ProductoId} no encontrado");
+            }
+
+            if (producto.Stock < item.Cantidad)
+            {
+                return (false, $"Stock insuficiente para {producto.Nombre}. Disponible: {producto.Stock}, en carrito: {item.Cantidad}");
+            }
+        }
+
+        return (true, "Stock disponible para todos los productos");
     }
 }
