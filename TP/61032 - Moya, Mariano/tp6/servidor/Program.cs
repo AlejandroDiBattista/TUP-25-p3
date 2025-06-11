@@ -84,8 +84,14 @@ app.MapGet("/productos", (TiendaContext db, string? query) =>
         .ToList();
 });
 
+// -----------------------------
+// API de Tienda Online - Minimal API
+// Todos los endpoints están documentados para facilitar la defensa en clase.
+// -----------------------------
+
 // Endpoint para crear un nuevo carrito
 // POST /carritos
+// Crea un carrito vacío y devuelve su Id para que el cliente lo use en las siguientes operaciones.
 app.MapPost("/carritos", (TiendaContext db) =>
 {
     var carrito = new Carrito();
@@ -96,6 +102,7 @@ app.MapPost("/carritos", (TiendaContext db) =>
 
 // Endpoint para obtener los ítems de un carrito
 // GET /carritos/{carritoId}
+// Devuelve los productos y cantidades que tiene el carrito indicado por Id.
 app.MapGet("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
 {
     var carrito = db.Carritos
@@ -117,6 +124,7 @@ app.MapGet("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
 
 // Endpoint para vaciar un carrito
 // DELETE /carritos/{carritoId}
+// Elimina todos los ítems del carrito, dejándolo vacío.
 app.MapDelete("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
 {
     var carrito = db.Carritos.Include(c => c.Items).FirstOrDefault(c => c.Id == carritoId);
@@ -128,6 +136,7 @@ app.MapDelete("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
 
 // Endpoint para agregar o actualizar un producto en el carrito
 // PUT /carritos/{carritoId}/{productoId}
+// Agrega un producto al carrito o actualiza la cantidad si ya existe. Valida stock disponible.
 app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoId, int productoId, int cantidad) =>
 {
     if (cantidad < 1) return Results.BadRequest("La cantidad debe ser mayor a cero.");
@@ -151,6 +160,7 @@ app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoI
 
 // Endpoint para quitar un producto del carrito
 // DELETE /carritos/{carritoId}/{productoId}
+// Elimina un producto específico del carrito.
 app.MapDelete("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoId, int productoId) =>
 {
     var item = db.ItemsCarrito.FirstOrDefault(i => i.CarritoId == carritoId && i.ProductoId == productoId);
@@ -162,6 +172,7 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carri
 
 // Endpoint para confirmar la compra y limpiar el carrito
 // PUT /carritos/{carritoId}/confirmar
+// Registra la compra, descuenta stock y limpia el carrito. Recibe datos del cliente.
 app.MapPut("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId, DatosClienteDto datos) =>
 {
     // Buscar el carrito con sus ítems y productos
