@@ -81,4 +81,10 @@ app.MapGet("/productos", async (AppDbContext db, string? search) =>
     return Results.Ok(productos);
 });
 
+app.MapPost("/api/carrito", async (AppDbContext db, Carrito item) =>
+{
+    db.Carritos.Add(item);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/carrito/{item.Id}", item);
+});
 
