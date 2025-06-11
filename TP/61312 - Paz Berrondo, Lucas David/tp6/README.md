@@ -3,7 +3,7 @@
 
 ---
 
-**Estado actual**: 🟢 Commit 3 completado - Datos iniciales implementados (10 productos de tecnología)# 🎯 **OBJETIVO**
+**Estado actual**: 🟢 Commit 4 completado - Endpoints de productos implementados con búsqueda# 🎯 **OBJETIVO**
 Desarrollar una aplicación web completa de tienda online que demuestre dominio de:
 - **Frontend**: Blazor WebAssembly 
 - **Backend**: Minimal API en C#
@@ -53,7 +53,7 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - [x] **Commit 1**: Creación de modelos de datos (Producto, Compra, ItemCompra, Carrito + DTOs)
 - [x] **Commit 2**: Configuración de Entity Framework y DbContext
 - [x] **Commit 3**: Implementación de datos iniciales (Seeding) - 10 productos de tecnología
-- [ ] **Commit 4**: Implementación de endpoints de productos (GET /productos)
+- [x] **Commit 4**: Implementación de endpoints de productos (GET /productos)
 - [ ] **Commit 5**: Implementación de endpoints de carrito (POST, GET, DELETE)
 - [ ] **Commit 6**: Implementación de endpoints de items de carrito (PUT, DELETE)
 - [ ] **Commit 7**: Actualización de ApiService en cliente para nuevos endpoints
@@ -188,4 +188,32 @@ dotnet run
 9. Logitech MX Master 3S ($99.99, Stock: 30)
 10. Samsung 4K Monitor 27" ($329.99, Stock: 6)
 
-**Próximo paso**: Implementación de endpoints de productos (GET /productos con búsqueda)
+**Próximo paso**: Implementación de endpoints de carrito (POST, GET, DELETE)
+
+### **✅ Commit 4: Implementación de endpoints de productos**
+**Archivos modificados:**
+- `servidor/Program.cs` - Implementación de endpoints GET /api/productos
+
+**Funcionalidad implementada:**
+- ✅ **GET /api/productos** - Obtiene todos los productos con mapeo a DTOs
+- ✅ **GET /api/productos?buscar=término** - Búsqueda por nombre (case-insensitive)
+- ✅ **GET /api/productos/{id}** - Obtiene producto específico por ID
+- ✅ **Manejo de errores**: 404 para IDs inexistentes, 500 para errores del servidor
+- ✅ **Documentación**: XML comments y metadata de endpoints
+- ✅ **Validaciones**: Verificación de existencia y parámetros válidos
+- ✅ **Logging**: Errores registrados en consola para debugging
+
+**Endpoints probados exitosamente:**
+- ✅ Listado completo (10 productos retornados)
+- ✅ Búsqueda "apple" (1 resultado: Apple Watch)
+- ✅ Búsqueda "samsung" (2 resultados: Galaxy y Monitor)
+- ✅ Producto por ID válido (iPhone 15 Pro)
+- ✅ Error 404 para ID inexistente (999)
+
+**Características técnicas:**
+- **Mapeo automático**: Entidades a DTOs para respuestas limpias
+- **Consultas optimizadas**: LINQ con Entity Framework
+- **Búsqueda flexible**: Contiene + case-insensitive
+- **Metadata OpenAPI**: WithName, WithSummary, WithDescription
+
+**Próximo paso**: Implementación de endpoints de carrito (manejo de sesiones temporales)
