@@ -73,6 +73,7 @@ class Compra
     public string NombreCliente { get; set; }
     public string ApellidoCliente { get; set; }
     public string EmailCliente { get; set; }
+    public List<ItemCompra> Items { get; set; } = new List<ItemCompra>();
 }
 
 class ItemCompra
@@ -84,4 +85,20 @@ class ItemCompra
     public Producto Producto { get; set; } = null!;
     public int CompraId { get; set; }
     public Compra Compra { get; set; } = null!;
+}
+
+class Carrito
+{
+    public int Id { get; set; }
+    public List<ItemCarrito> Items { get; set; } = new List<ItemCarrito>();
+}
+
+class ItemCarrito
+{
+    public int Id { get; set; }
+    public int Cantidad { get; set; }
+    public int ProductoId { get; set; }
+    public Producto Producto { get; set; } = null!;
+    public int CarritoId { get; set; }
+    public Carrito Carrito { get; set; } = null!;
 }
