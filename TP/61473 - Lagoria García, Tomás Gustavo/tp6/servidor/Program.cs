@@ -48,7 +48,40 @@ app.UseCors("AllowClientApp");
 
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
-app.MapGet("/productos", async (TiendaDbContext db) => await db.Productos.ToListAsync());
+app.MapGet("/productos", async (
+    string? q,
+    decimal? precioMin,
+    decimal? precioMax,
+    bool? enStock,
+    string? ordenarPor,
+    TiendaDbContext db) =>
+{
+    var query = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(q))
+        query = query.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+
+    if (precioMin.HasValue)
+        query = query.Where(p => p.Precio >= precioMin.Value);
+
+    if (precioMax.HasValue)
+        query = query.Where(p => p.Precio <= precioMax.Value);
+
+    if (enStock == true)
+        query = query.Where(p => p.Stock > 0);
+
+    // Ordenamiento
+    query = ordenarPor switch
+    {
+        "precio_asc" => query.OrderBy(p => p.Precio),
+        "precio_desc" => query.OrderByDescending(p => p.Precio),
+        "nombre" => query.OrderBy(p => p.Nombre),
+        _ => query.OrderBy(p => p.Id) // default
+    };
+
+    var productos = await query.ToListAsync();
+    return Results.Ok(productos);
+});
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
