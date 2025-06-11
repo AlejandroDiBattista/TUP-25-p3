@@ -40,4 +40,8 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Endpoint de prueba
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+app.MapGet("/api/productos", async (TiendaDbContext db) =>
+    await db.Productos.ToListAsync()
+);
+
 app.Run();
