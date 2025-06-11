@@ -1,0 +1,94 @@
+@page "/carrito"
+@inject Cliente.Services.CarritoService CarritoService
+
+<h2 style="color:#00796b;">🛒 Mi Carrito</h2>
+
+@if (cargando)
+{
+    <div style="color:#888;">Cargando carrito...</div>
+}
+else if (items.Count == 0)
+{
+    <div style="color:#888;">El carrito está vacío.</div>
+}
+else
+{
+    <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+        <thead style="background:#e0f7fa;">
+            <tr>
+                <th style="padding:8px; text-align:left;">Producto</th>
+                <th style="padding:8px; text-align:right;">Precio</th>
+                <th style="padding:8px; text-align:center;">Cantidad</th>
+                <th style="padding:8px; text-align:right;">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:8px;">
+                        <img src="@item.ImagenUrl" alt="@item.Nombre" style="height:40px;vertical-align:middle;margin-right:8px;" />
+                        @item.Nombre
+                    </td>
+                    <td style="padding:8px; text-align:right;">$@item.Precio</td>
+                    <td style="padding:8px; text-align:center;">
+                        <button @onclick="() => CambiarCantidad(item, -1)" style="background:#bdbdbd; border:none; border-radius:4px; width:28px;">-</button>
+                        <span style="margin:0 8px;">@item.Cantidad</span>
+                        <button @onclick="() => CambiarCantidad(item, 1)" style="background:#388e3c; color:white; border:none; border-radius:4px; width:28px;">+</button>
+                    </td>
+                    <td style="padding:8px; text-align:right;">$@(item.Precio * item.Cantidad)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div style="text-align:right; font-size:1.2rem; font-weight:bold; color:#00796b;">Total: $@items.Sum(x => x.Precio * x.Cantidad)</div>
+    <div style="margin-top:1.5rem; text-align:right;">
+        <button @onclick="VaciarCarrito" style="background:#e57373; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem; margin-right:1rem;">Vaciar carrito</button>
+        <button @onclick="ConfirmarCompra" style="background:#388e3c; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Confirmar compra</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div style="margin-top:1rem; color:green; font-weight:bold;">@mensaje</div>
+}
+
+@code {
+    List<Cliente.Services.CarritoService.ItemCarritoDto> items = new();
+    bool cargando = true;
+    string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        cargando = true;
+        items = await CarritoService.ObtenerItemsAsync();
+        cargando = false;
+        StateHasChanged();
+    }
+
+    async Task CambiarCantidad(Cliente.Services.CarritoService.ItemCarritoDto item, int delta)
+    {
+        int nuevaCantidad = item.Cantidad + delta;
+        if (nuevaCantidad < 1) return;
+        // Lógica para actualizar cantidad (requiere endpoint en backend)
+        await CarritoService.AgregarProductoAsync(item.ProductoId, delta);
+        await CargarCarrito();
+    }
+
+    async Task VaciarCarrito()
+    {
+        // Lógica para vaciar carrito (requiere endpoint en backend)
+        mensaje = "Funcionalidad de vaciar carrito pendiente de implementación.";
+    }
+
+    async Task ConfirmarCompra()
+    {
+        // Lógica para confirmar compra (requiere endpoint y formulario)
+        mensaje = "Funcionalidad de confirmación pendiente de implementación.";
+    }
+}
