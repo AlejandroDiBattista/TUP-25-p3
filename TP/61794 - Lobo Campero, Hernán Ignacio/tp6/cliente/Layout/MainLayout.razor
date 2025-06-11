@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject Cliente.Services.CarritoService CarritoService
 
 <CascadingValue Value="(Action<int>)ActualizarCarrito">
     <CascadingValue Value="CarritoCantidad">
@@ -13,10 +14,28 @@
     private int CarritoCantidad = 0;
     public event Action<string?>? OnBusquedaChanged;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarContadorCarrito();
+    }
+
     public void ActualizarCarrito(int cantidad)
     {
         CarritoCantidad = cantidad;
         StateHasChanged();
+    }
+
+    private async Task ActualizarContadorCarrito()
+    {
+        try
+        {
+            CarritoCantidad = await CarritoService.ObtenerCantidadItemsAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar contador: {ex.Message}");
+        }
     }
 
     private async Task RealizarBusqueda(string? query)

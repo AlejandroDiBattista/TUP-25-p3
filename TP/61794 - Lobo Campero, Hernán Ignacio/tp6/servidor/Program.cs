@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Servidor.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,13 @@ builder.Services.AddCors(options => {
 // Configuración de EF Core con SQLite
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
+
+// Configurar JSON para evitar ciclos de referencia
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.SerializerOptions.WriteIndented = true;
+});
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
@@ -58,9 +66,45 @@ app.MapPost("/carritos", async (TiendaDbContext db) =>
 // GET /carritos/{carrito} (trae los ítems del carrito)
 app.MapGet("/carritos/{carritoId}", async (TiendaDbContext db, int carritoId) =>
 {
-    var compra = await db.Compras.Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.Id == carritoId);
-    if (compra == null) return Results.NotFound();
-    return Results.Ok(compra);
+    try
+    {
+        var compra = await db.Compras
+            .Where(c => c.Id == carritoId)
+            .Select(c => new 
+            {
+                c.Id,
+                c.Fecha,
+                c.Total,
+                c.NombreCliente,
+                c.ApellidoCliente,
+                c.EmailCliente,
+                Items = c.Items.Select(i => new 
+                {
+                    i.Id,
+                    i.ProductoId,
+                    i.Cantidad,
+                    i.PrecioUnitario,
+                    Producto = new 
+                    {
+                        i.Producto.Id,
+                        i.Producto.Nombre,
+                        i.Producto.Descripcion,
+                        i.Producto.Precio,
+                        i.Producto.Stock,
+                        i.Producto.ImagenUrl
+                    }
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
+            
+        if (compra == null) return Results.NotFound($"Carrito con ID {carritoId} no encontrado");
+        return Results.Ok(compra);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al obtener carrito {carritoId}: {ex.Message}");
+        return Results.Problem($"Error interno del servidor: {ex.Message}");
+    }
 });
 
 // DELETE /carritos/{carrito} (vacía el carrito)
@@ -78,59 +122,145 @@ app.MapDelete("/carritos/{carritoId}", async (TiendaDbContext db, int carritoId)
 // PUT /carritos/{carrito}/confirmar (detalle + datos cliente)
 app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaDbContext db, int carritoId, Compra datos) =>
 {
-    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
-    if (compra == null) return Results.NotFound();
-    compra.NombreCliente = datos.NombreCliente;
-    compra.ApellidoCliente = datos.ApellidoCliente;
-    compra.EmailCliente = datos.EmailCliente;
-    compra.Fecha = DateTime.Now;
-    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
-    await db.SaveChangesAsync();
-    return Results.Ok();
+    try
+    {
+        var compra = await db.Compras.Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.Id == carritoId);
+        if (compra == null) return Results.NotFound($"Carrito con ID {carritoId} no encontrado");
+        
+        // Verificar stock disponible antes de confirmar
+        foreach (var item in compra.Items)
+        {
+            if (item.Producto == null)
+            {
+                var producto = await db.Productos.FindAsync(item.ProductoId);
+                if (producto == null) return Results.BadRequest($"Producto con ID {item.ProductoId} no encontrado");
+                item.Producto = producto;
+            }
+            
+            if (item.Producto.Stock < item.Cantidad)
+            {
+                return Results.BadRequest($"Stock insuficiente para {item.Producto.Nombre}. Stock disponible: {item.Producto.Stock}, solicitado: {item.Cantidad}");
+            }
+        }
+        
+        // Descontar stock de todos los productos
+        foreach (var item in compra.Items)
+        {
+            item.Producto.Stock -= item.Cantidad;
+            Console.WriteLine($"Stock descontado: {item.Producto.Nombre} - Cantidad: {item.Cantidad} - Nuevo stock: {item.Producto.Stock}");
+        }
+        
+        // Actualizar datos de la compra
+        compra.NombreCliente = datos.NombreCliente;
+        compra.ApellidoCliente = datos.ApellidoCliente;
+        compra.EmailCliente = datos.EmailCliente;
+        compra.Fecha = DateTime.Now;
+        compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+        
+        await db.SaveChangesAsync();
+        
+        Console.WriteLine($"Compra confirmada exitosamente. ID: {carritoId}, Cliente: {datos.NombreCliente} {datos.ApellidoCliente}, Total: ${compra.Total}");
+        return Results.Ok();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al confirmar compra {carritoId}: {ex.Message}");
+        return Results.Problem($"Error interno del servidor: {ex.Message}");
+    }
 });
 
 // PUT /carritos/{carrito}/{producto} (agrega producto o actualiza cantidad)
 app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaDbContext db, int carritoId, int productoId, int cantidad) =>
 {
-    if (cantidad < 1) return Results.BadRequest("Cantidad inválida");
-    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
-    var producto = await db.Productos.FindAsync(productoId);
-    if (compra == null || producto == null) return Results.NotFound();
-    if (producto.Stock < cantidad) return Results.BadRequest("Sin stock suficiente");
-    var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
-    if (item == null)
+    try
     {
-        item = new ItemCompra { ProductoId = productoId, Cantidad = cantidad, PrecioUnitario = producto.Precio };
-        compra.Items.Add(item);
-    }
-    else
-    {
+        if (cantidad < 1) return Results.BadRequest("Cantidad inválida");
+        
+        var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+        if (compra == null) return Results.NotFound($"Carrito con ID {carritoId} no encontrado");
+        
+        var producto = await db.Productos.FindAsync(productoId);
+        if (producto == null) return Results.NotFound($"Producto con ID {productoId} no encontrado");
+        
         if (producto.Stock < cantidad) return Results.BadRequest("Sin stock suficiente");
-        item.Cantidad = cantidad;
+        
+        var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item == null)
+        {
+            item = new ItemCompra { ProductoId = productoId, Cantidad = cantidad, PrecioUnitario = producto.Precio };
+            compra.Items.Add(item);
+        }
+        else
+        {
+            if (producto.Stock < cantidad) return Results.BadRequest("Sin stock suficiente");
+            item.Cantidad = cantidad;
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok();
     }
-    await db.SaveChangesAsync();
-    return Results.Ok();
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al agregar producto {productoId} al carrito {carritoId}: {ex.Message}");
+        return Results.Problem($"Error interno del servidor: {ex.Message}");
+    }
 });
 
 // DELETE /carritos/{carrito}/{producto} (elimina producto o reduce cantidad)
 app.MapDelete("/carritos/{carritoId}/{productoId}", async (TiendaDbContext db, int carritoId, int productoId) =>
 {
-    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
-    if (compra == null) return Results.NotFound();
-    var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
-    if (item == null) return Results.NotFound();
-    compra.Items.Remove(item);
-    db.ItemsCompra.Remove(item);
-    await db.SaveChangesAsync();
-    return Results.Ok();
+    try
+    {
+        var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+        if (compra == null) return Results.NotFound($"Carrito con ID {carritoId} no encontrado");
+        
+        var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item == null) return Results.NotFound($"Producto con ID {productoId} no encontrado en el carrito");
+        
+        compra.Items.Remove(item);
+        db.ItemsCompra.Remove(item);
+        await db.SaveChangesAsync();
+        return Results.Ok();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al eliminar producto {productoId} del carrito {carritoId}: {ex.Message}");
+        return Results.Problem($"Error interno del servidor: {ex.Message}");
+    }
 });
 
 // Cargar productos de ejemplo al iniciar
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    
+    // Asegurar que la base de datos esté creada
+    try
+    {
+        Console.WriteLine("Verificando/creando base de datos...");
+        db.Database.EnsureCreated();
+        Console.WriteLine("Base de datos verificada correctamente.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al crear la base de datos: {ex.Message}");
+        // Intentar con migraciones si EnsureCreated falla
+        try
+        {
+            Console.WriteLine("Intentando aplicar migraciones...");
+            db.Database.Migrate();
+            Console.WriteLine("Migraciones aplicadas correctamente.");
+        }
+        catch (Exception migrationEx)
+        {
+            Console.WriteLine($"Error al aplicar migraciones: {migrationEx.Message}");
+            throw;
+        }
+    }
+    
+    // Verificar si hay productos, si no, agregar datos de ejemplo
     if (!db.Productos.Any())
     {
+        Console.WriteLine("Agregando productos de ejemplo...");
         db.Productos.AddRange(new[]
         {
             new Producto { Nombre = "Monitor Samsung 27''", Descripcion = "Monitor LED Full HD 27 pulgadas", Precio = 120000, Stock = 8, ImagenUrl = "monitor.webp.webp" },
@@ -145,6 +275,11 @@ using (var scope = app.Services.CreateScope())
             new Producto { Nombre = "Webcam Logitech C920", Descripcion = "Full HD 1080p", Precio = 32000, Stock = 14, ImagenUrl = "webcam.webp.webp" }
         });
         db.SaveChanges();
+        Console.WriteLine("Productos de ejemplo agregados correctamente.");
+    }
+    else
+    {
+        Console.WriteLine($"Base de datos ya contiene {db.Productos.Count()} productos.");
     }
 }
 

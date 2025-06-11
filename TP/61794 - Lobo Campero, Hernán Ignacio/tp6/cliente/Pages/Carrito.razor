@@ -1,6 +1,8 @@
 @page "/carrito"
 @inject Cliente.Services.ApiService ApiService
+@inject Cliente.Services.CarritoService CarritoService
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <div class="container py-4">
     <div class="row mb-4">
@@ -41,19 +43,37 @@
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">Productos en tu carrito</h5>
                     </div>
-                    <div class="card-body p-0">
-                        @foreach (var item in items)
+                    <div class="card-body p-0">                        @foreach (var item in items)
                         {
                             <div class="border-bottom p-3">
                                 <div class="row align-items-center">
-                                    <div class="col-md-8">
+                                    <div class="col-md-6">
                                         <h6 class="mb-1">@item.Producto?.Nombre</h6>
-                                        <small class="text-muted">Cantidad: @item.Cantidad</small>
-                                    </div>
-                                    <div class="col-md-4 text-end">
-                                        <span class="fw-bold text-primary">$@(item.PrecioUnitario * item.Cantidad)</span>
-                                        <br>
                                         <small class="text-muted">$@item.PrecioUnitario c/u</small>
+                                    </div>                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <button class="btn btn-outline-secondary" 
+                                                    type="button" 
+                                                    @onclick="() => ModificarCantidad(item.ProductoId, item.Cantidad - 1)"
+                                                    disabled="@(item.Cantidad <= 1)">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                            <input type="text" class="form-control text-center" value="@item.Cantidad" readonly>
+                                            <button class="btn btn-outline-secondary" 
+                                                    type="button" 
+                                                    @onclick="() => ModificarCantidad(item.ProductoId, item.Cantidad + 1)">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Stock: @item.Producto?.Stock</small>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <span class="fw-bold text-primary">$@(item.PrecioUnitario * item.Cantidad)</span>
+                                    </div>
+                                    <div class="col-md-1 text-end">
+                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => EliminarProducto(item.ProductoId)" title="Eliminar producto">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -74,11 +94,13 @@
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total a pagar:</strong>
                             <strong class="text-success">$@total</strong>
-                        </div>
-                        <button class="btn btn-success w-100" @onclick="ProcesarCompra">
+                        </div>                        <button class="btn btn-success w-100 mb-2" @onclick="ProcesarCompra">
                             <i class="bi bi-credit-card me-2"></i>Procesar compra
                         </button>
-                        <a href="/" class="btn btn-outline-primary w-100 mt-2">
+                        <button class="btn btn-outline-danger w-100 mb-2" @onclick="VaciarCarrito">
+                            <i class="bi bi-trash me-2"></i>Vaciar carrito
+                        </button>
+                        <a href="/" class="btn btn-outline-primary w-100">
                             <i class="bi bi-arrow-left me-2"></i>Seguir comprando
                         </a>
                     </div>
@@ -89,34 +111,31 @@
 </div>
 
 @code {
-    private List<Cliente.Models.ItemCompra>? items;
+    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
+    
+    private Cliente.Models.Compra? carrito;
+    private List<Cliente.Models.ItemCompra> items = new();
     private decimal total = 0;
     private bool cargando = true;
-    private int carritoId = 1; // Simulamos que siempre usamos carrito ID 1
+    private int carritoId = 1; // Por ahora usamos ID fijo, en una app real vendría de sesión
 
     protected override async Task OnInitializedAsync()
     {
         await CargarCarrito();
-    }
-
-    private async Task CargarCarrito()
+    }    private async Task CargarCarrito()
     {
         try
         {
             cargando = true;
-            // Simulamos obtener los items del carrito desde la API
-            // En una implementación real, esto vendría del servidor
-            items = new List<Cliente.Models.ItemCompra>();
-            total = 0;
-
-            if (items.Any())
-            {
-                total = items.Sum(i => i.PrecioUnitario * i.Cantidad);
-            }
+            carrito = await CarritoService.ObtenerCarritoAsync();
+            items = carrito?.Items ?? new List<Cliente.Models.ItemCompra>();
+            total = items.Sum(i => i.PrecioUnitario * i.Cantidad);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar carrito: {ex.Message}");
+            items = new List<Cliente.Models.ItemCompra>();
+            total = 0;
         }
         finally
         {
@@ -124,8 +143,93 @@
         }
     }
 
-    private async Task ProcesarCompra()
+    private async Task InicializarCarrito()
     {
-        await JS.InvokeVoidAsync("alert", "¡Compra procesada con éxito! (Funcionalidad simulada)");
+        var response = await ApiService.HttpClient.PostAsync("/carritos", null);
+        if (response.IsSuccessStatusCode)
+        {
+            carritoId = await response.Content.ReadFromJsonAsync<int>();
+            items = new List<Cliente.Models.ItemCompra>();
+            total = 0;
+        }
+    }    private async Task ModificarCantidad(int productoId, int nuevaCantidad)
+    {
+        if (nuevaCantidad <= 0)
+        {
+            await EliminarProducto(productoId);
+            return;
+        }        try
+        {
+            var exito = await CarritoService.ModificarCantidadAsync(productoId, nuevaCantidad);
+            if (exito)
+            {
+                await CargarCarrito();
+                await ActualizarContadorCarrito();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Error al actualizar la cantidad. Verifique el stock disponible.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al modificar cantidad: {ex.Message}");
+        }
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {        try
+        {
+            var exito = await CarritoService.EliminarProductoAsync(productoId);
+            if (exito)
+            {
+                await CargarCarrito();
+                await ActualizarContadorCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar producto: {ex.Message}");
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        try
+        {
+            var confirmacion = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea vaciar el carrito?");
+            if (!confirmacion) return;            var exito = await CarritoService.VaciarCarritoAsync();
+            if (exito)
+            {
+                await CargarCarrito();
+                await ActualizarContadorCarrito();
+                await JS.InvokeVoidAsync("alert", "Carrito vaciado exitosamente");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al vaciar carrito: {ex.Message}");
+        }
+    }    private async Task ActualizarContadorCarrito()
+    {
+        try
+        {
+            var totalItems = await CarritoService.ObtenerCantidadItemsAsync();
+            ActualizarCarrito?.Invoke(totalItems);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar contador: {ex.Message}");
+        }
+    }private async Task ProcesarCompra()
+    {
+        if (!items.Any())
+        {
+            await JS.InvokeVoidAsync("alert", "El carrito está vacío");
+            return;
+        }
+
+        // Redirigir a página de confirmación
+        Navigation.NavigateTo("/confirmacion");
     }
 }

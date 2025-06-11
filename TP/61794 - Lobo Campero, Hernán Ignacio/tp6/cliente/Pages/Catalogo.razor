@@ -1,50 +1,75 @@
 @page "/"
 @inject Cliente.Services.ApiService ApiService
+@inject Cliente.Services.CarritoService CarritoService
 @inject IJSRuntime JS
 
-@code {
-    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
-    [CascadingParameter] public int CarritoCantidad { get; set; }
-
-    private List<Cliente.Models.Producto>? productos;
-    private int carritoCantidad = 0;
-    private int carritoId = 0;
+@code {    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
+    [CascadingParameter] public int CarritoCantidad { get; set; }    private List<Cliente.Models.Producto>? productos;
+    private HashSet<int> productosAgregando = new();
+    private HashSet<int> productosAgregadosConExito = new();
 
     protected override async Task OnInitializedAsync()
     {
         await Buscar();
-        await InicializarCarrito();
-    }
-
-    public async Task Buscar(string? query = null)
+    }    public async Task Buscar(string? query = null)
     {
         productos = await ApiService.GetProductosAsync(query);
         StateHasChanged();
     }
 
-    private async Task InicializarCarrito()
-    {
-        if (carritoId == 0)
-        {
-            var response = await ApiService.HttpClient.PostAsync("/carritos", null);
-            if (response.IsSuccessStatusCode)
-            {
-                var id = await response.Content.ReadFromJsonAsync<int>();
-                carritoId = id;
-            }
-        }
-    }
-
     private async Task AgregarAlCarrito(int productoId)
     {
-        await InicializarCarrito();
-        var response = await ApiService.HttpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad=1", null);
-        if (response.IsSuccessStatusCode)
+        if (productosAgregando.Contains(productoId)) return;
+        
+        try
         {
-            carritoCantidad++;
-            ActualizarCarrito?.Invoke(carritoCantidad);
-            // Feedback visual
-            await JS.InvokeVoidAsync("eval", $"document.getElementById('btn-cart-{productoId}').classList.add('btn-warning'); setTimeout(()=>document.getElementById('btn-cart-{productoId}').classList.remove('btn-warning'), 500)");
+            productosAgregando.Add(productoId);
+            StateHasChanged();            var exito = await CarritoService.AgregarProductoAsync(productoId, 1);
+            if (exito)
+            {
+                // Actualizar contador usando el CarritoService
+                var nuevaCantidad = await CarritoService.ObtenerCantidadItemsAsync();
+                ActualizarCarrito?.Invoke(nuevaCantidad);
+                
+                // Mostrar estado de éxito
+                productosAgregadosConExito.Add(productoId);
+                StateHasChanged();
+                
+                // Remover el estado de éxito después de 2 segundos
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(2000);
+                    productosAgregadosConExito.Remove(productoId);
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+            else
+            {
+                // Solo mostrar alert sin manipular DOM
+                try
+                {
+                    await JS.InvokeVoidAsync("alert", "❌ Error al agregar producto.\n\nPosibles causas:\n• Stock insuficiente\n• Problema de conexión\n\nInténtalo nuevamente.");
+                }
+                catch (Exception jsEx)
+                {
+                    Console.WriteLine($"Error mostrando alert: {jsEx.Message}");
+                }
+            }
+        }        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+            try
+            {
+                await JS.InvokeVoidAsync("alert", "❌ Error inesperado al agregar el producto.\n\nPor favor, inténtalo nuevamente.");
+            }
+            catch (Exception jsEx)
+            {
+                Console.WriteLine($"Error mostrando alert de error: {jsEx.Message}");
+            }
+        }
+        finally
+        {
+            productosAgregando.Remove(productoId);
             StateHasChanged();
         }
     }
@@ -85,9 +110,30 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="badge bg-success">Stock: @prod.Stock</span>
                                     <span class="fw-bold text-primary">$@prod.Precio</span>
-                                </div>
-                                <button class="btn btn-success w-100 animate__animated animate__pulse" id="btn-cart-@prod.Id" @onclick="() => AgregarAlCarrito(prod.Id)">
-                                    <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+                                </div>                                <button class="btn @(productosAgregadosConExito.Contains(prod.Id) ? "btn-warning" : "btn-success") w-100" 
+                                        id="btn-cart-@prod.Id" 
+                                        @onclick="() => AgregarAlCarrito(prod.Id)"
+                                        disabled="@(prod.Stock <= 0 || productosAgregando.Contains(prod.Id))">
+                                    @if (productosAgregando.Contains(prod.Id))
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <span>Agregando...</span>
+                                    }
+                                    else if (productosAgregadosConExito.Contains(prod.Id))
+                                    {
+                                        <i class="bi bi-check-lg me-2"></i>
+                                        <span>¡Agregado!</span>
+                                    }
+                                    else if (prod.Stock <= 0)
+                                    {
+                                        <i class="bi bi-x-circle me-2"></i>
+                                        <span>Sin stock</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-cart-plus me-2"></i>
+                                        <span>Agregar al carrito</span>
+                                    }
                                 </button>
                             </div>
                         </div>
