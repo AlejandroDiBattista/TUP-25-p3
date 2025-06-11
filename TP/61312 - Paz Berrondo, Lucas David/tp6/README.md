@@ -3,7 +3,7 @@
 
 ---
 
-## 🎯 **OBJETIVO**
+##**Estado actual**: 🟢 Commit 2 completado - Entity Framework configurado y BD creada🎯 **OBJETIVO**
 Desarrollar una aplicación web completa de tienda online que demuestre dominio de:
 - **Frontend**: Blazor WebAssembly 
 - **Backend**: Minimal API en C#
@@ -51,6 +51,7 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 
 ### **✅ COMPLETADOS:**
 - [x] **Commit 1**: Creación de modelos de datos (Producto, Compra, ItemCompra, Carrito + DTOs)
+- [x] **Commit 2**: Configuración de Entity Framework y DbContext
 - [ ] **Commit 2**: Configuración de Entity Framework y DbContext
 - [ ] **Commit 3**: Implementación de datos iniciales (Seeding) - 10 productos
 - [ ] **Commit 4**: Implementación de endpoints de productos (GET /productos)
@@ -146,4 +147,20 @@ dotnet run
 - ✅ DTOs para transferencia de datos cliente-servidor
 - ✅ Compilación exitosa verificada
 
-**Próximo paso**: Configuración de Entity Framework y DbContext
+**Próximo paso**: Implementación de datos iniciales (Seeding) - 10 productos
+
+### **✅ Commit 2: Configuración de Entity Framework y DbContext**
+**Archivos creados/modificados:**
+- `servidor/Data/TiendaContext.cs` - DbContext principal con configuraciones
+- `servidor/appsettings.json` - Cadena de conexión SQLite
+- `servidor/appsettings.Development.json` - Config desarrollo
+- `servidor/Program.cs` - Registro de servicios EF y creación de BD
+
+**Funcionalidad implementada:**
+- ✅ DbContext con configuración completa de entidades
+- ✅ Relaciones entre tablas (FK, índices, restricciones)
+- ✅ Cadena de conexión SQLite configurada
+- ✅ Creación automática de base de datos
+- ✅ Verificación exitosa: servidor ejecutándose y BD creada
+
+**Próximo paso**: Implementación de datos iniciales (10 productos consistentes)
