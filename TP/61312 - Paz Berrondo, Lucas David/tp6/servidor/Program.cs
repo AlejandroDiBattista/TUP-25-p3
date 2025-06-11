@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Registrar servicios de la aplicación
+builder.Services.AddScoped<CarritoService>();
+
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
@@ -147,6 +150,151 @@ app.MapGet("/api/productos/{id:int}", async (TiendaContext context, int id) =>
 .WithName("ObtenerProductoPorId")
 .WithSummary("Obtiene un producto específico por ID")
 .WithDescription("Endpoint para obtener los detalles completos de un producto usando su ID único.");
+
+// === ENDPOINTS DE CARRITO ===
+
+/// <summary>
+/// Endpoint para crear un nuevo carrito de compras.
+/// POST /api/carritos - Crea un carrito vacío y retorna su ID único
+/// </summary>
+app.MapPost("/api/carritos", (CarritoService carritoService) =>
+{
+    try
+    {
+        var carritoId = carritoService.CrearCarrito();
+        
+        return Results.Created($"/api/carritos/{carritoId}", new 
+        {
+            CarritoId = carritoId,
+            Mensaje = "Carrito creado exitosamente",
+            FechaCreacion = DateTime.Now
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al crear carrito: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al crear carrito",
+            detail: "Ocurrió un error interno al crear el carrito de compras.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("CrearCarrito")
+.WithSummary("Crea un nuevo carrito de compras")
+.WithDescription("Endpoint para inicializar un carrito vacío. Retorna un ID único para identificar el carrito.");
+
+/// <summary>
+/// Endpoint para obtener el contenido de un carrito específico.
+/// GET /api/carritos/{carritoId} - Obtiene todos los items del carrito
+/// </summary>
+app.MapGet("/api/carritos/{carritoId}", async (CarritoService carritoService, string carritoId) =>
+{
+    try
+    {
+        var carrito = await carritoService.ObtenerCarritoAsync(carritoId);
+        
+        if (carrito == null)
+        {
+            return Results.NotFound(new 
+            {
+                Mensaje = $"Carrito con ID {carritoId} no encontrado",
+                CarritoId = carritoId
+            });
+        }
+        
+        var carritoDto = carritoService.ConvertirADto(carrito);
+        
+        return Results.Ok(carritoDto);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al obtener carrito {carritoId}: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al obtener carrito",
+            detail: $"Ocurrió un error al buscar el carrito con ID {carritoId}.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("ObtenerCarrito")
+.WithSummary("Obtiene el contenido de un carrito")
+.WithDescription("Endpoint para obtener todos los items de un carrito específico con precios actualizados.");
+
+/// <summary>
+/// Endpoint para vaciar completamente un carrito.
+/// DELETE /api/carritos/{carritoId} - Elimina todos los items del carrito
+/// </summary>
+app.MapDelete("/api/carritos/{carritoId}", (CarritoService carritoService, string carritoId) =>
+{
+    try
+    {
+        var vaciado = carritoService.VaciarCarrito(carritoId);
+        
+        if (!vaciado)
+        {
+            return Results.NotFound(new 
+            {
+                Mensaje = $"Carrito con ID {carritoId} no encontrado",
+                CarritoId = carritoId
+            });
+        }
+        
+        return Results.Ok(new 
+        {
+            Mensaje = "Carrito vaciado exitosamente",
+            CarritoId = carritoId,
+            FechaVaciado = DateTime.Now
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al vaciar carrito {carritoId}: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al vaciar carrito",
+            detail: $"Ocurrió un error al vaciar el carrito con ID {carritoId}.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("VaciarCarrito")
+.WithSummary("Vacía completamente un carrito")
+.WithDescription("Endpoint para eliminar todos los items de un carrito específico.");
+
+/// <summary>
+/// Endpoint de debugging para obtener estadísticas de carritos activos.
+/// GET /api/carritos/estadisticas - Información general del sistema de carritos
+/// </summary>
+app.MapGet("/api/carritos/estadisticas", (CarritoService carritoService) =>
+{
+    try
+    {
+        var estadisticas = carritoService.ObtenerEstadisticas();
+        
+        return Results.Ok(new 
+        {
+            Mensaje = "Estadísticas de carritos activos",
+            Fecha = DateTime.Now,
+            Estadisticas = estadisticas
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al obtener estadísticas: {ex.Message}");
+        
+        return Results.Problem(
+            title: "Error al obtener estadísticas",
+            detail: "Ocurrió un error al generar las estadísticas de carritos.",
+            statusCode: 500
+        );
+    }
+})
+.WithName("EstadisticasCarritos")
+.WithSummary("Obtiene estadísticas de carritos activos")
+.WithDescription("Endpoint de debugging para monitorear el estado del sistema de carritos.");
 
 // Ejemplo de endpoint de API (se reemplazará con endpoints reales)
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });

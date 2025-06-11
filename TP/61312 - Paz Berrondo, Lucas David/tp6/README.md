@@ -3,7 +3,7 @@
 
 ---
 
-**Estado actual**: 🟢 Commit 4 completado - Endpoints de productos implementados con búsqueda# 🎯 **OBJETIVO**
+**Estado actual**: 🟢 Commit 5 completado - Endpoints de carrito implementados (crear, obtener, vaciar)# 🎯 **OBJETIVO**
 Desarrollar una aplicación web completa de tienda online que demuestre dominio de:
 - **Frontend**: Blazor WebAssembly 
 - **Backend**: Minimal API en C#
@@ -54,7 +54,7 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - [x] **Commit 2**: Configuración de Entity Framework y DbContext
 - [x] **Commit 3**: Implementación de datos iniciales (Seeding) - 10 productos de tecnología
 - [x] **Commit 4**: Implementación de endpoints de productos (GET /productos)
-- [ ] **Commit 5**: Implementación de endpoints de carrito (POST, GET, DELETE)
+- [x] **Commit 5**: Implementación de endpoints de carrito (POST, GET, DELETE)
 - [ ] **Commit 6**: Implementación de endpoints de items de carrito (PUT, DELETE)
 - [ ] **Commit 7**: Actualización de ApiService en cliente para nuevos endpoints
 - [ ] **Commit 8**: Implementación de página de catálogo de productos
@@ -216,4 +216,36 @@ dotnet run
 - **Búsqueda flexible**: Contiene + case-insensitive
 - **Metadata OpenAPI**: WithName, WithSummary, WithDescription
 
-**Próximo paso**: Implementación de endpoints de carrito (manejo de sesiones temporales)
+**Próximo paso**: Implementación de endpoints de items de carrito (agregar/actualizar/eliminar productos)
+
+### **✅ Commit 5: Implementación de endpoints de carrito**
+**Archivos creados/modificados:**
+- `servidor/Services/CarritoService.cs` - Servicio para manejar carritos en memoria
+- `servidor/Program.cs` - Registro del servicio y endpoints de carrito
+
+**Funcionalidad implementada:**
+- ✅ **POST /api/carritos** - Crea carrito vacío con ID único (GUID)
+- ✅ **GET /api/carritos/{id}** - Obtiene contenido del carrito con precios actualizados
+- ✅ **DELETE /api/carritos/{id}** - Vacía carrito eliminando todos los items
+- ✅ **GET /api/carritos/estadisticas** - Endpoint de debugging para monitoreo
+- ✅ **CarritoService**: Gestión completa de carritos temporales en memoria
+- ✅ **Validaciones**: Verificación de existencia de carritos
+- ✅ **Manejo de errores**: 404 para carritos inexistentes, 500 para errores del servidor
+- ✅ **Logging**: Actividad de carritos registrada en consola
+
+**Endpoints probados exitosamente:**
+- ✅ Creación de carrito (GUID: 4d020c38-245b-4078-8739-ced30ba3d6fa)
+- ✅ Obtener carrito vacío (0 items, total: 0)
+- ✅ Estadísticas (2 carritos activos monitoreados)
+- ✅ Vaciar carrito (confirmación con timestamp)
+- ✅ Error 404 para carrito inexistente
+
+**Características técnicas del CarritoService:**
+- **Almacenamiento en memoria**: Dictionary<string, Carrito> para sesiones temporales
+- **IDs únicos**: Generación automática de GUIDs para identificar carritos
+- **Limpieza automática**: Método para eliminar carritos antiguos (>24 horas)
+- **Conversión a DTOs**: Mapeo automático para respuestas del API
+- **Precios actualizados**: Consulta en tiempo real a la BD para precios actuales
+- **Estadísticas**: Monitoreo de carritos activos, items totales y valor total
+
+**Próximo paso**: Implementación de endpoints para manejar items dentro de los carritos
