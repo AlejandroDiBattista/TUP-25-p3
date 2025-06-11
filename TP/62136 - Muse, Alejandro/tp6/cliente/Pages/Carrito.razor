@@ -3,7 +3,7 @@
 
 <h3>Carrito de compras</h3>
 
-@if (CarritoService.ProductosEnCarrito.Count == 0)
+@if (CarritoService.Items.Count == 0)
 {
     <p>No hay productos en el carrito.</p>
 }
@@ -14,16 +14,42 @@ else
             <tr>
                 <th>Producto</th>
                 <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var p in CarritoService.ProductosEnCarrito)
+            @foreach (var item in CarritoService.Items)
             {
                 <tr>
-                    <td>@p.Nombre</td>
-                    <td>$@p.Precio</td>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>
+                        <button @onclick="() => CarritoService.Quitar(item.Producto)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => CarritoService.Agregar(item.Producto)">+</button>
+                    </td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => CarritoService.Eliminar(item.Producto)">Eliminar</button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
+    <p><b>Total:</b> $@CarritoService.Total</p>
+    <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+}
+
+@code {
+    void VaciarCarrito() => CarritoService.Vaciar();
+    void Eliminar(cliente.Models.Producto producto)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+        if (item != null)
+        {
+            CarritoService.Items.Remove(item);
+        }
+    }
 }
