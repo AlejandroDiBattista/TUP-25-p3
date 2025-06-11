@@ -28,10 +28,21 @@ else
                 <tr>
                     <td>@item.Nombre</td>
                     <td>$@item.Precio</td>
-                    <td>@item.Cantidad</td>
+                    <td>
+                        <button class="btn btn-outline-secondary btn-sm me-1"
+                                @onclick="() => DisminuirCantidad(item.ProductoId)">
+                            -
+                        </button>
+                        @item.Cantidad
+                        <button class="btn btn-outline-secondary btn-sm ms-1"
+                                @onclick="() => AumentarCantidad(item.ProductoId)">
+                            +
+                        </button>
+                    </td>
                     <td>$@(item.Precio * item.Cantidad)</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => QuitarProducto(item.ProductoId)">
+                        <button class="btn btn-danger btn-sm"
+                                @onclick="() => QuitarProducto(item.ProductoId)">
                             Quitar
                         </button>
                     </td>
@@ -77,6 +88,17 @@ else
         var producto = new Producto { Id = productoId };
         await carrito.QuitarProducto(producto);
         await CargarCarrito();
+    }
+
+    private async Task AumentarCantidad(int productoId)
+    {
+        await carrito.IncrementarCantidad(productoId);
+        await CargarCarrito();
+    }
+
+    private async Task DisminuirCantidad(int productoId)
+    {
+        await QuitarProducto(productoId);
     }
 
     private async Task VaciarCarrito()

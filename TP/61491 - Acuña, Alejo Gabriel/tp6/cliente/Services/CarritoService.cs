@@ -24,15 +24,25 @@ public class CarritoService
         }
     }
 
-    public async Task AgregarProducto(Producto producto)
+        public async Task AgregarProducto(Producto producto)
     {
         if (producto.Stock <= 0)
-            return;
+    {
+        Console.WriteLine("No se puede agregar producto sin stock.");
+        return;
+    }
 
         await AsegurarCarritoInicializado();
         await http.PutAsync($"carritos/{carritoId}/{producto.Id}", null);
         OnChange?.Invoke();
     }
+public async Task IncrementarCantidad(int productoId)
+{
+    await AsegurarCarritoInicializado();
+    await http.PutAsync($"carritos/{carritoId}/{productoId}", null);
+    OnChange?.Invoke();
+}
+
 
     public async Task QuitarProducto(Producto producto)
     {

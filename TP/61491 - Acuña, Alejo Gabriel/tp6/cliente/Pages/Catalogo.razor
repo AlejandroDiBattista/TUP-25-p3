@@ -8,6 +8,11 @@
 
 <input type="text" class="form-control mb-3" placeholder="Buscar..." @bind="busqueda" @bind:event="oninput" />
 
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success" role="alert">@mensaje</div>
+}
+
 <div class="row">
     @foreach (var producto in productosFiltrados)
     {
@@ -19,20 +24,21 @@
                     <p class="card-text">@producto.Descripcion</p>
                     <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
                     <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-                    <button class="btn btn-primary"
-                 @onclick="() => AgregarAlCarritoAsync(producto)"
-                 disabled="@producto.Stock == 0">
-                    Agregar al carrito
-                    </button>
+                    <button class="btn btn-primary" @onclick="() => AgregarAlCarritoAsync(producto)"
+        disabled="@(producto.Stock <= 0)">
+    Agregar al carrito
+</button>
+
                 </div>
             </div>
         </div>
     }
 </div>
-
+<button><a href="./Carrito">Carrito</a></button>
 @code {
     private List<Producto> productos = new();
     private string busqueda = "";
+    private string mensaje = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -43,13 +49,14 @@
         string.IsNullOrWhiteSpace(busqueda)
             ? productos
             : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
-            
-         private void AgregarAlCarrito(Producto producto)
-        {
-            carrito.AgregarProducto(producto);
-        }
-        private async Task AgregarAlCarritoAsync(Producto producto)
-        {
-            await carrito.AgregarProducto(producto);
-        }
-}   
+
+    private async Task AgregarAlCarritoAsync(Producto producto)
+    {
+        await carrito.AgregarProducto(producto);
+        mensaje = $"“{producto.Nombre}” agregado exitosamente.";
+        StateHasChanged();
+        await Task.Delay(3000); 
+        mensaje = "";
+        StateHasChanged();
+    }
+}
