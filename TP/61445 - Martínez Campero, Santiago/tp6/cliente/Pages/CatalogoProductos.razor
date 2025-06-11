@@ -1,7 +1,8 @@
-@using System.Collections.Generic
 @page "/"
-@page "/catalogo"
-
+@page "/catalogo-productos"
+@using System.Threading.Tasks
+@using System.Linq
+@using System.Collections.Generic
 @using System.Net.Http.Json
 @using Compartido 
 @inject HttpClient Http
@@ -18,15 +19,27 @@ else if (!productos.Any())
 }
 else
 {
-    <ul>
+    <div class="row">
         @foreach (var producto in productos)
         {
-            <li>@producto.Nombre</li>
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p class="card-text"><small class="text-muted">Stock: @producto.Stock</small></p>
+                        <p class="card-text"><strong>Precio: @producto.Precio.ToString("C")</strong></p>
+                        <button class="btn btn-danger">Agregar al carrito</button>
+                    </div>
+                </div>
+            </div>
         }
-    </ul>
+    </div>
 }
 
 @code {
+    #nullable enable
     private List<Producto>? productos;
 
     protected override async Task OnInitializedAsync()
@@ -42,3 +55,4 @@ else
         }
     }
 }
+

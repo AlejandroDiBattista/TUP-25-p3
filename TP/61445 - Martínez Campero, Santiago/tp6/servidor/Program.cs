@@ -23,6 +23,10 @@ builder.Services.AddDbContext<TiendaDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseStaticFiles(); 
+
+app.UseCors("AllowClientApp");
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -42,8 +46,6 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
-
-app.UseCors("AllowClientApp");
 
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
