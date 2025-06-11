@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @inject Cliente.Services.CarritoService CarritoService
 
 <CascadingValue Value="(Action<int>)ActualizarCarrito">
@@ -12,7 +12,6 @@
 
 @code {
     private int CarritoCantidad = 0;
-    public event Action<string?>? OnBusquedaChanged;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,6 +39,6 @@
 
     private async Task RealizarBusqueda(string? query)
     {
-        OnBusquedaChanged?.Invoke(query);
+        // La búsqueda ahora se maneja mediante parámetros URL en el Navbar
     }
 }

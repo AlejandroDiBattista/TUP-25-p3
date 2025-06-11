@@ -50,7 +50,10 @@ app.MapGet("/productos", async (TiendaDbContext db, string? q) =>
 {
     var productos = db.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(q))
-        productos = productos.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+    {
+        var queryLower = q.ToLower();
+        productos = productos.Where(p => p.Nombre.ToLower().Contains(queryLower));
+    }
     return await productos.ToListAsync();
 });
 
@@ -260,8 +263,7 @@ using (var scope = app.Services.CreateScope())
     // Verificar si hay productos, si no, agregar datos de ejemplo
     if (!db.Productos.Any())
     {
-        Console.WriteLine("Agregando productos de ejemplo...");
-        db.Productos.AddRange(new[]
+        Console.WriteLine("Agregando productos de ejemplo...");        db.Productos.AddRange(new[]
         {
             new Producto { Nombre = "Monitor Samsung 27''", Descripcion = "Monitor LED Full HD 27 pulgadas", Precio = 120000, Stock = 8, ImagenUrl = "monitor.webp.webp" },
             new Producto { Nombre = "Teclado Mecánico HyperX Alloy", Descripcion = "Teclado mecánico RGB para gaming", Precio = 45000, Stock = 15, ImagenUrl = "teclado.webp.webp" },
@@ -272,7 +274,22 @@ using (var scope = app.Services.CreateScope())
             new Producto { Nombre = "Router TP-Link Archer AX10", Descripcion = "Wi-Fi 6, triple banda", Precio = 42000, Stock = 9, ImagenUrl = "router.webp.webp" },
             new Producto { Nombre = "Tablet Samsung Galaxy Tab S6 Lite", Descripcion = "10.4'' 64GB WiFi", Precio = 210000, Stock = 6, ImagenUrl = "tablet.webp.webp" },
             new Producto { Nombre = "Impresora HP Ink Tank 415", Descripcion = "Multifunción WiFi", Precio = 85000, Stock = 7, ImagenUrl = "impresora.webp.webp" },
-            new Producto { Nombre = "Webcam Logitech C920", Descripcion = "Full HD 1080p", Precio = 32000, Stock = 14, ImagenUrl = "webcam.webp.webp" }
+            new Producto { Nombre = "Webcam Logitech C920", Descripcion = "Full HD 1080p", Precio = 32000, Stock = 14, ImagenUrl = "webcam.webp.webp" },
+            // 12 productos adicionales
+            new Producto { Nombre = "Smartphone iPhone 15", Descripcion = "128GB, Cámara 48MP, iOS 17", Precio = 1250000, Stock = 5, ImagenUrl = "iphone.webp" },
+            new Producto { Nombre = "Laptop Lenovo ThinkPad E14", Descripcion = "AMD Ryzen 5, 8GB RAM, 256GB SSD", Precio = 780000, Stock = 3, ImagenUrl = "laptop.webp" },
+            new Producto { Nombre = "Memoria RAM Corsair 16GB DDR4", Descripcion = "3200MHz RGB Pro", Precio = 55000, Stock = 18, ImagenUrl = "ram.webp" },
+            new Producto { Nombre = "Procesador Intel Core i5-13400F", Descripcion = "10 núcleos, 4.6GHz Turbo", Precio = 280000, Stock = 7, ImagenUrl = "cpu.webp" },
+            new Producto { Nombre = "Fuente Corsair CV550", Descripcion = "550W 80+ Bronze", Precio = 72000, Stock = 11, ImagenUrl = "fuente.webp" },
+            new Producto { Nombre = "Gabinete Cooler Master MasterBox", Descripcion = "ATX Mid Tower RGB", Precio = 48000, Stock = 9, ImagenUrl = "gabinete.webp" },
+            new Producto { Nombre = "Smartphone Samsung Galaxy S24", Descripcion = "256GB, Triple cámara 50MP", Precio = 1100000, Stock = 4, ImagenUrl = "samsung.webp" },
+            new Producto { Nombre = "Parlantes Logitech Z313", Descripcion = "Sistema 2.1 con subwoofer", Precio = 28000, Stock = 16, ImagenUrl = "parlantes.webp" },
+            new Producto { Nombre = "Cargador Inalámbrico Anker", Descripcion = "15W Fast Charging", Precio = 18500, Stock = 22, ImagenUrl = "cargador.webp" },
+            new Producto { Nombre = "Disco Duro Seagate 2TB", Descripcion = "7200 RPM, SATA III", Precio = 62000, Stock = 13, ImagenUrl = "hdd.webp" },            new Producto { Nombre = "Microfono Blue Yeti", Descripcion = "USB Condensador para streaming", Precio = 145000, Stock = 6, ImagenUrl = "micro.webp" },
+            new Producto { Nombre = "Smartwatch Apple Watch SE", Descripcion = "GPS, 44mm, Correa deportiva", Precio = 390000, Stock = 8, ImagenUrl = "watch.webp" },
+            // 2 productos adicionales
+            new Producto { Nombre = "Nintendo Switch OLED", Descripcion = "Consola híbrida con pantalla OLED 7''", Precio = 420000, Stock = 5, ImagenUrl = "switch.webp" },
+            new Producto { Nombre = "Cámara Canon EOS M50 Mark II", Descripcion = "Mirrorless 24.1MP, 4K Video", Precio = 850000, Stock = 3, ImagenUrl = "camara.webp" }
         });
         db.SaveChanges();
         Console.WriteLine("Productos de ejemplo agregados correctamente.");

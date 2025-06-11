@@ -1,20 +1,112 @@
 @page "/"
+@page "/Catalogo"
 @inject Cliente.Services.ApiService ApiService
 @inject Cliente.Services.CarritoService CarritoService
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
+@implements IDisposable
 
 @code {    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
     [CascadingParameter] public int CarritoCantidad { get; set; }    private List<Cliente.Models.Producto>? productos;
+    private List<Cliente.Models.Producto>? todosLosProductos;
     private HashSet<int> productosAgregando = new();
     private HashSet<int> productosAgregadosConExito = new();
-
-    protected override async Task OnInitializedAsync()
+    private string? busquedaActual = "";
+    
+    // Variables de paginación
+    private int paginaActual = 1;
+    private int productosPorPagina = 6;
+    private int totalPaginas = 0;    protected override async Task OnInitializedAsync()
     {
-        await Buscar();
-    }    public async Task Buscar(string? query = null)
+        // Obtener parámetro de búsqueda de la URL
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        busquedaActual = "";        if (query.TryGetValue("q", out var q) && q.Count > 0)
+        {
+            busquedaActual = q.FirstOrDefault() ?? "";
+        }
+        
+        await Buscar(busquedaActual);
+        
+        // Suscribirse a cambios de navegación para detectar búsquedas
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+      private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        productos = await ApiService.GetProductosAsync(query);
+        var uri = Navigation.ToAbsoluteUri(e.Location);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        var nuevaBusqueda = "";        if (query.TryGetValue("q", out var q) && q.Count > 0)
+        {
+            nuevaBusqueda = q.FirstOrDefault() ?? "";
+        }
+        
+        if (nuevaBusqueda != busquedaActual)
+        {
+            busquedaActual = nuevaBusqueda;
+            await InvokeAsync(async () =>
+            {
+                await Buscar(busquedaActual);
+                StateHasChanged();
+            });
+        }
+    }public async Task Buscar(string? query = null)
+    {
+        todosLosProductos = await ApiService.GetProductosAsync(query);
+        paginaActual = 1; // Resetear a la primera página en nueva búsqueda
+        ActualizarProductosPagina();
         StateHasChanged();
+    }
+    
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+    
+    private void ActualizarProductosPagina()
+    {
+        if (todosLosProductos == null)
+        {
+            productos = null;
+            totalPaginas = 0;
+            return;
+        }
+        
+        totalPaginas = (int)Math.Ceiling((double)todosLosProductos.Count / productosPorPagina);
+        
+        var indiceInicio = (paginaActual - 1) * productosPorPagina;
+        productos = todosLosProductos.Skip(indiceInicio).Take(productosPorPagina).ToList();
+    }
+    
+    private void IrAPagina(int numeroPagina)
+    {
+        if (numeroPagina >= 1 && numeroPagina <= totalPaginas)
+        {
+            paginaActual = numeroPagina;
+            ActualizarProductosPagina();
+            StateHasChanged();
+        }
+    }
+    
+    private void PaginaAnterior()
+    {
+        if (paginaActual > 1)
+        {
+            paginaActual--;
+            ActualizarProductosPagina();
+            StateHasChanged();
+        }
+    }
+    
+    private void PaginaSiguiente()
+    {
+        if (paginaActual < totalPaginas)
+        {
+            paginaActual++;
+            ActualizarProductosPagina();
+            StateHasChanged();
+        }
     }
 
     private async Task AgregarAlCarrito(int productoId)
@@ -76,12 +168,6 @@
 }
 
 <div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-12 text-center">
-            <h2 class="fw-bold mb-3">Catálogo de Productos</h2>
-        </div>
-    </div>
-
     @if (productos is null)
     {
         <div class="text-center my-5">
@@ -94,22 +180,20 @@
     else if (productos.Count == 0)
     {
         <div class="alert alert-warning text-center">No se encontraron productos.</div>
-    }
-    else
-    {
-        <div class="row g-4 justify-content-center">
+    }    else
+    {        <div class="row g-4 justify-content-center">
             @foreach (var prod in productos)
             {
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="col-12 col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm border-0">
-                        <img src="images/@prod.ImagenUrl" class="card-img-top p-3 bg-light" alt="@prod.Nombre" style="height:180px;object-fit:contain;" />
+                        <img src="images/@prod.ImagenUrl" class="card-img-top p-3 bg-light" alt="@prod.Nombre" style="height:200px;object-fit:contain;" />
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title fw-semibold">@prod.Nombre</h5>
                             <p class="card-text small text-secondary">@prod.Descripcion</p>
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="badge bg-success">Stock: @prod.Stock</span>
-                                    <span class="fw-bold text-primary">$@prod.Precio</span>
+                                    <span class="fw-bold text-primary">$@prod.Precio.ToString("N0")</span>
                                 </div>                                <button class="btn @(productosAgregadosConExito.Contains(prod.Id) ? "btn-warning" : "btn-success") w-100" 
                                         id="btn-cart-@prod.Id" 
                                         @onclick="() => AgregarAlCarrito(prod.Id)"
@@ -141,5 +225,81 @@
                 </div>
             }
         </div>
+        
+        <!-- Controles de paginación -->
+        @if (totalPaginas > 1)
+        {
+            <div class="row mt-5">
+                <div class="col-12">
+                    <nav aria-label="Navegación del catálogo">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted">
+                                Mostrando @((paginaActual - 1) * productosPorPagina + 1) - @(Math.Min(paginaActual * productosPorPagina, todosLosProductos!.Count)) 
+                                de @todosLosProductos!.Count productos
+                            </div>
+                            <div class="text-muted">
+                                Página @paginaActual de @totalPaginas
+                            </div>
+                        </div>
+                        
+                        <ul class="pagination justify-content-center">
+                            <!-- Botón Anterior -->
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaAnterior" disabled="@(paginaActual == 1)">
+                                    <i class="bi bi-chevron-left"></i> Anterior
+                                </button>
+                            </li>
+                            
+                            <!-- Números de página -->
+                            @{
+                                var paginaInicio = Math.Max(1, paginaActual - 2);
+                                var paginaFin = Math.Min(totalPaginas, paginaActual + 2);
+                            }
+                            
+                            @if (paginaInicio > 1)
+                            {
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="() => IrAPagina(1)">1</button>
+                                </li>
+                                @if (paginaInicio > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+                            
+                            @for (var i = paginaInicio; i <= paginaFin; i++)
+                            {
+                                var pagina = i;
+                                <li class="page-item @(pagina == paginaActual ? "active" : "")">
+                                    <button class="page-link" @onclick="() => IrAPagina(pagina)">@pagina</button>
+                                </li>
+                            }
+                            
+                            @if (paginaFin < totalPaginas)
+                            {
+                                @if (paginaFin < totalPaginas - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="() => IrAPagina(totalPaginas)">@totalPaginas</button>
+                                </li>
+                            }
+                            
+                            <!-- Botón Siguiente -->
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaSiguiente" disabled="@(paginaActual == totalPaginas)">
+                                    Siguiente <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
     }
 </div>

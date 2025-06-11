@@ -1,14 +1,15 @@
 @* Cabecera fija con Bootstrap y contador de carrito funcional y búsqueda global *@
 @inject Cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components.Web
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
             <img src="favicon.png" alt="Logo" width="32" height="32" class="d-inline-block align-text-top">
             Tienda Online
-        </a>        <form class="d-flex mx-auto" role="search" style="max-width:400px;" @onsubmit="Buscar">
-            <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" @bind="busqueda" @bind:event="oninput">
+        </a>        <form class="d-flex mx-auto" role="search" style="max-width:400px;" @onsubmit="Buscar" @onsubmit:preventDefault="true">
+            <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" @bind="busqueda" @onkeypress="OnKeyPress">
         </form>
         <a href="/carrito" class="btn btn-outline-light position-relative">
             <img src="images/carritoicono.png" alt="Carrito" width="28" height="28">
@@ -25,13 +26,19 @@
 @code {
     [Parameter] public EventCallback<string?> OnBuscar { get; set; }
     [Parameter] public int CarritoCantidad { get; set; } = 0;
-    private string? busqueda;
-
-    private async Task Buscar()
+    private string? busqueda;    private async Task Buscar()
     {
-        if (OnBuscar.HasDelegate)
-            await OnBuscar.InvokeAsync(busqueda);
-        else
-            Navigation.NavigateTo($"/?q={busqueda}");
+        // Siempre navegar directamente (no usar OnBuscar)
+        var encodedQuery = string.IsNullOrWhiteSpace(busqueda) ? "" : Uri.EscapeDataString(busqueda);
+        var targetUrl = string.IsNullOrWhiteSpace(busqueda) ? "/" : $"/?q={encodedQuery}";
+        Navigation.NavigateTo(targetUrl);
+    }
+
+    private async Task OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Buscar();
+        }
     }
 }

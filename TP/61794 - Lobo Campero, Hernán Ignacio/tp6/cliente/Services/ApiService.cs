@@ -9,12 +9,15 @@ public class ApiService {
 
     public ApiService(HttpClient httpClient) {
         _httpClient = httpClient;
-    }
-
-    public async Task<List<Producto>> GetProductosAsync(string? query = null)
+    }    public async Task<List<Producto>> GetProductosAsync(string? query = null)
     {
-        var url = "/productos" + (string.IsNullOrWhiteSpace(query) ? "" : $"?q={query}");
-        return await _httpClient.GetFromJsonAsync<List<Producto>>(url) ?? new();
+        var url = "/productos";
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            url += $"?q={Uri.EscapeDataString(query)}";
+        }
+        var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url) ?? new();
+        return productos;
     }
 
     public HttpClient HttpClient => _httpClient;
