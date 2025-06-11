@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using cliente.Services
+@inherits LayoutComponentBase
+@inject CarritoService CarritoService 
 
 <div class="navbar navbar-dark bg-dark px-3 d-flex justify-content-between align-items-center">
     <a class="navbar-brand d-flex align-items-center" href="/">
@@ -26,12 +28,30 @@
     string? busqueda;
     int contadorCarrito = 0;
 
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoService.CarritoActualizado += ActualizarContadorSync;
+        await ActualizarContador();
+    }
+
+    void ActualizarContadorSync()
+    {
+        _ = ActualizarContador();
+    }
+
+    async Task ActualizarContador()
+    {
+        var carrito = await CarritoService.GetCarritoAsync();
+        contadorCarrito = carrito?.Items.Count ?? 0;
+        StateHasChanged();
+    }
+
     void Buscar()
     {
         if (!string.IsNullOrWhiteSpace(busqueda))
-            NavigationManager.NavigateTo($"/productos?q={busqueda}");
+            NavigationManager.NavigateTo($"/?q={busqueda}");
         else
-            NavigationManager.NavigateTo("/productos");
+            NavigationManager.NavigateTo("/");
     }
 
     [Inject] NavigationManager NavigationManager { get; set; } = default!;

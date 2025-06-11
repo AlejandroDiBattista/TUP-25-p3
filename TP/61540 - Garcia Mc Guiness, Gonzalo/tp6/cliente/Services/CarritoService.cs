@@ -20,12 +20,14 @@ namespace cliente.Services
             var data = await resp.Content.ReadFromJsonAsync<CarritoIdResponse>();
             CarritoId = data?.CarritoId ?? 0;
             return CarritoId.Value;
+            
         }
 
         public async Task AgregarProductoAsync(int productoId, int cantidad)
         {
             var carritoId = await GetOClearCarritoAsync();
             await _http.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+            NotificarCambio();
         }
 
         public async Task<Carrito?> GetCarritoAsync()
@@ -37,18 +39,29 @@ namespace cliente.Services
         {
             if (!CarritoId.HasValue) return;
             await _http.DeleteAsync($"/carritos/{CarritoId}/{productoId}");
+            NotificarCambio();
         }
 
         public async Task VaciarCarritoAsync()
         {
             if (!CarritoId.HasValue) return;
             await _http.DeleteAsync($"/carritos/{CarritoId}");
+            NotificarCambio();
         }
 
         public async Task ConfirmarCompraAsync(object datosCliente)
         {
             if (!CarritoId.HasValue) return;
             await _http.PostAsJsonAsync($"/carritos/{CarritoId}/confirmar", datosCliente);
+            CarritoId = null;
+            NotificarCambio();
+        }
+
+        public event Action? CarritoActualizado;
+
+        public void NotificarCambio()
+        {
+            CarritoActualizado?.Invoke();
         }
 
     }

@@ -12,7 +12,7 @@
 else if (carrito.Items.Count == 0)
 {
     <p>El carrito esta vacio.</p>
-    <a class="btn btn-secondary" href="/productos">Volver al catalogo</a>
+    <a class="btn btn-secondary" href="/">Volver al catalogo</a>
 }
 else
 {
@@ -22,7 +22,6 @@ else
                 <th>Producto</th>
                 <th>Precio Unitario</th>
                 <th>Cantidad</th>
-                 <th>Stock</th> 
                 <th>Importe</th>
                 <th></th>
             </tr>
@@ -41,7 +40,6 @@ else
                         <span class="mx-2">@item.Cantidad</span>
                         <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
                     </td>
-                    <td>@item.Producto.Stock</td>
                     <td>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</td>
                     <td>
                         <button class="btn btn-sm btn-danger" @onclick="() => QuitarProducto(item.ProductoId)">Quitar</button>
@@ -55,6 +53,7 @@ else
     </div>
     <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
     <button class="btn btn-success" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Confirmar compra</button>
+    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Seguir comprando</button>
 }
 
 @code
@@ -86,5 +85,9 @@ else
         await CarritoService.VaciarCarritoAsync();
         carrito = await CarritoService.GetCarritoAsync();
         StateHasChanged();
+    }
+    void VolverAlCatalogo()
+    {
+        NavigationManager.NavigateTo("/");
     }
 }
