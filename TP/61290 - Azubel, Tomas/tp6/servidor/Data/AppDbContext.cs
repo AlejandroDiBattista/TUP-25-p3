@@ -3,11 +3,11 @@ using servidor.Models;
 
 namespace servidor.Data;
 
-public class AppDbContext : DbContext
+public class StoreDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public StoreDbContext(DbContextOptions<StoreDbContext> options) : base(options) { }
 
-    public DbSet<Producto> Productos => Set<Producto>();
-    public DbSet<Compra> Compras => Set<Compra>();
-    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Purchase> Purchases => Set<Purchase>();
+    public DbSet<PurchaseItem> PurchaseItems => Set<PurchaseItem>();
 }
