@@ -24,3 +24,8 @@ public class DatosRespuesta {
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
 }
+
+public async Task<List<Producto>> ObtenerProductosAsync() {
+        var respuesta = await_httpclient.GetFromJsonAsync<List<ObtenerProductosAsync>>("api/productos");
+        return respuesta ?? new List<Producto>();
+    }

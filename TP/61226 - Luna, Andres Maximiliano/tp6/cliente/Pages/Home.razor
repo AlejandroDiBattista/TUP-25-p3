@@ -39,6 +39,23 @@
     </div>
 </div>
 
+<div class= "row">
+    @if (productos != null && productos.Any()){
+        @foreach (var producto in productos){
+            <div class= "col-md-4 mb-4>
+                <div class= "card">
+                <img src= @producto.ImagenUrl"
+                class= "card-img-top"/>
+                <div class= "card-body">
+                    <h5 class= "card-title">@producto.Nombre</h5>
+                    <p class= "card-text">$@producto.Precio</p>
+                </div>
+            </div>>
+            </div>
+        }
+    }
+</div>>
+
 @code {
     private DatosRespuesta datos;
     private string error;
@@ -56,4 +73,10 @@
             cargando = false;
         }
     }
+
+    private List<Producto> productos = new();
+
+        protected override async Task OnInitializedAsync() {
+            productos = await ApiService.ObtenerProductosAsync();
+}
 }
