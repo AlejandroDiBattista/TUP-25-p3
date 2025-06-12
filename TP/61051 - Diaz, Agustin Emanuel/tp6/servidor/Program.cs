@@ -213,11 +213,45 @@ app.MapPost("/carrito/vaciar", ([FromQuery] Guid id) =>
 
 app.MapDelete("/carrito", ([FromQuery] Guid id) =>
 {
-    if (!carritos.Remove(id))
-        return Results.NotFound("Carrito no encontrado");
+  if (!carritos.Remove(id))
+    return Results.NotFound("Carrito no encontrado");
 
-    return Results.Ok("Carrito eliminado");
+  return Results.Ok("Carrito eliminado");
 });
+
+app.MapGet("/compras/{id}", async (int id, ApplicationDbContext db) =>
+{
+  var compra = await db.Compras
+      .Include(c => c.Items)
+      .ThenInclude(i => i.Producto)
+      .FirstOrDefaultAsync(c => c.Id == id);
+
+  if (compra == null)
+    return Results.NotFound("Compra no encontrada");
+
+  var resultado = new
+  {
+    compra.Id,
+    compra.Fecha,
+    compra.Total,
+    Cliente = new
+    {
+      compra.NombreCliente,
+      compra.ApellidoCliente,
+      compra.EmailCliente
+    },
+    Productos = compra.Items.Select(i => new
+    {
+      Producto = i.Producto?.Nombre ?? "Producto no disponible",
+      i.Cantidad,
+      i.PrecioUnitario,
+      Subtotal = i.Cantidad * i.PrecioUnitario
+    }).ToList()
+  };
+
+  return Results.Ok(resultado);
+});
+
 
 using (var scope = app.Services.CreateScope())
 {
