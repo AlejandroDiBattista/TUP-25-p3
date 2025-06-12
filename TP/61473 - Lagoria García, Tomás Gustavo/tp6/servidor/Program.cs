@@ -173,6 +173,31 @@ app.MapPut("/carritos/{carritoId}/{productoId}/disminuir", async (Guid carritoId
 
     return Results.Ok(carrito);
 });
+
+// DELETE /carritos/{carritoId}/{productoId}
+app.MapDelete("/carritos/{carritoId}/{productoId}", async (Guid carritoId, int productoId, TiendaDbContext db) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = carritos[carritoId];
+    var producto = await db.Productos.FindAsync(productoId);
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (item == null)
+        return Results.NotFound("Producto no está en el carrito");
+
+    
+    if (producto != null)
+        producto.Stock += item.Cantidad;
+
+    carrito.Remove(item);
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+});
+
+
 // GET /carritos/{carritoId}
 app.MapGet("/carritos/{carritoId}", (Guid carritoId) =>
 {
