@@ -1,58 +1,85 @@
-@page "/"
-@page "/catalogo-productos"
-@using System.Threading.Tasks
-@using System.Linq
-@using System.Collections.Generic
-@using System.Net.Http.Json
-@using Compartido 
+
+@page "/catalogo"
 @inject HttpClient Http
+@using Microsoft.AspNetCore.Components.Web
 
-<h3>Catálogo de Productos</h3>
+<PageTitle>Catálogo de Productos</PageTitle>
 
-@if (productos == null)
-{
-    <p><em>Cargando productos...</em></p>
-}
-else if (!productos.Any())
-{
-    <p>No hay productos para mostrar.</p>
-}
-else
-{
+<div class="container pt-3">
     <div class="row">
-        @foreach (var producto in productos)
-        {
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
-                    <div class="card-body">
-                        <h5 class="card-title">@producto.Nombre</h5>
-                        <p class="card-text">@producto.Descripcion</p>
-                        <p class="card-text"><small class="text-muted">Stock: @producto.Stock</small></p>
-                        <p class="card-text"><strong>Precio: @producto.Precio.ToString("C")</strong></p>
-                        <button class="btn btn-danger">Agregar al carrito</button>
+        <div class="col-12 text-center mb-4">
+            <h1>Catálogo de Productos</h1>
+        </div>
+    </div>
+
+    @if (productos == null)
+    {
+        <div class="text-center">
+            <p><em>Cargando productos...</em></p>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!productos.Any())
+    {
+        <p class="text-center"><em>No hay productos para mostrar.</em></p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var producto in productos)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <img src="@producto.ImagenUrl" class="card-img-top p-2" alt="@producto.Nombre" style="max-height: 250px; object-fit: contain;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text small">@producto.Descripcion</p>
+                            <p class="card-text"><small class="text-muted">Stock: @producto.Stock</small></p>
+                            <div class="mt-auto">
+                                <p class="card-text fs-5"><strong>@producto.Precio.ToString("C")</strong></p>
+                                <button class="btn btn-danger w-100">Agregar al carrito</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
-}
+            }
+        </div>
+    }
+</div>
 
 @code {
-    #nullable enable
-    private List<Producto>? productos;
+    private Producto[]? productos;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
+            await Task.Delay(500);
+            productos = new Producto[] {
+                new Producto { Id = 1, Nombre = "Laptop Gamer Pro", Descripcion = "Laptop de alta gama para gaming y productividad", Precio = 1500.99m, Stock = 10, ImagenUrl = "https://via.placeholder.com/300x200.png?text=Laptop" },
+                new Producto { Id = 2, Nombre = "Teclado Mecánico RGB", Descripcion = "Teclado mecánico con iluminación RGB personalizable", Precio = 120.50m, Stock = 25, ImagenUrl = "https://via.placeholder.com/300x200.png?text=Teclado" },
+                new Producto { Id = 3, Nombre = "Mouse Inalámbrico Ergonómico", Descripcion = "Mouse diseñado para confort y precisión", Precio = 75.00m, Stock = 30, ImagenUrl = "https://via.placeholder.com/300x200.png?text=Mouse" },
+                new Producto { Id = 4, Nombre = "Monitor Ultrawide Curvo", Descripcion = "Monitor para una experiencia inmersiva", Precio = 650.00m, Stock = 5, ImagenUrl = "https://via.placeholder.com/300x200.png?text=Monitor" },
+                new Producto { Id = 5, Nombre = "Silla Gamer Ergonómica", Descripcion = "Comodidad para largas sesiones de juego", Precio = 250.00m, Stock = 15, ImagenUrl = "https://via.placeholder.com/300x200.png?text=Silla" },
+                new Producto { Id = 6, Nombre = "Auriculares Gaming 7.1", Descripcion = "Sonido envolvente para máxima inmersión", Precio = 99.99m, Stock = 20, ImagenUrl = "https://via.placeholder.com/300x200.png?text=Auriculares" }
+            };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar productos: {ex.Message}");
-            productos = new List<Producto>(); 
         }
+    }
+
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Descripcion { get; set; } = "";
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; } = "";
     }
 }
 

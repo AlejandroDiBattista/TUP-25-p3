@@ -6,21 +6,23 @@ namespace Compartido
     public class Producto
     {
         public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string Descripcion { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Descripcion { get; set; } = "";
         public decimal Precio { get; set; }
         public int Stock { get; set; }
-        public string ImagenUrl { get; set; }
+        public string ImagenUrl { get; set; } = "";
+        public List<ItemCompra> ItemsCompra { get; set; } = new List<ItemCompra>();
     }
 
     public class Compra
     {
-        public int Id { get; set; }
-        public DateTime Fecha { get; set; }
+        public Guid Id { get; set; }
+        public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaCompra { get; set; }
+        public string? NombreCliente { get; set; }
+        public string? ApellidoCliente { get; set; }
+        public string? EmailCliente { get; set; }
         public decimal Total { get; set; }
-        public string NombreCliente { get; set; }
-        public string ApellidoCliente { get; set; }
-        public string EmailCliente { get; set; }
         public List<ItemCompra> Items { get; set; } = new List<ItemCompra>();
     }
 
@@ -28,30 +30,22 @@ namespace Compartido
     {
         public int Id { get; set; }
         public int ProductoId { get; set; }
-        public Producto Producto { get; set; }
-        public int CompraId { get; set; }
-        public Compra Compra { get; set; }
+        public Producto? Producto { get; set; }
+        public Guid CompraId { get; set; }
+        public Compra? Compra { get; set; }
         public int Cantidad { get; set; }
-        public decimal PrecioUnitario { get; set; }
+        public decimal PrecioUnitario { get; set; } 
     }
 
-    public class Carrito
+    public class CantidadRequest
     {
-        public Guid Id { get; set; }
-        public List<ItemCarrito> Items { get; set; } = new List<ItemCarrito>();
-        public DateTime FechaCreacion { get; set; }
-
+        public int Cantidad { get; set; }
     }
 
-    public class ItemCarrito
+    public class ConfirmarCompraRequest
     {
-        public int Id { get; set; } 
-
-        public Guid CarritoId { get; set; } 
-        public Carrito Carrito { get; set; } 
-        public int ProductoId { get; set; }
-        public Producto Producto { get; set; } 
-
-        public int Cantidad { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
     }
 }

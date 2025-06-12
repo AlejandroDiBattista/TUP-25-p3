@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace servidor.Data.Migrations
 {
     [DbContext(typeof(TiendaDbContext))]
-    partial class TiendaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250611231012_NombreDeLaMigracion")]
+    partial class NombreDeLaMigracion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -62,9 +65,14 @@ namespace servidor.Data.Migrations
                     b.Property<decimal>("PrecioUnitario")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("ProductoId1")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("CompraId", "ProductoId");
 
                     b.HasIndex("ProductoId");
+
+                    b.HasIndex("ProductoId1");
 
                     b.ToTable("ItemsCompra");
                 });
@@ -107,10 +115,14 @@ namespace servidor.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Compartido.Producto", "Producto")
-                        .WithMany("ItemsCompra")
+                        .WithMany()
                         .HasForeignKey("ProductoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Compartido.Producto", null)
+                        .WithMany("ItemsCompra")
+                        .HasForeignKey("ProductoId1");
 
                     b.Navigation("Compra");
 
