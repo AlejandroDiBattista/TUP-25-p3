@@ -1,92 +1,109 @@
 @page "/productos"
-@inject HttpClient Http
 @using cliente.Modelos
 
-<h3 class="mb-3">Agregar producto</h3>
+@inject HttpClient http
 
-<div class="mb-4">
-    <input @bind="nuevoProducto.Nombre" placeholder="Nombre" class="form-control mb-2" />
-    <input @bind="nuevoProducto.Descripcion" placeholder="Descripción" class="form-control mb-2" />
-    <input type="number" @bind="nuevoProducto.Precio" placeholder="Precio" class="form-control mb-2" />
-    <input type="number" @bind="nuevoProducto.Stock" placeholder="Stock" class="form-control mb-2" />
-    <input @bind="nuevoProducto.ImagenUrl" placeholder="URL Imagen" class="form-control mb-2" />
-    <button class="btn btn-success" @onclick="AgregarProducto">Agregar</button>
-</div>
-
-<h4>📋 Lista de productos</h4>
-@if (productos is null)
-{
-    <p><em>Cargando productos...</em></p>
-}
-else if (!productos.Any())
-{
-    <p>No hay productos disponibles.</p>
-}
-else
-{
-    <ul class="list-group">
-    @foreach (var p in productos)
-    {
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <img src="@p.ImagenUrl" alt="@p.Nombre" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
-                <div>
-                    <strong>@p.Nombre</strong> – $@p.Precio<br />
-                    <em>@p.Descripcion</em> – Stock: @p.Stock
-                </div>
-            </div>
-            <div>
-                <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarProducto(p)">Editar</button>
-                <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
-            </div>
-        </li>
-    }
-</ul>
-
-}
+<h3 class="text-center mt-3">Gestión de Productos</h3>
 
 @if (productoEditando != null)
 {
-    <h4>📝 Editar producto</h4>
+    <EditForm Model="@productoEditando" OnValidSubmit="GuardarProducto">
+        <DataAnnotationsValidator />
 
-    <div class="mb-4">
-        <input @bind="productoEditando.Nombre" placeholder="Nombre" class="form-control mb-2" />
-        <input @bind="productoEditando.Descripcion" placeholder="Descripción" class="form-control mb-2" />
-        <input type="number" @bind="productoEditando.Precio" placeholder="Precio" class="form-control mb-2" />
-        <input type="number" @bind="productoEditando.Stock" placeholder="Stock" class="form-control mb-2" />
-        <input @bind="productoEditando.ImagenUrl" placeholder="URL Imagen" class="form-control mb-2" />
-        <button class="btn btn-success" @onclick="GuardarEdicion">Guardar cambios</button>
-        <button class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
-    </div>
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <InputText class="form-control" @bind-Value="productoEditando.Nombre" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <InputTextArea class="form-control" @bind-Value="productoEditando.Descripcion" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Precio</label>
+            <InputNumber class="form-control" @bind-Value="productoEditando.Precio" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock</label>
+            <InputNumber class="form-control" @bind-Value="productoEditando.Stock" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen (URL)</label>
+            <InputText class="form-control" @bind-Value="productoEditando.ImagenUrl" />
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(productoEditando.ImagenUrl))
+        {
+            <img src="@productoEditando.ImagenUrl" alt="Vista previa" class="img-thumbnail mb-3" style="max-height: 120px;" />
+        }
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success me-2">Guardar</button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+        </div>
+    </EditForm>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="NuevoProducto">Agregar nuevo producto</button>
+
+    <ul class="list-group">
+        @foreach (var p in productos)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="@p.ImagenUrl" alt="@p.Nombre" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                    <div>
+                        <strong>@p.Nombre</strong> – $@p.Precio<br />
+                        <em>@p.Descripcion</em> – Stock: @p.Stock
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarProducto(p)">Editar</button>
+                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
+                </div>
+            </li>
+        }
+    </ul>
 }
 
+<div class="mt-4 text-center">
+    <a class="btn btn-outline-secondary" href="/">Volver al inicio</a>
+</div>
+
 @code {
-    private List<Producto> productos;
-    private Producto nuevoProducto = new();
-    private Producto productoEditando;
+    private List<Producto> productos = new();
+    private Producto? productoEditando;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
+        productos = await http.GetFromJsonAsync<List<Producto>>("api/productos") ?? new();
     }
 
-    private async Task AgregarProducto()
+    private void NuevoProducto()
     {
-        var response = await Http.PostAsJsonAsync("api/productos", nuevoProducto);
-        if (response.IsSuccessStatusCode)
-        {
-            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
-            nuevoProducto = new(); // resetea el formulario
-        }
+        productoEditando = new Producto();
     }
 
-    private async Task EliminarProducto(int id)
+    private async Task GuardarProducto()
     {
-        var respuesta = await Http.DeleteAsync($"api/productos/{id}");
-        if (respuesta.IsSuccessStatusCode)
+        if (productoEditando!.Id == 0)
         {
-            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
+            var resp = await http.PostAsJsonAsync("api/productos", productoEditando);
+            var creado = await resp.Content.ReadFromJsonAsync<Producto>();
+            if (creado != null) productos.Add(creado);
         }
+        else
+        {
+            await http.PutAsJsonAsync($"api/productos/{productoEditando.Id}", productoEditando);
+            var index = productos.FindIndex(p => p.Id == productoEditando.Id);
+            if (index != -1) productos[index] = productoEditando;
+        }
+
+        productoEditando = null;
     }
 
     private void EditarProducto(Producto producto)
@@ -102,18 +119,14 @@ else
         };
     }
 
-    private async Task GuardarEdicion()
-    {
-        var respuesta = await Http.PutAsJsonAsync($"api/productos/{productoEditando.Id}", productoEditando);
-        if (respuesta.IsSuccessStatusCode)
-        {
-            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
-            productoEditando = null; // Cierra el formulario de edición
-        }
-    }
-
     private void CancelarEdicion()
     {
         productoEditando = null;
+    }
+
+    private async Task EliminarProducto(int id)
+    {
+        await http.DeleteAsync($"api/productos/{id}");
+        productos.RemoveAll(p => p.Id == id);
     }
 }
