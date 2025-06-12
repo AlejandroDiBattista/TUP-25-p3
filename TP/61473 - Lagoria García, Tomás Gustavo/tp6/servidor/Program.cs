@@ -87,10 +87,28 @@ app.MapGet("/productos", async (
 var carritos = new Dictionary<Guid, List<ItemCarrito>>();
 
 // POST /carritos → crea un nuevo carrito
-app.MapPost("/carritos", () =>
+
+app.MapPost("/carritos", async (AgregarCarritoRequest req, TiendaDbContext db)  =>
 {
+     var producto = await db.Productos.FindAsync(req.ProductoId);
+    if (producto == null)
+        return Results.NotFound("Producto no encontrado");
+
+    if (producto.Stock < req.Cantidad)
+        return Results.BadRequest("Stock insuficiente");
+
     var id = Guid.NewGuid();
-    carritos[id] = new List<ItemCarrito>();
+
+    carritos[id] = new List<ItemCarrito>()
+    {
+        new ItemCarrito
+        {
+            ProductoId = producto.Id,
+            Nombre = producto.Nombre,
+            PrecioUnitario = producto.Precio,
+            Cantidad = req.Cantidad
+        }
+    };
     return Results.Ok(id);
 });
 
@@ -103,7 +121,7 @@ app.MapGet("/carritos/{carritoId}", (Guid carritoId) =>
     return Results.Ok(carritos[carritoId]);
 });
 // DELETE /carritos/{carritoId}
-app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaContext db) =>
+app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db) =>
 {
     if (!carritos.ContainsKey(carritoId))
         return Results.NotFound("Carrito no encontrado");
@@ -122,12 +140,16 @@ app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaContext db) 
     return Results.NoContent();
 });
 
+
+
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 app.Run();
 
 //MODELOS DE DATOS
+record AgregarCarritoRequest(int ProductoId, int Cantidad);
+
 record ItemCarrito
 {
     public int ProductoId { get; set; }
