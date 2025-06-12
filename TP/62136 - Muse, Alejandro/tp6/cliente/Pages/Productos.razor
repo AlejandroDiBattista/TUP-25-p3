@@ -22,7 +22,7 @@ else
         @foreach (var p in productos)
         {
             <div style="border: 1px solid #ccc; padding: 10px; width: 220px;">
-                <img src="@p.ImagenUrl" alt="@p.Nombre" style="width:200px;height:200px;object-fit:cover;" />
+                <img src="@($"http://localhost:5184{p.ImagenUrl}")" alt="@p.Nombre" style="width:200px;height:200px;object-fit:cover;" />
                 <h4>@p.Nombre</h4>
                 <p>@p.Descripcion</p>
                 <p><b>Precio:</b> $@p.Precio</p>
