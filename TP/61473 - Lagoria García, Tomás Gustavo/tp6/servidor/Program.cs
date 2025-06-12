@@ -149,7 +149,30 @@ app.MapPut("/carritos/{carritoId}/{productoId}/aumentar", async (Guid carritoId,
 
     return Results.Ok(carrito);
 });
+// PUT /carritos/{carritoId}/{productoId}/disminuir → disminuye la cantidad de un producto en el carrito
+app.MapPut("/carritos/{carritoId}/{productoId}/disminuir", async (Guid carritoId, int productoId, TiendaDbContext db) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
 
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+        return Results.NotFound("Producto no encontrado");
+
+    var carrito = carritos[carritoId];
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item == null)
+        return Results.NotFound("Producto no está en el carrito");
+    item.Cantidad--;
+    producto.Stock++;
+
+    if (item.Cantidad <= 0)
+        carrito.Remove(item);
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(carrito);
+});
 // GET /carritos/{carritoId}
 app.MapGet("/carritos/{carritoId}", (Guid carritoId) =>
 {
