@@ -123,40 +123,70 @@ app.MapPost("/carrito/agregar", async ([FromQuery] Guid id, [FromBody] CarritoIt
 
 app.MapPost("/comprar", async ([FromQuery] Guid id, [FromBody] Compra datosCompra, ApplicationDbContext db) =>
 {
-    if (!carritos.TryGetValue(id, out var carrito) || !carrito.Items.Any())
-        return Results.BadRequest("Carrito inválido o vacío");
+  if (!carritos.TryGetValue(id, out var carrito) || !carrito.Items.Any())
+    return Results.BadRequest("Carrito inválido o vacío");
 
-    var compra = new Compra
+  var compra = new Compra
+  {
+    NombreCliente = datosCompra.NombreCliente,
+    ApellidoCliente = datosCompra.ApellidoCliente,
+    EmailCliente = datosCompra.EmailCliente
+  };
+
+  foreach (var item in carrito.Items)
+  {
+    var producto = await db.Productos.FindAsync(item.ProductoId);
+    if (producto == null || producto.Stock < item.Cantidad)
+      return Results.BadRequest("Stock insuficiente o producto no encontrado");
+
+    producto.Stock -= item.Cantidad;
+
+    compra.Items.Add(new ItemCompra
     {
-        NombreCliente = datosCompra.NombreCliente,
-        ApellidoCliente = datosCompra.ApellidoCliente,
-        EmailCliente = datosCompra.EmailCliente
-    };
+      ProductoId = producto.Id,
+      Cantidad = item.Cantidad,
+      PrecioUnitario = producto.Precio
+    });
+  }
 
-    foreach (var item in carrito.Items)
+  compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+
+  db.Compras.Add(compra);
+  await db.SaveChangesAsync();
+
+  carritos.Remove(id);
+
+  return Results.Ok(new { compra.Id, compra.Total });
+});
+
+app.MapGet("/compras", async (ApplicationDbContext db) =>
+{
+    var compras = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .ToListAsync();
+
+    var resultado = compras.Select(c => new
     {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto == null || producto.Stock < item.Cantidad)
-            return Results.BadRequest("Stock insuficiente o producto no encontrado");
-
-        producto.Stock -= item.Cantidad;
-
-        compra.Items.Add(new ItemCompra
+        c.Id,
+        c.Fecha,
+        c.Total,
+        Cliente = new
         {
-            ProductoId = producto.Id,
-            Cantidad = item.Cantidad,
-            PrecioUnitario = producto.Precio
-        });
-    }
+            c.NombreCliente,
+            c.ApellidoCliente,
+            c.EmailCliente
+        },
+        Productos = c.Items.Select(i => new
+        {
+            Producto = i.Producto?.Nombre ?? "Producto no disponible",
+            i.Cantidad,
+            i.PrecioUnitario,
+            Subtotal = i.Cantidad * i.PrecioUnitario
+        }).ToList()
+    });
 
-    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
-
-    db.Compras.Add(compra);
-    await db.SaveChangesAsync();
-
-    carritos.Remove(id);
-
-    return Results.Ok(new { compra.Id, compra.Total });
+    return Results.Ok(resultado);
 });
 
 using (var scope = app.Services.CreateScope())
