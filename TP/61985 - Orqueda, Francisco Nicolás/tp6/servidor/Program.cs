@@ -81,5 +81,44 @@ app.MapDelete("/api/productos/{id}", async (int id, ModelsTiendaContext db) =>
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
+// Obtener todas las compras
+app.MapGet("/api/compras", async (ModelsTiendaContext db) =>
+    await db.Compras.ToListAsync());
+
+// Obtener una compra por ID
+app.MapGet("/api/compras/{id}", async (int id, ModelsTiendaContext db) =>
+{
+    var compra = await db.Compras.FindAsync(id);
+    return compra is not null ? Results.Ok(compra) : Results.NotFound();
+});
+
+// Crear una nueva compra
+app.MapPost("/api/compras", async (Compra compra, ModelsTiendaContext db) =>
+{
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/compras/{compra.Id}", compra);
+});
+app.MapPut("/api/compras/{id}", async (int id, Compra compraActualizada, ModelsTiendaContext db) =>
+{
+    var compra = await db.Compras.FindAsync(id);
+    if (compra is null) return Results.NotFound();
+
+    compra.Fecha = compraActualizada.Fecha;
+    compra.Total = compraActualizada.Total;
+    compra.ProductoId = compraActualizada.ProductoId;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(compra);
+});
+app.MapDelete("/api/compras/{id}", async (int id, ModelsTiendaContext db) =>
+{
+    var compra = await db.Compras.FindAsync(id);
+    if (compra is null) return Results.NotFound();
+
+    db.Compras.Remove(compra);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
 
 app.Run();

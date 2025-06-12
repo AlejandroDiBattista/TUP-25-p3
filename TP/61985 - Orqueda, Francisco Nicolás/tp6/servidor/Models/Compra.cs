@@ -5,7 +5,7 @@ namespace servidor.Models
         public int Id { get; set; }
         public DateTime Fecha { get; set; } = DateTime.Now;
         public decimal Total { get; set; }
-
+        public int ProductoId { get; set; }
         public string NombreCliente { get; set; } = string.Empty;
         public string ApellidoCliente { get; set; } = string.Empty;
         public string EmailCliente { get; set; } = string.Empty;
