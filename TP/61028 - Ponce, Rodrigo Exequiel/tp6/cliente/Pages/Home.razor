@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject NavigationManager Nav
 
 <PageTitle>Inicio</PageTitle>
 
@@ -8,5 +9,14 @@
             <h1>Comunicación Cliente-Servidor</h1>
         </div>
     </div>
-    <!-- Puedes agregar aquí contenido nuevo si lo deseas -->
-</div>
+   
+</div> 
+
+<!-- Para que funcione el redireccionamiento, se debe tener una página de productos -->
+
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/productos", true);
+    }
+}

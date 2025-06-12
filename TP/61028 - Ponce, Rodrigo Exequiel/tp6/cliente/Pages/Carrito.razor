@@ -1,10 +1,9 @@
 @page "/carrito"
 @using cliente.Modelos
 @using cliente.Services
-@inject ServicioCarrito Carritoo 
+@inject ServicioCarrito Carritoo
 
-<h3>Carritoo
- de compras</h3>
+<h3>Carrito de compras</h3>
 
 @if (Carritoo.Items.Count == 0)
 {
@@ -41,7 +40,19 @@ else
     <button @onclick="VaciarCarrito">Vaciar carrito</button>
 }
 
+
+@implements IDisposable
 @code {
+    protected override void OnInitialized()
+    {
+        Carritoo.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Carritoo.OnChange -= StateHasChanged;
+    }
+
     void QuitarDelCarrito(Producto producto)
     {
         Carritoo.QuitarDelCarrito(producto);

@@ -1,5 +1,5 @@
 using cliente.Modelos;
-using System.Collections.Generic;   
+using System.Collections.Generic;
 using System.Linq;
 
 namespace cliente.Services
@@ -8,6 +8,10 @@ namespace cliente.Services
     {
         public List<ItemCarrito> Items { get; set; } = new();
 
+        public event Action OnChange;
+
+        private void NotificarCambio() => OnChange?.Invoke();
+
         public void AgregarAlCarrito(Producto producto)
         {
             var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
@@ -15,6 +19,7 @@ namespace cliente.Services
                 item.Cantidad++;
             else
                 Items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
+            NotificarCambio();
         }
 
         public void QuitarDelCarrito(Producto producto)
@@ -25,12 +30,14 @@ namespace cliente.Services
                 item.Cantidad--;
                 if (item.Cantidad <= 0)
                     Items.Remove(item);
+                NotificarCambio();
             }
         }
 
         public void VaciarCarrito()
         {
             Items.Clear();
+            NotificarCambio();
         }
     }
 }

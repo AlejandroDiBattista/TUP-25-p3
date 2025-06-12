@@ -2,9 +2,12 @@
 @using cliente.Modelos
 @using cliente.Services
 @inject ServicioProductos Services
-@inject ServicioCarrito Carrito
+@inject ServicioCarrito Carritoo
 
 <h3>Productos</h3>
+
+<p>En carrito: @Carritoo.Items.Count</p>
+
 
 @if (productos == null)
 {
@@ -33,6 +36,6 @@ else
 
     void AgregarAlCarrito(Producto producto)
     {
-        Carrito.AgregarAlCarrito(producto);
+        Carritoo.AgregarAlCarrito(producto);
     }
 }
