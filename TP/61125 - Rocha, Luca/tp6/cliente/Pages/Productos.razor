@@ -1,4 +1,4 @@
-@@page "/productos"
+@page "/productos"
 @inject HttpClient Http
 @using cliente.Modelos
 
@@ -32,15 +32,34 @@ else
                     <strong>@p.Nombre</strong> – $@p.Precio<br />
                     <em>@p.Descripcion</em> – Stock: @p.Stock
                 </div>
-                <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
+                <div>
+                    <button class="btn btn-warning btn-sm" @onclick="() => EditarProducto(p)">Editar</button>
+                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
+                </div>
             </li>
         }
     </ul>
 }
 
+@if (productoEditando != null)
+{
+    <h4>📝 Editar producto</h4>
+
+    <div class="mb-4">
+        <input @bind="productoEditando.Nombre" placeholder="Nombre" class="form-control mb-2" />
+        <input @bind="productoEditando.Descripcion" placeholder="Descripción" class="form-control mb-2" />
+        <input type="number" @bind="productoEditando.Precio" placeholder="Precio" class="form-control mb-2" />
+        <input type="number" @bind="productoEditando.Stock" placeholder="Stock" class="form-control mb-2" />
+        <input @bind="productoEditando.ImagenUrl" placeholder="URL Imagen" class="form-control mb-2" />
+        <button class="btn btn-success" @onclick="GuardarEdicion">Guardar cambios</button>
+        <button class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+    </div>
+}
+
 @code {
     private List<Producto> productos;
     private Producto nuevoProducto = new();
+    private Producto productoEditando;
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,5 +83,33 @@ else
         {
             productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
         }
+    }
+
+    private void EditarProducto(Producto producto)
+    {
+        productoEditando = new Producto
+        {
+            Id = producto.Id,
+            Nombre = producto.Nombre,
+            Descripcion = producto.Descripcion,
+            Precio = producto.Precio,
+            Stock = producto.Stock,
+            ImagenUrl = producto.ImagenUrl
+        };
+    }
+
+    private async Task GuardarEdicion()
+    {
+        var respuesta = await Http.PutAsJsonAsync($"api/productos/{productoEditando.Id}", productoEditando);
+        if (respuesta.IsSuccessStatusCode)
+        {
+            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
+            productoEditando = null; // Cierra el formulario de edición
+        }
+    }
+
+    private void CancelarEdicion()
+    {
+        productoEditando = null;
     }
 }
