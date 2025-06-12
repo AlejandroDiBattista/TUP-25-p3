@@ -14,7 +14,7 @@
             <a href="/carrito" style="text-decoration:none; color:inherit;">
                 <span style="font-size:1.5rem; cursor:pointer;">
                     🛒
-                    <span style="position:absolute; top:-10px; right:-15px; background:#388e3c; color:white; border-radius:50%; padding:2px 8px; font-size:0.9rem; font-weight:bold; min-width:24px; text-align:center;">@carritoCantidad</span>
+                    <span class="@(carritoAnim ? "carrito-badge" : null)" style="position:absolute; top:-10px; right:-15px; background:#b71c1c; color:white; border-radius:50%; padding:2px 8px; font-size:0.9rem; font-weight:bold; min-width:24px; text-align:center;">@carritoCantidad</span>
                 </span>
             </a>
         </div>
@@ -87,6 +87,7 @@
     string mensaje = string.Empty;
     bool mensajeVisible = false;
     int carritoCantidad = 0;
+    bool carritoAnim = false;
 
     private async Task ObtenerDatosDelServidor() {
         try {
@@ -111,7 +112,14 @@
     private async Task ActualizarCantidadCarrito()
     {
         var items = await CarritoService.ObtenerItemsAsync();
-        carritoCantidad = items.Sum(x => x.Cantidad);
+        int nuevaCantidad = items.Sum(x => x.Cantidad);
+        if (nuevaCantidad > carritoCantidad) {
+            carritoAnim = true;
+            StateHasChanged();
+            await Task.Delay(400);
+            carritoAnim = false;
+        }
+        carritoCantidad = nuevaCantidad;
         StateHasChanged();
     }
 

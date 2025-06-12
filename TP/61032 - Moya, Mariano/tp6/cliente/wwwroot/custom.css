@@ -1,3 +1,47 @@
+:root {
+    /* ...colores ya definidos... */
+    --color-navbar-hover: #ffebee;
+    --color-navbar-link: #fff;
+    --color-navbar-link-hover: #b71c1c;
+}
+
+/* Loader personalizado para Blazor */
+.loading-progress circle {
+    stroke: var(--color-principal,#b71c1c);
+    stroke-width: 8;
+    fill: none;
+    opacity: 0.7;
+    animation: dash 1.2s linear infinite;
+}
+@keyframes dash {
+    0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+
+/* Navbar links hover */
+nav a {
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+    color: var(--color-navbar-link);
+    border-radius: 6px;
+    padding: 0.2rem 0.7rem;
+}
+nav a:hover, nav a:focus {
+    background: var(--color-navbar-hover);
+    color: var(--color-navbar-link-hover);
+    text-decoration: underline;
+    box-shadow: 0 2px 8px rgba(183,28,28,0.10);
+}
+
+/* Badge animado carrito */
+.carrito-badge {
+    animation: badge-pop 0.4s cubic-bezier(.68,-0.55,.27,1.55);
+}
+@keyframes badge-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
 /* Animaciones y mejoras visuales para la tienda - Paleta roja */
 
 :root {
