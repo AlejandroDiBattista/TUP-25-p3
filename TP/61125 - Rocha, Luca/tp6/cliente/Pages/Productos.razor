@@ -1,28 +1,56 @@
-<h3 class="text-center mt-3">Catálogo de Productos</h3>
+@page "/productos"
+@inject HttpClient Http
+@using cliente.Modelos
 
-@if (productos == null)
+<h3 class="mb-3">Agregar producto</h3>
+
+<div class="mb-4">
+    <input @bind="nuevoProducto.Nombre" placeholder="Nombre" class="form-control mb-2" />
+    <input @bind="nuevoProducto.Descripcion" placeholder="Descripción" class="form-control mb-2" />
+    <input type="number" @bind="nuevoProducto.Precio" placeholder="Precio" class="form-control mb-2" />
+    <input type="number" @bind="nuevoProducto.Stock" placeholder="Stock" class="form-control mb-2" />
+    <input @bind="nuevoProducto.ImagenUrl" placeholder="URL Imagen" class="form-control mb-2" />
+    <button class="btn btn-success" @onclick="AgregarProducto">Agregar</button>
+</div>
+
+<h4>📋 Lista de productos</h4>
+@if (productos is null)
 {
-    <div class="text-center">
-        <div class="spinner-border" role="status"></div>
-        <p>Cargando productos...</p>
-    </div>
+    <p><em>Cargando productos...</em></p>
+}
+else if (!productos.Any())
+{
+    <p>No hay productos disponibles.</p>
 }
 else
 {
-    <div class="row justify-content-center">
-        @foreach (var producto in productos)
+    <ul class="list-group">
+        @foreach (var p in productos)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">@producto.Nombre</h5>
-                        <p class="card-text">@producto.Descripcion</p>
-                        <p class="fw-bold text-success">Precio: $@producto.Precio</p>
-                        <button class="btn btn-primary w-100" @onclick="()=>AgregarAlCarrito(producto.Id)">Agregar al carrito</button>
-                    </div>
-                </div>
-            </div>
+            <li class="list-group-item">
+                <strong>@p.Nombre</strong> – $@p.Precio <br />
+                <em>@p.Descripcion</em> – Stock: @p.Stock
+            </li>
         }
-    </div>
+    </ul>
+}
+
+@code {
+    private List<Producto> productos;
+    private Producto nuevoProducto = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
+    }
+
+    private async Task AgregarProducto()
+    {
+        var response = await Http.PostAsJsonAsync("api/productos", nuevoProducto);
+        if (response.IsSuccessStatusCode)
+        {
+            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
+            nuevoProducto = new(); // resetea el formulario
+        }
+    }
 }
