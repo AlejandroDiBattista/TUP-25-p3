@@ -12,6 +12,7 @@ namespace servidor.Data
         public DbSet<ItemCompra> ItemsCompra { get; set; }
         public DbSet<Carrito> Carritos { get; set; }
         public DbSet<ItemCarrito> ItemsCarrito { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
