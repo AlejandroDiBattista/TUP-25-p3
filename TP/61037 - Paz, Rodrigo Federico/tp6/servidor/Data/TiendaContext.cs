@@ -10,11 +10,12 @@ namespace servidor.Data
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<ItemCompra> ItemsCompra { get; set; }
-
+        public DbSet<Carrito> Carritos { get; set; }
+        public DbSet<ItemCarrito> ItemsCarrito { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             modelBuilder.Entity<Producto>().HasData(
                 new Producto { Id = 1, Nombre = "Coca Cola", Descripcion = "Botella 1.5L", Precio = 900, Stock = 50, ImagenUrl = "https://example.com/coca.jpg" },
                 new Producto { Id = 2, Nombre = "Pepsi", Descripcion = "Botella 1.5L", Precio = 850, Stock = 30, ImagenUrl = "https://example.com/pepsi.jpg" },

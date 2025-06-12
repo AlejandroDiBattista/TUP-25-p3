@@ -37,6 +37,7 @@ app.UseCors("AllowClientApp");
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+app.MapCarritoEndpoints();
 app.MapCompraEndpoints();
 app.MapProductoEndpoints();
 app.Run();
