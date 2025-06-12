@@ -1,59 +1,98 @@
 ﻿@page "/"
+@using cliente.Modulos
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager NavigationManager
 
-<PageTitle>Inicio</PageTitle>
+<title>Inicio</title>
 
 <div class="container">
     <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h1>Catálogo de Productos</h1>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+        @if (cargando)
+        {
+            <div class="alert alert-info">Cargando datos...</div>
+        }
+        else if (productos != null)
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4 d-flex align-items-stretch">
+                    <div class="card w-100" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="object-fit:cover; width:100%; height:250px;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title" style="color:rgb(218, 218, 218);">@producto.Nombre</h5>
+                            <p class="card-text" style="color:rgb(218, 218, 218);">@producto.Descripcion</p>
+                            <p style="color:rgba(0, 255, 64, 0.75);">Precio: $@producto.Precio</p>
+                            <p style="color:@(producto.Stock == 0 ? "rgba(255, 0, 0, 0.75)" : "rgba(0, 255, 64, 0.75)"); font-weight:bold;">
+                                Stock: @producto.Stock
+                            </p>
+                            <button class="btn btn-success mt-auto"
+                                    style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);"
+                                    @onclick="() => AgregarAlCarrito(producto.Id)"
+                                    disabled="@(producto.Stock == 0)">
+                                Agregar al carrito
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
-        </div>
+        } else if (error != null) {
+            <div class="alert alert-danger">
+                Error: @error
+            </div>
+        }
     </div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> productos;
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? busqueda { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ObtenerProductos();
+    }
+
+    private async Task ObtenerProductos()
+    {
+        try
+        {
             cargando = true;
             error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+            productos = await ApiService.ObtenerProductosAsync(busqueda);
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
-            datos = null;
-        } finally {
+            productos = null;
+        }
+        finally
+        {
             cargando = false;
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        try
+        {
+            await ApiService.AgregarAlCarritoAsync(productoId, 1);
+            NavigationManager.NavigateTo("/carrito");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
         }
     }
 }

@@ -1,26 +1,50 @@
 using System.Net.Http.Json;
+using cliente.Modulos;
+using Microsoft.JSInterop;
 
-namespace cliente.Services;
+namespace cliente.Services
+{
+    public class ApiService
+    {
+        private readonly HttpClient _http;
+        private readonly IJSRuntime _js;
+        private string carritoId;
 
-public class ApiService {
-    private readonly HttpClient _httpClient;
+        public ApiService(HttpClient http, IJSRuntime js)
+        {
+            _http = http;
+            _js = js;
+        }
 
-    public ApiService(HttpClient httpClient) {
-        _httpClient = httpClient;
-    }
+        public async Task InicializarCarritoIdAsync()
+        {
+            carritoId = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
+            if (string.IsNullOrWhiteSpace(carritoId))
+            {
+                carritoId = Guid.NewGuid().ToString();
+                await _js.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
+            }
+        }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
+        public async Task<List<Producto>> ObtenerProductosAsync(string? busqueda = null)
+        {
+            string url = "/api/productos";
+            if (!string.IsNullOrWhiteSpace(busqueda))
+                url += $"?busqueda={Uri.EscapeDataString(busqueda)}";
+            return await _http.GetFromJsonAsync<List<Producto>>(url);
+        }
+
+        public async Task<List<ItemCompra>> ObtenerCarritoAsync()
+        {
+            await InicializarCarritoIdAsync();
+            return await _http.GetFromJsonAsync<List<ItemCompra>>($"/api/carritos/{carritoId}");
+        }
+
+        public async Task<List<ItemCompra>> AgregarAlCarritoAsync(int productoId, int cantidad)
+        {
+            await InicializarCarritoIdAsync();
+            var resp = await _http.PutAsync($"/api/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+            return await resp.Content.ReadFromJsonAsync<List<ItemCompra>>();
         }
     }
-}
-
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
 }
