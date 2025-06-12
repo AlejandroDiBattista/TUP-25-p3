@@ -1,0 +1,57 @@
+@page "/catalogo"
+@using cliente.Models
+@using cliente.Services
+@inject ApiService ApiService
+
+<h3>Catálogo de Gorras 🧢</h3>
+
+@if (cargando)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <p>No hay productos disponibles.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var producto in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;" />
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p><strong>Precio:</strong> $@producto.Precio</p>
+                        <p><strong>Stock:</strong> @producto.Stock</p>
+                        <button class="btn btn-primary" disabled="@(!PuedeAgregar(producto))">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Producto> productos = new();
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private bool PuedeAgregar(Producto p) => p.Stock > 0;
+}
+

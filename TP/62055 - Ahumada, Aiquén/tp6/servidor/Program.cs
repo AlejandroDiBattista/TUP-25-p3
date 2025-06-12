@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins("http://localhost:5184", "http://localhost:5177")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -15,7 +15,7 @@ builder.Services.AddCors(options => {
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 
-// ⬅️ MOVER AQUÍ el DbContext (antes de Build)
+// ⬅
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
@@ -34,7 +34,7 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseCors("AllowClientApp");
-
+app.UseRouting();
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Endpoint de prueba
