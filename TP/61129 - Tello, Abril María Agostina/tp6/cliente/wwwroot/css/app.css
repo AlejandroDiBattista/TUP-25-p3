@@ -1,7 +1,29 @@
 html, body {
-    margin: 0;
-    padding: 0;
+
     height: 100%;
+    
+}
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /*background-image: url('../imagenes/lay-flat-del-hermoso-concepto-del-dia-de-san-valentin.jpg');
+    background-size: cover;         
+    background-repeat: no-repeat;*/
+    width: 100%; 
+}
+
+.fondo-home {
+    background-image: url('../imagenes/lay-flat-del-hermoso-concepto-del-dia-de-san-valentin.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.fondo-productos {
+    background-color: rgb(242, 216, 224);
+    min-height: 100vh;
     width: 100%;
 }
 
@@ -9,37 +31,23 @@ html, body {
 nav.navbar{
     width: 100%;
     height: 4em;
-     background-color:rgba(249, 249, 249, 0.553) !important;
-     font-family: "Cabin", sans-serif;
-     position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
+    background-color:rgba(249, 249, 249, 0.553) !important;
+    font-family: "Cabin", sans-serif;
+    position: fixed;
 }
 nav.navbar a{
     margin-left:1.5em ;
 }
-button{
+.btn-outline-light, .btn-outline-success{
     border: rgb(224, 99, 141) 1.7px solid !important;
     color: rgb(224, 99, 141) !important;
 }
 
-button:hover{
+.btn-outline-light:hover, .btn-outline-success:hover{
     background-color: rgb(233, 140, 171) !important;
     color: white !important;
     border: 1.7px solid white !important;
 }
-
-body{
-     min-height: 100vh;
-    min-width: 100vw;
-    background-image: url('../imagenes/lay-flat-del-hermoso-concepto-del-dia-de-san-valentin.jpg'); /* Ruta de la imagen de fondo */
-    background-size: cover;         /* Hace que la imagen cubra todo el fondo */
-    background-repeat: no-repeat;   /* Evita que la imagen se repita */
-    background-position: center;
-}
-
-
 
 .contenedor-inicio{
     display: flex;
@@ -48,6 +56,7 @@ body{
     min-height: 80vh;
     padding: 5em 5vw;
     gap: 6em;
+    width: 100%;
 }
 
 .contenido-inicio{
@@ -67,15 +76,17 @@ body{
     margin-bottom: 2em;
     color: rgb(48, 48, 48);
 }
-
+.contenedor-imagen {
+    max-width: 600px;
+}
 
 .contenedor-imagen img {
-    max-width: 600px;
     width: 100%;
+    height: auto;
     border-radius: 8px;
     box-shadow: 0 12px 48px 0 rgba(0,0,0,0.08);
     background: white;
-    margin-left: 4em;
+    
 }
 
 .btn-comprar, .btn.btn-outline-light {
@@ -83,23 +94,26 @@ body{
     font-size: 1.3em !important;
     font-weight: bold !important;
 }
-
-
-.content {
-    padding-top: 1.1rem;
+footer {
+    background: #fff0f6;
+    color: #c02d76;
+    text-align: center;
+    padding: 1.5em 0 1em 0;
+    font-family: "Cabin", sans-serif;
+    font-size: 1.1em;
+    box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
+    border-top: 2px solid #f7cbe7;
 }
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
-}
 
-.invalid {
-    outline: 1px solid red;
-}
 
-.validation-message {
-    color: red;
-}
+
+
+
+
+
+
+
 
 #blazor-error-ui {
     color-scheme: light only;
