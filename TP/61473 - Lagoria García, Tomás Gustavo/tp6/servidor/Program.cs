@@ -226,6 +226,39 @@ app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db
     return Results.NoContent();
 });
 
+// PUT /carritos/{carritoId}/confirmar
+app.MapPut("/carritos/{carritoId}/confirmar", async (Guid carritoId, ConfirmacionRequest datos, TiendaDbContext db) =>
+{
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado");
+
+    var carrito = carritos[carritoId];
+    if (!carrito.Any())
+        return Results.BadRequest("Carrito vacío");
+
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        NombreCliente = datos.Nombre,
+        ApellidoCliente = datos.Apellido,
+        EmailCliente = datos.Email,
+        Total = carrito.Sum(i => i.Cantidad * i.PrecioUnitario),
+        Items = carrito.Select(i => new ItemCompra
+        {
+            ProductoId = i.ProductoId,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+        }).ToList()
+    };
+
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+
+    carritos.Remove(carritoId);
+
+    return Results.Ok(new { compra.Id, compra.Total, compra.Fecha });
+});
+
 
 
 // Ejemplo de endpoint de API
@@ -235,7 +268,7 @@ app.Run();
 
 //MODELOS DE DATOS
 record AgregarCarritoRequest(int ProductoId, int Cantidad);
-
+record ConfirmacionRequest(string Nombre, string Apellido, string Email);
 record ItemCarrito
 {
     public int ProductoId { get; set; }
