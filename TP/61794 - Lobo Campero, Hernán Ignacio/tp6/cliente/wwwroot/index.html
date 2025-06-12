@@ -3,33 +3,102 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cliente</title>
-    <base href="/" />    <!-- Bootstrap 5 CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <title>TUC BYTE</title>
+    <base href="/" />
+    <!-- Zero Athletics Font -->
+    <link href="https://db.onlinewebfonts.com/c/e52053cc63a09c123dd4370ed9943e3e?family=Zero+Athletics" rel="stylesheet">
+    <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">    <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="cliente.styles.css" rel="stylesheet" />
+    
+    <!-- Estilos para el spinner de carga inicial -->
+    <style>
+        @keyframes spin {
+            0%, 100% { box-shadow: .2em 0px 0 0px currentcolor; }
+            12% { box-shadow: .2em .2em 0 0 currentcolor; }
+            25% { box-shadow: 0 .2em 0 0px currentcolor; }
+            37% { box-shadow: -.2em .2em 0 0 currentcolor; }
+            50% { box-shadow: -.2em 0 0 0 currentcolor; }
+            62% { box-shadow: -.2em -.2em 0 0 currentcolor; }
+            75% { box-shadow: 0px -.2em 0 0 currentcolor; }
+            87% { box-shadow: .2em -.2em 0 0 currentcolor; }
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.2); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        
+        /* Animación para el logo */
+        .initial-loader img {
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        /* Animación para el contenido */
+        .initial-loader > div {
+            animation: fadeInScale 0.8s ease-out;
+        }
+        
+        /* Efecto de desvanecimiento cuando la app carga */
+        .initial-loader.fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+    </style>
 </head>
 
-<body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+<body>    <div id="app">
+        <!-- Spinner de carga inicial TUC BYTE -->
+        <div id="initial-loader" class="initial-loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, #000000 0%, #1a1a1a 30%, #ff6b35 70%, #ff4500 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;">
+            <div style="text-align: center; color: white;">
+                <!-- Logo TUC BYTE -->
+                <img src="images/logotucbyte.png" alt="TUC BYTE" style="width: 80px; height: 80px; margin-bottom: 2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));">
+                
+                <!-- Título con fuente Zero Athletics -->
+                <h1 style="font-family: 'Zero Athletics', sans-serif; font-size: 2.5rem; margin-bottom: 2rem; background: linear-gradient(to bottom, #ff6b35 0%, #ff4500 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">TUC BYTE</h1>
+                
+                <!-- Spinner personalizado -->
+                <div style="transform: rotateZ(45deg); perspective: 1000px; border-radius: 50%; width: 64px; height: 64px; color: #ff6b35; margin: 0 auto 2rem auto; position: relative;">
+                    <div style="content: ''; display: block; position: absolute; top: 0; left: 0; width: 64px; height: 64px; border-radius: 50%; transform: rotateX(70deg); animation: 1s spin linear infinite; box-shadow: .2em 0px 0 0px currentcolor;"></div>
+                    <div style="content: ''; display: block; position: absolute; top: 0; left: 0; width: 64px; height: 64px; border-radius: 50%; color: #ff4500; transform: rotateY(70deg); animation: 1s spin linear infinite; animation-delay: .4s; box-shadow: .2em 0px 0 0px currentcolor;"></div>
+                </div>
+                
+                <!-- Texto de carga -->
+                <p style="font-size: 1.2rem; margin: 0; opacity: 0.9; font-weight: 500;">Cargando aplicación...</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.7;">Por favor espera un momento</p>
+            </div>
+        </div>
+        
+        <!-- Fallback loader original (oculto) -->
+        <div style="display: none;">
+            <svg class="loading-progress">
+                <circle r="40%" cx="50%" cy="50%" />
+                <circle r="40%" cx="50%" cy="50%" />
+            </svg>
+            <div class="loading-progress-text"></div>
+        </div>
     </div>
-
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>    </div>
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>    <script>
         window.showToast = (toastId) => {
             const toastElement = document.getElementById('toast-' + toastId);
             if (toastElement) {
@@ -37,6 +106,42 @@
                 toast.show();
             }
         };
+        
+        // Función para ocultar el loader inicial cuando Blazor cargue
+        window.hideInitialLoader = () => {
+            const loader = document.getElementById('initial-loader');
+            if (loader) {
+                loader.classList.add('fade-out');
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 500);
+            }
+        };
+        
+        // Event listener para cuando Blazor termine de cargar
+        window.addEventListener('load', () => {
+            // Esperar un poco más para asegurar que Blazor esté completamente cargado
+            setTimeout(() => {
+                hideInitialLoader();
+            }, 1500);
+        });
+        
+        // También escuchar el evento específico de Blazor
+        document.addEventListener('DOMContentLoaded', () => {
+            // Detectar cuando Blazor esté listo
+            const checkBlazor = setInterval(() => {
+                if (window.Blazor && window.DotNet) {
+                    clearInterval(checkBlazor);
+                    setTimeout(hideInitialLoader, 1000);
+                }
+            }, 100);
+            
+            // Fallback: ocultar después de 4 segundos máximo
+            setTimeout(() => {
+                clearInterval(checkBlazor);
+                hideInitialLoader();
+            }, 4000);
+        });
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>

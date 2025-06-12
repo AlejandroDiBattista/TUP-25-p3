@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Cliente.Services
 {
     public class ToastService

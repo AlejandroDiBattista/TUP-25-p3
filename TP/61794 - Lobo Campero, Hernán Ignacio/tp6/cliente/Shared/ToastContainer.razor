@@ -4,19 +4,19 @@
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
-<!-- Contenedor de toasts en la parte superior central -->
+<!-- Contenedor de toasts en la parte superior central con estilo TUC BYTE -->
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1055; min-width: 350px; margin-top: 20px;">
     @foreach (var toast in toasts)
-    {        <div id="toast-@toast.Id" class="toast align-items-center text-white border-0 @GetToastClass(toast.Type) mb-2" 
+    {        <div id="toast-@toast.Id" class="toast align-items-center text-white border-0 @GetToastClass(toast.Type) mb-2 fade-in-up" 
              role="alert" aria-live="assertive" aria-atomic="true" 
              data-bs-autohide="true" data-bs-delay="@toast.Duration" 
-             style="width: 100%; min-width: 300px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));">
+             style="width: 100%; min-width: 300px; box-shadow: var(--shadow-orange-lg); border-radius: var(--border-radius-md); backdrop-filter: blur(10px);">
             <div class="d-flex">
-                <div class="toast-body d-flex align-items-center">
-                    <i class="@GetIconClass(toast.Type) me-2"></i>
-                    <span>@toast.Message</span>
+                <div class="toast-body d-flex align-items-center p-3">
+                    <i class="@GetIconClass(toast.Type) me-3 fs-5"></i>
+                    <span class="fw-semibold">@toast.Message</span>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" 
+                <button type="button" class="btn-close btn-close-white me-2 m-auto opacity-75" 
                         @onclick="() => RemoveToast(toast.Id)"></button>
             </div>
         </div>
@@ -24,16 +24,18 @@
 </div>
 
 @code {
-    private List<ToastModel> toasts = new();
-    
-    protected override void OnInitialized()
+    private List<ToastModel> toasts = new();    protected override void OnInitialized()
     {
-        ToastService.OnToastRequested += ShowToast;
+        ToastService.OnToastRequested += ShowToastHandler;
     }
     
-    public void Dispose()
+    private void ShowToastHandler(string message, ToastType type, int duration)
     {
-        ToastService.OnToastRequested -= ShowToast;
+        _ = Task.Run(async () => await ShowToast(message, type, duration));
+    }
+      public void Dispose()
+    {
+        ToastService.OnToastRequested -= ShowToastHandler;
     }
       public class ToastModel
     {
@@ -41,44 +43,69 @@
         public string Message { get; set; } = "";
         public ToastType Type { get; set; }
         public int Duration { get; set; } = 4000;
-    }
-      private async void ShowToast(string message, ToastType type, int duration)
+    }      private async Task ShowToast(string message, ToastType type, int duration)
     {
-        var toast = new ToastModel
+        try
         {
-            Message = message,
-            Type = type,
-            Duration = duration
-        };
-        
-        toasts.Add(toast);
-        await InvokeAsync(StateHasChanged);
-        
-        // Mostrar el toast usando Bootstrap JS
-        await JSRuntime.InvokeVoidAsync("showToast", toast.Id);
-        
-        // Auto-remover después del tiempo especificado
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(duration);
-            await InvokeAsync(() =>
+            var toast = new ToastModel
             {
-                RemoveToast(toast.Id);
+                Message = message,
+                Type = type,
+                Duration = duration
+            };
+            
+            toasts.Add(toast);
+            await InvokeAsync(StateHasChanged);
+            
+            // Mostrar el toast usando Bootstrap JS
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("showToast", toast.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al mostrar toast: {ex.Message}");
+            }
+            
+            // Auto-remover después del tiempo especificado
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(duration);
+                    await InvokeAsync(() =>
+                    {
+                        RemoveToast(toast.Id);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al auto-remover toast: {ex.Message}");
+                }
             });
-        });
-    }
-      private async void RemoveToast(string id)
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en ShowToast: {ex.Message}");
+        }
+    }      private void RemoveToast(string id)
     {
-        toasts.RemoveAll(t => t.Id == id);
-        await InvokeAsync(StateHasChanged);
-    }
-      private string GetToastClass(ToastType type) => type switch
+        try
+        {
+            toasts.RemoveAll(t => t.Id == id);
+            InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al remover toast: {ex.Message}");
+        }
+    }private string GetToastClass(ToastType type) => type switch
     {
-        ToastType.Success => "bg-success",
-        ToastType.Error => "bg-danger",
-        ToastType.Warning => "bg-warning",
-        ToastType.Info => "bg-primary",
-        _ => "bg-primary"
+        ToastType.Success => "bg-success shadow-sm",
+        ToastType.Error => "bg-danger shadow-sm",
+        ToastType.Warning => "bg-warning shadow-sm",
+        ToastType.Info => "bg-gradient-primary shadow-orange",
+        _ => "bg-gradient-primary shadow-orange"
     };
     
     private string GetIconClass(ToastType type) => type switch

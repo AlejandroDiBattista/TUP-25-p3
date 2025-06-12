@@ -23,23 +23,25 @@
     {
         CarritoCantidad = cantidad;
         StateHasChanged();
-    }
-
-    private async Task ActualizarContadorCarrito()
+    }    private async Task ActualizarContadorCarrito()
     {
         try
         {
             CarritoCantidad = await CarritoService.ObtenerCantidadItemsAsync();
             StateHasChanged();
         }
+        catch (HttpRequestException httpEx)
+        {
+            Console.WriteLine($"Error de conexión al actualizar contador: {httpEx.Message}");
+            // No mostrar error al usuario si es problema de conexión al inicio
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al actualizar contador: {ex.Message}");
         }
-    }
-
-    private async Task RealizarBusqueda(string? query)
+    }    private Task RealizarBusqueda(string? query)
     {
         // La búsqueda ahora se maneja mediante parámetros URL en el Navbar
+        return Task.CompletedTask;
     }
 }
