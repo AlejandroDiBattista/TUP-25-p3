@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using.Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +22,6 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment()) {
   app.UseDeveloperExceptionPage();
 }
-
 
 app.UseCors("AllowClientApp");
 
@@ -76,8 +75,8 @@ public class CarritoItem
 
 public class Carrito
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public List<CarritoItem> Items { get; set; } = new();
+  public Guid Id { get; set; } = Guid.NewGuid();
+  public List<CarritoItem> Items { get; set; } = new();
 }
 
 var carritos = new Dictionary<Guid, Carrito>();
@@ -88,6 +87,21 @@ app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha 
 
 app.MapGet("/productos", async (AppDbContext db) =>
     await db.Productos.ToListAsync());
+
+app.MapGet("/carrito/{carritoId}", (Guid carritoId) =>
+{
+    if (carritos.TryGetValue(carritoId, out var carrito))
+        return Results.Ok(carrito);
+
+    return Results.NotFound(new { mensaje = "Carrito no encontrado" });
+});
+
+app.MapPost("/carrito", () =>
+{
+  var nuevoCarrito = new Carrito();
+  carritos[nuevoCarrito.Id] = nuevoCarrito;
+  return Results.Ok(new { carritoId = nuevoCarrito.Id });
+});
 
 using (var scope = app.Services.CreateScope())
 {
