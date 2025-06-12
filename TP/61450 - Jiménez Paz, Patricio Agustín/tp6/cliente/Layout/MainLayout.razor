@@ -1,4 +1,25 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+<div class="h-screen flex flex-col">
+    <header class="py-4 border-b border-gray-300 bg-violet-200">
+        <div class="max-w-screen-xl mx-auto px-4">
+            <div class="flex gap-4 items-center">
+                <div class="flex items-center justify-between grow w-full gap-2 md:gap-16">
+                    <div class="flex items-center gap-2">
+                        <img src="favicon.png" alt="Logo" class="w-8 h-8" />
+                        <h1 class="font-bold text-2xl">Tienda Online</h1>
+                    </div>
+                    <button class="inline-flex items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Ver Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="py-4 bg-violet-50 grow">
+        <div class="max-w-screen-xl mx-auto px-4">
+            @Body
+        </div>
+    </main>
 </div>

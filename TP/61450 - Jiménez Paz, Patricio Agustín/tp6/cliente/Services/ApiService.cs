@@ -12,6 +12,11 @@ public class ApiService
         _httpClient = httpClient;
     }
 
+    public string? GetApiBaseUrl()
+    {
+        return _httpClient.BaseAddress?.ToString();
+    }
+
     public async Task<List<Producto>> ObtenerDatosAsync()
     {
         try

@@ -3,47 +3,64 @@
 @using cliente.Models
 @inject ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Tienda Online | Blazor</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<h1 class="text-2xl font-bold mb-4">Productos</h1>
+@if (cargando) {
+    <div class="text-center">
+        <p>
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Cargando productos...
+        </p>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn bg-blue-600" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
+} else {
+    <div class="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
+        @if (datos != null) {
+            @foreach (var producto in datos) {
+                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-between">
+                    <div class="h-56 w-full">
+                        <a href="#">
+                            <img class="mx-auto h-full" src="@($"{ApiService.GetApiBaseUrl()}/{producto.ImagenUrl}")" alt="@producto.Nombre" />
+                        </a>
+                    </div>
+                    <div class="pt-6 flex flex-col items-center justify-between">
+                        @if (producto.Stock < 3) {
+                            <div class="mb-4 flex items-center justify-between gap-4">
+                                @if (producto.Stock == 0) {
+                                    <span class="me-2 rounded bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"> Sin stock </span>
+                                } else {
+                                    <span class="me-2 rounded bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">@(producto.Stock == 1 ? "Último disponible" : $"Quedan {producto.Stock} unidades")! </span>
+                                }
+                            </div>
+                        }
+                        <a href="#" class="text-lg font-semibold leading-tight text-gray-900 hover:underline">@producto.Nombre</a>
+                        <div class="mt-4 flex flex-col items-center justify-between gap-4">
+                            <p class="font-bold leading-tight text-gray-900">@($"${producto.Precio:N2}")</p>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+                            <button class="inline-flex items-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4  focus:ring-violet-300 whitespace-nowrap">
+                                <i class="fas fa-cart-plus"></i>
+                                Añadir al carrito
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Count</h5>
-                        <p class="card-text">Cantidad de productos obtenidos.</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
-        </div>
+        } else if (error != null) {
+            <div class="alert alert-danger">
+                Error: @error
+            </div>
+        }
     </div>
-</div>
+}
 
 @code {
     private List<Producto> datos;
     private string error;
-    private bool cargando = false;
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync() {
+        await ObtenerDatosDelServidor();
+    }
 
     private async Task ObtenerDatosDelServidor() {
         try {
