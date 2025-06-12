@@ -203,8 +203,11 @@ app.MapGet("/carritos/{carritoId}", (Guid carritoId) =>
 {
     if (!carritos.ContainsKey(carritoId))
         return Results.NotFound("Carrito no encontrado");
-
-    return Results.Ok(carritos[carritoId]);
+   var carrito = carritos[carritoId];
+    if (carrito.Count == 0)
+        return Results.Ok(new { Mensaje = "Carrito vacío" });
+    var total = carrito.Sum(i => i.Cantidad * i.PrecioUnitario);
+       return Results.Ok(new { Carrito = carrito, Total = total });
 });
 // DELETE /carritos/{carritoId}
 app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db) =>
