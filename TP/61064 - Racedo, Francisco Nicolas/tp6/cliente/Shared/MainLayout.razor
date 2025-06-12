@@ -1,0 +1,46 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using cliente.Services
+@using cliente.Pages
+@inherits LayoutComponentBase
+
+<!-- Cabecera fija con logo y buscador (sin icono de carrito) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img src="/favicon.png" alt="Logo" width="32" height="32" class="d-inline-block align-text-top me-2">
+            Tienda Online
+        </a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    @Body
+</div>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; }
+    [Inject] IJSRuntime JS { get; set; }
+    [Inject] cliente.Services.ApiService Api { get; set; }
+
+    string busqueda = "";
+    int contadorCarrito = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener carritoId de localStorage
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (Guid.TryParse(idStr, out var carritoId))
+        {
+            var items = await Api.GetCarritoAsync(carritoId);
+            contadorCarrito = items?.Sum(i => i.Cantidad) ?? 0;
+        }
+        // Escuchar cambios en localStorage para contadorCarrito
+        await JS.InvokeVoidAsync("eval", @"
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'contadorCarrito') {
+                    location.reload();
+                }
+            });
+        ");
+    }
+}
