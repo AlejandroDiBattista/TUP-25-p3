@@ -161,32 +161,45 @@ app.MapPost("/comprar", async ([FromQuery] Guid id, [FromBody] Compra datosCompr
 
 app.MapGet("/compras", async (ApplicationDbContext db) =>
 {
-    var compras = await db.Compras
-        .Include(c => c.Items)
-        .ThenInclude(i => i.Producto)
-        .ToListAsync();
+  var compras = await db.Compras
+      .Include(c => c.Items)
+      .ThenInclude(i => i.Producto)
+      .ToListAsync();
 
-    var resultado = compras.Select(c => new
+  var resultado = compras.Select(c => new
+  {
+    c.Id,
+    c.Fecha,
+    c.Total,
+    Cliente = new
     {
-        c.Id,
-        c.Fecha,
-        c.Total,
-        Cliente = new
-        {
-            c.NombreCliente,
-            c.ApellidoCliente,
-            c.EmailCliente
-        },
-        Productos = c.Items.Select(i => new
-        {
-            Producto = i.Producto?.Nombre ?? "Producto no disponible",
-            i.Cantidad,
-            i.PrecioUnitario,
-            Subtotal = i.Cantidad * i.PrecioUnitario
-        }).ToList()
-    });
+      c.NombreCliente,
+      c.ApellidoCliente,
+      c.EmailCliente
+    },
+    Productos = c.Items.Select(i => new
+    {
+      Producto = i.Producto?.Nombre ?? "Producto no disponible",
+      i.Cantidad,
+      i.PrecioUnitario,
+      Subtotal = i.Cantidad * i.PrecioUnitario
+    }).ToList()
+  });
 
-    return Results.Ok(resultado);
+  return Results.Ok(resultado);
+});
+
+app.MapDelete("/carrito/eliminar", ([FromQuery] Guid id, [FromQuery] int productoId) =>
+{
+    if (!carritos.TryGetValue(id, out var carrito))
+        return Results.NotFound("Carrito no encontrado");
+
+    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item == null)
+        return Results.BadRequest("Producto no encontrado en el carrito");
+
+    carrito.Items.Remove(item);
+    return Results.Ok(carrito);
 });
 
 using (var scope = app.Services.CreateScope())
