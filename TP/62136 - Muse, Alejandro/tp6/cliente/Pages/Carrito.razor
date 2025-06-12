@@ -1,5 +1,6 @@
 @page "/carrito"
 @inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
 
 <h3>Carrito de compras</h3>
 
@@ -40,17 +41,12 @@ else
     </table>
     <p><b>Total:</b> $@CarritoService.Total</p>
     <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
-    <a class="btn btn-success" href="confirmar">Confirmar compra</a>
 }
 
 @code {
-    void VaciarCarrito() => CarritoService.Vaciar();
-    void Eliminar(cliente.Models.Producto producto)
+    void VaciarCarrito()
     {
-        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-        if (item != null)
-        {
-            CarritoService.Items.Remove(item);
-        }
+        CarritoService.Vaciar();
+        Navigation.NavigateTo("/productos");
     }
 }
