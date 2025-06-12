@@ -1,26 +1,24 @@
 using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace servidor.Models
 {
-    public class Compra
+    public class ItemCompra
     {
         [Key]
         public int Id { get; set; }
         [Required]
-        public DateTime Fecha { get; set; } = DateTime.Now;
-        public decimal Total { get; set; }
-        [MaxLength(100)]
-        public string? NombreCliente { get; set; }
-        [MaxLength(100)]
-        public string? ApellidoCliente { get; set; }
-        [MaxLength(100)]
-        [EmailAddress]
-        public string? EmailCliente { get; set; }
+        public int ProductoId { get; set; }
+        [ForeignKey("ProductoId")]
+        // Esta propiedad es nullable, y con #nullable enable es válido
+        public Producto? Producto { get; set; } // Propiedad de navegación
         [Required]
-        [MaxLength(20)]
-        public string Status { get; set; } = "Pending"; // "Pending", "Confirmed"
-
-        public ICollection<ItemCompra> Items { get; set; } = new List<ItemCompra>();
+        public int CompraId { get; set; }
+        [ForeignKey("CompraId")]
+        public Compra? Compra { get; set; } // Propiedad de navegación
+        [Required]
+        public int Cantidad { get; set; }
+        [Required]
+        public decimal PrecioUnitario { get; set; }
     }
 }

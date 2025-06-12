@@ -1,23 +1,27 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace servidor.Models
 {
-    public class ItemCompra
+    public class Compra
     {
         [Key]
         public int Id { get; set; }
         [Required]
-        public int ProductoId { get; set; }
-        [ForeignKey("ProductoId")]
-        public Producto? Producto { get; set; } // Propiedad de navegación
+        public DateTime Fecha { get; set; } = DateTime.Now;
+        public decimal Total { get; set; }
+        // Estos ahora son nullable, por lo que el compilador no debería quejarse con #nullable enable
+        [MaxLength(100)]
+        public string? NombreCliente { get; set; }
+        [MaxLength(100)]
+        public string? ApellidoCliente { get; set; }
+        [MaxLength(100)]
+        [EmailAddress]
+        public string? EmailCliente { get; set; }
         [Required]
-        public int CompraId { get; set; }
-        [ForeignKey("CompraId")]
-        public Compra? Compra { get; set; } // Propiedad de navegación
-        [Required]
-        public int Cantidad { get; set; }
-        [Required]
-        public decimal PrecioUnitario { get; set; }
+        [MaxLength(20)]
+        public string Status { get; set; } = "Pending"; // "Pending", "Confirmed"
+
+        public ICollection<ItemCompra> Items { get; set; } = new List<ItemCompra>();
     }
 }
