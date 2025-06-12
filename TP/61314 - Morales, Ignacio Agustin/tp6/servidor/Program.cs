@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using System.ComponentModel.DataAnnotations;
-
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuración de servicios
 builder.Services.AddDbContext<TiendaDb>(opt => opt.UseSqlite("Data Source=tienda.db"));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("https://localhost:7295", "http://localhost:5184")
@@ -21,6 +22,15 @@ builder.Services.AddCors(options => {
 
 var app = builder.Build();
 
+// Servir archivos estáticos desde la carpeta "imagenes"
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "imagenes")),
+    RequestPath = "/imagenes"
+});
+
+// Inicializar la base de datos
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaDb>();
@@ -30,7 +40,9 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
-//app.UseCors("AllowClientApp")
+//app.UseCors("AllowClientApp");
+
+// Endpoints
 
 app.MapGet("/productos", async (TiendaDb db) =>
 {
@@ -188,6 +200,10 @@ app.MapPut("/Carrito/{CarritoID}/Confirmar", async (TiendaDb db, Guid CarritoID,
     return Results.Ok(compra);
 });
 
+app.Run();
+
+// --- CLASES Y MODELOS ---
+
 class TiendaDb : DbContext
 {
     public TiendaDb(DbContextOptions<TiendaDb> options) : base(options) { }
@@ -210,7 +226,6 @@ class TiendaDb : DbContext
                 Precio = 780000,
                 ImagenUrl = "imagenes/iphone15.jpg"
             },
-
             new Producto
             {
                 Id = 2,
@@ -236,7 +251,7 @@ class TiendaDb : DbContext
                 Descripcion = "Celular mas demandado del mercado",
                 Stock = 6,
                 Precio = 120000000,
-                ImagenUrl = "imagenes/iphone16promax.jpg"   
+                ImagenUrl = "imagenes/iphone16promax.jpg"
             },
             new Producto
             {
@@ -263,7 +278,7 @@ class TiendaDb : DbContext
                 Descripcion = "Notebook mas potente",
                 Stock = 8,
                 Precio = 390000000,
-                ImagenUrl = "imagenes/macbookpro.jpg"   
+                ImagenUrl = "imagenes/macbookpro.jpg"
             },
             new Producto
             {
@@ -272,7 +287,7 @@ class TiendaDb : DbContext
                 Descripcion = "Reloj inteligente",
                 Stock = 15,
                 Precio = 340000,
-                ImagenUrl = "imagenes/applewatch.jpg"   
+                ImagenUrl = "imagenes/applewatch.jpg"
             },
             new Producto
             {

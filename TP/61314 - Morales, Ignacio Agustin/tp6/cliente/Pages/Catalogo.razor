@@ -1,0 +1,64 @@
+@page "/catalogo"
+@inject HttpClient Http
+
+<h2 class="titulo-catalogo">Catálogo de Productos Apple</h2>
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <p>No hay productos disponibles.</p>
+}
+else
+{
+    <div class="grid-productos">
+        @foreach (var producto in productos)
+        {
+            <div class="card-producto">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
+                <h3>@producto.Nombre</h3>
+                <p>@producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@producto.Precio</p>
+                <p><strong>Stock:</strong> @producto.Stock unidades</p>
+
+                <button @onclick="() => AgregarAlCarrito(producto)" 
+                        disabled="@(!PuedeAgregar(producto))"
+                        class="boton-agregar">
+                    Agregar al carrito
+                </button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<ProductoDto> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("https://localhost:5001/productos");
+    }
+
+    void AgregarAlCarrito(ProductoDto producto)
+    {
+        if (producto.Stock > 0)
+        {
+            // A futuro, llamá a tu API para agregarlo al carrito real
+            producto.Stock--;
+        }
+    }
+
+    bool PuedeAgregar(ProductoDto p) => p.Stock > 0;
+
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+}

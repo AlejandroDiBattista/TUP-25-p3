@@ -1,3 +1,5 @@
+namespace cliente.shared;
+
 public class Product
 {
     public int Id { get; set; }
@@ -7,5 +9,6 @@ public class Product
     public int Stock { get; set; }
     public string ImagenUrl { get; set; }
 
-    public List<ItemCompra> Items{ get; set; } = new();
+    public List<ItemCompra> Items { get; set; } = new();
 }
+

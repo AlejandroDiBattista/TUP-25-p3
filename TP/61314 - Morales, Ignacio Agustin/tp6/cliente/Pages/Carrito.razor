@@ -1,0 +1,98 @@
+@page "/carrito"
+@inject NavigationManager Navigation
+
+<h2 class="titulo-carrito">Carrito de Compras</h2>
+
+@if (carrito.Count == 0)
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="tabla-carrito">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>
+                        <button @onclick="() => CambiarCantidad(item.Producto.Id, -1)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => CambiarCantidad(item.Producto.Id, 1)">+</button>
+                    </td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button @onclick="() => Remover(item.Producto.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p class="total">Total: <strong>$@carrito.Sum(i => i.Producto.Precio * i.Cantidad)</strong></p>
+
+    <div class="acciones">
+        <button @onclick="VaciarCarrito" class="boton-vaciar">Vaciar Carrito</button>
+        <button @onclick="IrAConfirmacion" class="boton-confirmar">Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    // Simulación local por ahora
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+
+    public class ItemCarrito
+    {
+        public ProductoDto Producto { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    List<ItemCarrito> carrito = new()
+    {
+        new ItemCarrito { Producto = new ProductoDto { Id = 1, Nombre = "iPhone 15", Precio = 780000 }, Cantidad = 1 },
+        new ItemCarrito { Producto = new ProductoDto { Id = 5, Nombre = "AirPods Pro", Precio = 200000 }, Cantidad = 2 }
+    };
+
+    void CambiarCantidad(int productoId, int cambio)
+    {
+        var item = carrito.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+        {
+            item.Cantidad += cambio;
+            if (item.Cantidad <= 0)
+                carrito.Remove(item);
+        }
+    }
+
+    void Remover(int productoId)
+    {
+        var item = carrito.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+        {
+            carrito.Remove(item);
+        }
+    }
+
+    void VaciarCarrito() => carrito.Clear();
+
+    void IrAConfirmacion() => Navigation.NavigateTo("/confirmacion");
+}
+
