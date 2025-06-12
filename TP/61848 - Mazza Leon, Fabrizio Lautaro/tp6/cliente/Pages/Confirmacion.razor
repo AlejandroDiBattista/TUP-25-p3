@@ -1,0 +1,68 @@
+@page "/confirmacion"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Confirmación de compra</h3>
+
+@if (CarritoService.Items.Count == 0)
+{
+    <p>El carrito está vacío. <a href="/">Volver al catálogo</a></p>
+}
+else
+{
+    <div class="mb-3">
+        <h5>Resumen de compra</h5>
+        <p>Total ítems: @TotalItems</p>
+        <p>Importe total: $@TotalImporte</p>
+    </div>
+
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <InputText id="nombre" class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
+        </div>
+        <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <InputText id="apellido" class="form-control" @bind-Value="cliente.Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <InputText id="email" type="email" class="form-control" @bind-Value="cliente.Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Confirmar compra</button>
+    </EditForm>
+}
+
+@code {
+    private CompraFormulario cliente = new();
+
+    private int TotalItems => CarritoService.Items.Sum(i => i.Cantidad);
+    private decimal TotalImporte => CarritoService.CalcularTotal();
+
+    private async Task ConfirmarCompra()
+    {
+        // Llamar al backend para confirmar compra, pasando los items y datos cliente
+        var exito = await ApiService.ConfirmarCompraAsync(CarritoService.Items, cliente);
+
+        if (exito)
+        {
+            CarritoService.Vaciar();
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            // Mostrar error (a mejorar)
+            Console.WriteLine("Error al confirmar la compra.");
+        }
+    }
+}
