@@ -1,6 +1,7 @@
 @page "/confirmar"
 @inject cliente.Services.CarritoService CarritoService
 @inject cliente.Services.ApiService ApiService
+@inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
 
 <h3>Confirmar compra</h3>
@@ -94,6 +95,9 @@ else
         {
             CarritoService.Vaciar();
             mensaje = "¡Compra confirmada y guardada!";
+            // Espera un segundo y vuelve al catálogo
+            await Task.Delay(1000);
+            Navigation.NavigateTo("/productos");
         }
         else
         {
