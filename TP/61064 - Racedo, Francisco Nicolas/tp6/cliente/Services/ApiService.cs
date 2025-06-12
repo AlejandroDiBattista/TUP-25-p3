@@ -1,28 +1,17 @@
+#nullable enable
 using System.Net.Http.Json;
 
 namespace cliente.Services;
 
-public class ApiService {
-    private readonly HttpClient _httpClient;
 public class ApiService
 {
     private readonly HttpClient _http;
 
-    public ApiService(HttpClient httpClient) {
-        _httpClient = httpClient;
     public ApiService(HttpClient http)
     {
         _http = http;
     }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
-        }
     // Obtener productos (con búsqueda opcional)
     public async Task<List<ProductoDto>> GetProductosAsync(string? q = null)
     {
@@ -73,41 +62,22 @@ public class ApiService
         var resp = await _http.PutAsJsonAsync($"/api/carritos/{carritoId}/confirmar", datos);
         return resp.IsSuccessStatusCode;
     }
-}
 
-// --- DTOs para el cliente ---
-public class ProductoDto
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; } = "";
-    public string Descripcion { get; set; } = "";
-    public decimal Precio { get; set; }
-    public int Stock { get; set; }
-    public string ImagenUrl { get; set; } = "";
-}
+    public async Task<DatosRespuesta?> ObtenerDatosAsync()
+    {
+        return await _http.GetFromJsonAsync<DatosRespuesta>("/api/datos");
+    }
 
-public class CarritoIdDto
-{
-    public Guid carritoId { get; set; }
-}
+    public async Task<bool> PutCarritoItemAsync(Guid carritoId, int productoId, int cantidad)
+    {
+        // Corregido: enviar 'cantidad' en minúscula para que el backend lo reciba correctamente
+        var response = await _http.PutAsJsonAsync($"/api/carritos/{carritoId}/{productoId}", new { cantidad });
+        return response.IsSuccessStatusCode;
+    }
 
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
-public class CarritoItemDto
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; } = "";
-    public string Descripcion { get; set; } = "";
-    public decimal Precio { get; set; }
-    public string ImagenUrl { get; set; } = "";
-    public int Cantidad { get; set; }
-    public decimal Subtotal { get; set; }
-}
-
-public class ConfirmarCompraDto
-{
-    public string Nombre { get; set; } = "";
-    public string Apellido { get; set; } = "";
-    public string Email { get; set; } = "";
+    public async Task<bool> DeleteCarritoItemAsync(Guid carritoId, int productoId)
+    {
+        var response = await _http.DeleteAsync($"/api/carritos/{carritoId}/{productoId}");
+        return response.IsSuccessStatusCode;
+    }
 }
