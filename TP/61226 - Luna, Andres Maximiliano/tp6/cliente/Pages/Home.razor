@@ -2,6 +2,7 @@
 @using cliente.Services
 @using cliente.Models
 @inject ApiService ApiService
+@inject CarritoService CarritoService
 
 <PageTitle>Productos</PageTitle>
 
@@ -31,6 +32,12 @@
     }
 </div>
 
+void AgregarProducto(Producto producto)
+{
+    CarritoService.AgregarAlCarrito(producto);
+}
+
+
 
 @code {
     private DatosRespuesta datos;
@@ -53,6 +60,12 @@
     private List<Producto> productos = new();
 
         protected override async Task OnInitializedAsync() {
-            productos = await ApiService.ObtenerProductosAsync();
+            productos = await ApiService.ObtenerProductosAsync();       
+    }
+
+void AgregarProducto(Producto producto)
+{
+    CarritoService.AgregarAlCarrito(producto);
 }
+
 }

@@ -1,0 +1,39 @@
+@page "/carrito"
+@inject CarritoService CarritoService
+@using Shared
+
+<h2>🛒 Mi Carrito</h2>
+
+@if (CarritoService.ObtenerCarrito().Any())
+{
+    @foreach (var producto in CarritoService.ObtenerCarrito())
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@producto.Nombre</h5>
+                <p class="card-text">@producto.Descripcion</p>
+                <p class="fw-bold">$@producto.Precio</p>
+                <p class="text-muted">Stock disponible: @producto.Stock</p>
+                <button class="btn btn-danger" @onclick="() => EliminarProducto(producto)">❌ Quitar</button>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Tu carrito está vacío.</p>
+}
+
+<button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar Carrito</button>
+
+@code {
+    void EliminarProducto(Producto producto)
+    {
+        CarritoService.EliminarDelCarrito(producto);
+    }
+
+    void VaciarCarrito()
+    {
+        CarritoService.VaciarCarrito();
+    }
+}
