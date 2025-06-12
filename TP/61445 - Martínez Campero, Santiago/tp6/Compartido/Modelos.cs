@@ -48,4 +48,31 @@ namespace Compartido
         public string Apellido { get; set; } = "";
         public string Email { get; set; } = "";
     }
+
+    public class ItemCarritoDto
+    {
+        public int ProductoId { get; set; }
+        public string? NombreProducto { get; set; }
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public string? ImagenUrl { get; set; }
+    }
+
+    public class ItemCarritoActualizadoDto
+    {
+        public int ProductoId { get; set; }
+        public string? NombreProducto { get; set; }
+        public int Cantidad { get; set; }
+        public decimal? PrecioUnitario { get; set; }
+        public string? ImagenUrl { get; set; }
+        public decimal Subtotal { get; set; }
+    }
+
+    public class ConfirmacionCompraResponseDto
+    {
+        public string Mensaje { get; set; } = "";
+        public Guid CompraId { get; set; }
+        public decimal Total { get; set; }
+        public int ItemsComprados { get; set; }
+    }
 }
