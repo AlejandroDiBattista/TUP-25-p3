@@ -3,6 +3,7 @@
     --color-navbar-hover: #ffebee;
     --color-navbar-link: #fff;
     --color-navbar-link-hover: #b71c1c;
+    --font-principal: 'Roboto', Arial, sans-serif;
 }
 
 /* Loader personalizado para Blazor */
@@ -55,8 +56,18 @@ nav a:hover, nav a:focus {
     --color-card-shadow: rgba(183,28,28,0.10);
 }
 
+html, body {
+    font-family: var(--font-principal);
+    font-size: 1.04rem;
+    letter-spacing: 0.01em;
+    background: #fff;
+    color: #222;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 .btn-anim {
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    transition: background 0.2s, color 0.2s, box-shadow 0.25s, transform 0.25s cubic-bezier(.4,0,.2,1);
     box-shadow: 0 2px 8px var(--color-card-shadow);
     background: var(--color-boton) !important;
     color: var(--color-texto) !important;
@@ -65,19 +76,29 @@ nav a:hover, nav a:focus {
     background: var(--color-boton-hover) !important;
     transform: translateY(-2px) scale(1.04);
     box-shadow: 0 6px 18px rgba(183,28,28,0.18);
+    color: #fff;
 }
 
 .card-anim {
-    transition: box-shadow 0.2s, transform 0.15s;
+    transition: box-shadow 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
     background: var(--color-card);
     box-shadow: 0 2px 12px var(--color-card-shadow);
 }
 .card-anim:hover {
     box-shadow: 0 8px 32px rgba(183,28,28,0.18);
     transform: translateY(-4px) scale(1.02);
+    transition: box-shadow 0.25s, transform 0.25s cubic-bezier(.4,0,.2,1);
 }
 
 input:focus, button:focus {
     outline: 2px solid var(--color-principal);
     outline-offset: 2px;
+    transition: outline 0.2s;
+}
+button, input, select, textarea {
+    font-family: var(--font-principal);
+    transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+a, .btn-anim, .card-anim, button, input[type="submit"] {
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
 }

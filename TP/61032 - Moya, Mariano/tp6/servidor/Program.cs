@@ -139,12 +139,26 @@ app.MapDelete("/carritos/{carritoId}", (TiendaContext db, int carritoId) =>
 // Agrega un producto al carrito o actualiza la cantidad si ya existe. Valida stock disponible.
 app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoId, int productoId, int cantidad) =>
 {
-    if (cantidad < 1) return Results.BadRequest("La cantidad debe ser mayor a cero.");
     var carrito = db.Carritos.Include(c => c.Items).FirstOrDefault(c => c.Id == carritoId);
     var producto = db.Productos.FirstOrDefault(p => p.Id == productoId);
     if (carrito is null || producto is null) return Results.NotFound();
-    if (producto.Stock < cantidad) return Results.BadRequest("Stock insuficiente.");
     var item = db.ItemsCarrito.FirstOrDefault(i => i.CarritoId == carritoId && i.ProductoId == productoId);
+    int cantidadFinal = cantidad;
+    if (item != null)
+    {
+        cantidadFinal = item.Cantidad + cantidad;
+    }
+    // Si la cantidad final es menor a 1, eliminar el item
+    if (cantidadFinal < 1)
+    {
+        if (item != null)
+        {
+            db.ItemsCarrito.Remove(item);
+            db.SaveChanges();
+        }
+        return Results.Ok();
+    }
+    if (producto.Stock < cantidadFinal) return Results.BadRequest("Stock insuficiente.");
     if (item is null)
     {
         item = new ItemCarrito { CarritoId = carritoId, ProductoId = productoId, Cantidad = cantidad };
@@ -152,7 +166,7 @@ app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoI
     }
     else
     {
-        item.Cantidad = cantidad;
+        item.Cantidad = cantidadFinal;
     }
     db.SaveChanges();
     return Results.Ok();

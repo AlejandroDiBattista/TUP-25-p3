@@ -1,4 +1,3 @@
-
 using System.Net.Http.Json;
 
 namespace Cliente.Services;
@@ -49,6 +48,31 @@ public class CarritoService
         var url = $"{ApiUrl}/{CarritoId}";
         var carrito = await _http.GetFromJsonAsync<CarritoDto>(url);
         return carrito?.Items ?? new List<ItemCarritoDto>();
+    }
+
+    // Elimina una unidad de un producto del carrito
+    public async Task<bool> QuitarUnidadProductoAsync(int productoId)
+    {
+        if (CarritoId == null) return false;
+        // Intentar restar 1 unidad. Primero obtener el item actual
+        var items = await ObtenerItemsAsync();
+        var item = items.FirstOrDefault(x => x.ProductoId == productoId);
+        if (item == null) return false;
+        if (item.Cantidad <= 1)
+        {
+            // Si solo queda una, eliminar el producto del carrito
+            var url = $"{ApiUrl}/{CarritoId}/{productoId}";
+            var resp = await _http.DeleteAsync(url);
+            return resp.IsSuccessStatusCode;
+        }
+        else
+        {
+            // Si hay más de una, restar una unidad
+            var url = $"{ApiUrl}/{CarritoId}/{productoId}?cantidad=-1";
+            // Usamos el mismo endpoint de suma, pero con cantidad negativa
+            var resp = await _http.PutAsync(url, null);
+            return resp.IsSuccessStatusCode;
+        }
     }
 
     public class CrearCarritoResponse { public int Id { get; set; } }

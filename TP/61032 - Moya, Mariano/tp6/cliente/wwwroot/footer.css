@@ -1,0 +1,20 @@
+footer {
+    background: #f8f9fa;
+    color: #b71c1c;
+    text-align: center;
+    padding: 1.1rem 0 0.6rem 0;
+    font-size: 1.04rem;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 2.5rem;
+    letter-spacing: 0.01em;
+    font-family: var(--font-principal);
+    box-shadow: 0 2px 12px rgba(183,28,28,0.04);
+}
+footer a {
+    color: #b71c1c;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+footer a:hover {
+    color: #7f0000;
+}

@@ -1,4 +1,3 @@
-
 @page "/carrito"
 @inject Cliente.Services.CarritoService CarritoService
 
@@ -110,8 +109,14 @@ else
     async Task CambiarCantidad(Cliente.Services.CarritoService.ItemCarritoDto item, int delta)
     {
         int nuevaCantidad = item.Cantidad + delta;
-        if (nuevaCantidad < 1) return;
-        await CarritoService.AgregarProductoAsync(item.ProductoId, delta);
+        if (delta == -1)
+        {
+            await CarritoService.QuitarUnidadProductoAsync(item.ProductoId);
+        }
+        else if (delta == 1)
+        {
+            await CarritoService.AgregarProductoAsync(item.ProductoId, 1);
+        }
         await CargarCarrito();
     }
 
