@@ -6,22 +6,30 @@
 <PageTitle>Productos</PageTitle>
 
 
-<div class= "row">
-    @if (productos != null && productos.Any()){
-        @foreach (var producto in productos){
-            <div class= "col-md-4 mb-4">
-                <div class= "card">
-                <img src= @producto.ImagenUrl"
-                class= "card-img-top"/>
-                <div class= "card-body">
-                    <h5 class= "card-title">@producto.Nombre</h5>
-                    <p class= "card-text">$@producto.Precio</p>
+<div class="row">
+    @if (productos != null && productos.Any())
+    {
+        @foreach (var producto in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p class="card-text text-muted">Stock disponible: @producto.Stock</p>
+                        <p class="card-text fw-bold">$@producto.Precio</p>
+                        <button class="btn btn-primary">Agregar al carrito</button>
+                    </div>
                 </div>
-            </div>
             </div>
         }
     }
-</div>>
+    else
+    {
+        <p>No hay productos disponibles.</p>
+    }
+</div>
 
 
 @code {

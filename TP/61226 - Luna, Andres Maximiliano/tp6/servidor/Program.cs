@@ -49,16 +49,16 @@ using (var scope = app.Services.CreateScope())
     {
         var productos = new List<Producto>
         {
-            new Producto { Nombre = "Auriculares Bluetooth", Descripcion = "Auriculares inalámbricos con micrófono", Precio = 12999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Mouse Gamer", Descripcion = "Mouse óptico RGB con 6 botones", Precio = 8999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Teclado Mecánico", Descripcion = "Teclado mecánico con retroiluminación LED", Precio = 15999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Monitor 24''", Descripcion = "Monitor LED Full HD", Precio = 54999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Smartwatch", Descripcion = "Reloj inteligente con seguimiento de actividad", Precio = 21999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Tablet 10''", Descripcion = "Tablet con pantalla HD y Android", Precio = 44999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Cable USB-C", Descripcion = "Cable de carga rápida 1m", Precio = 1999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Disco SSD 500GB", Descripcion = "Disco de estado sólido SATA 2.5''", Precio = 29999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Parlante Bluetooth", Descripcion = "Altavoz portátil resistente al agua", Precio = 11999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Webcam Full HD", Descripcion = "Cámara web para videollamadas", Precio = 9999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Licuadora", Descripcion = "Licuadora con jarra de vidrio y 3 velocidades", Precio = 18000, Stock = 10, ImagenUrl = "https://i.ibb.co/q3THG727/licuadora.jpg" },
+            new Producto { Nombre = "Lavarropas", Descripcion = "Lavarropas automatico", Precio = 200000, Stock = 10, ImagenUrl = "https://i.ibb.co/FbWHv1Bv/lavarropas.png" },
+            new Producto { Nombre = "Microondas", Descripcion = "Microondas digital con descongelado rápido", Precio = 70000, Stock = 10, ImagenUrl = "https://i.ibb.co/HpfC9wHZ/microondas.png" },
+            new Producto { Nombre = "Cafetera", Descripcion = "Cafetera electrica", Precio = 20000, Stock = 10, ImagenUrl = "https://i.ibb.co/KTxxMm6/cafetera.png" },
+            new Producto { Nombre = "Aspiradora", Descripcion = "Aspiradora ciclónica sin bolsa, con filtro HEPA", Precio = 30000, Stock = 10, ImagenUrl = "https://i.ibb.co/rGYrq7Qk/aspiradora.png" },
+            new Producto { Nombre = "Plancha", Descripcion = "Plancha a vapor con base de cerámica y rociador", Precio = 12000, Stock = 10, ImagenUrl = "https://i.ibb.co/4gN0xxvt/plancha.jpg" },
+            new Producto { Nombre = "Horno electrico", Descripcion = "Horno electrico de 45L", Precio = 50000, Stock = 10, ImagenUrl = "https://i.ibb.co/pB6NK6hN/horno-electrico.jpg" },
+            new Producto { Nombre = "Heladera", Descripcion = "Heladera con freezer superior", Precio = 300000, Stock = 10, ImagenUrl = "https://i.ibb.co/8gVxMsbw/heladera.png" },
+            new Producto { Nombre = "LED TV", Descripcion = "Smart TV LED de 43” con resolución Full HD y WiFi", Precio = 250000, Stock = 10, ImagenUrl = "https://i.ibb.co/GBGtgJ4/led-tv.jpg" },
+            new Producto { Nombre = "Tostadora", Descripcion = "Tostadora doble ranura con selector de temperatura", Precio = 15000, Stock = 10, ImagenUrl = "https://i.ibb.co/Q30M8XX8/tostadora.jpg" },
         };
 
         context.Productos.AddRange(productos);
