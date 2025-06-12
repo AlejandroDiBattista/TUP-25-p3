@@ -17,11 +17,18 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-12">
+            <a class="btn btn-success" href="productos">Ir a gestión de productos</a>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">            
             @if (cargando) {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
+            } else if (datos != null) {
+                <div class="card" style="width: 300px;">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>
