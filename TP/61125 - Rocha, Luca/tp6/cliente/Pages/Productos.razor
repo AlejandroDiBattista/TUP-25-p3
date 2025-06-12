@@ -1,4 +1,4 @@
-@page "/productos"
+@@page "/productos"
 @inject HttpClient Http
 @using cliente.Modelos
 
@@ -27,9 +27,12 @@ else
     <ul class="list-group">
         @foreach (var p in productos)
         {
-            <li class="list-group-item">
-                <strong>@p.Nombre</strong> – $@p.Precio <br />
-                <em>@p.Descripcion</em> – Stock: @p.Stock
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@p.Nombre</strong> – $@p.Precio<br />
+                    <em>@p.Descripcion</em> – Stock: @p.Stock
+                </div>
+                <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
             </li>
         }
     </ul>
@@ -51,6 +54,15 @@ else
         {
             productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
             nuevoProducto = new(); // resetea el formulario
+        }
+    }
+
+    private async Task EliminarProducto(int id)
+    {
+        var respuesta = await Http.DeleteAsync($"api/productos/{id}");
+        if (respuesta.IsSuccessStatusCode)
+        {
+            productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
         }
     }
 }
