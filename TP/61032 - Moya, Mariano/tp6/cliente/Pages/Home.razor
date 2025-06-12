@@ -62,33 +62,32 @@
         <button @onclick="Limpiar" style="margin-left:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#bdbdbd; color:#333; border:none;">Limpiar</button>
     </div>
 
-    <div class="row">
-        @if (productos is null)
-        {
-            <p>Cargando productos...</p>
-        }
-        else if (productos.Count == 0)
-        {
-            <p>No hay productos disponibles.</p>
-        }
-        else
-        {
-            @foreach (var prod in productos)
+
+    <div style="display: flex; justify-content: center;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 1100px; width: 100%; margin: 0 auto;">
+            @if (productos is null)
             {
-                <div class="col-md-4 mb-3">
-                    <div class="card h-100">
-                        <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:180px;object-fit:contain;">
-                        <div class="card-body">
-                            <h5 class="card-title">@prod.Nombre</h5>
-                            <p class="card-text">@prod.Descripcion</p>
-                            <p><b>Precio:</b> $@prod.Precio</p>
-                            <p><b>Stock:</b> @prod.Stock</p>
-                            <button @onclick="() => AgregarAlCarrito(prod.Id)" style="margin-top:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#388e3c; color:#fff; border:none;">Agregar al carrito</button>
-                        </div>
-                    </div>
-                </div>
+                <p style="grid-column: 1/-1; text-align:center;">Cargando productos...</p>
             }
-        }
+            else if (productos.Count == 0)
+            {
+                <p style="grid-column: 1/-1; text-align:center;">No hay productos disponibles.</p>
+            }
+            else
+            {
+                @foreach (var prod in productos)
+                {
+                    <div style="background:white; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:1.2rem; display:flex; flex-direction:column; align-items:center; transition:box-shadow 0.2s;">
+                        <img src="@prod.ImagenUrl" alt="@prod.Nombre" style="max-height:180px; object-fit:contain; margin-bottom:1rem; border-radius:8px; background:#f5f5f5; width:100%; max-width:220px;" />
+                        <h5 style="margin:0 0 0.5rem 0; color:#00796b; font-size:1.2rem;">@prod.Nombre</h5>
+                        <p style="color:#444; margin-bottom:0.5rem; text-align:center; min-height:48px;">@prod.Descripcion</p>
+                        <p style="margin:0.2rem 0;"><b>Precio:</b> $@prod.Precio</p>
+                        <p style="margin:0.2rem 0;"><b>Stock:</b> @prod.Stock</p>
+                        <button @onclick="() => AgregarAlCarrito(prod.Id)" style="margin-top:0.7rem; padding:0.5rem 1.2rem; border-radius:6px; background:#388e3c; color:#fff; border:none; font-weight:bold; font-size:1rem; transition:background 0.2s;">Agregar al carrito</button>
+                    </div>
+                }
+            }
+        </div>
     </div>
 
     @if (!string.IsNullOrEmpty(mensaje))

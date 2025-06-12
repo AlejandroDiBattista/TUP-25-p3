@@ -1,4 +1,17 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
+<nav style="background:#00796b; color:white; padding:0.7rem 1.5rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <div style="display:flex; align-items:center; gap:1.2rem;">
+        <a href="/" style="display:flex; align-items:center; text-decoration:none; color:white; font-weight:bold; font-size:1.3rem;">
+            <img src="/logo.png" alt="Logo" style="height:38px; margin-right:0.7rem; background:white; border-radius:8px; padding:2px; object-fit:contain;" onerror="this.style.display='none'" />
+            <span>Tienda Online</span>
+        </a>
+        <a href="/" style="color:white; text-decoration:none; margin-left:1.5rem; font-size:1.1rem;">Catálogo</a>
+        <a href="/carrito" style="color:white; text-decoration:none; margin-left:1.2rem; font-size:1.1rem;">Carrito</a>
+    </div>
+    <div style="font-size:1.5rem;">
+        <!-- Aquí puedes agregar íconos, usuario, etc. -->
+    </div>
+</nav>
+<div class="page" style="padding-top:1.2rem;">
     @Body
 </div>
