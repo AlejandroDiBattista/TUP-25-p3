@@ -39,8 +39,6 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
-app.Run();
-
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -52,15 +50,15 @@ using (var scope = app.Services.CreateScope())
         var productos = new List<Producto>
         {
             new Producto { Nombre = "Auriculares Bluetooth", Descripcion = "Auriculares inalámbricos con micrófono", Precio = 12999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Mouse Gamer", Descripcion = "Mouse óptico RGB con 6 botones", Precio = 8999, Stock = 15, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Teclado Mecánico", Descripcion = "Teclado mecánico con retroiluminación LED", Precio = 15999, Stock = 8, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Monitor 24''", Descripcion = "Monitor LED Full HD", Precio = 54999, Stock = 5, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Smartwatch", Descripcion = "Reloj inteligente con seguimiento de actividad", Precio = 21999, Stock = 12, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Tablet 10''", Descripcion = "Tablet con pantalla HD y Android", Precio = 44999, Stock = 7, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Cable USB-C", Descripcion = "Cable de carga rápida 1m", Precio = 1999, Stock = 30, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Disco SSD 500GB", Descripcion = "Disco de estado sólido SATA 2.5''", Precio = 29999, Stock = 6, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Parlante Bluetooth", Descripcion = "Altavoz portátil resistente al agua", Precio = 11999, Stock = 9, ImagenUrl = "https://via.placeholder.com/150" },
-            new Producto { Nombre = "Webcam Full HD", Descripcion = "Cámara web para videollamadas", Precio = 9999, Stock = 4, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Mouse Gamer", Descripcion = "Mouse óptico RGB con 6 botones", Precio = 8999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Teclado Mecánico", Descripcion = "Teclado mecánico con retroiluminación LED", Precio = 15999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Monitor 24''", Descripcion = "Monitor LED Full HD", Precio = 54999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Smartwatch", Descripcion = "Reloj inteligente con seguimiento de actividad", Precio = 21999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Tablet 10''", Descripcion = "Tablet con pantalla HD y Android", Precio = 44999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Cable USB-C", Descripcion = "Cable de carga rápida 1m", Precio = 1999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Disco SSD 500GB", Descripcion = "Disco de estado sólido SATA 2.5''", Precio = 29999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Parlante Bluetooth", Descripcion = "Altavoz portátil resistente al agua", Precio = 11999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
+            new Producto { Nombre = "Webcam Full HD", Descripcion = "Cámara web para videollamadas", Precio = 9999, Stock = 10, ImagenUrl = "https://via.placeholder.com/150" },
         };
 
         context.Productos.AddRange(productos);
@@ -88,3 +86,4 @@ app.MapPost("/api/carrito", async (AppDbContext db, Carrito item) =>
     return Results.Created($"/api/carrito/{item.Id}", item);
 });
 
+app.Run();

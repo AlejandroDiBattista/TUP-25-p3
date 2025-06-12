@@ -27,7 +27,7 @@ public class ApiService
     }
     public async Task<List<Producto>> ObtenerProductosAsync()
     {
-        var respuesta = await _httpClient.GetFromJsonAsync<List<Producto>>("api/productos");
+        var respuesta = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
         return respuesta ?? new List<Producto>();
     }
 }
