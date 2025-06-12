@@ -11,5 +11,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
 
 builder.Services.AddScoped<ApiService>();
+builder.Services.AddScoped<CarritoStateService>();
 
 await builder.Build().RunAsync();
