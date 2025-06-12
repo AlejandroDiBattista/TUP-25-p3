@@ -36,4 +36,54 @@ else
                     <td>$@item.PrecioUnitario</td>
                     <td class="fw-bold">$@(item.Cantidad * item.PrecioUnitario)</td>
                     <td>
-                        <button class="btn btn-danger btn
+                        <button class="btn btn-danger btn-sm" @onclick="()=>EliminarProducto(item.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="text-end fw-bold">Total: $@total</h4>
+    <div class="text-end">
+        <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+    </div>
+}
+
+@code {
+    private List<Producto> itemsCarrito = new();
+    private decimal total = 0;
+
+    private void ModificarCantidad(int productoId, int cambio)
+    {
+        var item = itemsCarrito.FirstOrDefault(p => p.Id == productoId);
+        if (item != null)
+        {
+            item.Cantidad = Math.Max(1, item.Cantidad + cambio);
+        }
+        CalcularTotal();
+    }
+
+    private void EliminarProducto(int id)
+    {
+        itemsCarrito.RemoveAll(p => p.Id == id);
+        CalcularTotal();
+    }
+
+    private void VaciarCarrito()
+    {
+        itemsCarrito.Clear();
+        total = 0;
+    }
+
+    private void ConfirmarCompra()
+    {
+        Console.WriteLine("Compra confirmada");
+        VaciarCarrito();
+    }
+
+    private void CalcularTotal()
+    {
+        total = itemsCarrito.Sum(p => p.PrecioUnitario * p.Cantidad);
+    }
+}
