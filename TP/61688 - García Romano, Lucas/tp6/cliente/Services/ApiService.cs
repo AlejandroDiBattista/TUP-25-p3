@@ -40,20 +40,17 @@ public class DatosRespuesta {
 }
 
 public class ProductoService {
-    //pide productos a la API
     private readonly HttpClient _httpClient;
-    //httpCliente realiza peticones a la API
 
-    public ProductoService(HttpClient httpClient)
-    {//Inicia el httpCliente
+    public ProductoService(HttpClient httpClient) {
         _httpClient = httpClient;
     }
 
-    public async Task<List<Producto>> ObtenerProductosAsync()  {//pide productos a la API
-        try {//Realiza una peticion a la API para los productos
-            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/api/productos");//llama a la API para obtener los productos
-            return productos ?? new List<Producto>();//Si es null, devuelve una lista vacia
-        } catch (Exception ex) {//Si hay un error manda exepcion
+    public async Task<List<Producto>> ObtenerProductosAsync() {
+        try {
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/api/producto");
+            return productos ?? new List<Producto>();
+        } catch (Exception ex) {
             Console.WriteLine($"Error al obtener productos: {ex.Message}");
             return new List<Producto>();
         }
@@ -61,7 +58,7 @@ public class ProductoService {
 }
 
 public class Producto {
-    public string Id { get; set; }
+    public int Id { get; set; }
     public string Nombre { get; set; }
     public string Descripcion { get; set; }
     public decimal Precio { get; set; }

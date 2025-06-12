@@ -7,6 +7,10 @@
 {
     <p>Cargando productos...</p>
 }
+else if (error != null)
+{
+    <div class="alert alert-danger">Error: @error</div>
+}
 else if (!productos.Any())
 {
     <p>No hay productos disponibles.</p>
@@ -30,10 +34,17 @@ else
 
 @code {
     private List<cliente.Services.Producto> productos;
+    private string error;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ProductoService.ObtenerProductosAsync();
+        try {
+            productos = await ProductoService.ObtenerProductosAsync();
+            error = null;
+        } catch (Exception ex) {
+            productos = new List<cliente.Services.Producto>();
+            error = ex.Message;
+        }
     }
 
     private bool ProductoDisponible(cliente.Services.Producto producto)
