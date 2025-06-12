@@ -1,0 +1,39 @@
+/* Animaciones y mejoras visuales para la tienda - Paleta roja */
+
+:root {
+    --color-principal: #b71c1c;
+    --color-principal-oscuro: #7f0000;
+    --color-secundario: #ffebee;
+    --color-boton: #d32f2f;
+    --color-boton-hover: #b71c1c;
+    --color-texto: #fff;
+    --color-card: #fff;
+    --color-card-shadow: rgba(183,28,28,0.10);
+}
+
+.btn-anim {
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px var(--color-card-shadow);
+    background: var(--color-boton) !important;
+    color: var(--color-texto) !important;
+}
+.btn-anim:hover, .btn-anim:focus {
+    background: var(--color-boton-hover) !important;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 18px rgba(183,28,28,0.18);
+}
+
+.card-anim {
+    transition: box-shadow 0.2s, transform 0.15s;
+    background: var(--color-card);
+    box-shadow: 0 2px 12px var(--color-card-shadow);
+}
+.card-anim:hover {
+    box-shadow: 0 8px 32px rgba(183,28,28,0.18);
+    transform: translateY(-4px) scale(1.02);
+}
+
+input:focus, button:focus {
+    outline: 2px solid var(--color-principal);
+    outline-offset: 2px;
+}

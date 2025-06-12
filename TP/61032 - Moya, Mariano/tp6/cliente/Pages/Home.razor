@@ -6,10 +6,11 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-        <h1 style="margin:0; font-size:2rem; color:#00796b;">Tienda Online</h1>
-        <div style="position:relative;">
+
+<div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <h1 style="margin:0; font-size:2rem; color:#00796b; flex:1 1 300px;">Tienda Online</h1>
+        <div style="position:relative; flex:0 0 auto;">
             <a href="/carrito" style="text-decoration:none; color:inherit;">
                 <span style="font-size:1.5rem; cursor:pointer;">
                     🛒
@@ -18,48 +19,14 @@
             </a>
         </div>
     </div>
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
-    </div>
-
-    <div style="background: #e0f7fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <h2 style="color: #00796b;">¡Bienvenido a la Tienda Online!</h2>
-        <p>Este frontend Blazor está funcionando correctamente.</p>
-    </div>
-
-    <div style="margin-bottom:1.5rem;">
+<div style="background: var(--color-secundario,#ffebee); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+    <h2 style="color: var(--color-principal,#b71c1c); margin:0;">¡Bienvenido a la Tienda Online!</h2>
+    <p style="margin:0.5rem 0 0 0; color:#b71c1c;">Este frontend Blazor está funcionando correctamente.</p>
+</div>
+    <div style="margin-bottom:1.5rem; display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
         <input type="text" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." style="padding:0.5rem; width:250px; border-radius:4px; border:1px solid #ccc;" />
-        <button @onclick="Buscar" style="margin-left:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#00796b; color:#fff; border:none;">Buscar</button>
-        <button @onclick="Limpiar" style="margin-left:0.5rem; padding:0.5rem 1rem; border-radius:4px; background:#bdbdbd; color:#333; border:none;">Limpiar</button>
+        <button @onclick="Buscar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#00796b; color:#fff; border:none;">Buscar</button>
+        <button @onclick="Limpiar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#bdbdbd; color:#333; border:none;">Limpiar</button>
     </div>
 
 
@@ -77,13 +44,13 @@
             {
                 @foreach (var prod in productos)
                 {
-                    <div style="background:white; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:1.2rem; display:flex; flex-direction:column; align-items:center; transition:box-shadow 0.2s;">
+                    <div class="card-anim" style="background:white; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:1.2rem; display:flex; flex-direction:column; align-items:center; transition:box-shadow 0.2s;">
                         <img src="@prod.ImagenUrl" alt="@prod.Nombre" style="max-height:180px; object-fit:contain; margin-bottom:1rem; border-radius:8px; background:#f5f5f5; width:100%; max-width:220px;" />
                         <h5 style="margin:0 0 0.5rem 0; color:#00796b; font-size:1.2rem;">@prod.Nombre</h5>
                         <p style="color:#444; margin-bottom:0.5rem; text-align:center; min-height:48px;">@prod.Descripcion</p>
                         <p style="margin:0.2rem 0;"><b>Precio:</b> $@prod.Precio</p>
                         <p style="margin:0.2rem 0;"><b>Stock:</b> @prod.Stock</p>
-                        <button @onclick="() => AgregarAlCarrito(prod.Id)" style="margin-top:0.7rem; padding:0.5rem 1.2rem; border-radius:6px; background:#388e3c; color:#fff; border:none; font-weight:bold; font-size:1rem; transition:background 0.2s;">Agregar al carrito</button>
+                        <button @onclick="() => AgregarAlCarrito(prod.Id)" class="btn-anim" style="margin-top:0.7rem; padding:0.5rem 1.2rem; border-radius:6px; background:#388e3c; color:#fff; border:none; font-weight:bold; font-size:1rem; transition:background 0.2s;">Agregar al carrito</button>
                     </div>
                 }
             }
