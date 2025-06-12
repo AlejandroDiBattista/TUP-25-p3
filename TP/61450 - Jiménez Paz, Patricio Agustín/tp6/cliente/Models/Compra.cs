@@ -23,3 +23,16 @@ public class ItemCompra
     public int CompraId { get; set; }
     public Compra Compra { get; set; } = null!;
 }
+
+public class CompraDto
+{
+    public ClienteDto Cliente { get; set; }
+    public DateTime Fecha { get; set; } = DateTime.Now;
+}
+
+public class ClienteDto
+{
+    public string Nombre { get; set; }
+    public string Apellido { get; set; }
+    public string Email { get; set; }
+}
