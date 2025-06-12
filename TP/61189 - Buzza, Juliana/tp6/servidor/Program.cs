@@ -156,4 +156,82 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int produ
     return Results.Ok(cart.Items);
 });
 
+app.MapDelete("/carritos/{carritoId}/{productoId}", async (int carritoId, int productoId, AppDbContext db) =>
+{
+    var cart = await db.Compras
+                        .Include(c => c.Items)
+                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+    if (cart == null)
+    {
+        return Results.NotFound("Carrito no encontrado o ya confirmado.");
+    }
+
+    var cartItem = cart.Items.FirstOrDefault(item => item.ProductoId == productoId);
+    if (cartItem == null)
+    {
+        return Results.NotFound("Producto no encontrado en el carrito.");
+    }
+
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto != null)
+    {
+        producto.Stock += cartItem.Cantidad;
+    }
+
+    cart.Items.Remove(cartItem);
+    cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
+    await db.SaveChangesAsync();
+    return Results.Ok(cart.Items);
+});
+
+app.MapDelete("/carritos/{carritoId}/vaciar", async (int carritoId, AppDbContext db) =>
+{
+    var cart = await db.Compras
+                        .Include(c => c.Items)
+                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+    if (cart == null)
+    {
+        return Results.NotFound("Carrito no encontrado o ya confirmado.");
+    }
+
+    foreach (var item in cart.Items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto != null)
+        {
+            producto.Stock += item.Cantidad;
+        }
+    }
+
+    cart.Items.Clear();
+    cart.Total = 0m;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.MapPut("/carritos/{carritoId}/confirmar", async (int carritoId, CompraConfirmationDto confirmationData, AppDbContext db) =>
+{
+    var cart = await db.Compras
+                        .Include(c => c.Items)
+                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+    if (cart == null)
+    {
+        return Results.NotFound("Carrito no encontrado o ya confirmado.");
+    }
+
+    if (!cart.Items.Any())
+    {
+        return Results.BadRequest("El carrito está vacío, no se puede confirmar la compra.");
+    }
+
+    cart.NombreCliente = confirmationData.NombreCliente;
+    cart.ApellidoCliente = confirmationData.ApellidoCliente;
+    cart.EmailCliente = confirmationData.EmailCliente;
+    cart.Status = "Confirmed";
+    cart.Fecha = DateTime.Now;
+    cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
+
+    await db.SaveChangesAsync();
+    return Results.Ok(cart);
+});
 app.Run();
