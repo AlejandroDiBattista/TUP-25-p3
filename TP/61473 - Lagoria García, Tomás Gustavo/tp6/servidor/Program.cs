@@ -27,7 +27,7 @@ builder.Services.AddCors(options => {
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
@@ -57,8 +57,9 @@ app.MapGet("/productos", async (
     TiendaDbContext db) =>
 {
     var query = db.Productos.AsQueryable();
-
+    var qLower = q.ToLower();
     if (!string.IsNullOrWhiteSpace(q))
+
         query = query.Where(p => p.Nombre.ToLower().Contains(qLower) || p.Descripcion.ToLower().Contains(qLower));
 
     if (precioMin.HasValue)
