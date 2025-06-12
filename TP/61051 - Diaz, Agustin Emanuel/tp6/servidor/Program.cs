@@ -105,20 +105,58 @@ app.MapPost("/carrito", () =>
 
 app.MapPost("/carrito/agregar", async ([FromQuery] Guid id, [FromBody] CarritoItem item, ApplicationDbContext db) =>
 {
-    if (!carritos.TryGetValue(id, out var carrito))
-        return Results.NotFound("Carrito no encontrado");
+  if (!carritos.TryGetValue(id, out var carrito))
+    return Results.NotFound("Carrito no encontrado");
 
-    var producto = await db.Productos.FindAsync(item.ProductoId);
-    if (producto == null || producto.Stock < item.Cantidad)
-        return Results.BadRequest("Producto no válido o sin stock");
+  var producto = await db.Productos.FindAsync(item.ProductoId);
+  if (producto == null || producto.Stock < item.Cantidad)
+    return Results.BadRequest("Producto no válido o sin stock");
 
-    var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == item.ProductoId);
-    if (existente != null)
-        existente.Cantidad += item.Cantidad;
-    else
-        carrito.Items.Add(item);
+  var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == item.ProductoId);
+  if (existente != null)
+    existente.Cantidad += item.Cantidad;
+  else
+    carrito.Items.Add(item);
 
-    return Results.Ok(carrito);
+  return Results.Ok(carrito);
+});
+
+app.MapPost("/comprar", async ([FromQuery] Guid id, [FromBody] Compra datosCompra, ApplicationDbContext db) =>
+{
+    if (!carritos.TryGetValue(id, out var carrito) || !carrito.Items.Any())
+        return Results.BadRequest("Carrito inválido o vacío");
+
+    var compra = new Compra
+    {
+        NombreCliente = datosCompra.NombreCliente,
+        ApellidoCliente = datosCompra.ApellidoCliente,
+        EmailCliente = datosCompra.EmailCliente
+    };
+
+    foreach (var item in carrito.Items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            return Results.BadRequest("Stock insuficiente o producto no encontrado");
+
+        producto.Stock -= item.Cantidad;
+
+        compra.Items.Add(new ItemCompra
+        {
+            ProductoId = producto.Id,
+            Cantidad = item.Cantidad,
+            PrecioUnitario = producto.Precio
+        });
+    }
+
+    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+
+    carritos.Remove(id);
+
+    return Results.Ok(new { compra.Id, compra.Total });
 });
 
 using (var scope = app.Services.CreateScope())
