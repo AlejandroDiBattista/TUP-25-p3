@@ -15,12 +15,14 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=tiendaonline.db"));
+    options.UseSqlite("Data Source=app.db"));
+
 
 var app = builder.Build();
 
 app.UseCors("AllowClientApp");
 
+// Crear base de datos y seed inicial
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -52,7 +54,6 @@ app.MapGet("/productos", async ([FromQuery] string? q, AppDbContext db) =>
     var query = db.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(q))
         query = query.Where(p => p.Nombre.Contains(q));
-
     return await query.ToListAsync();
 });
 
@@ -72,7 +73,7 @@ app.MapPost("/carritos", async (AppDbContext db) =>
     return Results.Ok(compra.Id);
 });
 
-// GET /carritos/{carrito}
+// GET /carritos/{carritoId}
 app.MapGet("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
 {
     var items = await db.ItemsCompra
@@ -82,7 +83,7 @@ app.MapGet("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
     return Results.Ok(items);
 });
 
-// DELETE /carritos/{carrito}
+// DELETE /carritos/{carritoId}
 app.MapDelete("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
 {
     var items = db.ItemsCompra.Where(i => i.CompraId == carritoId);
@@ -91,18 +92,24 @@ app.MapDelete("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
     return Results.Ok();
 });
 
-// PUT /carritos/{carritoId}/{productoId}
+// PUT /carritos/{carritoId}/{productoId}?cantidad=3
 app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int productoId, [FromQuery] int cantidad, AppDbContext db) =>
 {
+    if (cantidad <= 0)
+        return Results.BadRequest("La cantidad debe ser mayor a cero.");
+
     var producto = await db.Productos.FindAsync(productoId);
-    if (producto == null || cantidad <= 0 || producto.Stock < cantidad)
-        return Results.BadRequest("Stock insuficiente o datos inválidos");
+    if (producto == null)
+        return Results.NotFound("Producto no encontrado.");
 
     var item = await db.ItemsCompra
         .FirstOrDefaultAsync(i => i.CompraId == carritoId && i.ProductoId == productoId);
 
     if (item == null)
     {
+        if (producto.Stock < cantidad)
+            return Results.BadRequest("Stock insuficiente");
+
         item = new ItemCompra
         {
             CompraId = carritoId,
@@ -111,13 +118,17 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int produ
             PrecioUnitario = producto.Precio
         };
         db.ItemsCompra.Add(item);
+        producto.Stock -= cantidad;
     }
     else
     {
+        if (producto.Stock < cantidad)
+            return Results.BadRequest("Stock insuficiente");
+
         item.Cantidad += cantidad;
+        producto.Stock -= cantidad;
     }
 
-    producto.Stock -= cantidad;
     await db.SaveChangesAsync();
     return Results.Ok();
 });
@@ -150,11 +161,27 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (int carritoId, ClienteDto c
     var items = await db.ItemsCompra.Where(i => i.CompraId == carritoId).ToListAsync();
     if (!items.Any()) return Results.BadRequest("Carrito vacío");
 
+    if (string.IsNullOrWhiteSpace(cliente.Email))
+        return Results.BadRequest("Email requerido");
+
     compra.NombreCliente = cliente.Nombre;
     compra.ApellidoCliente = cliente.Apellido;
     compra.EmailCliente = cliente.Email;
     compra.Total = items.Sum(i => i.Cantidad * i.PrecioUnitario);
     await db.SaveChangesAsync();
+    return Results.Ok(compra);
+});
+
+// GET /compras/{id}
+app.MapGet("/compras/{id}", async (int id, AppDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == id);
+
+    if (compra == null) return Results.NotFound();
+
     return Results.Ok(compra);
 });
 
@@ -165,40 +192,40 @@ app.Run();
 public class Producto
 {
     public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Descripcion { get; set; }
+    public string Nombre { get; set; } = null!;
+    public string Descripcion { get; set; } = null!;
     public decimal Precio { get; set; }
     public int Stock { get; set; }
-    public string ImagenUrl { get; set; }
+    public string ImagenUrl { get; set; } = null!;
 }
 
 public class Compra
 {
     public int Id { get; set; }
     public DateTime Fecha { get; set; }
-    public string NombreCliente { get; set; }
-    public string ApellidoCliente { get; set; }
-    public string EmailCliente { get; set; }
+    public string NombreCliente { get; set; } = "";
+    public string ApellidoCliente { get; set; } = "";
+    public string EmailCliente { get; set; } = "";
     public decimal Total { get; set; }
-    public List<ItemCompra> Items { get; set; }
+    public List<ItemCompra> Items { get; set; } = new List<ItemCompra>();
 }
 
 public class ItemCompra
 {
     public int Id { get; set; }
     public int ProductoId { get; set; }
-    public Producto Producto { get; set; }
+    public Producto Producto { get; set; } = null!;
     public int CompraId { get; set; }
-    public Compra Compra { get; set; }
+    public Compra Compra { get; set; } = null!;
     public int Cantidad { get; set; }
     public decimal PrecioUnitario { get; set; }
 }
 
 public class ClienteDto
 {
-    public string Nombre { get; set; }
-    public string Apellido { get; set; }
-    public string Email { get; set; }
+    public string Nombre { get; set; } = "";
+    public string Apellido { get; set; } = "";
+    public string Email { get; set; } = "";
 }
 
 // --- CONTEXTO EF ---
@@ -207,7 +234,7 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<Producto> Productos { get; set; }
-    public DbSet<Compra> Compras { get; set; }
-    public DbSet<ItemCompra> ItemsCompra { get; set; }
+    public DbSet<Producto> Productos { get; set; } = null!;
+    public DbSet<Compra> Compras { get; set; } = null!;
+    public DbSet<ItemCompra> ItemsCompra { get; set; } = null!;
 }

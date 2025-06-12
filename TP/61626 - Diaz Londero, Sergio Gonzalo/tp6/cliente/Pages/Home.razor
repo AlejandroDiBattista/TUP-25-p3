@@ -1,107 +1,106 @@
 ﻿@page "/"
- @using cliente.Services
- @inject ApiService ApiService
- @inject CarritoService CarritoService
+@using cliente.Services
+@inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
 
+<PageTitle>Inicio</PageTitle>
 
- <PageTitle>Inicio</PageTitle>
- 
- <div class="container">
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">NextGen</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
-          </li>
-        </ul>
-        <form class="d-flex" role="search">
-          <input
-            class="form-control me-2"
-            type="search"
-            placeholder="Buscar"
-            aria-label="Search"
-          />
-          <button class="btn btn-outline-primary" type="submit">Buscar</button>
-         
-          <a class="btn btn-outline-primary ms-5" href="/carrito">Carrito</a>
-
-         
-
-        </form>
-      </div>
-    </div>
-  </nav>
-
-  <div class="row my-4 row-gap-4">
-    @if (productos.Count == 0 && !cargando)
-    {
-      <p>No hay productos cargados. Presiona el botón para cargar productos.</p>
-    }
-    @foreach (var producto in productos)
-    {
-      <div class="col-4">
-        <div class="card" style="width: 18rem;">
-          <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
-          <div class="card-body">
-            <h5 class="card-title">@producto.Nombre</h5>
-            <p class="card-text">@producto.Descripcion</p>
-            <p class="card-text"><strong>Precio: </strong>$@producto.Precio</p>
-            <p class="card-text"><strong>Stock: </strong>@producto.Stock</p>
-            <a href="#" class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</a>
-          </div>
+<div class="container">
+  <div class="container">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">NextGen</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+          </ul>
+          <form class="d-flex" role="search" @onsubmit="BuscarProductos">
+            <input
+              class="form-control me-2"
+              type="search"
+              placeholder="Buscar"
+              aria-label="Search"
+              @bind="busqueda"
+            />
+            <button class="btn btn-outline-primary" type="submit">Buscar</button>
+            <a class="btn btn-outline-primary ms-5 position-relative" href="/carrito">
+              Carrito
+              @if (CarritoService.CantidadTotal > 0)
+              {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  @CarritoService.CantidadTotal
+                </span>
+              }
+            </a>
+          </form>
         </div>
       </div>
-    }
-  </div>
+    </nav>
 
-  <div class="row mb-4">
-    <div class="col-12">
-      <button class="btn btn-primary" @onclick="ObtenerProductos">
-        Cargar productos
-      </button>
+    <div class="row my-4 row-gap-4">
+      @if (productos.Count == 0 && !cargando)
+      {
+        <p>No hay productos cargados. Presiona el botón para cargar productos.</p>
+      }
+      @foreach (var producto in productos)
+      {
+        <div class="col-4">
+          <div class="card" style="width: 18rem;">
+            <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
+            <div class="card-body">
+              <h5 class="card-title">@producto.Nombre</h5>
+              <p class="card-text">@producto.Descripcion</p>
+              <p class="card-text"><strong>Precio: </strong>$@producto.Precio</p>
+              <p class="card-text"><strong>Stock: </strong>@producto.Stock</p>
+              <a href="#" class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-12">
+        <button class="btn btn-primary" @onclick="ObtenerProductos">
+          Cargar productos
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        @if (cargando)
+        {
+          <div class="alert alert-info">Cargando productos...</div>
+        }
+        else if (error != null)
+        {
+          <div class="alert alert-danger">Error: @error</div>
+        }
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-12">
-      @if (cargando)
-      {
-        <div class="alert alert-info">Cargando productos...</div>
-      }
-      else if (error != null)
-      {
-        <div class="alert alert-danger">Error: @error</div>
-      }
-    </div>
-  </div>
- </div>
-
-
-
-
-
-
-
-
- @code {
+@code {
   private List<Producto> productos = new();
   private string error;
   private bool cargando = false;
-
-  
+  private string busqueda = string.Empty;
 
   private async Task ObtenerProductos()
   {
@@ -122,21 +121,45 @@
     }
   }
 
-
-
- private async Task AgregarAlCarrito(Producto producto)
-{
-    var exito = await ApiService.AgregarProductoAlCarritoAsync(producto);
-    if (exito)
+  private async Task BuscarProductos()
+  {
+    cargando = true;
+    error = null;
+    try
     {
-        CarritoService.AgregarProducto(producto);
-        producto.Stock--; 
-        StateHasChanged();
+      productos = await ApiService.ObtenerProductosAsync(busqueda);
+    }
+    catch (Exception ex)
+    {
+      error = ex.Message;
+      productos = new();
+    }
+    finally
+    {
+      cargando = false;
+    }
+  }
+
+  private async Task AgregarAlCarrito(Producto producto)
+  {
+    var exitoServidor = await ApiService.AgregarProductoAlCarritoAsync(producto);
+    if (exitoServidor)
+    {
+        bool agregadoLocal = CarritoService.AgregarProducto(producto);
+        if (agregadoLocal)
+        {
+            producto.Stock--;
+            StateHasChanged();
+            NavigationManager.NavigateTo("/carrito"); // Redirige al carrito
+        }
+        else
+        {
+            error = "No se puede agregar más de este producto al carrito (stock insuficiente).";
+        }
     }
     else
     {
-        error = "No se pudo agregar al carrito. Sin stock.";
+        error = "No se pudo agregar al carrito. Sin stock en servidor.";
     }
-}
-
+  }
 }

@@ -23,7 +23,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            <a class="nav-link active" aria-current="page" href="/">Home</a>
           </li>
         </ul>
         <form class="d-flex" role="search">
@@ -63,12 +63,16 @@
                 <tr>
                   <td>@item.Producto.Nombre</td>
                   <td>$@item.Producto.Precio</td>
-                  <td>@item.Cantidad</td>
+                  <td>
+                    <button class="btn btn-secondary btn-sm me-1" @onclick="() => CambiarCantidad(item.Producto.Id, -1)">-</button>
+                    @item.Cantidad
+                    <button class="btn btn-secondary btn-sm ms-1" @onclick="() => CambiarCantidad(item.Producto.Id, 1)">+</button>
+                  </td>
                   <td>$@(item.Producto.Precio * item.Cantidad)</td>
                   <td>
                     <button
                       class="btn btn-danger btn-sm"
-                      @onclick="() => CarritoService.EliminarProducto(item.Producto.Id)"
+                      @onclick="() => EliminarDelCarrito(item.Producto.Id)"
                     >
                       Eliminar
                     </button>
@@ -79,9 +83,49 @@
         </table>
 
         <h4>Total: $@CarritoService.CalcularTotal()</h4>
-        <button class="btn btn-warning" @onclick="CarritoService.VaciarCarrito">
+        <button class="btn btn-warning me-2" @onclick="VaciarCarrito">
           Vaciar Carrito
+        </button>
+        <button class="btn btn-success" @onclick="ConfirmarCompra">
+          Confirmar compra
         </button>
     }
   </div>
 </div>
+
+@code {
+    private void EliminarDelCarrito(int productoId)
+    {
+        CarritoService.EliminarProducto(productoId);
+    }
+
+    private void VaciarCarrito()
+    {
+        CarritoService.VaciarCarrito();
+    }
+
+    private void CambiarCantidad(int productoId, int delta)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+        {
+            if (delta == 1)
+            {
+                CarritoService.AgregarProducto(item.Producto);
+            }
+            else if (delta == -1 && item.Cantidad > 1)
+            {
+                item.Cantidad--;
+            }
+            else if (delta == -1 && item.Cantidad == 1)
+            {
+                CarritoService.EliminarProducto(productoId);
+            }
+        }
+    }
+
+    private void ConfirmarCompra()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}

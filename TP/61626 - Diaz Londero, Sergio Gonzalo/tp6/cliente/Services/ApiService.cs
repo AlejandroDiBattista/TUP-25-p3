@@ -33,6 +33,14 @@ namespace cliente.Services
     return response.IsSuccessStatusCode;
 }
 
+public async Task<bool> ConfirmarCompraAsync(object cliente)
+{
+    // Aquí deberías obtener el id del carrito actual, por simplicidad se usa 1
+    int carritoId = 1;
+    var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", cliente);
+    return response.IsSuccessStatusCode;
+}
+
     
     
     }
