@@ -57,32 +57,61 @@ public static class CompraEndpoints
       return Results.Created($"/compras/{compra.Id}", compra);
 
     });
-        
-      app.MapGet("/compras", async (TiendaContext db) =>
+
+    app.MapGet("/compras", async (TiendaContext db) =>
+      {
+        var compras = await db.Compras
+              .Include(c => c.Items)
+              .ThenInclude(i => i.Producto)
+              .ToListAsync();
+
+        var response = compras.Select(c => new CompraResponse
         {
-            var compras = await db.Compras
-                .Include(c => c.Items)
-                .ThenInclude(i => i.Producto)
-                .ToListAsync();
+          Id = c.Id,
+          NombreCliente = c.NombreCliente,
+          ApellidoCliente = c.ApellidoCliente,
+          EmailCliente = c.EmailCliente,
+          Fecha = c.Fecha,
+          Total = c.Total,
+          Items = c.Items.Select(i => new CompraResponse.ItemCompraResponse
+          {
+            NombreProducto = i.Producto.Nombre,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+          }).ToList()
+        }).ToList();
 
-            var response = compras.Select(c => new CompraResponse
-            {
-                Id = c.Id,
-                NombreCliente = c.NombreCliente,
-                ApellidoCliente = c.ApellidoCliente,
-                EmailCliente = c.EmailCliente,
-                Fecha = c.Fecha,
-                Total = c.Total,
-                Items = c.Items.Select(i => new CompraResponse.ItemCompraResponse
-                {
-                    NombreProducto = i.Producto.Nombre,
-                    Cantidad = i.Cantidad,
-                    PrecioUnitario = i.PrecioUnitario
-                }).ToList()
-            }).ToList();
+        return Results.Ok(response);
+      });
+        
+      app.MapGet("/compras/{id}", async (int id, TiendaContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == id);
 
-            return Results.Ok(response);
-        });
+    if (compra == null)
+        return Results.NotFound($"No se encontró la compra con ID {id}");
+
+    var response = new CompraResponse
+    {
+        Id = compra.Id,
+        NombreCliente = compra.NombreCliente,
+        ApellidoCliente = compra.ApellidoCliente,
+        EmailCliente = compra.EmailCliente,
+        Fecha = compra.Fecha,
+        Total = compra.Total,
+        Items = compra.Items.Select(i => new CompraResponse.ItemCompraResponse
+        {
+            NombreProducto = i.Producto.Nombre,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+        }).ToList()
+    };
+
+    return Results.Ok(response);
+});  
 
     }
 }
