@@ -202,6 +202,23 @@ app.MapDelete("/carrito/eliminar", ([FromQuery] Guid id, [FromQuery] int product
     return Results.Ok(carrito);
 });
 
+app.MapPost("/carrito/vaciar", ([FromQuery] Guid id) =>
+{
+  if (!carritos.TryGetValue(id, out var carrito))
+    return Results.NotFound("Carrito no encontrado");
+
+  carrito.Items.Clear();
+  return Results.Ok("Carrito vaciado correctamente");
+});
+
+app.MapDelete("/carrito", ([FromQuery] Guid id) =>
+{
+    if (!carritos.Remove(id))
+        return Results.NotFound("Carrito no encontrado");
+
+    return Results.Ok("Carrito eliminado");
+});
+
 using (var scope = app.Services.CreateScope())
 {
   var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
