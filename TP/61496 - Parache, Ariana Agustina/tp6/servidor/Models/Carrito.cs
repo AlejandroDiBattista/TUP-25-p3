@@ -6,7 +6,6 @@ namespace servidor.Models
         public List<ItemCarrito> Items { get; set; } = new();
         public bool Confirmado { get; set; } = false;
 
-        // Datos cliente (se llenan al confirmar)
         public string? NombreCliente { get; set; }
         public string? ApellidoCliente { get; set; }
         public string? EmailCliente { get; set; }
