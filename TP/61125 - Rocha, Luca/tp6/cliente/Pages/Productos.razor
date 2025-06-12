@@ -25,20 +25,24 @@ else if (!productos.Any())
 else
 {
     <ul class="list-group">
-        @foreach (var p in productos)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+    @foreach (var p in productos)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="@p.ImagenUrl" alt="@p.Nombre" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
                 <div>
                     <strong>@p.Nombre</strong> – $@p.Precio<br />
                     <em>@p.Descripcion</em> – Stock: @p.Stock
                 </div>
-                <div>
-                    <button class="btn btn-warning btn-sm" @onclick="() => EditarProducto(p)">Editar</button>
-                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
-                </div>
-            </li>
-        }
-    </ul>
+            </div>
+            <div>
+                <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarProducto(p)">Editar</button>
+                <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
+            </div>
+        </li>
+    }
+</ul>
+
 }
 
 @if (productoEditando != null)
