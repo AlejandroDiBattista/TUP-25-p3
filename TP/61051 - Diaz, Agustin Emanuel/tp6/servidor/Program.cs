@@ -103,6 +103,24 @@ app.MapPost("/carrito", () =>
   return Results.Ok(new { carritoId = nuevoCarrito.Id });
 });
 
+app.MapPost("/carrito/agregar", async ([FromQuery] Guid id, [FromBody] CarritoItem item, ApplicationDbContext db) =>
+{
+    if (!carritos.TryGetValue(id, out var carrito))
+        return Results.NotFound("Carrito no encontrado");
+
+    var producto = await db.Productos.FindAsync(item.ProductoId);
+    if (producto == null || producto.Stock < item.Cantidad)
+        return Results.BadRequest("Producto no válido o sin stock");
+
+    var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == item.ProductoId);
+    if (existente != null)
+        existente.Cantidad += item.Cantidad;
+    else
+        carrito.Items.Add(item);
+
+    return Results.Ok(carrito);
+});
+
 using (var scope = app.Services.CreateScope())
 {
   var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
