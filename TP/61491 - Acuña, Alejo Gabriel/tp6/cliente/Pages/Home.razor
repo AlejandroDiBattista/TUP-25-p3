@@ -2,26 +2,41 @@
 @using cliente.Services
 @inject ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>RetroFútbol Store</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    <button><a href="./catalogo">Catalago</a></button>
+<div class="container text-center mt-5">
+
+    <!-- Logo de la tienda -->
+    <img src="img/logo.png" alt="Logo Tienda" style="max-height: 120px;" class="mb-3" />
+
+    <!-- Título principal -->
+    <h1 class="display-4 text-primary">RetroFútbol Store</h1>
+
+    <!-- Subtítulo o lema -->
+    <p class="lead">Reviví la historia del fútbol con camisetas icónicas de todos los tiempos</p>
+
+    <!-- Botón al catálogo -->
+    <a class="btn btn-success btn-lg mb-4" href="/catalogo">
+        <i class="bi bi-shop me-2"></i> Ir al Catálogo
+    </a>
+
+    <!-- Botón para obtener datos del servidor (opcional, útil si querés mostrarlo) -->
     <div class="row mb-4">
         <div class="col-12">
             <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
         </div>
     </div>
 
+    <!-- Sección de datos / carga / error -->
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
+        <div class="col-12">
+            @if (cargando)
+            {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
+            }
+            else if (datos != null)
+            {
+                <div class="card mx-auto" style="max-width: 400px;">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>
@@ -30,7 +45,9 @@
                         <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                 </div>
-            } else if (error != null) {
+            }
+            else if (error != null)
+            {
                 <div class="alert alert-danger">
                     Error: @error
                 </div>
@@ -44,15 +61,21 @@
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }

@@ -25,22 +25,33 @@
                     <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
                     <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
                     <button class="btn btn-primary" @onclick="() => AgregarAlCarritoAsync(producto)"
-        disabled="@(producto.Stock <= 0)">
-    Agregar al carrito
-</button>
-
+                            disabled="@(producto.Stock <= 0)">
+                        Agregar al carrito
+                    </button>
                 </div>
             </div>
         </div>
     }
 </div>
+
 <button><a href="./Carrito">Carrito</a></button>
+
 @code {
     private List<Producto> productos = new();
     private string busqueda = "";
     private string mensaje = "";
 
     protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarProductos(); 
+    }
+
+    private async Task CargarProductos()
     {
         productos = await apiService.ObtenerProductosAsync();
     }
@@ -55,7 +66,7 @@
         await carrito.AgregarProducto(producto);
         mensaje = $"“{producto.Nombre}” agregado exitosamente.";
         StateHasChanged();
-        await Task.Delay(3000); 
+        await Task.Delay(3000);
         mensaje = "";
         StateHasChanged();
     }

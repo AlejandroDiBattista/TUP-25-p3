@@ -187,6 +187,11 @@ app.MapPut("/carritos/{carritoId:guid}/confirmar", async (Guid carritoId, Tienda
     foreach (var item in carrito.Items)
     {
         item.Producto.Stock -= item.Cantidad;
+        db.Entry(item.Producto).State = EntityState.Modified;
+        if (item.Producto.Stock < 0)
+        {
+            return Results.BadRequest($"Stock insuficiente para {item.Producto.Nombre}");
+        }
     }
 
     var compra = new Compra
