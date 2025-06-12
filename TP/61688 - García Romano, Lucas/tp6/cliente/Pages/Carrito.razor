@@ -1,0 +1,75 @@
+@page "/carrito"
+@using cliente.Services
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<h1>🛒 Carrito de Compras</h1>
+
+@if (items == null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.PrecioUnitario.ToString("C")</td>
+                    <td>@(item.Cantidad * item.PrecioUnitario).ToString("C")</td>
+                    <td>
+                        <button @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)">+</button>
+                        <button @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad - 1)" disabled="@(@item.Cantidad <= 1)">-</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p><strong>Total:</strong> @items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</p>
+
+    <button @onclick="VaciarCarrito">Vaciar Carrito</button>
+    <button @onclick="IrAConfirmacion">Confirmar Compra</button>
+}
+
+@code {
+    private List<ItemCarritoDto> items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await CarritoService.ObtenerItemsDelCarritoAsync();
+    }
+
+    private async Task CambiarCantidad(string productoId, int nuevaCantidad)
+    {
+        await CarritoService.ModificarCantidadAsync(productoId, nuevaCantidad);
+        items = await CarritoService.ObtenerItemsDelCarritoAsync();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarritoAsync();
+        items = new();
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}

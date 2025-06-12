@@ -1,5 +1,6 @@
 @page "/catalogo"
 @inject cliente.Services.ProductoService ProductoService
+@inject cliente.Services.CarritoService CarritoService
 
 <h1>Catálogo</h1>
 
@@ -26,7 +27,7 @@ else
                 <p>@producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@producto.Precio</p>
                 <p><strong>Stock:</strong> @producto.Stock</p>
-                <button class="btn btn-success" disabled="@(!ProductoDisponible(producto))">Agregar al carrito</button>
+                <button class="btn btn-success" disabled="@(!ProductoDisponible(producto))" @onclick="() => AgregarAlCarrito(producto.Id.ToString())">Agregar al carrito</button>
             </div>
         }
     </div>
@@ -50,5 +51,21 @@ else
     private bool ProductoDisponible(cliente.Services.Producto producto)
     {
         return producto.Stock > 0;
+    }
+
+    private async Task AgregarAlCarrito(string productoId)
+    {
+        var ok = await CarritoService.AgregarProductoAsync(productoId, 1);
+        if (ok)
+        {
+            Console.WriteLine($"Producto {productoId} agregado al carrito.");
+            // Refresca el catálogo para mostrar el stock actualizado
+            productos = await ProductoService.ObtenerProductosAsync();
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine($"Error al agregar el producto {productoId}.");
+        }
     }
 }
