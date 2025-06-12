@@ -35,6 +35,7 @@ app.UseStaticFiles();
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
+// Endpoint: Obtener productos (con búsqueda opcional por query ?q=texto)
 app.MapGet("/api/productos", async (TiendaDbContext db, string? q) =>
 {
     var productos = db.Productos.AsQueryable();
@@ -61,7 +62,6 @@ app.MapPost("/api/carritos", () =>
     return Results.Ok(new { carritoId });
 });
 
-// Endpoint: Obtener los ítems de un carrito
 // Endpoint: Obtener los ítems(Productos) de un carrito
 app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db) =>
 {
@@ -80,7 +80,8 @@ app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext d
         p.Precio,
         p.ImagenUrl,
         Cantidad = items[p.Id],
-        Subtotal = items[p.Id] * p.Precio
+        Subtotal = items[p.Id] * p.Precio,
+        Stock = p.Stock // Se agrega el stock para que el cliente pueda ver el stock disponible de un producto.
     });
 
     return Results.Ok(resultado);
@@ -102,10 +103,11 @@ app.MapPut("/api/carritos/{carritoId}/{productoId}", async (Guid carritoId, int 
 
     // Validar stock disponible
     int enCarrito = CarritoStore.Carritos[carritoId].ContainsKey(productoId) ? CarritoStore.Carritos[carritoId][productoId] : 0;
-    if (dto.Cantidad > producto.Stock)
+    int nuevaCantidadTotal = dto.Cantidad; // Cambiado: ahora la cantidad es absoluta, no incremental
+    if (nuevaCantidadTotal > producto.Stock)
         return Results.BadRequest(new { error = "No hay suficiente stock disponible" });
 
-    CarritoStore.Carritos[carritoId][productoId] = dto.Cantidad;
+    CarritoStore.Carritos[carritoId][productoId] = nuevaCantidadTotal;
     return Results.Ok(new { mensaje = "Producto agregado/actualizado en el carrito" });
 });
 
@@ -183,11 +185,6 @@ app.MapPut("/api/carritos/{carritoId}/confirmar", async (Guid carritoId, Confirm
     return Results.Ok(new { mensaje = "Compra confirmada", compraId = compra.Id });
 });
 
-// DTO para cantidad
-public class CantidadDto
-{
-    public int Cantidad { get; set; }
-}
 
 // Se inicializa la base de datos y se cargan los productos.
 using (var scope = app.Services.CreateScope())
@@ -199,16 +196,6 @@ using (var scope = app.Services.CreateScope())
     {
         string baseUrl = "http://localhost:5184/images/";
         db.Productos.AddRange(
-            new Producto { Nombre = "Aceite Natura 900cc", Descripcion = "Aceite vegetal comestible", Precio = 1800, Stock = 15, ImagenUrl = "/images/Aceite Natura 900cc.jpg" },
-            new Producto { Nombre = "Arroz Lucchetti 500grs", Descripcion = "Arroz blanco premium", Precio = 950, Stock = 20, ImagenUrl = "/images/Arroz Lucchetti 500grs.jpg" },
-            new Producto { Nombre = "Azucar Ledesma 1kg", Descripcion = "Azúcar refinada", Precio = 1300, Stock = 10, ImagenUrl = "/images/Azucar Ledesma 1kg.jpg" },
-            new Producto { Nombre = "Coca-Cola 1.5 ltrs", Descripcion = "Bebida gaseosa cola", Precio = 2800, Stock = 25, ImagenUrl = "/images/Coca-Cola 1.5 ltrs.jpg" },
-            new Producto { Nombre = "Fernet Branca 750cc", Descripcion = "Fernet Branca", Precio = 11000, Stock = 18, ImagenUrl = "/images/Fernet Branca 750cc.jpg" },
-            new Producto { Nombre = "Galleta TerrabuSi 400grs", Descripcion = "Galletas surtidas", Precio = 2700, Stock = 30, ImagenUrl = "/images/Galleta TerrabuSi.jpg" },
-            new Producto { Nombre = "Harina 000 Cañuelas 1kg", Descripcion = "Harina 000 Cañuelas", Precio = 800, Stock = 22, ImagenUrl = "/images/Harina 000 Cañuelas 1kg.jpg" },
-            new Producto { Nombre = "Pure de Tomate Mora 520grs", Descripcion = "Pure de tomate", Precio = 600, Stock = 12, ImagenUrl = "/images/Pure de Tomate Mora 520grs.jpg" },
-            new Producto { Nombre = "Spaghetti La Providencia 500grs", Descripcion = "Fideo tipo Spaghetti", Precio = 750, Stock = 16, ImagenUrl = "/images/Spaghetti La Providencia 500grs.jpg" },
-            new Producto { Nombre = "Té La Virginia x 25 unidades", Descripcion = "Té La Virginia x 25 unidades", Precio = 650, Stock = 8, ImagenUrl = "/images/Té La Virginia x 25 unidades.jpg" }
             new Producto { Nombre = "Aceite Natura 900cc", Descripcion = "Aceite vegetal comestible", Precio = 1800, Stock = 15, ImagenUrl = baseUrl + "Aceite Natura 900cc.jpg" },
             new Producto { Nombre = "Arroz Lucchetti 500grs", Descripcion = "Arroz blanco premium", Precio = 950, Stock = 20, ImagenUrl = baseUrl + "Arroz Lucchetti 500grs.jpg" },
             new Producto { Nombre = "Azucar Ledesma 1kg", Descripcion = "Azúcar refinada", Precio = 1300, Stock = 10, ImagenUrl = baseUrl + "Azucar Ledesma 1kg.jpg" },
@@ -226,6 +213,10 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
+public partial class Program
+{
+    // ...no es necesario agregar nada aquí...
+}
 
 public class CantidadDto
 {
