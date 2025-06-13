@@ -206,25 +206,113 @@
 <!-- Modal de confirmación de compra -->
 @if (compraConfirmada != null)
 {
-    <div class="modal-modern d-block" tabindex="-1">
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content modal-success">
                 <div class="modal-header">
                     <h5 class="modal-title">✅ ¡Compra Confirmada!</h5>
                 </div>
                 <div class="modal-body">
-                    <div class="success-icon">🎉</div>
-                    <h4 class="text-gradient">¡Gracias por tu compra!</h4>
-                    <div class="purchase-details">
-                        <p><strong>Número de compra:</strong> #@compraConfirmada.CompraId</p>
-                        <p><strong>Total:</strong> <span class="cart-total">$@compraConfirmada.Total.ToString("N0")</span></p>
-                        <p><strong>Fecha:</strong> @compraConfirmada.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
-                        <p class="text-muted">@compraConfirmada.Mensaje</p>
+                    <span class="modal-icon success">🎉</span>
+                    <h4 class="text-gradient mb-3">¡Gracias por tu compra!</h4>
+                    
+                    <div class="purchase-summary">
+                        <div class="summary-row">
+                            <span class="summary-label">Número de compra:</span>
+                            <span class="summary-value">#@compraConfirmada.CompraId</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total:</span>
+                            <span class="summary-value summary-total">$@compraConfirmada.Total.ToString("N0")</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Fecha:</span>
+                            <span class="summary-value">@compraConfirmada.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
                     </div>
+                    
+                    <p class="text-muted mt-3">@compraConfirmada.Mensaje</p>
                 </div>
-                <div class="modal-footer justify-content-center">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-primary-modern" @onclick="VolverAlCatalogo">
                         🛍️ Seguir Comprando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmación para eliminar producto -->
+@if (mostrarModalEliminar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-confirm">
+                <div class="modal-header">
+                    <h5 class="modal-title">⚠️ Confirmar Eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    <span class="modal-icon warning">🗑️</span>
+                    <h5>¿Eliminar producto del carrito?</h5>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-modern" @onclick="CancelarEliminar">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-outline-modern" @onclick="ConfirmarEliminar">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de confirmación para vaciar carrito -->
+@if (mostrarModalVaciar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-confirm">
+                <div class="modal-header">
+                    <h5 class="modal-title">⚠️ Vaciar Carrito</h5>
+                </div>
+                <div class="modal-body">
+                    <span class="modal-icon warning">🛒</span>
+                    <h5>¿Vaciar todo el carrito?</h5>
+                    <p class="text-muted">Se eliminarán todos los productos del carrito.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-modern" @onclick="CancelarVaciar">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-outline-modern" @onclick="ConfirmarVaciarCarrito">
+                        Vaciar Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal de notificación -->
+@if (mostrarNotificacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">
+                <div class="modal-header">
+                    <h5 class="modal-title">@tituloNotificacion</h5>
+                </div>
+                <div class="modal-body">
+                    <span class="modal-icon @tipoNotificacion">@iconoNotificacion</span>
+                    <p>@mensajeNotificacion</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary-modern" @onclick="CerrarNotificacion">
+                        Aceptar
                     </button>
                 </div>
             </div>
@@ -337,11 +425,21 @@
     private ConfirmarCompraDto datosCliente = new();
     private CompraConfirmadaDto? compraConfirmada;
 
+    // Variables para modales
+    private bool mostrarModalEliminar = false;
+    private bool mostrarModalVaciar = false;
+    private bool mostrarNotificacion = false;
+    private int productoAEliminar = 0;
+    private string tituloNotificacion = "";
+    private string mensajeNotificacion = "";
+    private string tipoNotificacion = "";
+    private string iconoNotificacion = "";
+
     protected override async Task OnInitializedAsync()
     {
         await InicializarCarrito();
         await CargarCarrito();
-    }    private async Task InicializarCarrito()
+    }private async Task InicializarCarrito()
     {
         try
         {
@@ -447,35 +545,36 @@
         {
             actualizandoItem = null;
         }
+    }    private async Task EliminarProducto(int productoId)
+    {
+        productoAEliminar = productoId;
+        mostrarModalEliminar = true;
     }
 
-    private async Task EliminarProducto(int productoId)
+    private async Task ConfirmarEliminar()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
 
-        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", 
-            "¿Estás seguro de que quieres eliminar este producto del carrito?");
-        
-        if (!confirmar) return;
-
         try
         {
-            eliminandoItem = productoId;
+            mostrarModalEliminar = false;
+            eliminandoItem = productoAEliminar;
             
-            var exito = await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoId);
+            var exito = await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoAEliminar);
             
             if (exito)
             {
                 await CargarCarrito(); // Recargar carrito
+                MostrarNotificacion("✅ Producto Eliminado", "El producto se eliminó correctamente del carrito", "success", "✅");
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "❌ Error al eliminar el producto");
+                MostrarNotificacion("❌ Error", "No se pudo eliminar el producto del carrito", "error", "❌");
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"❌ Error: {ex.Message}");
+            MostrarNotificacion("❌ Error", $"Error: {ex.Message}", "error", "❌");
         }
         finally
         {
@@ -483,17 +582,24 @@
         }
     }
 
+    private void CancelarEliminar()
+    {
+        mostrarModalEliminar = false;
+        productoAEliminar = 0;
+    }
+
     private async Task VaciarCarrito()
+    {
+        mostrarModalVaciar = true;
+    }
+
+    private async Task ConfirmarVaciarCarrito()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
 
-        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", 
-            "¿Estás seguro de que quieres vaciar todo el carrito?");
-        
-        if (!confirmar) return;
-
         try
         {
+            mostrarModalVaciar = false;
             vaciandoCarrito = true;
             
             var exito = await ApiService.VaciarCarritoAsync(carritoId);
@@ -501,20 +607,40 @@
             if (exito)
             {
                 await CargarCarrito(); // Recargar carrito
+                MostrarNotificacion("✅ Carrito Vaciado", "Todos los productos fueron eliminados del carrito", "success", "🛒");
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "❌ Error al vaciar el carrito");
+                MostrarNotificacion("❌ Error", "No se pudo vaciar el carrito", "error", "❌");
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"❌ Error: {ex.Message}");
+            MostrarNotificacion("❌ Error", $"Error: {ex.Message}", "error", "❌");
         }
         finally
         {
             vaciandoCarrito = false;
         }
+    }
+
+    private void CancelarVaciar()
+    {
+        mostrarModalVaciar = false;
+    }
+
+    private void MostrarNotificacion(string titulo, string mensaje, string tipo, string icono)
+    {
+        tituloNotificacion = titulo;
+        mensajeNotificacion = mensaje;
+        tipoNotificacion = tipo;
+        iconoNotificacion = icono;
+        mostrarNotificacion = true;
+    }
+
+    private void CerrarNotificacion()
+    {
+        mostrarNotificacion = false;
     }
 
     private bool DatosClienteValidos()
@@ -523,9 +649,7 @@
                !string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente) &&
                !string.IsNullOrWhiteSpace(datosCliente.EmailCliente) &&
                datosCliente.EmailCliente.Contains("@");
-    }
-
-    private async Task ConfirmarCompra()
+    }    private async Task ConfirmarCompra()
     {
         if (string.IsNullOrEmpty(carritoId) || !DatosClienteValidos()) return;
 
@@ -549,12 +673,12 @@
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "❌ Error al confirmar la compra");
+                MostrarNotificacion("❌ Error", "No se pudo confirmar la compra. Intenta nuevamente.", "error", "❌");
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"❌ Error: {ex.Message}");
+            MostrarNotificacion("❌ Error", $"Error al procesar la compra: {ex.Message}", "error", "❌");
         }
         finally
         {

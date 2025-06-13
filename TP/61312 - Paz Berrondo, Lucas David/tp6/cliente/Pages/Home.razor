@@ -155,6 +155,29 @@
     }
 </div>
 
+<!-- Modal de notificación -->
+@if (mostrarNotificacion)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">
+                <div class="modal-header">
+                    <h5 class="modal-title">@tituloNotificacion</h5>
+                </div>
+                <div class="modal-body">
+                    <span class="modal-icon @tipoNotificacion">@iconoNotificacion</span>
+                    <p>@mensajeNotificacion</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary-modern" @onclick="CerrarNotificacion">
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 <style>
     .producto-card {
         transition: transform 0.2s;
@@ -192,6 +215,13 @@
     // Estado del carrito
     private string? carritoId;
     private int totalItemsCarrito = 0;
+
+    // Variables para la notificación
+    private bool mostrarNotificacion = false;
+    private string tituloNotificacion = "";
+    private string mensajeNotificacion = "";
+    private string tipoNotificacion = ""; // "success" o "error"
+    private string iconoNotificacion = ""; // Icono de la notificación
 
     protected override async Task OnInitializedAsync()
     {
@@ -317,14 +347,13 @@
         {
             agregandoProducto = true;
             var cantidad = cantidadesSeleccionadas[producto.Id];
-            
-            var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
+              var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
             
             if (exito)
             {
                 await ActualizarContadorCarrito();
-                await JSRuntime.InvokeVoidAsync("alert", 
-                    $"✅ {producto.Nombre} agregado al carrito (Cantidad: {cantidad})");
+                MostrarNotificacion("✅ Producto Agregado", 
+                    $"{producto.Nombre} agregado al carrito (Cantidad: {cantidad})", "success", "🛒");
             }
             else
             {
@@ -339,26 +368,25 @@
                     if (exito)
                     {
                         await ActualizarContadorCarrito();
-                        await JSRuntime.InvokeVoidAsync("alert", 
-                            $"✅ {producto.Nombre} agregado al carrito (Cantidad: {cantidad})");
+                        MostrarNotificacion("✅ Producto Agregado", 
+                            $"{producto.Nombre} agregado al carrito (Cantidad: {cantidad})", "success", "🛒");
                     }
                     else
                     {
-                        await JSRuntime.InvokeVoidAsync("alert", 
-                            "❌ Error al agregar el producto al carrito");
+                        MostrarNotificacion("❌ Error", 
+                            "No se pudo agregar el producto al carrito", "error", "❌");
                     }
                 }
                 else
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", 
-                        "❌ No se pudo crear un carrito. Intenta recargar la página.");
+                    MostrarNotificacion("❌ Error", 
+                        "No se pudo crear un carrito. Intenta recargar la página.", "error", "❌");
                 }
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", 
-                $"❌ Error: {ex.Message}");
+            MostrarNotificacion("❌ Error", $"Error: {ex.Message}", "error", "❌");
         }
         finally
         {
@@ -388,16 +416,29 @@
         {
             Console.WriteLine($"Error al actualizar contador del carrito: {ex.Message}");
             totalItemsCarrito = 0;
-        }
-    }private async Task IrAlCarrito()
+        }    }private async Task IrAlCarrito()
     {
         if (string.IsNullOrEmpty(carritoId))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "❌ No hay un carrito activo");
+            MostrarNotificacion("⚠️ Sin Carrito", "No hay un carrito activo. Se creará uno automáticamente.", "error", "🛒");
             return;
         }
 
         // Navegar a la página del carrito
         Navigation.NavigateTo("/carrito");
+    }
+
+    private void CerrarNotificacion()
+    {
+        mostrarNotificacion = false;
+    }
+
+    private void MostrarNotificacion(string titulo, string mensaje, string tipo, string icono)
+    {
+        tituloNotificacion = titulo;
+        mensajeNotificacion = mensaje;
+        tipoNotificacion = tipo;
+        iconoNotificacion = icono;
+        mostrarNotificacion = true;
     }
 }
