@@ -31,7 +31,15 @@
                     <tr>
                         <td>@item.Producto.Nombre</td>
                         <td>$@item.Producto.Precio</td>
-                        <td>@item.Cantidad</td>
+                        <td>
+                            <input type="number"
+                                min="1"
+                                max="@item.Producto.Stock"
+                                value="@item.Cantidad"
+                                @onchange="(e) => CambiarCantidad(item.Producto.Id, e.Value?.ToString())"
+                                class="form-control"
+                                style="width: 80px;" />
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -66,19 +74,31 @@
 </div>
 
 @code {
-    private CompraFormulario formulario = new();
+    void CambiarCantidad(int productoId, string nuevaCantidadStr)
+    {
+        if (int.TryParse(nuevaCantidadStr, out int nuevaCantidad) && nuevaCantidad > 0)
+        {
+            CarritoService.CambiarCantidad(productoId, nuevaCantidad);
+            StateHasChanged();
+        }
+    }
 
+    private CompraFormulario formulario = new();
     public void VaciarCarrito()
     {
         CarritoService.Vaciar();
         StateHasChanged();
     }
-
     public async Task ConfirmarCompra()
     {
+
+        formulario.CarritoId = 1;
+
         var exito = await ApiService.ConfirmarCompraAsync(CarritoService.Items, formulario);
+        
         if (exito)
         {
+            await JS.InvokeVoidAsync("alert", "Compra realizada correctamente.");
             CarritoService.Vaciar();
             Navigation.NavigateTo("/");
         }
@@ -86,5 +106,5 @@
         {
             await JS.InvokeVoidAsync("alert", "Error al confirmar la compra.");
         }
-    }
+    }   
 }
