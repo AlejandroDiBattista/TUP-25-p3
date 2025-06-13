@@ -32,6 +32,14 @@ a, .btn-link {
     top: 0;
     z-index: 1000;
 }
+.alert-container{
+    padding: 1rem;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+    text-decoration: none;
+    color: inherit;
+}
 .store-title {
     font-family: 'Poppins', sans-serif;
     font-size: 3.5rem;
@@ -99,12 +107,20 @@ a, .btn-link {
     margin-bottom: 1rem;
 }
 
+.cart-icon{
+    
+    width: 2rem;
+    height: 2rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
 .mb-4 {
         font-family: 'Poppins', sans-serif;
     font-size: 3.5rem;
     font-weight: 800;
     color: #564b39;
     letter-spacing: 2px;
+    cursor: default;  
 }
 
 .valid.modified:not([type=checkbox]) {
