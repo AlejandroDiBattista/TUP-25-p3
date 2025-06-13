@@ -141,7 +141,7 @@ html, body {
    ========================== */
 .search-container {
     position: relative;
-    max-width: 500px;
+    max-width: 100%;
 }
 
 .search-input {
@@ -152,6 +152,7 @@ html, body {
     transition: var(--transition);
     width: 100%;
     font-size: 1rem;
+    min-width: 250px;
 }
 
 .search-input:focus {
@@ -167,6 +168,7 @@ html, body {
     top: 50%;
     transform: translateY(-50%);
     color: #64748b;
+    z-index: 10;
 }
 
 .search-btn {
@@ -178,6 +180,8 @@ html, body {
     font-weight: 600;
     transition: var(--transition);
     box-shadow: var(--card-shadow);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .search-btn:hover {
@@ -598,6 +602,7 @@ html, body {
     
     .content-header {
         padding: 1rem;
+        text-align: center;
     }
     
     .page-title {
@@ -607,6 +612,21 @@ html, body {
     .cart-summary {
         position: static;
         margin-top: 2rem;
+    }
+    
+    /* Search container responsive */
+    .search-container .d-flex {
+        flex-direction: column;
+        gap: 1rem !important;
+    }
+    
+    .search-input {
+        min-width: auto;
+    }
+    
+    .search-btn {
+        width: 100%;
+        justify-self: stretch;
     }
 }
 
