@@ -4,60 +4,84 @@
 @inject CarritoService carrito
 @inject NavigationManager nav
 
-<h1 class="text-center my-4">Carrito de Compras</h1>
+<div class="container py-4">
+    <h1 class="text-center mb-4 text-uppercase fw-bold" style="font-size: 2.5rem;">
+        Carrito de Compras
+    </h1>
 
-@if (items.Count == 0)
-{
-    <p>No hay productos en el carrito.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in items)
-            {
-                <tr>
-                    <td>@item.Nombre</td>
-                    <td>$@item.Precio</td>
-                    <td>
-                        <button class="btn btn-outline-secondary btn-sm me-1"
-                                @onclick="() => DisminuirCantidad(item.ProductoId)">
-                            -
-                        </button>
-                        @item.Cantidad
-                        <button class="btn btn-outline-secondary btn-sm ms-1"
-                                @onclick="() => AumentarCantidad(item.ProductoId)">
-                            +
-                        </button>
-                    </td>
-                    <td>$@(item.Precio * item.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm"
-                                @onclick="() => QuitarProducto(item.ProductoId)">
-                            Quitar
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @if (items.Count == 0)
+    {
+        <div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 60vh;">
+            <h4 class="mb-3" style="font-size: 1.5rem;">Tu carrito está vacío</h4>
+            <img src="imagenes/carritovacio.png" alt="Carrito vacío" class="img-fluid mb-3" style="max-width: 300px;" />
+            <p class="mb-2" style="font-size: 1.2rem;">Agregá camisetas desde el catálogo para comenzar tu compra.</p>
+            <button class="btn btn-primary mt-2 px-4 py-2 fs-5" @onclick="IrAlCatalogo">Ir al catálogo</button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow rounded p-3 bg-white">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.Nombre</td>
+                            <td>$@item.Precio</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm rounded-circle"
+                                            title="Disminuir"
+                                            @onclick="() => DisminuirCantidad(item.ProductoId)">
+                                        -
+                                    </button>
+                                    <span class="mx-2">@item.Cantidad</span>
+                                    <button class="btn btn-outline-secondary btn-sm rounded-circle"
+                                            title="Aumentar"
+                                            @onclick="() => AumentarCantidad(item.ProductoId)">
+                                        +
+                                    </button>
+                                </div>
+                            </td>
+                            <td>$@(item.Precio * item.Cantidad)</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm"
+                                        title="Quitar producto"
+                                        @onclick="() => QuitarProducto(item.ProductoId)">
+                                        Quitar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
 
-    <h4 class="text-end">Total de productos: @totalItems</h4>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-3">
+                <h5 class="mb-0">
+                    Total de productos: <span class="badge bg-primary">@totalItems</span>
+                </h5>
 
-    <div class="d-flex justify-content-end gap-2 mt-3">
-        <button class="btn btn-outline-secondary" @onclick="VaciarCarrito">Vaciar Carrito</button>
-        <button class="btn btn-success" @onclick="IrAConfirmacion">Confirmar Compra</button>
-    </div>
-}
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="VaciarCarrito">
+                        Vaciar Carrito
+                    </button>
+                    <button class="btn btn-success" @onclick="IrAConfirmacion">
+                        Confirmar Compra
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @implements IDisposable
 
@@ -110,6 +134,11 @@ else
     private void IrAConfirmacion()
     {
         nav.NavigateTo("/confirmacion");
+    }
+
+    private void IrAlCatalogo()
+    {
+        nav.NavigateTo("/");
     }
 
     public void Dispose()

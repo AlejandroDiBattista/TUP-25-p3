@@ -192,6 +192,8 @@ app.MapPut("/carritos/{carritoId:guid}/confirmar", async (Guid carritoId, Tienda
         {
             return Results.BadRequest($"Stock insuficiente para {item.Producto.Nombre}");
         }
+        await db.SaveChangesAsync();
+
     }
 
     var compra = new Compra
@@ -208,8 +210,7 @@ app.MapPut("/carritos/{carritoId:guid}/confirmar", async (Guid carritoId, Tienda
 
     db.Compras.Add(compra);
     db.ItemsCarrito.RemoveRange(carrito.Items);
-    await db.SaveChangesAsync();
-
+    
     return Results.Ok("Compra confirmada");
 });
 

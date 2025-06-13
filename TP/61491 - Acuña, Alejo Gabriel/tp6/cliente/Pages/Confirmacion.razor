@@ -4,59 +4,71 @@
 @inject CarritoService carrito
 @inject NavigationManager nav
 
-<h3 class="my-4">Confirmación de Compra</h3>
+<div class="container mt-4">
 
-@if (items.Count == 0)
-{
-    <p>No hay productos en el carrito.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in items)
-            {
+    <h1 class="text-center mb-5 border-bottom pb-2 text-uppercase">Confirmación de Compra</h1>
+
+    @if (items.Count == 0)
+    {
+        <div class="text-center">
+            <p>No hay productos en el carrito.</p>
+            <button class="btn btn-primary" @onclick="IrAlCatalogo">Ir al Catálogo</button>
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td>@item.Nombre</td>
-                    <td>$@item.Precio</td>
-                    <td>@item.Cantidad</td>
-                    <td>$@(item.Precio * item.Cantidad)</td>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@item.Nombre</td>
+                        <td>$@item.Precio</td>
+                        <td>@item.Cantidad</td>
+                        <td>$@(item.Precio * item.Cantidad)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-    <h4 class="text-end">Total: $@items.Sum(i => i.Precio * i.Cantidad)</h4>
+        <h4 class="text-end">Total: <strong>$@items.Sum(i => i.Precio * i.Cantidad)</strong></h4>
 
-    <EditForm Model="@datosCliente" OnValidSubmit="ConfirmarCompra">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+        <EditForm Model="@datosCliente" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label>Nombre:</label>
-            <InputText class="form-control" @bind-Value="datosCliente.Nombre" />
-        </div>
-        <div class="mb-3">
-            <label>Apellido:</label>
-            <InputText class="form-control" @bind-Value="datosCliente.Apellido" />
-        </div>
-        <div class="mb-3">
-            <label>Email:</label>
-            <InputText type="email" class="form-control" @bind-Value="datosCliente.Email" />
-        </div>
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <label>Nombre:</label>
+                    <InputText class="form-control" @bind-Value="datosCliente.Nombre" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Apellido:</label>
+                    <InputText class="form-control" @bind-Value="datosCliente.Apellido" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Email:</label>
+                    <InputText type="email" class="form-control" @bind-Value="datosCliente.Email" />
+                </div>
+            </div>
 
-        <button class="btn btn-success" type="submit">Confirmar Compra</button>
-    </EditForm>
-}
-<button><a href="./catalogo">Catalago</a></button>
+            <div class="d-flex justify-content-end mt-3 gap-2">
+                <button class="btn btn-secondary" type="button" @onclick="IrAlCatalogo">Volver al Catálogo</button>
+                <button class="btn btn-success" type="submit">Confirmar Compra</button>
+            </div>
+        </EditForm>
+    }
+
+</div>
+
 @code {
     private List<ItemCarritoDto> items = new();
     private DatosClienteDto datosCliente = new();
@@ -69,6 +81,11 @@ else
     private async Task ConfirmarCompra()
     {
         await carrito.ConfirmarCompra(datosCliente);
-        nav.NavigateTo("/catalogo");
+        nav.NavigateTo("/");
+    }
+
+    private void IrAlCatalogo()
+    {
+        nav.NavigateTo("/");
     }
 }
