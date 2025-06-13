@@ -129,9 +129,231 @@ code {
     text-align: start;
 }
 
+.bg-cover-center {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-color: transparent;
+}
+
+.logo-clickable {
+    height: 220px;
+    width: 220px;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-carrito {
+    min-width: 100px;
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-buscar {
+    min-width: 100px;
+    background-color: rgba(0, 255, 255, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.input-busqueda {
+    width: 238px;
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
 .buscador-navbar::placeholder {
     color: rgb(218, 218, 218);
     opacity: 1;
+}
+
+.navbar-container {
+    height: 60px;
+    width: 834px;
+    margin-left: auto;
+}
+
+.card-producto {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.card-producto .card-title,
+.card-producto .card-text {
+    color: rgb(218, 218, 218);
+}
+
+.card-producto img {
+    object-fit: cover;
+    width: 100%;
+    height: 250px;
+}
+
+.precio {
+    color: rgba(0, 255, 64, 0.75);
+}
+
+.stock-disponible {
+    color: rgba(0, 255, 64, 0.75);
+    font-weight: bold;
+}
+
+.stock-agotado {
+    color: rgba(255, 0, 0, 0.75);
+    font-weight: bold;
+}
+
+.btn-agregar {
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-volver {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-volver i {
+    color: rgb(218, 218, 218);
+}
+
+.alert-cargando {
+    background-color: rgba(0, 255, 255, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.alert-vacio {
+    background-color: rgba(255, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.bg-carrito {
+    background-color: rgba(0, 0, 0, 0.15);
+    color: rgb(218, 218, 218);
+}
+
+.btn-cantidad-menos {
+    background-color: rgba(255, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-cantidad-mas {
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-eliminar {
+    background-color: rgba(255, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.total-carrito {
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+    padding: 10px;
+}
+
+.btn-vaciar {
+    background-color: rgba(255, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-confirmar {
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-volver {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-volver i {
+    color: rgb(218, 218, 218);
+}
+
+.alert-success-compra {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+    padding: 10px;
+}
+
+.alert-success-compra h4 {
+    color: rgba(0, 255, 64, 0.75);
+    border: none;
+}
+
+.table.bg-carrito,
+.table.bg-carrito-confirmacion {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+}
+
+.total-compra {
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+    padding: 10px;
+}
+
+.form-section {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+    padding: 10px;
+}
+
+.form-section .form-control {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: none;
+}
+
+.btn-cancelar {
+    background-color: rgba(255, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.btn-confirmar {
+    background-color: rgba(0, 255, 64, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.alert-warning-custom {
+    background-color: rgba(255, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border: 1px solid rgb(218, 218, 218);
+}
+
+.padding-top-3 {
+    padding-top: 3px;
+}
+.padding-top-6 {
+    padding-top: 6px;
+}
+.margin-left-18 {
+    margin-left: 18px;
+}
+.margin-right-17 {
+    margin-right: 17px;
 }
 
 .table.bg-carrito,

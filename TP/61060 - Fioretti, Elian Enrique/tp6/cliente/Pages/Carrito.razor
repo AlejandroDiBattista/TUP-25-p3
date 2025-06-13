@@ -4,18 +4,18 @@
 
 <div class="container">
     <div class="mb-3">
-        <button class="btn btn-secondary" @onclick="VolverAlCatalogo" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
-            <i class="bi bi-arrow-left" style="color:rgb(218, 218, 218);"></i> Volver al catálogo
+        <button class="btn btn-secondary btn-volver" @onclick="VolverAlCatalogo">
+            <i class="bi bi-arrow-left"></i> Volver al catálogo
         </button>
     </div>
     <h2>Carrito de Compras</h2>
     @if (cargando)
     {
-        <div class="alert alert-info" style="background-color:rgba(0, 255, 255, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Cargando carrito...</div>
+        <div class="alert alert-info alert-cargando">Cargando carrito...</div>
     }
     else if (items == null || items.Count == 0)
     {
-        <div class="alert alert-warning" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">El carrito está vacío.</div>
+        <div class="alert alert-warning alert-vacio">El carrito está vacío.</div>
     }
     else
     {
@@ -35,24 +35,28 @@
                     <tr>
                         <td>@ObtenerNombreProducto(item.ProductoId)</td>
                         <td>
-                            <button class="btn btn-sm btn-secondary" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad <= 1)">-</button>
+                            <button class="btn btn-sm btn-secondary btn-cantidad-menos"
+                                    @onclick="() => CambiarCantidad(item.ProductoId, -1)"
+                                    disabled="@(item.Cantidad <= 1)">-</button>
                             <span class="mx-2">@item.Cantidad</span>
-                            <button class="btn btn-sm btn-secondary" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" @onclick="() => CambiarCantidad(item.ProductoId, 1)" disabled="@(item.Cantidad >= ObtenerStockDisponible(item.ProductoId))">+</button>
+                            <button class="btn btn-sm btn-secondary btn-cantidad-mas"
+                                    @onclick="() => CambiarCantidad(item.ProductoId, 1)"
+                                    disabled="@(item.Cantidad >= ObtenerStockDisponible(item.ProductoId))">+</button>
                         </td>
                         <td>$@item.PrecioUnitario</td>
                         <td>$@(item.Cantidad * item.PrecioUnitario)</td>
                         <td>
-                            <button class="btn btn-danger btn-sm" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" @onclick="() => QuitarProducto(item.ProductoId)">Eliminar</button>
+                            <button class="btn btn-danger btn-sm btn-eliminar" @onclick="() => QuitarProducto(item.ProductoId)">Eliminar</button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-        <div class="mb-3" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+        <div class="mb-3 total-carrito">
             <strong>Total: $@items.Sum(i => i.Cantidad * i.PrecioUnitario)</strong>
         </div>
-        <button class="btn btn-warning me-2" @onclick="VaciarCarrito" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Vaciar carrito</button>
-        <button class="btn btn-success" @onclick="IrAConfirmacion" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Confirmar compra</button>
+        <button class="btn btn-warning me-2 btn-vaciar" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-success btn-confirmar" @onclick="IrAConfirmacion">Confirmar compra</button>
     }
 </div>
 

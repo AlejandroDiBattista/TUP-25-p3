@@ -1,27 +1,25 @@
-﻿@using cliente.Services
-@inherits LayoutComponentBase
-@inject NavigationManager NavigationManager
-@inject ApiService ApiService
+﻿@inherits LayoutComponentBase
 
 <div class="d-flex" style="align-items: flex-start;">
     <div 
-         style="width:220px; min-width:220px; display:flex; flex-direction:column; align-items:center; padding-top:6px; height:220px; 
-                background: url('@navBarLeftUrl') no-repeat center center; background-size: cover; background-color: transparent;">
-        <img src="@bionicTechLogoUrl" alt="Bionic Tech" style="height:220px; width:220px; cursor:pointer; position:relative; z-index:1;" @onclick="IrHome" />
+        class="d-flex flex-column align-items-center padding-top-6 bg-cover-center"
+        style="width:220px; min-width:220px; height:220px; background-image: url('@navBarLeftUrl');">
+        <img src="@bionicTechLogoUrl" alt="Bionic Tech" class="logo-clickable" @onclick="IrHome" />
     </div>
     <div class="flex-grow-1">
         <div class="sticky-top mb-4" style="height:60px; display:flex; align-items:center; background-color: transparent; box-shadow: none;">
-            <div class="container d-flex align-items-center justify-content-between"
-                 style="height:60px; width:834px; margin-left:auto; background: url('@navBarRightUrl') no-repeat right center; background-size: cover;">
-                <div class="d-flex align-items-center" style="padding-top:3px; margin-left:18px;">
-                    <a class="btn btn-outline-secondary me-3" href="/carrito" style="min-width:100px; background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+            <div class="container d-flex align-items-center justify-content-between navbar-container bg-cover-center"
+                 style="background-image: url('@navBarRightUrl');">
+                <div class="d-flex align-items-center padding-top-3 margin-left-18">
+                    <a class="btn btn-outline-secondary me-3 btn-carrito" href="/carrito">
                         Carrito
                     </a>
                 </div>
-                <div class="d-flex align-items-center justify-content-end" style="padding-top:3px; margin-right:17px;">
+                <div class="d-flex align-items-center justify-content-end padding-top-3 margin-right-17">
                     <form class="d-flex align-items-center" @onsubmit="Buscar">
-                        <input class="form-control form-control-sm me-2 buscador-navbar" style="width:238px; background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" type="search" placeholder="Buscar..." @bind="busqueda" />
-                        <button class="btn btn-outline-primary ms-1" type="submit" style="min-width:100px; background-color:rgba(0, 255, 255, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Buscar</button>
+                        <input class="form-control form-control-sm me-2 buscador-navbar input-busqueda"
+                               type="search" placeholder="Buscar..." @bind="busqueda" />
+                        <button class="btn btn-outline-primary ms-1 btn-buscar" type="submit">Buscar</button>
                     </form>
                 </div>
             </div>
