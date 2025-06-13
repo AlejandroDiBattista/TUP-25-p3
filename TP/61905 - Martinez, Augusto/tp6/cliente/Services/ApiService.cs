@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-
+using Cliente.Models;
 namespace cliente.Services;
 
 public class ApiService {
@@ -18,9 +18,22 @@ public class ApiService {
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
     }
-}
+
+
+
+public async Task<List<Producto>> ObtenerProductosAsync() {
+        try {
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/api/productos");
+            return productos ?? new List<Producto>();
+        } catch (Exception ex) {
+            Console.WriteLine($"Error al obtener productos: {ex.Message}");
+            return new List<Producto>();
+        }
+}    
 
 public class DatosRespuesta {
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
+
+    }
 }

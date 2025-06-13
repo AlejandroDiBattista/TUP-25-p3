@@ -1,59 +1,114 @@
 ﻿@page "/"
 @using cliente.Services
+@using Cliente.Models
 @inject ApiService ApiService
+@inject NavigationManager Navigation
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Catalogo de productos</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<!-- 🧭 Cabecera fija -->
+<header class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow p-3">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🛍️ Mi Tienda</a>
+
+        <input class="form-control me-2 w-50" type="search" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+
+        <button class="btn btn-outline-primary position-relative" @onclick="IrAlCarrito">
+            🛒 Carrito
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @contadorCarrito
+            </span>
+        </button>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
+</header>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+<div class="container mt-4">
+    @if (cargando)
+    {
+        <div class="alert alert-info">Cargando productos...</div>
+    }
+    else if (productosFiltrados != null && productosFiltrados.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var producto in productosFiltrados)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="object-fit: cover; height: 200px;" />
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p><strong>Stock:</strong> @producto.Stock</p>
+                            <p><strong>Precio:</strong> $@producto.Precio</p>
+                        </div>
+                        <div class="card-footer text-end">
+                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
+    else if (productos != null)
+    {
+        <div class="alert alert-warning">No se encontraron productos.</div>
+    }
+    else if (error != null)
+    {
+        <div class="alert alert-danger">Error: @error</div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> productos;
     private string error;
-    private bool cargando = false;
+    private bool cargando = true;
+    private int contadorCarrito = 0;
+    private string busqueda = "";
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        try
+        {
             cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
-            datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }
+
+    private IEnumerable<Producto> productosFiltrados => string.IsNullOrWhiteSpace(busqueda)
+        ? productos
+        : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        if (producto.Stock > 0)
+        {
+            contadorCarrito++;
+            // Lógica real: agregar a servicio de carrito
+            Navigation.NavigateTo("/carrito");
+        }
+        else
+        {
+            error = $"No hay stock disponible para {producto.Nombre}";
+        }
+    }
+
+    private void IrAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
 }
+
