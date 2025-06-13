@@ -4,7 +4,9 @@ html, body {
 }
 
 .page {
-    background-color: rgb(255, 255, 255);
+    
+    background: linear-gradient(180deg, blanchedalmond 0%, oklab(27.882% 0.0129 0.00416) 100%);
+
 }
 
 .d-flex:hover {
@@ -22,15 +24,50 @@ a, .btn-link {
 }
 
 .custom-header {
-    box-shadow: #545454 0px 0px 1000px;
-    border-radius: 5px;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    background: linear-gradient(90deg, rgb(128, 128, 128), #444444);
-    color: white;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #111 0%, #333 100%);
+    padding: 2rem 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid #be9b7b;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
+.store-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #f5e9d6;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px #000;
+    transition: transform 0.3s ease-in-out;
+}
+
+.store-title:hover {
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+    cursor: default;  
+    transition: color 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    transform: scale(1.015);
+    color: rgb(155, 114, 53);
+}
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.custom-header:hover {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.custom-header h1 {
+    font-size: 2.75rem;
+    font-weight: 800;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+    margin: 0;
+}
+
+
 
 
 .btn-primary {
@@ -49,7 +86,6 @@ a, .btn-link {
 }
 
 .fw-bold {
-    color: #00c00a;
 }
 
 .content {
@@ -61,6 +97,14 @@ a, .btn-link {
     color: white;
     padding: 1rem;
     margin-bottom: 1rem;
+}
+
+.mb-4 {
+        font-family: 'Poppins', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #564b39;
+    letter-spacing: 2px;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -142,13 +186,14 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
 .display-4 {
-    text-align: center;
-    font-weight: bolder;
+    font-weight: 700;
+    font-style: Bold;
 }
 .btn-card {
     background-color: #ffffff;
-    border: 1px solid #00c00a;
+    border: 1px solid rgb(255, 190, 92);
     border-radius: 5px;
     padding: 1rem;  
     text-align: center;
@@ -156,8 +201,8 @@ code {
 }
 
 .btn-card:hover {
-    color: #ffffff;
-    background-color: #6c6c6c;
+    color: rgb(109, 66, 0);
+    background-color: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 

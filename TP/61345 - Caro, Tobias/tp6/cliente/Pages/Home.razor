@@ -4,14 +4,18 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <header class="custom-header">
-        <h1 class="display-4">Bienvenido a la página principal</h1>
-    </header>
+<header class="custom-header">
+    <div class="header-content">
+        <h1 class="store-title">🖤 Black Store</h1>
+    </div>
 
-    <Catalogo />
+    <a class="cart-icon" href="/carrito"></a>
+    🛒 <span class="cart-count">0</span>
+</header>
 
-    <div class="row mb-4">
+<Catalogo />
+
+    @* <div class="row mb-4">
         <div class="col-12">
             <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
         </div>
@@ -38,10 +42,9 @@
                 <div class="alert alert-danger">Error: @error</div>
             }
         </div>
-    </div>
-</div>
+    </div> *@
 
-@code {
+@* @code {
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
@@ -65,4 +68,4 @@
         }
     }
 
-}
+} *@

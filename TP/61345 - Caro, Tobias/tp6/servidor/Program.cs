@@ -3,7 +3,6 @@ using servidor.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApp", policy =>
@@ -26,7 +25,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
 
-    // Lista de productos "fuente de la verdad"
     var productosFuente = new List<Producto>
     {
         new Producto { Nombre = "Google Pixel 8 Pro", Descripcion = "Google Pixel 8 Pro 128GB - Obsidiana", Precio = 999, Stock = 15, ImagenUrl = "https://celularesindustriales.com.ar/wp-content/uploads/71h9zq4viSL._AC_UF8941000_QL80_.jpg" },
