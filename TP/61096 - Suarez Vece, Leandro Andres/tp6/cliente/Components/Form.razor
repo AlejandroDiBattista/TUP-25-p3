@@ -1,0 +1,68 @@
+@using cliente.Services
+@using cliente.Models
+@inject IJSRuntime JS
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+
+
+@code {
+    private ConfirmarCompraDto formulario = new ConfirmarCompraDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ApiService.OnChange += ActualizarVista;
+    }
+
+    void ActualizarVista()
+    {
+        StateHasChanged(); // Forzar la actualización del menú
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnChange -= ActualizarVista;
+    }
+    private async Task ConfirmarCompra()
+    {
+
+        await JS.InvokeVoidAsync("cerrarModal", "confirmarCompraModal");
+        await ApiService.ConfirmarCompra(formulario);
+
+        Navigation.NavigateTo("/");
+
+    }
+}
+
+<EditForm Model="formulario" OnValidSubmit="ConfirmarCompra">
+    <DataAnnotationsValidator />
+
+    <div class="modal fade" id="confirmarCompraModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Confirmar Compra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 p-2">
+                        <label for="nombre" class="form-label">Nombre:</label>
+                        <InputText id="nombre" class="form-control" @bind-Value="formulario.NombreCliente" />
+                    </div>
+                    <div class="mb-3 p-2">
+                        <label for="apellido" class="form-label">Apellido:</label>
+                        <InputText id="apellido" class="form-control" @bind-Value="formulario.ApellidoCliente" />
+                    </div>
+                    <div class="mb-3 p-2">
+                        <label for="email" class="form-label">Email:</label>
+                        <InputText id="email" type="email" class="form-control" @bind-Value="formulario.EmailCliente" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
