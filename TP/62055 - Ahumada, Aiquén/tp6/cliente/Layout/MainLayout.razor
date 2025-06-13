@@ -1,32 +1,5 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="main-layout">
-    <header class="navbar bg-dark text-white px-4 py-2">
-        <h2 class="me-auto">🧢 Tienda de Gorras</h2>
-        <nav>
-            <a class="btn btn-outline-light me-2" href="/">Inicio</a>
-            <a class="btn btn-outline-light" href="/catalogo">Catálogo</a>
-        </nav>
-    </header>
-
-    <main class="p-4">
-        @Body
-    </main>
+<div class="page">
+    @Body
 </div>
-
-<style>
-    .main-layout header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .main-layout nav a {
-        margin-left: 10px;
-    }
-
-    .main-layout main {
-        min-height: 80vh;
-        background-color: #f8f9fa;
-    }
-</style>

@@ -1,60 +1,67 @@
-﻿    @page "/"
-    @using cliente.Services
-    @using Microsoft.AspNetCore.Components.Web
-    @inject ApiService ApiService
+﻿   @page "/"
+@using cliente.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
+<div class="inicio">
 
-    <pagetitle>Inicio</pagetitle>
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+      </a>
 
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-12">
-                <h1>Comunicación Cliente-Servidor</h1>
-            </div>
-        </div>
-        
-        <div class="row mb-4">
-            <div class="col-12">
-                <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-            </div>
-        </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class="row">
-            <div class="col-12">            
-                @if (cargando) {
-                    <div class="alert alert-info">Cargando datos...</div>
-                } else if (datos != null) {                <div class="card" style="width: 300px;">
-                        <div class="card-header">
-                            Respuesta del servidor
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">@datos.Mensaje</h5>
-                            <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                        </div>
-                    </div>
-                } else if (error != null) {
-                    <div class="alert alert-danger">
-                        Error: @error
-                    </div>
-                }
-            </div>
-        </div>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/productos">Productos</a>
+          </li>
+          <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
+                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                    <span style="margin-right: 0.3em;">Carrito</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                       @CarritoService.Items.Sum(i => i.Cantidad)
+                    </span>
+                    </a>
+                </li>
+        </ul>
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
+          <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+      </div>
+    </div>
+  </nav>
+ </div>
+
+    <div class="container home-bg">
+        <h1 class="display-4">¡Bienvenido a la tienda de gorras más exclusivas!</h1>
+        <p class="lead"><p>Tu estilo habla antes que vos. Encontrá en nuestro catálogo la gorra perfecta para cada día: urbanas, deportivas, clásicas y con onda. Elegí la que va con tu personalidad y salí a comerte el mundo con actitud.</p>
+</p>
+        <a class="btn btn-primary btn-lg" href="catalogo">quiero una ya!</a>
     </div>
+ 
 
-    @code {
-        private DatosRespuesta datos;
-        private string error;
-        private bool cargando = false;
-
-        private async Task ObtenerDatosDelServidor() {
-            try {
-                cargando = true;
-                error = null;
-                datos = await ApiService.ObtenerDatosAsync();
-            } catch (Exception ex) {
-                error = ex.Message;
-                datos = null;
-            } finally {
-                cargando = false;
-            }
-        }
+@code {
+    
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoService.OnChange += StateHasChanged;
+      
     }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+
+    
+}

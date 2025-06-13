@@ -1,71 +1,185 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+body, html {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: #f8fafc;
+    color: #222;
+    min-height: 100vh;
+}
+.home-bg {
+    background: linear-gradient(135deg, #ece954 0%, #ecf4b1 100%);
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 24px rgba(27, 110, 194, 0.10);
+    padding-bottom: 3rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+.home-bg h1, .home-bg p, .home-bg a {
+    color: #fff ;
+   background: linear-gradient(135deg, #ece954 0%, #ecf4b1 100%);
 }
 
-h1:focus {
-    outline: none;
-}
+
+    .main-layout header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .main-layout nav a {
+        margin-left: 10px;
+    }
+
+    .main-layout main {
+        min-height: 80vh;
+        
+    }
+
 
 a, .btn-link {
-    color: #0071c1;
+    
+    text-decoration: none;
+}
+
+a:hover, .btn-link:hover {
+    color: #0d3c61;
+    text-decoration: underline;
+}
+
+/* Navbar */
+.navbar {
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(27, 110, 194, 0.08);
+}
+
+.navbar-brand {
+    font-size: 1.7rem;
+    letter-spacing: 1px;
+}
+
+.nav-link.active, .nav-link:focus {
+    font-weight: bold;
+  
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.7em;
+}
+
+/* Catálogo */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px rgba(27, 110, 194, 0.10);
+    transition: transform 0.15s;
+    background: #fff;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(27, 110, 194, 0.18);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1b6ec2;
+}
+
+.card-text {
+    color: #555;
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background: linear-gradient(90deg, #1b6ec2 60%, #258cfb 100%);
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+
+
+.btn-success, .btn-warning, .btn-danger, .btn-secondary {
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
-.content {
-    padding-top: 1.1rem;
+.table {
+    background: #fff;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(27, 110, 194, 0.08);
 }
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+.table th {
+    background: #eaf2fb;
+    color: #1b6ec2;
+    font-weight: 700;
 }
 
-.invalid {
-    outline: 1px solid red;
+.table td, .table th {
+    vertical-align: middle !important;
 }
 
-.validation-message {
-    color: red;
+.badge.bg-success {
+    font-size: 1.1rem;
+    padding: 0.7em 1.2em;
 }
 
+.alert-info {
+    background: #eaf2fb;
+    color: #1b6ec2;
+    border: none;
+    border-radius: 0.7rem;
+    font-weight: 500;
+}
+
+/* Confirmación */
+.alert-success {
+    background: #d1f7d6;
+    color: #217a2b;
+    border: none;
+    border-radius: 0.7rem;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+input.form-control, .form-control:focus {
+    border-radius: 0.5rem;
+    border: 1px solid #b6d4fe;
+    box-shadow: none;
+}
+
+button[type="submit"].btn-success {
+    background: linear-gradient(90deg, #28a745 60%, #218838 100%);
+    border: none;
+}
+
+button[type="submit"].btn-success:hover {
+    background: linear-gradient(90deg, #218838 60%, #28a745 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 160px !important;
+    }
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+}
+
+/* Extra */
+::-webkit-scrollbar {
+    width: 8px;
+    background: #eaf2fb;
+}
+::-webkit-scrollbar-thumb {
+    background: #b6d4fe;
+    border-radius: 4px;
+}
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;
@@ -140,5 +254,5 @@ code {
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
-}
+    text-align: start;
+}   
