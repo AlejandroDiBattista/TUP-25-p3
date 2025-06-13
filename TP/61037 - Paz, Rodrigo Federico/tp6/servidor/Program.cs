@@ -58,7 +58,7 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (Guid carritoId, CompraReque
     if (!carrito.Items.Any())
         return Results.BadRequest("El carrito está vacío.");
 
-    // Crear la compra
+    
     var compra = new Compra
     {
         Fecha = DateTime.Now,
