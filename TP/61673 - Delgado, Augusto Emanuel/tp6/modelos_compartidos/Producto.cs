@@ -9,4 +9,9 @@ namespace modelos_compartidos
         public int Stock { get; set; }
         public string ImagenUrl { get; set; } = string.Empty;
     }
+     public class StockUpdateDto
+    {
+        public int ProductoId { get; set; }
+        public int CantidadVendida { get; set; }
+    }
 }

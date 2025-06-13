@@ -10,6 +10,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7295/") });
 builder.Services.AddSingleton<CarritoService>(); 
+builder.Services.AddScoped<ApiService>(); 
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 
 await builder.Build().RunAsync();
