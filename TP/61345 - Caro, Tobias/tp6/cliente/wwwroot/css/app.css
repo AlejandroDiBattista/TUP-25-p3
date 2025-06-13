@@ -1,27 +1,66 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: rgb(255, 255, 255);
 }
+
+.page {
+    background-color: rgb(255, 255, 255);
+}
+
+.d-flex:hover {
+    color: #0071c1;
+}
+
 
 h1:focus {
     outline: none;
 }
 
+
 a, .btn-link {
     color: #0071c1;
 }
 
+.custom-header {
+    box-shadow: #545454 0px 0px 1000px;
+    border-radius: 5px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    background: linear-gradient(90deg, rgb(128, 128, 128), #444444);
+    color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #1f7ba2;
+    border-color: #1f7ba2;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #fbb725;
+}
+
+.navbar {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.fw-bold {
+    color: #00c00a;
 }
 
 .content {
     padding-top: 1.1rem;
+}
+
+.bg-primary text-white p-4 mb-4 {
+    background-color: #b7f400;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -103,6 +142,24 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+.display-4 {
+    text-align: center;
+    font-weight: bolder;
+}
+.btn-card {
+    background-color: #ffffff;
+    border: 1px solid #00c00a;
+    border-radius: 5px;
+    padding: 1rem;  
+    text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.05s ease;
+}
+
+.btn-card:hover {
+    color: #ffffff;
+    background-color: #6c6c6c;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
@@ -111,4 +168,14 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+
+.col-12 {
+    color: rgb(0, 0, 0);
+
+    text-shadow: rgb(0, 0, 0) 0 0 100px;
+}
+.col-12:hover {
+text-shadow: black 0 0 100px;
 }

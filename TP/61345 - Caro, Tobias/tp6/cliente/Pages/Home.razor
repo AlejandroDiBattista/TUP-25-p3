@@ -4,20 +4,13 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<header class="bg-primary text-white p-4 mb-4">
-    <h1 class="display-4">Bienvenido a la página principal</h1>
-    <p class="lead">Este es un header de prueba usando Bootstrap.</p>
-</header>
-
-
-
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
+    <header class="custom-header">
+        <h1 class="display-4">Bienvenido a la página principal</h1>
+    </header>
+
+    <Catalogo />
+
     <div class="row mb-4">
         <div class="col-12">
             <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
@@ -25,22 +18,24 @@
     </div>
 
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
+        <div class="col-12">
+            @if (cargando)
+            {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
+            }
+            else if (datos != null)
+            {
+                <div class="card" style="width: 300px;">
+                    <div class="card-header">Respuesta del servidor</div>
                     <div class="card-body">
                         <h5 class="card-title">@datos.Mensaje</h5>
                         <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
+            }
+            else if (error != null)
+            {
+                <div class="alert alert-danger">Error: @error</div>
             }
         </div>
     </div>
@@ -51,16 +46,23 @@
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }
+
 }

@@ -1,0 +1,113 @@
+
+    <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Dropdown
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Action</a></li>
+                <li><a class="dropdown-item" href="#">Another action</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+            </li>
+        </ul>
+        <form class="d-flex" role="search">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+            <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+        </div>
+    </div>
+    </nav>
+
+<div class="container my-4">
+    <h2 class="mb-4">Catálogo de Productos</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+        @foreach (var producto in productos)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text text-muted">@producto.Descripcion</p>
+                        <div class="mt-auto">
+                            <p class="fw-bold">$@producto.Precio</p>
+                            <button class="btn-card">Agregar al carrito</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    public class Producto
+    {
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public string ImagenUrl { get; set; }
+        public decimal Precio { get; set; }
+    }
+
+private List<Producto> productos = new()
+{
+    new Producto {
+        Nombre = "Nvidia RTX 5090",
+        Descripcion = "La próxima bestia de NVIDIA con arquitectura Blackwell, ideal para gaming 8K y IA.",
+        ImagenUrl = "https://www.hd-tecnologia.com/imagenes/articulos/2024/12/Imagenes-filtradas-revelan-la-enorme-GPU-GB202-de-la-RTX-5090-de-NVIDIA-2.jpg",
+        Precio = 1599.99M
+    },
+    new Producto {
+        Nombre = "AMD Ryzen 9 7950X",
+        Descripcion = "Procesador de 16 núcleos y 32 hilos, perfecto para tareas pesadas y juegos exigentes.",
+        ImagenUrl = "https://www.computershopping.com.ar/Images/Productos/Grandes/Ryzen-9-7950X_Foto2g.jpg",
+        Precio = 699.99M
+    },
+    new Producto {
+        Nombre = "Placa Madre ASUS ROG X670E",
+        Descripcion = "Compatible con Ryzen serie 7000, DDR5 y PCIe 5.0. Construcción premium para entusiastas.",
+        ImagenUrl = "https://www.venex.com.ar/products_images/1681303708_rog-3.png",
+        Precio = 499.99M
+    },
+    new Producto {
+        Nombre = "Corsair Vengeance DDR5 32GB",
+        Descripcion = "Módulos de RAM DDR5 de alta velocidad, 6000 MHz con excelente rendimiento multitarea.",
+        ImagenUrl = "https://cdn.discordapp.com/attachments/898170374590947388/1204495692687276042/corsair-vengeance-ddr5.jpg",
+        Precio = 179.99M
+    },
+    new Producto {
+        Nombre = "Samsung 990 Pro 2TB NVMe",
+        Descripcion = "SSD ultra rápido con velocidades de lectura de hasta 7450 MB/s. Ideal para gaming y edición.",
+        ImagenUrl = "https://image-us.samsung.com/SamsungUS/home/computing/memory-storage/ssd/consumer/pdp/mz-v9p2t0b-am/gallery/MZ-V9P2T0B-AM_001_Front_Black.jpg",
+        Precio = 249.99M
+    },
+    new Producto {
+        Nombre = "Fuente Corsair RM1000x 80+ Gold",
+        Descripcion = "Fuente de alimentación modular de 1000W con certificación Gold y funcionamiento silencioso.",
+        ImagenUrl = "https://cdn-reichelt.de/bilder/web/xxl_ws/C910/COR_RM1000X_01.png",
+        Precio = 189.99M
+    }
+};
+
+}
+
+
+
