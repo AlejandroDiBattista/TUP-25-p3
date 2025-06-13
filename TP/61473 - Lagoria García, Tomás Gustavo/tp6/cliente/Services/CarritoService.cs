@@ -22,6 +22,11 @@ public class CarritoService
     public async Task<List<ItemCarrito>> ObtenerCarritoAsync(Guid carritoId)
     {
         return await _httpClient.GetFromJsonAsync<List<ItemCarrito>>($"carritos/{carritoId}");
+        var response = await _httpClient.GetFromJsonAsync<CarritoResponse>($"carritos/{carritoId}");
+    var items= response.Carrito;
+    var total = response.Total;
+        return items;
+    }
     public async Task<Guid> CrearCrritoAsync()
     {
         var response = await _httpClient.PostAsync($"carritos",null);
