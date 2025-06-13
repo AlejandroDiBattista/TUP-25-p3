@@ -543,22 +543,20 @@
     {
         productoAEliminar = productoId;
         mostrarModalEliminar = true;
-    }
-
-    private async Task ConfirmarEliminar()
+    }    private async Task ConfirmarEliminar()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
 
         try
         {
-            mostrarModalEliminar = false;
             eliminandoItem = productoAEliminar;
             
             var exito = await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoAEliminar);
             
             if (exito)
             {
-                await CargarCarrito(); // Recargar carrito                MostrarNotificacion("Producto Eliminado", "El producto se eliminó correctamente del carrito", "success");
+                await CargarCarrito(); // Recargar carrito
+                MostrarNotificacion("Producto Eliminado", "El producto se eliminó correctamente del carrito", "success");
             }
             else
             {
@@ -571,14 +569,17 @@
         }
         finally
         {
+            // Asegurar que el modal se cierre y el estado se limpie
+            mostrarModalEliminar = false;
+            productoAEliminar = 0;
             eliminandoItem = null;
+            StateHasChanged(); // Forzar actualización del componente
         }
-    }
-
-    private void CancelarEliminar()
+    }    private void CancelarEliminar()
     {
         mostrarModalEliminar = false;
         productoAEliminar = 0;
+        StateHasChanged(); // Forzar actualización del componente
     }
 
     private async Task VaciarCarrito()
@@ -599,7 +600,8 @@
             
             if (exito)
             {
-                await CargarCarrito(); // Recargar carrito                MostrarNotificacion("Carrito Vaciado", "Todos los productos fueron eliminados del carrito", "success");
+                await CargarCarrito(); // Recargar carrito
+                MostrarNotificacion("Carrito Vaciado", "Todos los productos fueron eliminados del carrito", "success");
             }
             else
             {
@@ -619,7 +621,9 @@
     private void CancelarVaciar()
     {
         mostrarModalVaciar = false;
-    }    private void MostrarNotificacion(string titulo, string mensaje, string tipo)
+    }
+
+    private void MostrarNotificacion(string titulo, string mensaje, string tipo)
     {
         tituloNotificacion = titulo;
         mensajeNotificacion = mensaje;
