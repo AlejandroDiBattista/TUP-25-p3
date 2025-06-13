@@ -5,20 +5,18 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
-<PageTitle>DualTech - Catálogo</PageTitle>
+<PageTitle>DualTech - Gaming Store</PageTitle>
 
 <!-- Content Header -->
 <div class="content-header">
     <div class="row align-items-center">
-        <div class="col-lg-6">
-            <h1 class="page-title">Catálogo DualTech</h1>
-            <p class="page-subtitle">Descubre los mejores productos tecnológicos de última generación</p>
+        <div class="col-lg-6">            <h1 class="page-title">Gaming PC Store - DualTech</h1>
+            <p class="page-subtitle">Los mejores componentes para gaming de PC. Arma tu build perfecta con nosotros</p>
         </div>
         <div class="col-lg-6">
             <div class="search-container">
                 <div class="position-relative">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" placeholder="Buscar..." 
+                    <span class="search-icon">🔍</span>                    <input type="text" class="search-input" placeholder="Buscar componentes de gaming..." 
                            @bind="terminoBusqueda" @onkeypress="OnBuscarKeyPress">
                 </div>
                 <div class="mt-2 d-flex gap-2">
@@ -44,7 +42,7 @@
     {
         <div class="alert alert-info shadow-modern fade-in">
             <h5>🔍 Resultados para: <strong>"@terminoBusquedaActual"</strong></h5>
-            <p class="mb-0">Encontrados @(productos?.Count ?? 0) productos</p>
+            <p class="mb-0">Encontrados @(productos?.Count ?? 0) componentes</p>
         </div>
     }
 
@@ -67,8 +65,7 @@
     @if (cargando)
     {
         <div class="text-center py-5">
-            <div class="loading-spinner mx-auto mb-3"></div>
-            <h4>Cargando productos increíbles...</h4>
+            <div class="loading-spinner mx-auto mb-3"></div>            <h4>Cargando componentes gaming...</h4>
             <p class="text-muted">Un momento por favor</p>
         </div>
     }
@@ -89,9 +86,8 @@
             @if (productos == null || !productos.Any())
             {
                 <div class="col-12 text-center py-5">
-                    <div class="fade-in">
-                        <h2 class="text-gradient">📭 No hay productos disponibles</h2>
-                        <p class="text-muted">@(string.IsNullOrEmpty(terminoBusquedaActual) ? "Vuelve pronto para ver nuevos productos." : "Intenta con otros términos de búsqueda.")</p>
+                    <div class="fade-in">                        <h2 class="text-gradient">📭 No hay componentes disponibles</h2>
+                        <p class="text-muted">@(string.IsNullOrEmpty(terminoBusquedaActual) ? "Vuelve pronto para ver nuevos componentes." : "Intenta con otros términos de búsqueda.")</p>
                     </div>
                 </div>
             }
@@ -100,9 +96,9 @@
                 @foreach (var producto in productos)
                 {
                     <div class="col-xl-4 col-lg-6 col-md-6 fade-in">
-                        <div class="card product-card">
-                            <img src="@producto.ImagenUrl" class="product-image" 
-                                 alt="@producto.Nombre" loading="lazy">
+                        <div class="card product-card">                            <img src="@GetImageUrl(producto.ImagenUrl)" class="product-image" 
+                                 alt="@producto.Nombre" loading="lazy" 
+                                 onerror="this.src='images/placeholder.jpeg'">
                             
                             <div class="product-card-body">
                                 <h5 class="product-title">@producto.Nombre</h5>
@@ -440,5 +436,34 @@
         tipoNotificacion = tipo;
         iconoNotificacion = icono;
         mostrarNotificacion = true;
+    }
+
+    /// <summary>
+    /// Obtiene la URL de la imagen con validación y fallback al placeholder
+    /// </summary>
+    /// <param name="imagenUrl">URL de la imagen del producto</param>
+    /// <returns>URL válida de la imagen o placeholder</returns>
+    private string GetImageUrl(string imagenUrl)
+    {
+        // Si la imagen es nula, vacía o solo espacios, usar placeholder
+        if (string.IsNullOrWhiteSpace(imagenUrl))
+        {
+            return "images/placeholder.jpeg";
+        }
+
+        // Si ya es una URL absoluta (http/https), devolverla tal como está
+        if (imagenUrl.StartsWith("http://") || imagenUrl.StartsWith("https://"))
+        {
+            return imagenUrl;
+        }
+
+        // Si es una ruta relativa, asegurar que esté bien formateada
+        if (imagenUrl.StartsWith("images/"))
+        {
+            return imagenUrl;
+        }
+
+        // Si no tiene el prefijo images/, agregarlo
+        return $"images/{imagenUrl}";
     }
 }
