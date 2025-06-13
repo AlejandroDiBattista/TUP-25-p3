@@ -1,0 +1,130 @@
+@page "/carrito"
+@using cliente.Modulos
+@using cliente.Services
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<title>Carrito</title>
+
+<div class="container">
+    <div class="mb-3">
+        <button class="btn btn-secondary" @onclick="VolverAlCatalogo" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+            <i class="bi bi-arrow-left" style="color:rgb(218, 218, 218);"></i> Volver al catálogo
+        </button>
+    </div>
+    <h2>Carrito de Compras</h2>
+    @if (cargando)
+    {
+        <div class="alert alert-info" style="background-color:rgba(0, 255, 255, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Cargando carrito...</div>
+    }
+    else if (items == null || items.Count == 0)
+    {
+        <div class="alert alert-warning" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">El carrito está vacío.</div>
+    }
+    else
+    {
+        <table class="table bg-carrito">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Importe</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@ObtenerNombreProducto(item.ProductoId)</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad <= 1)">-</button>
+                            <span class="mx-2">@item.Cantidad</span>
+                            <button class="btn btn-sm btn-secondary" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" @onclick="() => CambiarCantidad(item.ProductoId, 1)" disabled="@(item.Cantidad >= ObtenerStockDisponible(item.ProductoId))">+</button>
+                        </td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);" @onclick="() => QuitarProducto(item.ProductoId)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="mb-3" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+            <strong>Total: $@items.Sum(i => i.Cantidad * i.PrecioUnitario)</strong>
+        </div>
+        <button class="btn btn-warning me-2" @onclick="VaciarCarrito" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Vaciar carrito</button>
+        <button class="btn btn-success" @onclick="IrAConfirmacion" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">Confirmar compra</button>
+    }
+</div>
+
+@code {
+    private List<ItemCompra> items;
+    private List<Producto> productos;
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync();
+        items = await ApiService.ObtenerCarritoAsync();
+        cargando = false;
+    }
+
+    private string ObtenerNombreProducto(int productoId)
+    {
+        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+        return producto?.Nombre ?? $"ID {productoId}";
+    }
+
+    private int ObtenerStockDisponible(int productoId)
+    {
+        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+        return producto?.Stock ?? 0;
+    }
+
+    private async Task CambiarCantidad(int productoId, int delta)
+    {
+        var item = items.FirstOrDefault(i => i.ProductoId == productoId);
+        int stock = ObtenerStockDisponible(productoId);
+
+        if (delta > 0)
+        {
+            if (item != null && item.Cantidad >= stock)
+                return;
+            items = await ApiService.AgregarAlCarritoAsync(productoId, 1);
+        }
+        else
+        {
+            items = await ApiService.QuitarDelCarritoAsync(productoId, 1);
+        }
+        StateHasChanged();
+    }
+
+    private async Task QuitarProducto(int productoId)
+    {
+        var item = items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item != null)
+            items = await ApiService.QuitarDelCarritoAsync(productoId, item.Cantidad);
+        StateHasChanged();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarritoAsync();
+        items = new();
+        StateHasChanged();
+    }
+
+    private void IrAConfirmacion()
+    {
+        NavigationManager.NavigateTo("/confirmar");
+    }
+
+    private void VolverAlCatalogo()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

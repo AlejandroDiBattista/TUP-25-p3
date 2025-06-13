@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'northernArmy';
+    src: url('/fonts/northernArmy.otf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html, body {
     height: 100%;
     min-height: 100vh;
@@ -120,4 +127,25 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+.buscador-navbar::placeholder {
+    color: rgb(218, 218, 218);
+    opacity: 1;
+}
+
+.table.bg-carrito,
+.table.bg-carrito th,
+.table.bg-carrito td {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: rgb(218, 218, 218);
+    border-color: rgb(218, 218, 218);
+}
+
+.table.bg-carrito-confirmacion,
+.table.bg-carrito-confirmacion th,
+.table.bg-carrito-confirmacion td {
+    background-color: rgba(0, 255, 64, 0.15);
+    color: rgb(218, 218, 218);
+    border-color: rgb(218, 218, 218);
 }

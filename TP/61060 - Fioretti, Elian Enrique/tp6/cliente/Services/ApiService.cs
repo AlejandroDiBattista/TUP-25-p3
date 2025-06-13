@@ -40,11 +40,38 @@ namespace cliente.Services
             return await _http.GetFromJsonAsync<List<ItemCompra>>($"/api/carritos/{carritoId}");
         }
 
+        public async Task InicializarCarritoAsync()
+        {
+            await InicializarCarritoIdAsync();
+            await _http.PostAsync($"/api/carritos/{carritoId}", null);
+        }
+
         public async Task<List<ItemCompra>> AgregarAlCarritoAsync(int productoId, int cantidad)
         {
             await InicializarCarritoIdAsync();
             var resp = await _http.PutAsync($"/api/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
             return await resp.Content.ReadFromJsonAsync<List<ItemCompra>>();
+        }
+
+        public async Task<List<ItemCompra>> QuitarDelCarritoAsync(int productoId, int cantidad)
+        {
+            await InicializarCarritoIdAsync();
+            var resp = await _http.DeleteAsync($"/api/carritos/{carritoId}/{productoId}?cantidad={cantidad}");
+            return await resp.Content.ReadFromJsonAsync<List<ItemCompra>>();
+        }
+
+        public async Task VaciarCarritoAsync()
+        {
+            await InicializarCarritoIdAsync();
+            await _http.DeleteAsync($"/api/carritos/{carritoId}");
+        }
+
+        public async Task<Compra> ConfirmarCompraAsync(RequisitosCompra datos)
+        {
+            await InicializarCarritoIdAsync();
+            var resp = await _http.PutAsJsonAsync($"/api/carritos/{carritoId}/confirmar", datos);
+            resp.EnsureSuccessStatusCode();
+            return await resp.Content.ReadFromJsonAsync<Compra>();
         }
     }
 }
