@@ -194,90 +194,128 @@ namespace cliente.Services
     }
 
     #endregion
-        
+
     #region Compras
 
-        public async Task<bool> ConfirmarCompraAsync(Compra datosCompra)
+    public async Task<bool> ConfirmarCompraAsync(Compra datosCompra)
+    {
+      try
+      {
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
+        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datosCompra);
+
+        if (response.IsSuccessStatusCode)
         {
-            try
-            {
-                var carritoId = await ObtenerOCrearCarritoIdAsync();
-                var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datosCompra);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    _carritoId = null; // Reset del carrito después de la compra
-                    OnCarritoActualizado?.Invoke();
-                    return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
+          _carritoId = null; // Reset del carrito después de la compra
+          OnCarritoActualizado?.Invoke();
+          return true;
         }
+        return false;
+      }
+      catch
+      {
+        return false;
+      }
+    }
 
-        public async Task<List<CompraResumen>> ObtenerComprasAsync()
-        {
-            try
-            {
-                var compras = await _httpClient.GetFromJsonAsync<List<CompraResumen>>("/compras");
-                return compras ?? new List<CompraResumen>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener compras: {ex.Message}");
-                return new List<CompraResumen>();
-            }
-        }
+    public async Task<List<CompraResumen>> ObtenerComprasAsync()
+    {
+      try
+      {
+        var compras = await _httpClient.GetFromJsonAsync<List<CompraResumen>>("/compras");
+        return compras ?? new List<CompraResumen>();
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Error al obtener compras: {ex.Message}");
+        return new List<CompraResumen>();
+      }
+    }
 
-        public async Task<CompraDetalle?> ObtenerCompraAsync(int compraId)
-        {
-            try
-            {
-                var compra = await _httpClient.GetFromJsonAsync<CompraDetalle>($"/compras/{compraId}");
-                return compra;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener compra {compraId}: {ex.Message}");
-                return null;
-            }
-        }
+    public async Task<CompraDetalle?> ObtenerCompraAsync(int compraId)
+    {
+      try
+      {
+        var compra = await _httpClient.GetFromJsonAsync<CompraDetalle>($"/compras/{compraId}");
+        return compra;
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Error al obtener compra {compraId}: {ex.Message}");
+        return null;
+      }
+    }
 
-        #endregion
+    #endregion
 
-        #region Utilidades
+    #region Utilidades
 
-        public async Task<bool> VerificarConexionAsync()
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync("/");
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+    public async Task<bool> VerificarConexionAsync()
+    {
+      try
+      {
+        var response = await _httpClient.GetAsync("/");
+        return response.IsSuccessStatusCode;
+      }
+      catch
+      {
+        return false;
+      }
+    }
 
-        public async Task<ApiDatos?> ObtenerDatosApiAsync()
-        {
-            try
-            {
-                var datos = await _httpClient.GetFromJsonAsync<ApiDatos>("/api/datos");
-                return datos;
-            }
-            catch
-            {
-                return null;
-            }
-        }
+    public async Task<ApiDatos?> ObtenerDatosApiAsync()
+    {
+      try
+      {
+        var datos = await _httpClient.GetFromJsonAsync<ApiDatos>("/api/datos");
+        return datos;
+      }
+      catch
+      {
+        return null;
+      }
+    }
 
-        #endregion
+    #endregion
   }
+  public class CompraResumen
+    {
+        public int Id { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
+        public ClienteInfo Cliente { get; set; } = new();
+        public List<ProductoCompra> Productos { get; set; } = new();
+    }
+
+    public class CompraDetalle
+    {
+        public int Id { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
+        public ClienteInfo Cliente { get; set; } = new();
+        public List<ProductoCompra> Productos { get; set; } = new();
+    }
+
+    public class ClienteInfo
+    {
+        public string NombreCliente { get; set; } = string.Empty;
+        public string ApellidoCliente { get; set; } = string.Empty;
+        public string EmailCliente { get; set; } = string.Empty;
+    }
+
+    public class ProductoCompra
+    {
+        public string Producto { get; set; } = string.Empty;
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public decimal Subtotal { get; set; }
+    }
+
+    public class ApiDatos
+    {
+        public string Mensaje { get; set; } = string.Empty;
+        public DateTime Fecha { get; set; }
+    }
 }
 
 
