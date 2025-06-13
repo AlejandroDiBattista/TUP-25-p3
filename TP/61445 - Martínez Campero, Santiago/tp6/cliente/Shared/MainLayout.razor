@@ -1,59 +1,54 @@
+@using cliente.Services
+@using Microsoft.AspNetCore.Components
+
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject CarritoStateService CarritoStateService
 @inject NavigationManager NavigationManager
 
-<div class="page">
-    <header class="top-row px-4 navbar navbar-dark bg-dark">
-        <a class="navbar-brand" href="">
-            <img src="/logo.png" alt="Tienda Online Logo" style="height: 40px;" /> 
-            Tienda Online
-        </a>
-        <div class="search-container ms-auto me-3">
-            <input type="text" class="form-control" placeholder="Buscar productos..." @bind="searchTerm" @oninput="PerformSearch" />
-        </div>
-        <div class="cart-icon-container">
-            <a href="carrito" class="text-white d-flex align-items-center">
-                <i class="bi bi-cart-fill fs-4"></i>
-                <span class="badge bg-danger rounded-pill ms-1">@CarritoStateService.CantidadItems</span>
-            </a>
-        </div>
-    </header>
+<header class="bg-light border-bottom fixed-top">
+  <div class="container d-flex align-items-center py-2">
+    <a class="navbar-brand me-4" href="/" @onclick:preventDefault="true" @onclick="GoHome" style="cursor:pointer;">
+      <!-- Logo enlarged to 80px height -->
+      <img src="/miLogo.png" alt="Mi Logo" style="height:80px;" />
+    </a>
+    <input type="text" class="form-control me-auto" placeholder="Buscar productos..." @bind="searchTerm" @oninput="PerformSearch" />
+    <a class="nav-link text-dark ms-3" href="/carrito">
+      <i class="bi bi-cart-fill fs-4"></i>
+      <span class="badge bg-danger">@CarritoStateService.CantidadItems</span>
+    </a>
+  </div>
+</header>
 
-    <main>
-        <div class="sidebar">
-             <NavMenu />
-        </div>
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+<div class="page" style="padding-top: 80px;">
+    @Body
 </div>
 
 @code {
     private string? searchTerm;
 
+    protected override async Task OnInitializedAsync()
+    {
+
+        CarritoStateService.OnChange += StateHasChanged;
+        await CarritoStateService.InicializarAsync();
+    }
+
+    public void Dispose()
+    {
+        CarritoStateService.OnChange -= StateHasChanged;
+    }
+
     private void PerformSearch(ChangeEventArgs e)
     {
         searchTerm = e.Value?.ToString();
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            NavigationManager.NavigateTo($"/?search={searchTerm}");
-        }
-        else
-        {
-            NavigationManager.NavigateTo("/");
-        }
+        var url = string.IsNullOrWhiteSpace(searchTerm) ? "/" : $"/?search={Uri.EscapeDataString(searchTerm)}";
+        NavigationManager.NavigateTo(url);
     }
 
-    protected override async Task OnInitializedAsync()
+    private void GoHome()
     {
-        await CarritoStateService.InicializarAsync();
-        CarritoStateService.OnChange += StateHasChanged; // Subscribe to changes
-    }
 
-    public void Dispose() // Implement IDisposable
-    {
-        CarritoStateService.OnChange -= StateHasChanged; // Unsubscribe
+        NavigationManager.NavigateTo("/", forceLoad: true);
     }
 }

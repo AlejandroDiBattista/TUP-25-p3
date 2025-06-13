@@ -70,7 +70,7 @@ app.MapGet("/api/productos/{id:int}", async (int id, TiendaDbContext db) =>
     return producto == null ? Results.NotFound() : Results.Ok(producto);
 });
 
-// Inicializar un nuevo carrito
+
 app.MapPost("/api/carritos", async (TiendaDbContext dbContext) =>
 {
     var nuevaCompra = new Compra { Id = Guid.NewGuid(), FechaCreacion = DateTime.UtcNow };

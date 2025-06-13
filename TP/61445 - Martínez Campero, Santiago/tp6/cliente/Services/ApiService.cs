@@ -54,10 +54,10 @@ public class ApiService {
         }
         else
         {
-            // Handle error (e.g., log, throw exception, return null or a specific error DTO)
-            // For now, returning null or re-throwing might be simplest
-            // var errorContent = await response.Content.ReadAsStringAsync();
-            // Console.WriteLine($"Error: {response.StatusCode}, {errorContent}");
+
+
+
+
             response.EnsureSuccessStatusCode(); // This will throw for non-success codes
             return null; // Should not be reached if EnsureSuccessStatusCode throws
         }
@@ -82,5 +82,5 @@ public class ApiService {
         return await response.Content.ReadFromJsonAsync<ConfirmacionCompraResponseDto>(_jsonSerializerOptions);
     }
 
-    // Removed old ObtenerDatosAsync and DatosRespuesta as they are not part of the core requirements
+
 }
