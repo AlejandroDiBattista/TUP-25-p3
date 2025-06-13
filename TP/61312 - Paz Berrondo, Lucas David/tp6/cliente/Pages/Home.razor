@@ -17,7 +17,7 @@
             <div class="search-container">                <div class="position-relative">
                     <Icon Name="search" Size="16" Class="search-icon" />
                     <input type="text" class="search-input" placeholder="Buscar componentes de gaming..." 
-                           @bind="terminoBusqueda" @onkeypress="OnBuscarKeyPress">
+                           @bind="terminoBusqueda" @bind:event="oninput" @onkeydown="OnBuscarKeyPress">
                 </div>
                 <div class="mt-2 d-flex gap-2">
                     <button class="btn search-btn" @onclick="BuscarProductos">
@@ -306,12 +306,12 @@
         terminoBusqueda = "";
         terminoBusquedaActual = "";
         await CargarProductos();
-    }
-
-    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
+    }    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
+            // Pequeño delay para asegurar que el bind se complete
+            await Task.Delay(10);
             await BuscarProductos();
         }
     }
