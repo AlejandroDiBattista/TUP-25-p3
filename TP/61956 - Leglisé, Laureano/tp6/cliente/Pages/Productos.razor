@@ -1,0 +1,41 @@
+@page "/productos"
+@using cliente.Models
+@using cliente.Services
+@inject ServicioProductos Services
+@inject ServicioCarrito Carritoo
+
+<h3>Productos</h3>
+
+<p>En el carrito: @Carritoo.Items.Count</p>
+
+@if (productos == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <ul>
+        @foreach (var prod in productos)
+        {
+            <li>
+                @prod.Nombre - $@prod.Precio (Stock: @prod.Stock)
+                <button @onclick="() => AgregarAlCarrito(prod)">Agregar al carrito</button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    List<Producto> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Services.ObtenerProductosAsync();
+    }
+
+    void AgregarAlCarrito(Producto producto)
+    {
+        Console.WriteLine("Agregando: " + producto.Nombre);
+        Carritoo.AgregarAlCarrito(producto);
+    }
+}
