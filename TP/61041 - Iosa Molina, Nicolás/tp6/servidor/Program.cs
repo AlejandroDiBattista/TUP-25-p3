@@ -1,4 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar EF Core con SQLite
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
@@ -63,3 +69,11 @@ public class ItemCompra
     public double PrecioUnitario { get; set; }
 }
 
+public class TiendaContext : DbContext
+{
+    public TiendaContext(DbContextOptions<TiendaContext> options) : base(options) { }
+
+    public DbSet<Producto> Productos { get; set; }
+    public DbSet<Compra> Compras { get; set; }
+    public DbSet<ItemCompra> ItemsCompra { get; set; }
+}
