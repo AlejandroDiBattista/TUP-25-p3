@@ -2,6 +2,8 @@
 @using cliente.Services
 @using cliente.Models
 @inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject NotificationService NotificationService
 
 <PageTitle>Tienda Online | Blazor</PageTitle>
 
@@ -37,9 +39,13 @@
                         <div class="mt-4 flex flex-col items-center justify-between gap-4">
                             <p class="font-bold leading-tight text-gray-900">@($"${producto.Precio:N2}")</p>
 
-                            <button class="inline-flex items-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4  focus:ring-violet-300 whitespace-nowrap">
+                            <button class="inline-flex items-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4  focus:ring-violet-300 whitespace-nowrap" @onclick="() => CarritoService.AgregarItemACarritoAsync(producto.Id)">
                                 <i class="fas fa-cart-plus"></i>
                                 Añadir al carrito
+                            </button>
+                            <button class="inline-flex items-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4  focus:ring-violet-300 whitespace-nowrap" @onclick='() => MostrarNotificacion($"Producto {producto.Nombre} añadido al carrito")'>
+                                <i class="fas fa-cart-plus"></i>
+                                Añadir
                             </button>
                         </div>
                     </div>
@@ -60,6 +66,7 @@
 
     protected override async Task OnInitializedAsync() {
         await ObtenerDatosDelServidor();
+        CarritoService.InicializarCarritoAsync();
     }
 
     private async Task ObtenerDatosDelServidor() {
@@ -73,5 +80,10 @@
         } finally {
             cargando = false;
         }
+    }
+
+    private void MostrarNotificacion(string mensaje) {
+        Console.WriteLine($"Notificación: {mensaje}");
+        NotificationService.ShowInfo(mensaje);
     }
 }

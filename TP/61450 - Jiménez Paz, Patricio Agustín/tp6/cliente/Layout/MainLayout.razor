@@ -1,4 +1,9 @@
-﻿@inherits LayoutComponentBase
+﻿@using cliente.Services;
+@using cliente.Components;
+@inherits LayoutComponentBase
+@inject CarritoService CarritoService
+@implements IDisposable
+
 <div class="h-screen flex flex-col">
     <header class="py-4 border-b border-gray-300 bg-violet-200">
         <div class="max-w-screen-xl mx-auto px-4">
@@ -8,18 +13,33 @@
                         <img src="favicon.png" alt="Logo" class="w-8 h-8" />
                         <h1 class="font-bold text-2xl">Tienda Online</h1>
                     </div>
-                    <button class="inline-flex items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors">
+                    <button class="inline-flex items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors" @onclick="() => CarritoService.ObtenerCarritoAsync()">
                         <i class="fas fa-shopping-cart mr-2"></i>
-                        Ver Carrito
+                        Ver Carrito (@CantidadItems)
                     </button>
                 </div>
             </div>
         </div>
     </header>
-
+    <Notification />
     <main class="py-4 bg-violet-50 grow">
         <div class="max-w-screen-xl mx-auto px-4">
             @Body
         </div>
     </main>
 </div>
+
+@code {
+    private int CantidadItems => CarritoService.CantidadItems;
+
+    protected override void OnInitialized()
+    {
+        // Cada vez que el servicio llame a OnChange, se ejecutará StateHasChanged()
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}
