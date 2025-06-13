@@ -38,3 +38,7 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
     await _js.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
 }
 
+    public async Task VaciarCarritoAsync(Guid carritoId)
+    {
+        await _httpClient.DeleteAsync($"carritos/{carritoId}");
+    }
