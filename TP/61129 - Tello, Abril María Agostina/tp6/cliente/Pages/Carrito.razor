@@ -1,0 +1,102 @@
+@page "/carrito"
+@using cliente.Modelos
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<PageTitle>Carrito</PageTitle>
+
+<div class="fondo-productos">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/carrito">Carrito</a>
+                </li>
+            </ul>
+
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
+                <button class="btn btn-outline-success" type="submit">Buscar</button>
+            </form>
+        </div>
+    </div> 
+</nav>
+
+<div class="container mt-5 pt-5">
+    <h2>Carrito de compras</h2>
+    @if (CarritoService.Items.Count == 0)
+    {
+        <p>El carrito está vacío.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Unidades</th>
+                    <th>Precio unitario</th>
+                    <th>Importe</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in CarritoService.Items)
+                {
+                    <tr>
+                        <td>@item.Producto.Nombre</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.Producto)">-</button>
+                            @item.Cantidad
+                            <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.Producto)">+</button>
+                        </td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>$@item.Importe</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item.Producto)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <h4>Total: $@CarritoService.Total</h4>
+        <button class="btn btn-danger" @onclick="Vaciar">Vaciar carrito</button>
+        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+    }
+</div>
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 Rare Beauty. Todos los derechos reservados.</p>
+            <p>Desarrollado por Abril María Agostina Tello</p>
+        </div>
+    </footer>
+
+</div>
+
+@code {
+    void Agregar(cliente.Modelos.Producto producto) => CarritoService.AgregarAlCarrito(producto);
+    void Quitar(cliente.Modelos.Producto producto) => CarritoService.QuitarDelCarrito(producto);
+    void Eliminar(cliente.Modelos.Producto producto)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+        if (item != null)
+            CarritoService.Items.Remove(item);
+    }
+    void Vaciar() => CarritoService.VaciarCarrito();
+    void ConfirmarCompra() => Navigation.NavigateTo("/confirmacion");
+}

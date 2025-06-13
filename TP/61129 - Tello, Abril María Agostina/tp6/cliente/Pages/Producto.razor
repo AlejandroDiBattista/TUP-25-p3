@@ -2,6 +2,7 @@
 @using cliente.Services
 @using cliente.Modelos
 @inject ApiService ApiService
+@inject CarritoService CarritoService
 
 <PageTitle>Productos</PageTitle>
 
@@ -25,7 +26,7 @@
                     <a class="nav-link" href="/productos">Productos</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Carrito</a>
+                    <a class="nav-link" href="/carrito">Carrito</a>
                 </li>
             </ul>
 
@@ -39,6 +40,14 @@
 
 
 <div class="container mt-5 pt-5">
+     @if (mostrarMensaje)
+    {
+        <div class="mensaje-flotante">
+            ¡Agregado al carrito exitosamente!
+        </div>
+    }
+
+
         @if (productos == null)
         {
             <p>Cargando productos...</p>
@@ -56,7 +65,7 @@
                                 <p class="card-text">@producto.Descripcion</p>
                                 <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
                                 <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-                                <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                                <button class="btn btn-primary" @onclick="() =>AgregarAlCarrito(producto)">Agregar al carrito</button>
 
                             </div>
                         </div>
@@ -65,18 +74,37 @@
             </div>
         }
     </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 Rare Beauty. Todos los derechos reservados.</p>
+            <p>Desarrollado por Abril María Agostina Tello</p>
+        </div>
+    </footer>
+
 </div>
 @code {
     private List<cliente.Modelos.Producto> productos;
+    private bool mostrarMensaje = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         productos = await ApiService.GetProductosAsync();
     }
 
     private void AgregarAlCarrito(cliente.Modelos.Producto producto)
     {
-        
+        CarritoService.AgregarAlCarrito(producto);
+        mostrarMensaje = true;
+        StateHasChanged();
+        _ = OcultarMensaje();
         Console.WriteLine($"Producto agregado al carrito: {producto.Nombre}");
+    }
+
+    private async Task OcultarMensaje()
+    {
+        await Task.Delay(1500);
+        mostrarMensaje = false;
+        StateHasChanged();
     }
 }    

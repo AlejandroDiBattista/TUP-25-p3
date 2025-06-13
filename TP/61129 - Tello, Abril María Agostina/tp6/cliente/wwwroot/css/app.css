@@ -33,7 +33,7 @@ nav.navbar{
     height: 4em;
     background-color:rgba(249, 249, 249, 0.553) !important;
     font-family: "Cabin", sans-serif;
-    position: fixed;
+
 }
 nav.navbar a{
     margin-left:1.5em ;
@@ -94,6 +94,24 @@ nav.navbar a{
     font-size: 1.3em !important;
     font-weight: bold !important;
 }
+
+/* Puedes poner esto en wwwroot/css/app.css */
+.mensaje-flotante {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+    padding: 2em 3em;
+    border-radius: 10px;
+    font-size: 1.3em;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
 footer {
     background: #fff0f6;
     color: #c02d76;

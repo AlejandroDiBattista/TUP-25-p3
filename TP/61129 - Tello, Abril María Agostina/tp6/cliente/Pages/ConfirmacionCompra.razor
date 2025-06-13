@@ -1,0 +1,44 @@
+@page "/confirmacion"
+@using cliente.Services
+@using cliente.Modelos
+@inject NavigationManager Navigation
+@inject ApiService ApiService
+@inject CarritoService CarritoService
+
+<PageTitle>¡Compra confirmada!</PageTitle>
+
+<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="alert alert-success text-center" role="alert" style="font-size:1.5em;">
+        <strong>¡Gracias por tu compra!</strong><br />
+        Tu pedido fue registrado exitosamente.
+    </div>
+    <button class="btn btn-primary mt-3" @onclick="VolverAlInicio">Volver al inicio</button>
+</div>
+
+@code {
+    private bool compraProcesada = false;
+
+    void VolverAlInicio() => Navigation.NavigateTo("/", true);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !compraProcesada)
+        {
+            compraProcesada = true;
+
+            var itemsDto = CarritoService.Items.Select(i => new CarritoItemDTO
+            {
+                ProductoId = i.Producto.Id,
+                Cantidad = i.Cantidad
+            }).ToList();
+
+            var exito = await ApiService.ConfirmarCompraAsync(itemsDto);
+
+            if (exito)
+            {
+                CarritoService.VaciarCarrito();
+            }
+            StateHasChanged();
+        }
+    }
+}

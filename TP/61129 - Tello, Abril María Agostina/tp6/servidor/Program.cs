@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Servidor.Modelos;
+using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,19 @@ app.MapGet("/api/productos", async (TiendaContext db) =>
     await db.Productos.ToListAsync()
 );
 
-// Aquí puedes agregar los demás endpoints para carrito y compras según lo que pida el TP
+// POST /api/compras
+app.MapPost("/api/compras", async (TiendaContext db, List<CarritoItemDTO> items) =>
+{
+    foreach (var item in items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            return Results.BadRequest("Stock insuficiente o producto no encontrado.");
+
+        producto.Stock -= item.Cantidad;
+    }
+    await db.SaveChangesAsync();
+    return Results.Ok(new { mensaje = "Compra confirmada y stock actualizado" });
+});
 
 app.Run();

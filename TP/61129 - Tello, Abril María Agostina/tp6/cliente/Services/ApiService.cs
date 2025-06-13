@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using cliente.Modelos;
 
+
 namespace cliente.Services;
 
 public class ApiService
@@ -30,7 +31,7 @@ public class ApiService
         }
     }
 
-    
+
     public async Task<DatosRespuesta> ObtenerDatosAsync()
     {
         try
@@ -44,6 +45,27 @@ public class ApiService
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
     }
+
+    public async Task<bool> ConfirmarCompraAsync(List<CarritoItemDTO> items)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/compras", items);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar compra: {ex.Message}");
+            return false;
+        }
+    }
+
+}
+
+public class CarritoItemDTO
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
 }
 
 public class DatosRespuesta
