@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Text.Json;
+using cliente.Shared;
 
 namespace cliente.Services;
 
@@ -17,6 +19,13 @@ public class ApiService {
             Console.WriteLine($"Error al obtener datos: {ex.Message}");
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
+    }
+
+    public async Task<List<Producto>> ObtenerProductosAsync() {
+        var response = await _httpClient.GetAsync("api/productos");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<Producto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 }
 
