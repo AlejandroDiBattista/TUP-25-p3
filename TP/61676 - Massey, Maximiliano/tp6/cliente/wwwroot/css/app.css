@@ -1,7 +1,30 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow-x: hidden; /* Prevenir scroll horizontal */
+    max-width: 100%; /* Asegurar que no exceda el ancho de la pantalla */
+}
+body{
+    background-color: #ffd600;
+    margin: 0; /* Eliminar márgenes por defecto */
+    padding: 0; /* Eliminar padding por defecto */
 }
 
+/* Regla global para prevenir overflow horizontal */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Prevenir scroll horizontal solo donde sea necesario */
+html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+#app, .app, main {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
 h1:focus {
     outline: none;
 }
@@ -111,4 +134,585 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+/* Fondo amarillo suave para páginas principales */
+.bg-tienda-yellow {
+    background-color: #fff9c4 !important;
+    min-height: 100vh;
+    margin-top: -70px; /* Compensar el margin del tienda-content */
+    padding-top: 90px; /* Espacio para el navbar + padding adicional */
+}
+
+/* Fondo naranja para páginas principales */
+.bg-tienda-orange {
+    background-color: #ff9800 !important;
+    min-height: 100vh;
+    margin-top: -10px;
+    padding-top: 100px;
+}
+
+/* Tarjeta de producto con espacio fijo para imagen y descripción */
+.product-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-radius: 8px;
+    border: none;
+}
+.product-card-img {
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+}
+.product-card-desc {
+    min-height: 70px;
+    max-height: 90px;
+    overflow: hidden; /* Cambiar de auto a hidden para evitar scroll */
+    text-overflow: ellipsis;
+    color: #555;
+}
+
+/* Título más grande para cada producto */
+.product-card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+/* Colores personalizados para cada juego */
+.titulo-half-life { color: #fca311; }
+.titulo-blasphemous { color: #7c3f58; }
+.titulo-hollow { color: #3a86ff; }
+.titulo-celeste { color: #00b4d8; }
+.titulo-re4 { color: #b32121; }
+.titulo-darksouls { color: #6c584c; }
+.titulo-stardew { color: #43aa8b; }
+.titulo-witcher { color: #22223b; }
+.titulo-undertale { color: #222; }
+.titulo-cuphead { color: #ffe066; text-shadow: 1px 1px 2px #222; }
+
+/* Navbar fija arriba */
+.tienda-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100vw; /* No exceder el ancho de la ventana */
+    z-index: 1030;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow-x: hidden; /* Prevenir scroll horizontal en el navbar */
+}
+
+.tienda-content {
+    /* margin-top: 10px; */
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    padding-top: 75px;
+}
+
+/* Caja visual para cada producto */
+.producto-box {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    border: 2px solid #ffe066;
+    transition: box-shadow 0.2s;
+    margin-bottom: 1rem;
+}
+.producto-box:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    border-color: #ffd600;
+}
+
+/* Grid de productos en fila, responsivo */
+.row.justify-content-center {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem; /* Agregar padding lateral */
+}
+.col-md-4 {
+    flex: 0 1 380px;
+    max-width: 400px;
+    min-width: 280px; /* Reducir el mínimo para pantallas pequeñas */
+    display: flex;
+    width: 100%;
+}
+.producto-box {
+    min-height: 480px;
+    font-size: 1.08rem;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar más estética */
+.tienda-navbar {
+    background: linear-gradient(90deg, #ff9800 0%, #ffb74d 100%) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+.tienda-navbar .navbar-brand {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff !important;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 4px #b36b00;
+    transition: color 0.2s;
+}
+.tienda-navbar .navbar-brand:hover {
+    color: #ffe0b2 !important;
+}
+.tienda-navbar .nav-link {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #fff !important;
+    margin-right: 1.2rem;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+    padding: 0.5rem 1.2rem;
+}
+.tienda-navbar .nav-link.active, .tienda-navbar .nav-link:hover {
+    background: #fff3e0;
+    color: #ff9800 !important;
+}
+
+/* Navbar: botones en fila horizontal siempre */
+.navbar-nav.d-flex.flex-row {
+    flex-direction: row !important;
+    gap: 1.2rem !important;
+    flex-wrap: wrap; /* Permitir que se envuelvan en pantallas pequeñas */
+}
+.navbar-nav .nav-item {
+    margin-bottom: 0 !important;
+}
+
+/* Responsive para el navbar */
+@media (max-width: 768px) {
+    .tienda-navbar .nav-link {
+        font-size: 1rem;
+        margin-right: 0.5rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .navbar-nav.d-flex.flex-row {
+        gap: 0.5rem !important;
+    }
+    
+    .tienda-navbar .container-fluid {
+        padding: 0 0.5rem;
+    }
+    
+    .form-control {
+        min-width: 120px !important;
+    }
+}
+
+/* Box de bienvenida en Home */
+.bienvenida-box {
+    background: linear-gradient(135deg, #fff3e0 60%, #ffe0b2 100%);
+    border: 2px solid #ff9800;
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(255,152,0,0.10);
+    max-width: 600px;
+    margin-top: 2rem;
+}
+
+/* Contenedor principal de la página Home para centrado perfecto */
+.home-container {
+    min-height: calc(100vh - 70px); /* Altura total menos el navbar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+}
+
+/* Responsive para la página Home */
+@media (max-width: 768px) {
+    .home-container {
+        padding: 1rem;
+        min-height: calc(100vh - 70px);
+    }
+    
+    .bienvenida-box {
+        margin-top: 0;
+        max-width: 100%;
+    }
+}
+
+/* === SISTEMA DE NOTIFICACIONES TOAST === */
+.notification-container {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    pointer-events: none;
+    width: calc(100% - 40px); /* Asegurar que no exceda el ancho */
+}
+
+/* Responsive para notificaciones */
+@media (max-width: 768px) {
+    .notification-container {
+        right: 10px;
+        max-width: calc(100% - 20px);
+        width: auto;
+    }
+}
+
+.notification {
+    margin-bottom: 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    position: relative;
+    pointer-events: auto;
+    animation: slideIn 0.3s ease-out;
+    border-left: 5px solid;
+    min-height: 80px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+    overflow-x: visible !important; /* Asegurar que las notificaciones no se vean afectadas */
+    max-width: none !important; /* Permitir el ancho completo en notificaciones */
+}
+
+.notification-icon {
+    font-size: 24px;
+    line-height: 1;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.notification-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+}
+
+.notification-message {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #666;
+    word-wrap: break-word;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.notification-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.9) 100%);
+    animation: progress var(--duration, 4000ms) linear;
+}
+
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Variantes de color para notificaciones */
+.notification-success {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f8ea 100%);
+}
+
+.notification-success .notification-icon {
+    color: #28a745;
+}
+
+.notification-success .notification-progress {
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+}
+
+.notification-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fff8f8 0%, #fee 100%);
+}
+
+.notification-error .notification-icon {
+    color: #dc3545;
+}
+
+.notification-error .notification-progress {
+    background: linear-gradient(90deg, #dc3545 0%, #e74c3c 100%);
+}
+
+.notification-warning {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
+}
+
+.notification-warning .notification-icon {
+    color: #ff9800;
+}
+
+.notification-warning .notification-progress {
+    background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+}
+
+.notification-info {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e1f5fe 100%);
+}
+
+.notification-info .notification-icon {
+    color: #17a2b8;
+}
+
+.notification-info .notification-progress {
+    background: linear-gradient(90deg, #17a2b8 0%, #007bff 100%);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .notification-container {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        top: 80px;
+    }
+    
+    .notification {
+        margin-bottom: 12px;
+    }
+    
+    .notification-content {
+        padding: 12px;
+    }
+    
+    .notification-title {
+        font-size: 15px;
+    }
+    
+    .notification-message {
+        font-size: 13px;
+    }
+}
+
+/* === MEJORAS UX/UI ADICIONALES === */
+
+/* Animaciones para botones */
+.btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Efecto ripple para botones de éxito */
+.btn-success:hover {
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #007bff, #17a2b8);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(45deg, #dc3545, #e74c3c);
+}
+
+/* Mejoras para las tarjetas de producto */
+.producto-box {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.producto-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.producto-box .btn {
+    transition: all 0.2s ease;
+}
+
+.producto-box:hover .btn {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border-color: #28a745;
+}
+
+/* Animación para el contador del carrito */
+.badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Loading spinner personalizado */
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ff9800;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Quitar hover específicamente de la tabla del carrito */
+.table-hover tbody tr:hover {
+    background-color: transparent !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Efectos para inputs del formulario */
+.form-control:focus {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 0.2rem rgba(255, 152, 0, 0.25);
+}
+
+/* Animación de entrada suave para elementos */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === PREVENCIÓN DE SCROLL HORIZONTAL === */
+/* Solo aplicar overflow-x donde sea realmente necesario */
+
+/* Prevenir scroll horizontal en elementos flex - SOLO en páginas de contenido */
+.tienda-content .d-flex {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.tienda-content .d-flex.justify-content-between {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Asegurar que botones no causen overflow - SOLO en páginas de contenido */
+.tienda-content .btn {
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* Específico para el contenedor de total y botón de compra */
+.tienda-content .d-flex.justify-content-between.align-items-center {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+@media (max-width: 576px) {
+    .tienda-content .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+    
+    .tienda-content .d-flex.justify-content-between .btn {
+        width: 100%;
+    }
+}
+
+/* Imágenes responsivas */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Tablas responsivas solo cuando sea necesario */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive adicional para pantallas muy pequeñas */
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .col-md-4 {
+        min-width: 250px;
+    }
+    
+    .tienda-navbar .navbar-brand {
+        font-size: 1.5rem;
+    }
+    
+    .form-control {
+        min-width: 100px !important;
+    }
 }

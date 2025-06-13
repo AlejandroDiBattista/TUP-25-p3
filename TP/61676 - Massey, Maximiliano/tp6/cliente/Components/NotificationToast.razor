@@ -1,0 +1,39 @@
+@using cliente.Services
+@inject NotificationService NotificationService
+@implements IDisposable
+
+<div class="notification-container">
+    @foreach (var notification in NotificationService.Notifications)
+    {
+        <div class="notification @notification.CssClass" id="@notification.Id" style="--duration: @(notification.Duration)ms">
+            <div class="notification-content">
+                <div class="notification-icon">@notification.Icon</div>
+                <div class="notification-text">
+                    <div class="notification-title">@notification.Title</div>
+                    <div class="notification-message">@notification.Message</div>
+                </div>
+                <button class="notification-close" @onclick="() => CloseNotification(notification.Id)" title="Cerrar notificación">
+                    ×
+                </button>
+            </div>
+            <div class="notification-progress"></div>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        NotificationService.OnChange += StateHasChanged;
+    }
+
+    private void CloseNotification(string id)
+    {
+        NotificationService.RemoveNotification(id);
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnChange -= StateHasChanged;
+    }
+}

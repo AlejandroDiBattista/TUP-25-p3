@@ -1,0 +1,249 @@
+@page "/carrito"
+@using cliente.Services
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject ApiService ApiService
+@inject IJSRuntime JS
+@inject NotificationService NotificationService
+@inject NavigationManager Navigation
+
+<PageTitle>Carrito</PageTitle>
+
+<div class="bg-tienda-orange tienda-content">
+    <h2 class="text-center mb-4">🛒 Carrito de compras</h2>
+
+    @if (cargando)
+    {
+        <div class="alert alert-info text-center">Cargando carrito...</div>
+    }
+    else if (error != null)
+    {
+        <div class="alert alert-danger text-center">Error: @error</div>
+    }    else if (items != null && items.Count > 0)
+    {
+        <div class="table-responsive fade-in">
+            <table class="table table-hover align-middle shadow-sm rounded">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td><img src="@item.imagen" alt="@item.nombre" style="width:60px;height:60px;object-fit:cover;border-radius:8px;"></td>
+                            <td><b>@item.nombre</b></td>
+                            <td class="text-success fw-bold">$@item.precio</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item.id, item.cantidad - 1)" disabled="@(item.cantidad <= 1)">-</button>
+                                    <span>@item.cantidad</span>
+                                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item.id, item.cantidad + 1)">+</button>
+                                </div>
+                            </td>
+                            <td class="fw-bold">$@item.subtotal</td>
+                            <td>
+                                <button class="btn btn-outline-danger btn-sm" title="Quitar del carrito" @onclick="() => QuitarProducto(item.id)">
+                                    <span aria-hidden="true">🗑️</span> Quitar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded shadow-sm">
+            <span class="fs-5 fw-bold">Total: $@items.Sum(i => i.subtotal)</span>
+            <button class="btn btn-primary btn-lg" @onclick="MostrarFormulario"><span aria-hidden="true">✅</span> Confirmar compra</button>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">No hay productos en el carrito.</div>
+    }
+
+    @if (mostrarFormulario)
+    {
+        <div class="card mt-4 mx-auto shadow" style="max-width:400px;">
+            <div class="card-header bg-primary text-white">Confirmar compra</div>
+            <div class="card-body">
+                <EditForm Model="form" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="mb-2">
+                        <label>Nombre</label>
+                        <InputText class="form-control" @bind-Value="form.NombreCliente" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Apellido</label>
+                        <InputText class="form-control" @bind-Value="form.ApellidoCliente" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Email</label>
+                        <InputText class="form-control" @bind-Value="form.EmailCliente" />
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-success me-2" type="submit"><span aria-hidden="true">💾</span> Confirmar</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => mostrarFormulario = false">Cancelar</button>
+                    </div>
+                </EditForm>
+                @if (mensaje != null)
+                {
+                    <div class="alert alert-info mt-2 text-center">@mensaje</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ItemCarritoDto> items;
+    private string error;
+    private bool cargando = true;
+    private Guid carritoId;
+    private bool mostrarFormulario = false;
+    private ConfirmacionDto form = new();
+    private string mensaje;    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            cargando = true;
+            mensaje = null;
+            var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");            if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+            {
+                error = "No hay carrito activo.";
+                // Eliminar notificación innecesaria - es evidente en la UI
+                return;
+            }
+            items = await ApiService.ObtenerCarritoAsync(carritoId);
+            
+            // Eliminar notificación de carrito vacío - es redundante con el mensaje en pantalla
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            NotificationService.ShowError(
+                "No se pudo cargar el carrito. Verifica tu conexión.",
+                "Error al cargar carrito"
+            );
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }    private async Task QuitarProducto(int productoId)
+    {
+        var producto = items?.FirstOrDefault(i => i.id == productoId);
+        var nombreProducto = producto?.nombre ?? "Producto";
+        
+        var resultado = await ApiService.QuitarProductoAsync(carritoId, productoId);
+        if (resultado)
+        {
+            items = await ApiService.ObtenerCarritoAsync(carritoId);
+            NotificationService.ShowProductRemoved(nombreProducto);
+        }
+        else
+        {
+            NotificationService.ShowError(
+                "No se pudo remover el producto del carrito",
+                "Error al eliminar"
+            );
+        }
+        StateHasChanged();
+    }    private void MostrarFormulario()
+    {
+        if (items == null || items.Count == 0)
+        {
+            // El usuario ya ve que el carrito está vacío en la interfaz
+            return;
+        }
+        
+        mostrarFormulario = true;
+        mensaje = null;
+        
+        NotificationService.ShowInfo(
+            "Completa tus datos para finalizar la compra",
+            "Último paso",
+            3000
+        );
+    }private async Task ConfirmarCompra()
+    {
+        mensaje = null;
+        var ok = await ApiService.ConfirmarCompraAsync(carritoId, form);        if (ok)
+        {
+            var total = (decimal)(items?.Sum(i => i.subtotal) ?? 0);
+            var itemCount = items?.Sum(i => i.cantidad) ?? 0;
+            
+            NotificationService.ShowPurchaseCompleted(total, itemCount);
+            
+            await JS.InvokeAsync<object>("localStorage.removeItem", "carritoId");
+            items = new List<ItemCarritoDto>();
+            mostrarFormulario = false;
+            form = new ConfirmacionDto(); // Limpiar formulario
+            
+            // Redirigir a la página de productos después de 2 segundos
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/productos");
+        }
+        else
+        {
+            NotificationService.ShowError(
+                "Verifica que todos los campos estén completos y que haya stock suficiente",
+                "No se pudo procesar la compra"
+            );
+        }
+    }private async Task CambiarCantidad(int productoId, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1) return;
+        
+        var producto = items?.FirstOrDefault(i => i.id == productoId);
+        if (producto == null) return;
+        
+        var cantidadAnterior = producto.cantidad;
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        
+        if (Guid.TryParse(idStr, out var carritoId) && carritoId != Guid.Empty)
+        {
+            try
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (items[i].id == productoId)
+                    {
+                        int diff = nuevaCantidad - items[i].cantidad;
+                        if (diff > 0)
+                        {
+                            for (int j = 0; j < diff; j++)
+                                await ApiService.AgregarProductoAsync(carritoId, productoId);
+                        }
+                        else if (diff < 0)
+                        {
+                            for (int j = 0; j < -diff; j++)
+                                await ApiService.QuitarProductoAsync(carritoId, productoId);
+                        }
+                        break;
+                    }
+                }
+                  items = await ApiService.ObtenerCarritoAsync(carritoId);
+                
+                // No mostrar notificación de cantidad - el cambio es evidente en la UI
+            }
+            catch (Exception)
+            {
+                NotificationService.ShowError(
+                    "No se pudo actualizar la cantidad del producto",
+                    "Error al modificar cantidad"
+                );
+            }
+            
+            StateHasChanged();
+        }
+    }
+}

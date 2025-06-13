@@ -1,0 +1,46 @@
+@if (IsLoading)
+{
+    <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="loading-spinner me-3"></div>
+        <span class="text-muted">@LoadingText</span>
+    </div>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger text-center fade-in">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Error:</strong> @ErrorMessage
+        @if (ShowRetryButton)
+        {
+            <div class="mt-2">
+                <button class="btn btn-outline-danger btn-sm" @onclick="OnRetry">
+                    <i class="fas fa-redo me-1"></i> Reintentar
+                </button>
+            </div>
+        }
+    </div>
+}
+else if (HasContent)
+{
+    <div class="fade-in">
+        @ChildContent
+    </div>
+}
+else if (!string.IsNullOrEmpty(EmptyMessage))
+{
+    <div class="alert alert-info text-center fade-in">
+        <i class="fas fa-info-circle me-2"></i>
+        @EmptyMessage
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public string LoadingText { get; set; } = "Cargando...";
+    [Parameter] public string? EmptyMessage { get; set; }
+    [Parameter] public bool ShowRetryButton { get; set; } = true;
+    [Parameter] public bool HasContent { get; set; } = true;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+}
