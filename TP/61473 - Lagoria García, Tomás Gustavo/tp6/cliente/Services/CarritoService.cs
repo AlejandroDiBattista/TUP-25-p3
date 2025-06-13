@@ -10,6 +10,7 @@ public class CarritoService
 {
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _js;
+      private Guid _carritoId = Guid.Empty;
 
     public CarritoService(HttpClient httpClient, IJSRuntime js)
     {
