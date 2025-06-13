@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,7 +65,58 @@ using (var scope = app.Services.CreateScope())
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+// Endpoint para obtener productos
+app.MapGet("/productos", async ([FromServices] TiendaContext db, [FromQuery] string? q) =>
+{
+    var query = db.Productos.AsQueryable();
+    if (!string.IsNullOrWhiteSpace(q))
+        query = query.Where(p => p.Nombre.Contains(q));
+    return await query.ToListAsync();
+});
+
+// Endpoint para confirmar compra
+app.MapPut("/carritos/{carrito}/confirmar", async ([FromServices] TiendaContext db, string carrito, [FromBody] CompraConfirmacionDto dto) =>
+{
+    foreach (var item in dto.Items)
+    {
+        var prod = await db.Productos.FindAsync(item.ProductoId);
+        if (prod == null || prod.Stock < item.Cantidad)
+            return Results.BadRequest($"Stock insuficiente para {prod?.Nombre ?? "producto desconocido"}");
+        prod.Stock -= item.Cantidad;
+    }
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        Total = dto.Items.Sum(i => i.PrecioUnitario * i.Cantidad),
+        NombreCliente = dto.Nombre,
+        ApellidoCliente = dto.Apellido,
+        EmailCliente = dto.Email,
+        Items = dto.Items.Select(i => new Item
+        {
+            ProductoId = i.ProductoId,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+        }).ToList()
+    };
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
 
 app.Run();
+
+// DTOs para la confirmación de compra
+public class CompraConfirmacionDto
+{
+    public string Nombre { get; set; }
+    public string Apellido { get; set; }
+    public string Email { get; set; }
+    public List<ItemCompraDto> Items { get; set; }
+}
+
+public class ItemCompraDto
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+}

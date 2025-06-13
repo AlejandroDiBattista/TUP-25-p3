@@ -2,10 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUCARBA</title>
-
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
     <header>
@@ -19,21 +18,20 @@
     <div class="carrito" id="vistaCarrito" style="display:none"></div>
     <div class="confirmacion" id="vistaConfirmacion" style="display:none"></div>
     <script>
-        // Productos de ejemplo
-        const productos = [
-            { id: 1, nombre: "Coca-Cola", descripcion: "Bebida gaseosa 1.5L", precio: 1200, stock: 10, imagen: "https://static.openfoodfacts.org/images/products/544/900/013/1803/front_es.17.full.jpg" },
-            { id: 2, nombre: "Pepsi", descripcion: "Bebida gaseosa 1.5L", precio: 1100, stock: 8, imagen: "https://static.openfoodfacts.org/images/products/544/900/000/0996/front_es.10.full.jpg" },
-            { id: 3, nombre: "Fanta", descripcion: "Bebida naranja 1.5L", precio: 1150, stock: 7, imagen: "https://static.openfoodfacts.org/images/products/544/900/000/0997/front_es.10.full.jpg" },
-            { id: 4, nombre: "Sprite", descripcion: "Bebida lima-limón 1.5L", precio: 1150, stock: 5, imagen: "https://static.openfoodfacts.org/images/products/544/900/000/0998/front_es.10.full.jpg" },
-            { id: 5, nombre: "Fernet Branca", descripcion: "Bebida alcoholica 1L", precio: 10000, stock: 3, imagen: "https://images.samsung.com/is/image/samsung/p6pim/ar/sm-a145mzkgaro/gallery/ar-galaxy-a14-sm-a145-sm-a145mzkgaro-thumb-535978049" },
-            { id: 6, nombre: "Heineken", descripcion: "Bebida alcoholica 700ML", precio: 4000, stock: 6, imagen: "https://www.jbl.com.ar/on/demandware.static/-/Sites-masterCatalog_Harman/default/dw2b2e2b2e/JBL_TUNE510BT_ProductImage_Hero_Black.png" },
-            { id: 7, nombre: "Agua Mineral", descripcion: "Bebida 2L", precio: 5000, stock: 12, imagen: "https://resource.logitech.com/w_800,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/logitech/en/products/mice/m185/gallery/m185-grey-gallery-1.png" },
-            { id: 8, nombre: "Quilmes", descripcion: "Bebida alcoholica 1.5L", precio: 1500, stock: 4, imagen: "https://www.redragon.es/imagenes/teclados/kumara-k552rgb-1.jpg" },
-            { id: 9, nombre: "Gaseosa Manaos", descripcion: "Cola 2.25L", precio: 1300, stock: 15, imagen: "https://static.openfoodfacts.org/images/products/779/814/025/0030/front_es.3.full.jpg" },
-            { id: 10, nombre: "Mirinda", descripcion: "Bebida gaseosa 2L", precio: 1500, stock: 20, imagen: "https://images.fravega.com/f500/1b0b7c3e7e6e8e3e7e6e8e3e7e6e8e3e.jpg" }
-        ];
+        // Cambia esta URL si tu backend usa otro puerto
+        const API_URL = "http://localhost:5177";
 
+        let productos = [];
         let carrito = [];
+
+        // Obtener productos del backend
+        async function cargarProductos() {
+            let q = document.getElementById('buscador').value;
+            let url = API_URL + "/productos" + (q ? "?q=" + encodeURIComponent(q) : "");
+            let resp = await fetch(url);
+            productos = await resp.json();
+            renderCatalogo();
+        }
 
         function actualizarContadorCarrito() {
             document.getElementById('contadorCarrito').innerText = carrito.reduce((a, i) => a + i.cantidad, 0);
@@ -43,17 +41,16 @@
             document.getElementById('vistaCatalogo').style.display = '';
             document.getElementById('vistaCarrito').style.display = 'none';
             document.getElementById('vistaConfirmacion').style.display = 'none';
-            renderCatalogo();
+            cargarProductos();
         }
 
-        function renderCatalogo(filtro = "") {
+        function renderCatalogo() {
             let html = `<div class="productos">`;
-            let filtrados = productos.filter(p => p.nombre.toLowerCase().includes(filtro.toLowerCase()));
-            if (filtrados.length === 0) html += "<p>No se encontraron productos.</p>";
-            filtrados.forEach(p => {
+            if (productos.length === 0) html += "<p>No se encontraron productos.</p>";
+            productos.forEach(p => {
                 html += `
                 <div class="producto">
-                    <img src="${p.imagen}" alt="${p.nombre}">
+                    <img src="${p.imagenUrl}" alt="${p.nombre}">
                     <h3>${p.nombre}</h3>
                     <div>${p.descripcion}</div>
                     <div class="precio">$${p.precio}</div>
@@ -66,8 +63,7 @@
         }
 
         function filtrarProductos() {
-            const filtro = document.getElementById('buscador').value;
-            renderCatalogo(filtro);
+            cargarProductos();
         }
 
         function agregarAlCarrito(id) {
@@ -165,13 +161,32 @@
             document.getElementById('vistaConfirmacion').innerHTML = html;
         }
 
-        function confirmarCompra(event) {
+        async function confirmarCompra(event) {
             event.preventDefault();
-            
-            alert("¡Compra confirmada!\nGracias por tu compra, " + document.getElementById('nombre').value + "!");
-            carrito = [];
-            actualizarContadorCarrito();
-            mostrarCatalogo();
+            let compra = {
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                email: document.getElementById('email').value,
+                items: carrito.map(i => ({
+                    productoId: i.id,
+                    cantidad: i.cantidad,
+                    precioUnitario: i.precio
+                }))
+            };
+            let resp = await fetch(API_URL + "/carritos/mi-carrito/confirmar", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(compra)
+            });
+            if (resp.ok) {
+                alert("¡Compra confirmada!\nGracias por tu compra, " + compra.nombre + "!");
+                carrito = [];
+                actualizarContadorCarrito();
+                mostrarCatalogo();
+            } else {
+                let error = await resp.text();
+                alert("Error al confirmar compra: " + error);
+            }
             return false;
         }
 
