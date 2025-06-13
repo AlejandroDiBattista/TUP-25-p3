@@ -14,7 +14,6 @@ builder.Services.AddCors(options => {
     });
 });
 
-
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -25,68 +24,26 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseCors("AllowClientApp");
 
-public class Producto
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; } = string.Empty;
-    public string Descripcion { get; set; } = string.Empty;
-    public decimal Precio { get; set; }
-    public int Stock { get; set; }
-    public string ImagenUrl { get; set; } = string.Empty;
-}
-
-public class Compra
-{
-    public int Id { get; set; }
-    public DateTime Fecha { get; set; } = DateTime.Now;
-    public decimal Total { get; set; }
-    public string NombreCliente { get; set; } = string.Empty;
-    public string ApellidoCliente { get; set; } = string.Empty;
-    public string EmailCliente { get; set; } = string.Empty;
-    public List<ItemCompra> Items { get; set; } = new();
-}
-
-public class ItemCompra
-{
-  public int Id { get; set; }
-  public int ProductoId { get; set; }
-  public int CompraId { get; set; }
-  public int Cantidad { get; set; }
-  public decimal PrecioUnitario { get; set; }
-
-  public Producto? Producto { get; set; }
-  public Compra? Compra { get; set; }
-}
-
-public class ApplicationDbContext : DbContext
-{
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-    public DbSet<Producto> Productos => Set<Producto>();
-    public DbSet<Compra> Compras => Set<Compra>();
-    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
-}
-
-public class CarritoItem
-{
-    public int ProductoId { get; set; }
-    public int Cantidad { get; set; }
-}
-
-public class Carrito
-{
-  public Guid Id { get; set; } = Guid.NewGuid();
-  public List<CarritoItem> Items { get; set; } = new();
-}
-
 var carritos = new Dictionary<Guid, Carrito>();
 
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
-app.MapGet("/productos", async (AppDbContext db) =>
-    await db.Productos.ToListAsync());
+app.MapGet("/productos", async ([FromQuery] string? query, ApplicationDbContext db) =>
+{
+    var productos = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(query))
+    {
+        query = query.ToLower();
+        productos = productos.Where(p =>
+            p.Nombre.ToLower().Contains(query) ||
+            p.Descripcion.ToLower().Contains(query));
+    }
+
+    return Results.Ok(await productos.ToListAsync());
+});
 
 app.MapGet("/carrito/{carritoId}", (Guid carritoId) =>
 {
@@ -189,7 +146,7 @@ app.MapGet("/compras", async (ApplicationDbContext db) =>
   return Results.Ok(resultado);
 });
 
-app.MapDelete("/carrito/eliminar", ([FromQuery] Guid id, [FromQuery] int productoId) =>
+app.MapDelete("/carritos/{id}/{productoId}", ([FromRoute] Guid id, [FromRoute] int productoId) =>
 {
     if (!carritos.TryGetValue(id, out var carrito))
         return Results.NotFound("Carrito no encontrado");
@@ -198,7 +155,11 @@ app.MapDelete("/carrito/eliminar", ([FromQuery] Guid id, [FromQuery] int product
     if (item == null)
         return Results.BadRequest("Producto no encontrado en el carrito");
 
-    carrito.Items.Remove(item);
+    if (item.Cantidad > 1)
+        item.Cantidad--;
+    else
+        carrito.Items.Remove(item);
+
     return Results.Ok(carrito);
 });
 
@@ -252,6 +213,15 @@ app.MapGet("/compras/{id}", async (int id, ApplicationDbContext db) =>
   return Results.Ok(resultado);
 });
 
+app.MapDelete("/carritos/{id}", ([FromRoute] Guid id) =>
+{
+    if (!carritos.TryGetValue(id, out var carrito))
+        return Results.NotFound("Carrito no encontrado");
+
+    carrito.Items.Clear();
+    return Results.Ok("Carrito vaciado correctamente");
+});
+
 
 using (var scope = app.Services.CreateScope())
 {
@@ -279,3 +249,57 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+public class Producto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string Descripcion { get; set; } = string.Empty;
+    public decimal Precio { get; set; }
+    public int Stock { get; set; }
+    public string ImagenUrl { get; set; } = string.Empty;
+}
+
+public class Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; } = DateTime.Now;
+    public decimal Total { get; set; }
+    public string NombreCliente { get; set; } = string.Empty;
+    public string ApellidoCliente { get; set; } = string.Empty;
+    public string EmailCliente { get; set; } = string.Empty;
+    public List<ItemCompra> Items { get; set; } = new();
+}
+
+public class ItemCompra
+{
+  public int Id { get; set; }
+  public int ProductoId { get; set; }
+  public int CompraId { get; set; }
+  public int Cantidad { get; set; }
+  public decimal PrecioUnitario { get; set; }
+
+  public Producto? Producto { get; set; }
+  public Compra? Compra { get; set; }
+}
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+    public DbSet<Producto> Productos => Set<Producto>();
+    public DbSet<Compra> Compras => Set<Compra>();
+    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+}
+
+public class CarritoItem
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+}
+
+public class Carrito
+{
+  public Guid Id { get; set; } = Guid.NewGuid();
+  public List<CarritoItem> Items { get; set; } = new();
+}
