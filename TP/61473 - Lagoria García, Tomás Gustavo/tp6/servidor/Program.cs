@@ -265,7 +265,7 @@ app.Run();
 //MODELOS DE DATOS
 record AgregarCarritoRequest(int ProductoId, int Cantidad);
 record ConfirmacionRequest(string Nombre, string Apellido, string Email);
-record ItemCarrito
+public class ItemCarrito
 {
     public int ProductoId { get; set; }
     public string Nombre { get; set; } = "";
