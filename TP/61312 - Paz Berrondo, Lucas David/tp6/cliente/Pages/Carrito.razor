@@ -68,10 +68,9 @@
                                 @carrito.TotalItems elementos
                             </span>
                         </div>
-                        
-                        @foreach (var item in carrito.Items)
+                          @foreach (var item in carrito.Items)
                         {
-                            <div class="cart-item-modern fade-in">
+                            <div class="cart-item-modern fade-in" @key="item.ProductoId">
                                 <div class="row align-items-center">
                                     <div class="col-md-2">
                                         <div class="cart-image-container">
@@ -79,7 +78,8 @@
                                                  class="cart-product-image">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">                                        <h6 class="cart-product-title">@item.NombreProducto</h6>
+                                    <div class="col-md-4">
+                                        <h6 class="cart-product-title">@item.NombreProducto</h6>
                                         <small class="text-muted">Precio unitario: AR$ @item.PrecioUnitario.ToString("N2")</small>
                                     </div>
                                     <div class="col-md-3">
@@ -509,25 +509,38 @@
             
             if (exito)
             {
-                await CargarCarrito(); // Recargar carrito
+                // Cerrar modal antes de recargar para evitar conflictos de DOM
+                mostrarModalEliminar = false;
+                
+                // Usar InvokeAsync para asegurar que el DOM se actualice correctamente
+                await InvokeAsync(async () =>
+                {
+                    // Esperar un poco antes de recargar para que el DOM se estabilice
+                    await Task.Delay(50);
+                    await CargarCarrito(); // Recargar carrito
+                    StateHasChanged(); // Forzar actualización después de recargar
+                });
+                
                 MostrarNotificacion("Producto Eliminado", "El producto se eliminó correctamente del carrito", "success");
             }
             else
             {
+                mostrarModalEliminar = false;
                 MostrarNotificacion("Error", "No se pudo eliminar el producto del carrito", "error");
             }
-        }        catch (Exception ex)
+        }
+        catch (Exception ex)
         {
+            mostrarModalEliminar = false;
             MostrarNotificacion("Error", $"Error: {ex.Message}", "error");
         }
         finally
         {
-            // Limpiar estado del modal y producto
-            mostrarModalEliminar = false;
+            // Limpiar estado del producto
             productoAEliminar = 0;
             eliminandoItem = null;
         }
-    }    private void CancelarEliminar()
+    }private void CancelarEliminar()
     {
         mostrarModalEliminar = false;
         productoAEliminar = 0;
@@ -537,14 +550,13 @@
     private async Task VaciarCarrito()
     {
         mostrarModalVaciar = true;
-    }
-
-    private async Task ConfirmarVaciarCarrito()
+    }    private async Task ConfirmarVaciarCarrito()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
 
         try
         {
+            // Cerrar modal primero para evitar conflictos de DOM
             mostrarModalVaciar = false;
             vaciandoCarrito = true;
             
@@ -552,7 +564,15 @@
             
             if (exito)
             {
-                await CargarCarrito(); // Recargar carrito
+                // Usar InvokeAsync para asegurar que el DOM se actualice correctamente
+                await InvokeAsync(async () =>
+                {
+                    // Esperar un poco antes de recargar para que el DOM se estabilice
+                    await Task.Delay(50);
+                    await CargarCarrito(); // Recargar carrito
+                    StateHasChanged(); // Forzar actualización después de recargar
+                });
+                
                 MostrarNotificacion("Carrito Vaciado", "Todos los productos fueron eliminados del carrito", "success");
             }
             else
