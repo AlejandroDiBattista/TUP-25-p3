@@ -55,3 +55,8 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
     response.EnsureSuccessStatusCode();
 }
 
+    public async Task EliminarItemAsync(Guid carritoId, int productoId)
+    {
+        await _httpClient.DeleteAsync($"carritos/{carritoId}/{productoId}");
+    }
+
