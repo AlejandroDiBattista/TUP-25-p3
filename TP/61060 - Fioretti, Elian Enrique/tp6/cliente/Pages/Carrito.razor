@@ -61,8 +61,8 @@
 </div>
 
 @code {
-    private List<ItemCompra> items;
-    private List<Producto> productos;
+    private List<ItemCompra> items = new();
+    private List<Producto>? productos;
     private bool cargando = true;
 
     protected override async Task OnInitializedAsync()

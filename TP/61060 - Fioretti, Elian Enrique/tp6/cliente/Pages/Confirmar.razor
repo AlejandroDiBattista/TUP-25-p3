@@ -17,9 +17,9 @@
     {
         <div class="mb-3 alert-success-compra">
             <h4>Compra realizada con éxito</h4>
-            <p><strong>Cliente:</strong> @comprobante.NombreCliente @comprobante.ApellidoCliente</p>
-            <p><strong>Email:</strong> @comprobante.EmailCliente</p>
-            <p><strong>Fecha:</strong> @comprobante.Fecha.ToString("g")</p>
+            <p><strong>Cliente:</strong> @comprobante!.NombreCliente @comprobante!.ApellidoCliente</p>
+            <p><strong>Email:</strong> @comprobante!.EmailCliente</p>
+            <p><strong>Fecha:</strong> @comprobante!.Fecha.ToString("g")</p>
             <table class="table bg-carrito-confirmacion">
                 <thead>
                     <tr>
@@ -30,7 +30,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in comprobante.Items)
+                    @foreach (var item in comprobante!.Items)
                     {
                         <tr>
                             <td>@ObtenerNombreProducto(item.ProductoId)</td>
@@ -42,7 +42,7 @@
                 </tbody>
             </table>
             <div class="mb-3 total-compra">
-                <strong>Total:</strong> $@comprobante.Total
+                <strong>Total:</strong> $@comprobante!.Total
             </div>
             <button class="btn btn-secondary btn-volver" @onclick="VolverAlCatalogo">
                 <i class="bi bi-arrow-left"></i> Volver al catálogo
@@ -111,13 +111,13 @@
 </div>
 
 @code {
-    private List<ItemCompra> items;
-    private List<Producto> productos;
+    private List<ItemCompra> items = new();
+    private List<Producto> productos = new();
     private RequisitosCompra datos = new();
     private bool cargando = true;
     private bool compraExitosa = false;
-    private string error;
-    private Compra comprobante;
+    private string? error;
+    private Compra? comprobante;
 
     protected override async Task OnInitializedAsync()
     {

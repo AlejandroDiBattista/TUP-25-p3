@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 
 <div class="d-flex" style="align-items: flex-start;">
     <div 
@@ -14,9 +15,15 @@
                     <a class="btn btn-outline-secondary me-3 btn-carrito" href="/carrito">
                         Carrito
                     </a>
+                    <a class="btn btn-contadorCarrito align-items-center" href="/carrito">
+                        @if (ApiService.ContadorCarrito > 0)
+                        {
+                            <span>@ApiService.ContadorCarrito</span>
+                        }
+                    </a>
                 </div>
                 <div class="d-flex align-items-center justify-content-end padding-top-3 margin-right-17">
-                    <form class="d-flex align-items-center" @onsubmit="Buscar">
+                    <form class="d-flex align-items-center" @onsubmit="@(() => Buscar())">
                         <input class="form-control form-control-sm me-2 buscador-navbar input-busqueda"
                                type="search" placeholder="Buscar..." @bind="busqueda" />
                         <button class="btn btn-outline-primary ms-1 btn-buscar" type="submit">Buscar</button>
@@ -34,16 +41,21 @@
     private string bionicTechLogoUrl = "http://localhost:5184/img/hud/bionictechLogo.png";
     private string navBarLeftUrl = "http://localhost:5184/img/hud/navbarLeft.png";
     private string navBarRightUrl = "http://localhost:5184/img/hud/navbarRight.png";
-    private string busqueda;
-    private int contadorCarrito;
+    private string? busqueda;
 
     protected override async Task OnInitializedAsync()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
-        await ActualizarContador();
+        ApiService.OnChange += ActualizarContador;
+        await ApiService.ObtenerCarritoAsync();
     }
 
-    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ActualizarContador()
     {
         InvokeAsync(StateHasChanged);
     }
@@ -51,23 +63,7 @@
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-            await ActualizarContador();
-    }
-
-    private async Task ActualizarContador()
-    {
-        try
-        {
-            var items = await ApiService.ObtenerCarritoAsync();
-            contadorCarrito = items?.Sum(i => i.Cantidad) ?? 0;
-            StateHasChanged();
-        }
-        catch { contadorCarrito = 0; }
+        ApiService.OnChange -= ActualizarContador;
     }
 
     private void IrHome()
@@ -75,7 +71,7 @@
         NavigationManager.NavigateTo("/");
     }
 
-    private async Task Buscar()
+    private void Buscar()
     {
         if (!string.IsNullOrWhiteSpace(busqueda))
             NavigationManager.NavigateTo($"/?busqueda={Uri.EscapeDataString(busqueda)}");

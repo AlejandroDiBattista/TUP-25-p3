@@ -36,7 +36,10 @@ app.MapGet("/api/productos", async (TiendaContexto baseDeDatos, string? busqueda
     var consulta = baseDeDatos.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(busqueda))
     {
-        consulta = consulta.Where(p => p.Nombre.Contains(busqueda) || p.Descripcion.Contains(busqueda));
+        var busquedaMinuscula = busqueda.ToLower();
+        consulta = consulta.Where(p =>
+            (p.Nombre != null && p.Nombre.ToLower().Contains(busquedaMinuscula)) ||
+            (p.Descripcion != null && p.Descripcion.ToLower().Contains(busquedaMinuscula)));
     }
     return await consulta.ToListAsync();
 });
@@ -135,7 +138,7 @@ app.MapPut("/api/carritos/{carritoId}/confirmar", async (TiendaContexto baseDeDa
     foreach (var item in carrito)
     {
         var producto = await baseDeDatos.Productos.FindAsync(item.ProductoId);
-        producto.Stock -= item.Cantidad;
+        producto!.Stock -= item.Cantidad;
 
         compra.Items.Add(new ItemCompra
         {
