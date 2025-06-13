@@ -68,18 +68,22 @@ else
             </div>
         </div>
     </div>
-    <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
-    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
 }
 
 @code {
+    #nullable enable
     List<CarritoItemDto>? items;
     Guid carritoId;
 
     protected override async Task OnInitializedAsync()
     {
-        // En una app real, deberías obtener el carritoId desde localStorage o un servicio compartido
-        carritoId = await Api.CrearCarritoAsync();
+        // Obtener carritoId de localStorage (idéntico a Catalogo.razor)
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+        {
+            carritoId = await Api.CrearCarritoAsync();
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+        }
         await CargarCarrito();
     }
 
@@ -90,31 +94,57 @@ else
 
     async Task CambiarCantidad(CarritoItemDto item, int nuevaCantidad)
     {
-        if (nuevaCantidad < 1) return;
-        var ok = await Api.AgregarProductoAlCarritoAsync(carritoId, item.Id, nuevaCantidad);
-        if (ok)
-            await CargarCarrito();
-        else
-            await JS.InvokeVoidAsync("alert", "No se pudo actualizar la cantidad (verifica stock)");
+        if (nuevaCantidad < 1 || nuevaCantidad > item.Stock)
+            return;
+
+        await Api.PutCarritoItemAsync(carritoId, item.Id, nuevaCantidad);
+        items = await Api.GetCarritoAsync(carritoId);
+        await ActualizarContadorCarrito();
+        StateHasChanged();
     }
 
-    async Task Eliminar(CarritoItemDto item)
+    async Task EliminarProducto(CarritoItemDto item)
     {
-        var ok = await Api.EliminarProductoDelCarritoAsync(carritoId, item.Id);
-        if (ok)
-            await CargarCarrito();
+        await Api.DeleteCarritoItemAsync(carritoId, item.Id);
+        items = await Api.GetCarritoAsync(carritoId);
+        await ActualizarContadorCarrito();
+        StateHasChanged();
     }
 
     async Task VaciarCarrito()
     {
-        var ok = await Api.VaciarCarritoAsync(carritoId);
-        if (ok)
-            await CargarCarrito();
+        await Api.VaciarCarritoAsync(carritoId);
+        await ActualizarContadorCarrito();
+        Navigation.NavigateTo("/catalogo", forceLoad: true, replace: true);
+    }
+
+    async Task ActualizarContadorCarrito()
+    {
+        var itemsCarrito = await Api.GetCarritoAsync(carritoId);
+        int total = itemsCarrito?.Sum(i => i.Cantidad) ?? 0;
+        await JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", total.ToString());
     }
 
     async Task ConfirmarCompra()
     {
-        // Aquí podrías navegar a una página de confirmación o mostrar un formulario para los datos del cliente
-        await JS.InvokeVoidAsync("alert", "Implementa la confirmación de compra aquí.");
+        Navigation.NavigateTo("/confirmacion");
+    }
+
+    void ContinuarAgregando()
+    {
+        Navigation.NavigateTo("/catalogo");
     }
 }
+
+<style>
+.btn-celeste-continuar {
+    background-color: #0aa6c8;
+    color: #fff;
+    border: none;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-celeste-continuar:hover, .btn-celeste-continuar:focus {
+    background-color: #0887a6;
+    color: #fff;
+}
+</style>
