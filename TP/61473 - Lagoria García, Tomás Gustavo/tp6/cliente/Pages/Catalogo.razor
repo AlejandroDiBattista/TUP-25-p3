@@ -94,3 +94,8 @@ private void NavegarCarrito()
         }
         
     }
+    private async Task Buscar()
+    {  
+        Productos = await ProductoService.ObtenerProductosAsync(Busqueda);
+    }
+
