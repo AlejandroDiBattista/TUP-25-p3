@@ -6,38 +6,146 @@
 @inject IJSRuntime JS
 @inject NavigationManager Navigation 
 
-<h2>Catálogo de Productos</h2>
+<div class="container">
+    <div class="p-3">
+        <style>
+            .catalog-header {
+                background: linear-gradient(90deg, #3a8dde 0%, #7b2ff2 100%);
+                padding: 1.5rem 1rem;
+                border-radius: 1rem;
+                margin-bottom: 2rem;
+                box-shadow: 0 2px 12px 0 rgba(60,60,120,0.08);
+            }
+            .btn-buscar {
+                border-radius: 2rem;
+                transition: background 0.2s, color 0.2s;
+                font-weight: bold;
+                padding: 0.5rem 1.5rem;
+            }
+            .btn-buscar:hover {
+                background: #7b2ff2;
+                color: #fff;
+            }
+            .catalog-title {
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                color: #fff;
+                font-size: 2rem;
+                margin-bottom: 0;
+            }
+            .catalog-cart {
+                font-size: 2rem;
+                color: #fff;
+            }
+        </style>
 
-@if (productos is null)
-{
-    <p>Cargando productos...</p>
-}
-else if (productos.Count == 0)
-{
-    <p>No hay productos disponibles.</p>
-}
-else
-{
-    <div class="row">
-        @foreach (var prod in productos)
+        <div class="catalog-header d-flex flex-wrap align-items-center justify-content-between">
+            <!-- Título -->
+            <div class="flex-grow-1" style="min-width:180px;">
+                <span class="catalog-title">Catálogo de Productos</span>
+            </div>
+            <!-- Barra de búsqueda (formulario HTML estándar) -->
+            <form class="mx-auto d-flex align-items-center" style="max-width:400px; min-width:220px; width:100%;" onsubmit="event.preventDefault();">
+                <input class="form-control me-2" placeholder="Buscar productos..." style="border-radius:2rem; min-width:120px;"
+                       value="@busqueda" @oninput="OnInputBusquedaSoloReset" />
+                <button type="button" class="btn btn-light btn-buscar" @onclick="BuscarProductos">Buscar</button>
+            </form>
+            <!-- Icono de carrito clickable en la cabecera del catálogo -->
+            <div class="ms-3 d-flex align-items-center" style="min-width:48px;">
+                <a href="/carrito" class="position-relative d-flex align-items-center justify-content-center" style="width:48px; height:48px; border-radius:50%;">
+                    <i class="bi bi-cart4 catalog-cart" style="font-size:2rem;"></i>
+                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="font-size:0.8em;">@contadorCarrito</span>
+                </a>
+            </div>
+        </div>
+
+        @if (productos is null)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:200px;object-fit:contain;">
-                    <div class="card-body">
-                        <h5 class="card-title">@prod.Nombre</h5>
-                        <p class="card-text">@prod.Descripcion</p>
-                        <p><b>Precio:</b> $@prod.Precio</p>
-                        <p><b>Stock:</b> @prod.Stock</p>
-                        <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(prod.Id)" disabled="@(!puedeAgregar)">
-                            Agregar al carrito
-                        </button>
+            <p>Cargando productos...</p>
+        }
+        else if (productos.Count == 0)
+        {
+            @if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                <p>No se encontraron productos para la búsqueda "@busqueda".</p>
+            }
+            else
+            {
+                <p>No hay productos disponibles.</p>
+            }
+        }
+        else
+        {
+            <div class="container">
+                <div class="row justify-content-center">
+                    @foreach (var prod in productos)
+                    {
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="card flex-row flex-wrap flex-md-nowrap align-items-center shadow border border-primary bg-light p-2" style="min-height:200px; max-height:280px;">
+                                <div class="d-flex align-items-center justify-content-center bg-white border-end border-2 border-primary" style="min-width:200px;max-width:240px;width:45%;min-height:200px;max-height:240px;">
+                                    <img src="@prod.ImagenUrl" alt="@prod.Nombre" class="img-fluid rounded" style="max-height:200px;max-width:100%;object-fit:contain;">
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-3" style="min-width:160px;width:55%;min-height:200px;">
+                                    <h5 class="card-title mb-2" style="font-weight:bold;font-size:1.2rem;">@prod.Nombre</h5>
+                                    <p class="card-text text-muted small mb-2" style="font-size:0.95rem;">@prod.Descripcion</p>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-success me-2" style="font-size:1.25rem;">$@prod.Precio.ToString("N2")</span>
+                                        <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @prod.Stock</span>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-primary btn-sm fw-bold flex-fill" @onclick="() => AgregarAlCarrito(prod.Id)" disabled="@(!puedeAgregar)">
+                                            <i class="bi bi-cart-plus"></i> Agregar al carrito
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm flex-fill" @onclick="() => QuitarDelCarrito(prod.Id)">
+                                            <i class="bi bi-cart-dash"></i> Quitar del carrito
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (mostrarModalStock)
+        {
+            <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="border-radius:1rem;">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Producto no disponible</h5>
+                        </div>
+                        <div class="modal-body">
+                            <p>Producto no disponible en stock.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @onclick="CerrarModalStock">Ok</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (mostrarModalNoEnCarrito)
+        {
+            <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="border-radius:1rem;">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Producto no encontrado</h5>
+                        </div>
+                        <div class="modal-body">
+                            <p>El producto no se encuentra en el carrito.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" @onclick="CerrarModalNoEnCarrito">Ok</button>
+                        </div>
                     </div>
                 </div>
             </div>
         }
     </div>
-}
+</div>
 
 @code {
     List<ProductoDto>? productos;
