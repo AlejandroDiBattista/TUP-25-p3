@@ -70,6 +70,29 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
     {
         await _httpClient.DeleteAsync($"carritos/{carritoId}");
     }
+
+    public async Task<Guid> AgregarOActualizarItemAsync(Guid? carritoId, int productoId, AgregarCarritoRequest? Nuevo)
+    {
+        var json = JsonSerializer.Serialize(Nuevo);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var carritoIdString = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (carritoId == null)
+        {
+            var response = await _httpClient.PostAsync($"carritos", content);
+            response.EnsureSuccessStatusCode();
+            var carrito = await response.Content.ReadAsStringAsync();
+            var nuevoCarritoId = Guid.Parse(carrito.Replace("\"", ""));
+            await GuardarCarritoIdAsync(nuevoCarritoId);
+           return nuevoCarritoId;
+        }
+        else
+        {
+            var response = await _httpClient.PutAsync($"carritos/{carritoId}/{productoId}/aumentar", null);
+            response.EnsureSuccessStatusCode();
+             return carritoId.Value;
+        }
+        
+    }
     public async Task AumentarItemAsync(Guid? carritoId, int productoId)
     {
         var response = await _httpClient.PutAsync($"carritos/{carritoId}/{productoId}/aumentar", null);
