@@ -1,5 +1,5 @@
-namespace servidor.models
-{
+namespace servidor.models;
+
      public class Producto
     {
         public int Id { get; set; }
@@ -9,4 +9,3 @@ namespace servidor.models
         public int Stock { get; set; }
         public string ImagenUrl { get; set; } = string.Empty;
     }
-}

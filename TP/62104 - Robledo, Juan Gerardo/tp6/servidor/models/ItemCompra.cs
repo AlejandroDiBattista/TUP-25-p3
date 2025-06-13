@@ -1,5 +1,5 @@
-namespace servidor.models
-{
+namespace servidor.models;
+
     public class ItemCompra
     {
         public int Id { get; set; }
@@ -10,4 +10,3 @@ namespace servidor.models
         public Producto? Producto { get; set; }
         public Compra? Compra { get; set; }
     }
-}

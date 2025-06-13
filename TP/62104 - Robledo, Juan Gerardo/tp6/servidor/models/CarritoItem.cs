@@ -1,5 +1,5 @@
-namespace servidor.models
-{
+namespace servidor.models;
+
     public class CarritoItem
     {
         public int ProductoId { get; set; }
@@ -9,4 +9,3 @@ namespace servidor.models
         public string ImagenUrl { get; set; } = string.Empty;
         public decimal Subtotal => Precio * Cantidad;
     }
-}

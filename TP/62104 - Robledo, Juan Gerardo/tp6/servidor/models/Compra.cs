@@ -1,5 +1,5 @@
-namespace servidor.models
-{
+namespace servidor.models;
+
     public class Compra
     {
         public int Id { get; set; }
@@ -10,4 +10,3 @@ namespace servidor.models
         public string EmailCliente { get; set; } = string.Empty;
         public List<ItemCompra> Items { get; set; } = new();
     }
-}
