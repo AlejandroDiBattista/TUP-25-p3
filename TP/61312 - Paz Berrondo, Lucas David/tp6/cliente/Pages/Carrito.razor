@@ -203,18 +203,16 @@
                                 </div>
                             }
                         </div>
-                    </div>
-
-                    <button class="btn btn-success-modern w-100 btn-lg" 
+                    </div>                    <button class="btn btn-success-modern w-100 btn-lg" 
                             @onclick="ConfirmarCompra" 
-                            disabled="@(confirmandoCompra || !DatosClienteValidos())">
-                        @if (confirmandoCompra)
+                            disabled="@(confirmandoCompra || !DatosClienteValidos())">                        @if (confirmandoCompra)
                         {
                             <div class="loading-spinner me-2" style="width: 20px; height: 20px; border-width: 2px;"></div>
-                            <text>Procesando...</text>
+                            <span>Procesando...</span>
                         }
-                        else                        {
-                            <text><Icon Name="check-circle" Size="16" /> Confirmar Compra</text>
+                        else
+                        {
+                            <span><Icon Name="check-circle" Size="16" /> Confirmar Compra</span>
                         }
                     </button>
 
@@ -397,14 +395,20 @@
                 await Task.Delay(2000);
                 VolverAlCatalogo();
                 return;
-            }
-
-            // Verificar que el carrito existe en el servidor
+            }            // Verificar que el carrito existe en el servidor
             var carritoExiste = await ApiService.CarritoExisteAsync(carritoId);
             if (!carritoExiste)
             {
                 Console.WriteLine($"⚠️ Carrito {carritoId} no existe en el servidor");
-                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                }
+                catch (Exception jsEx)
+                {
+                    // Ignorar errores de JavaScript/localStorage
+                    Console.WriteLine($"Advertencia localStorage: {jsEx.Message}");
+                }
                 error = "El carrito ha expirado. Redirigiendo al catálogo para crear uno nuevo...";
                 await Task.Delay(3000);
                 VolverAlCatalogo();
@@ -512,18 +516,16 @@
             {
                 MostrarNotificacion("Error", "No se pudo eliminar el producto del carrito", "error");
             }
-        }
-        catch (Exception ex)
+        }        catch (Exception ex)
         {
             MostrarNotificacion("Error", $"Error: {ex.Message}", "error");
         }
         finally
         {
-            // Asegurar que el modal se cierre y el estado se limpie
+            // Limpiar estado del modal y producto
             mostrarModalEliminar = false;
             productoAEliminar = 0;
             eliminandoItem = null;
-            StateHasChanged(); // Forzar actualización del componente
         }
     }    private void CancelarEliminar()
     {
@@ -652,7 +654,7 @@
         if (!ValidarEmail(datosCliente.EmailCliente))
             return "Ingrese un email válido (ejemplo@dominio.com)";
         return "";
-    }private async Task ConfirmarCompra()
+    }    private async Task ConfirmarCompra()
     {
         if (string.IsNullOrEmpty(carritoId) || !DatosClienteValidos()) return;
 
@@ -661,19 +663,35 @@
             confirmandoCompra = true;
             
             compraConfirmada = await ApiService.ConfirmarCompraAsync(carritoId, datosCliente);
-            
-            if (compraConfirmada != null)
+              if (compraConfirmada != null)
             {
-                // Limpiar carrito del localStorage
-                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                // Limpiar carrito del localStorage de forma segura
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                }
+                catch (Exception jsEx)
+                {
+                    // Ignorar errores de JavaScript/localStorage - no afectan la funcionalidad
+                    Console.WriteLine($"Advertencia localStorage: {jsEx.Message}");
+                }
                 
                 // Crear nuevo carrito para futuras compras
                 var nuevoCarritoId = await ApiService.CrearCarritoAsync();
                 if (!string.IsNullOrEmpty(nuevoCarritoId))
                 {
-                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoId", nuevoCarritoId);
+                    try
+                    {
+                        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoId", nuevoCarritoId);
+                    }
+                    catch (Exception jsEx)
+                    {
+                        // Ignorar errores de JavaScript/localStorage - no afectan la funcionalidad
+                        Console.WriteLine($"Advertencia localStorage: {jsEx.Message}");
+                    }
                 }
-            }            else
+            }
+            else
             {
                 MostrarNotificacion("Error", "No se pudo confirmar la compra. Intenta nuevamente.", "error");
             }
