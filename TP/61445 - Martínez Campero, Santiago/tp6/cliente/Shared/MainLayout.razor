@@ -1,0 +1,59 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager NavigationManager
+
+<div class="page">
+    <header class="top-row px-4 navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="">
+            <img src="/logo.png" alt="Tienda Online Logo" style="height: 40px;" /> 
+            Tienda Online
+        </a>
+        <div class="search-container ms-auto me-3">
+            <input type="text" class="form-control" placeholder="Buscar productos..." @bind="searchTerm" @oninput="PerformSearch" />
+        </div>
+        <div class="cart-icon-container">
+            <a href="carrito" class="text-white d-flex align-items-center">
+                <i class="bi bi-cart-fill fs-4"></i>
+                <span class="badge bg-danger rounded-pill ms-1">@CarritoStateService.CantidadItems</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="sidebar">
+             <NavMenu />
+        </div>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private string? searchTerm;
+
+    private void PerformSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString();
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            NavigationManager.NavigateTo($"/?search={searchTerm}");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarritoStateService.InicializarAsync();
+        CarritoStateService.OnChange += StateHasChanged; // Subscribe to changes
+    }
+
+    public void Dispose() // Implement IDisposable
+    {
+        CarritoStateService.OnChange -= StateHasChanged; // Unsubscribe
+    }
+}
