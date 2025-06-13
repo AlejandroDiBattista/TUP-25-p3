@@ -1,59 +1,131 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using cliente.Models
+@inject HttpClient Http
+@inject cliente.Services.CarritoService CarritoService // ¡Esta línea CRÍTICA debe estar aquí!
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Catálogo de Productos</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+<div class="container-fluid fixed-top bg-light shadow-sm py-2">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <a href="/" class="text-decoration-none">
+                <h4 class="mb-0 text-primary">Tienda Online</h4>
+            </a>
         </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+        <div class="col">
+            <input type="text" class="form-control" placeholder="Buscar productos..."
+                   @bind-value="searchText" @oninput="HandleSearch" />
         </div>
-    </div>
+             <div class="col-auto" @key="CarritoService.TotalItemsEnCarrito"> @* ¡Añade el @key aquí! *@
+                <NavLink href="/carrito" class="btn btn-primary position-relative">
+                    <i class="bi bi-cart"></i> Carrito
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                     @CarritoService.TotalItemsEnCarrito <span class="visually-hidden">items en el carrito</span>
+                    </span>
+                </NavLink>
+            </div>
+     </div>
+</div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+<div class="container" style="margin-top: 100px;">
+    <h3 class="mb-4">Nuestros Productos</h3>
+
+    @if (productos == null)
+    {
+        <p><em>Cargando productos...</em></p>
+    }
+    else if (productos.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var producto in productos)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text text-muted">@producto.Descripcion</p>
+                            <p class="card-text">
+                                <strong>Precio: $@producto.Precio</strong>
+                                <br />
+                                Stock: @producto.Stock unidades
+                            </p>
+                        </div>
+                        <div class="card-footer d-grid">
+                            @if (producto.Stock > 0)
+                            {
+                                <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary" disabled>Sin Stock</button>
+                            }
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
+    else
+    {
+        <p>No se encontraron productos.</p>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private List<Producto>? productos;
+    private string searchText = string.Empty;
+    private System.Timers.Timer? debounceTimer;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+
+        debounceTimer = new System.Timers.Timer(500); // 500 ms de retardo
+        debounceTimer.Elapsed += async (sender, e) =>
+        {
+            debounceTimer?.Stop();
+            await InvokeAsync(LoadProducts);
+        };
+        debounceTimer.AutoReset = false;
+
+        // Suscribirse al evento de cambio del carrito para actualizar la UI si cambia fuera de esta página
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            string url = $"/productos";
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                url += $"?q={searchText}";
+            }
+            productos = await Http.GetFromJsonAsync<List<Producto>>(url);
         }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Error al cargar productos: {ex.Message}");
+            productos = new List<Producto>();
+        }
+    }
+
+    private void HandleSearch(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString() ?? string.Empty;
+        debounceTimer?.Stop();
+        debounceTimer?.Start();
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        CarritoService.AgregarOActualizarEnCarrito(producto);
+    }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+        CarritoService.OnChange -= StateHasChanged;
     }
 }
