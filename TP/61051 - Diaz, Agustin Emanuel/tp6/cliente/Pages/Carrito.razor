@@ -13,7 +13,7 @@
             <p>Cargando carrito...</p>
         </div>
     }
-    else if (carrito == null || !carrito.Items.Any())
+    else if (carritoData == null || !carritoData.Items.Any())
     {
         <div class="carrito-vacio">
             <div class="empty-cart-icon">🛒</div>
@@ -28,12 +28,12 @@
     {
         <div class="carrito-header">
             <h1 class="carrito-titulo">Mi Carrito</h1>
-            <p class="carrito-subtitulo">@carrito.TotalItems elemento(s) en tu carrito</p>
+            <p class="carrito-subtitulo">@carritoData.TotalItems elemento(s) en tu carrito</p>
         </div>
 
         <div class="carrito-content">
             <div class="carrito-items">
-                @foreach (var item in carrito.Items)
+                @foreach (var item in carritoData.Items)
                 {
                     <div class="carrito-item">
                         <div class="item-imagen">
@@ -89,8 +89,8 @@
                     <h3>Resumen del Pedido</h3>
                     
                     <div class="resumen-linea">
-                        <span>Subtotal (@carrito.TotalItems items):</span>
-                        <span>$@carrito.Total.ToString("N0")</span>
+                        <span>Subtotal (@carritoData.TotalItems items):</span>
+                        <span>$@carritoData.Total.ToString("N0")</span>
                     </div>
                     
                     <div class="resumen-linea envio">
@@ -100,7 +100,7 @@
                     
                     <div class="resumen-total">
                         <span>Total:</span>
-                        <span>$@carrito.Total.ToString("N0")</span>
+                        <span>$@carritoData.Total.ToString("N0")</span>
                     </div>
                     
                     <div class="botones-carrito">
@@ -157,11 +157,6 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-bottom: 1rem;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
     }
 
     .carrito-vacio {
@@ -479,7 +474,14 @@
         margin-top: 1rem;
     }
 
-    @media (max-width: 768px) {
+    /* Animaciones */
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Media Queries */
+    @@media (max-width: 768px) {
         .carrito-container {
             padding: 1rem;
         }
@@ -508,7 +510,7 @@
 </style>
 
 @code {
-    private Carrito? carrito;
+    private cliente.Services.Carrito? carritoData;
     private bool cargando = true;
     private int? modificandoItem = null;
     private bool vaciandoCarrito = false;
@@ -525,12 +527,12 @@
 
         try
         {
-            carrito = await ApiService.ObtenerCarritoConProductosAsync();
+            carritoData = await ApiService.ObtenerCarritoConProductosAsync();
         }
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar carrito: {ex.Message}");
-            carrito = null;
+            carritoData = null;
         }
         finally
         {
