@@ -23,6 +23,10 @@ a, .btn-link {
     color: #0071c1;
 }
 
+.alert-container{
+    text-align: center;
+    align-items: center;
+}
 .custom-header {
     background: linear-gradient(135deg, #111 0%, #333 100%);
     padding: 2rem 1rem;

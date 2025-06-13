@@ -15,7 +15,7 @@
     }
     else
     {
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-4 g-4">
             @foreach (var producto in productos)
             {
                 <div class="col">
@@ -26,6 +26,10 @@
                             <p class="card-text text-muted">@producto.Descripcion</p>
                             <div class="mt-auto">
                                 <p class="fw-bold">$@producto.Precio</p>
+                                @if (producto.GetType().GetProperty("Stock") != null)
+                                {
+                                    <p class="text-secondary">Stock: @(producto.GetType().GetProperty("Stock")?.GetValue(producto, null) ?? "-")</p>
+                                }
                                 <button class="btn-card">Agregar al carrito</button>
                             </div>
                         </div>
@@ -38,9 +42,17 @@
 
 @code {
     private List<Producto> productos;
+    private string errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ApiService.ObtenerProductosAsync();
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMsg = $"Error al cargar productos: {ex.Message}";
+        }
     }
 }

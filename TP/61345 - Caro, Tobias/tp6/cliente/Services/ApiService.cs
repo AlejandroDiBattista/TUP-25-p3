@@ -22,7 +22,7 @@ public class ApiService {
     }
 
     public async Task<List<Producto>> ObtenerProductosAsync() {
-        var response = await _httpClient.GetAsync("api/productos");
+        var response = await _httpClient.GetAsync("productos");
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<List<Producto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
