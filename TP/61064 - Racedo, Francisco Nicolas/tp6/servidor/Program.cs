@@ -81,7 +81,7 @@ app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext d
         p.ImagenUrl,
         Cantidad = items[p.Id],
         Subtotal = items[p.Id] * p.Precio,
-        Stock = p.Stock // Se agrega el stock para que el cliente pueda ver el stock disponible de un producto.
+        Stock = p.Stock // Se agrega el stock para que el cliente pueda ver el stock disponible de cada producto
     });
 
     return Results.Ok(resultado);
