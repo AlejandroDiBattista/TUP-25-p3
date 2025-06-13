@@ -5,88 +5,93 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
-<PageTitle>Tienda Online - Catálogo</PageTitle>
+<PageTitle>TechStore - Catálogo</PageTitle>
 
-<!-- Header con buscador -->
-<div class="bg-primary text-white py-3 mb-4">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h1 class="mb-0">🛒 Tienda Online</h1>
-                <small>Encuentra los mejores productos de tecnología</small>
-            </div>
-            <div class="col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Buscar productos..." 
+<!-- Content Header -->
+<div class="content-header">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="page-title">Catálogo de Productos</h1>
+            <p class="page-subtitle">Descubre los mejores productos de tecnología</p>
+        </div>
+        <div class="col-lg-6">
+            <div class="search-container">
+                <div class="position-relative">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Buscar productos increíbles..." 
                            @bind="terminoBusqueda" @onkeypress="OnBuscarKeyPress">
-                    <button class="btn btn-light" type="button" @onclick="BuscarProductos">
-                        🔍 Buscar
+                </div>
+                <div class="mt-2 d-flex gap-2">
+                    <button class="btn search-btn" @onclick="BuscarProductos">
+                        Buscar
                     </button>
+                    @if (!string.IsNullOrEmpty(terminoBusquedaActual))
+                    {
+                        <button class="btn btn-outline-modern" @onclick="LimpiarBusqueda">
+                            Limpiar
+                        </button>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container">
-    <!-- Barra de acciones -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            @if (!string.IsNullOrEmpty(terminoBusquedaActual))
-            {
-                <div class="d-flex align-items-center">
-                    <span class="me-3">Resultados para: <strong>"@terminoBusquedaActual"</strong></span>
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="LimpiarBusqueda">
-                        ❌ Limpiar
-                    </button>
-                </div>
-            }
-            else
-            {
-                <h2>📦 Catálogo de Productos</h2>
-            }
+<!-- Main Content -->
+<div class="container-fluid px-4">
+    <!-- Search Results Info -->
+    @if (!string.IsNullOrEmpty(terminoBusquedaActual))
+    {
+        <div class="alert alert-info shadow-modern fade-in">
+            <h5>🔍 Resultados para: <strong>"@terminoBusquedaActual"</strong></h5>
+            <p class="mb-0">Encontrados @(productos?.Count ?? 0) productos</p>
         </div>
-        <div class="col-md-4 text-end">
-            <button class="btn btn-success" @onclick="IrAlCarrito">
-                🛒 Ver Carrito
-                @if (carritoId != null)
-                {
-                    <span class="badge bg-light text-dark ms-1">@totalItemsCarrito</span>
-                }
-            </button>
-        </div>
-    </div>
+    }
 
-    <!-- Estado de carga -->
+    <!-- Cart Info -->
+    @if (carritoId != null && totalItemsCarrito > 0)
+    {
+        <div class="alert alert-success shadow-modern fade-in">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>� Tienes @totalItemsCarrito productos en tu carrito</strong>
+                </div>
+                <button class="btn btn-success-modern btn-sm" @onclick="IrAlCarrito">
+                    Ver Carrito
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- Loading State -->
     @if (cargando)
     {
         <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p class="mt-2">Cargando productos...</p>
+            <div class="loading-spinner mx-auto mb-3"></div>
+            <h4>Cargando productos increíbles...</h4>
+            <p class="text-muted">Un momento por favor</p>
         </div>
     }
     else if (!string.IsNullOrEmpty(error))
     {
-        <div class="alert alert-danger" role="alert">
-            <h4 class="alert-heading">❌ Error</h4>
+        <div class="alert alert-danger shadow-modern" role="alert">
+            <h4 class="alert-heading">❌ Oops! Algo salió mal</h4>
             <p>@error</p>
-            <button class="btn btn-outline-danger" @onclick="CargarProductos">
+            <button class="btn btn-outline-modern" @onclick="CargarProductos">
                 🔄 Reintentar
             </button>
         </div>
     }
     else
     {
-        <!-- Grid de productos -->
-        <div class="row">
+        <!-- Products Grid -->
+        <div class="row g-4">
             @if (productos == null || !productos.Any())
             {
                 <div class="col-12 text-center py-5">
-                    <div class="text-muted">
-                        <h3>📭 No se encontraron productos</h3>
-                        <p>@(string.IsNullOrEmpty(terminoBusquedaActual) ? "No hay productos disponibles." : "Intenta con otros términos de búsqueda.")</p>
+                    <div class="fade-in">
+                        <h2 class="text-gradient">📭 No hay productos disponibles</h2>
+                        <p class="text-muted">@(string.IsNullOrEmpty(terminoBusquedaActual) ? "Vuelve pronto para ver nuevos productos." : "Intenta con otros términos de búsqueda.")</p>
                     </div>
                 </div>
             }
@@ -94,52 +99,53 @@
             {
                 @foreach (var producto in productos)
                 {
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100 shadow-sm producto-card">
-                            <img src="@producto.ImagenUrl" class="card-img-top producto-imagen" 
+                    <div class="col-xl-4 col-lg-6 col-md-6 fade-in">
+                        <div class="card product-card">
+                            <img src="@producto.ImagenUrl" class="product-image" 
                                  alt="@producto.Nombre" loading="lazy">
                             
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">@producto.Nombre</h5>
-                                <p class="card-text flex-grow-1">@producto.Descripcion</p>
+                            <div class="product-card-body">
+                                <h5 class="product-title">@producto.Nombre</h5>
+                                <p class="product-description">@producto.Descripcion</p>
                                 
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="h4 text-success mb-0">$@producto.Precio.ToString("N2")</span>
-                                        <span class="badge @(producto.Stock > 0 ? "bg-success" : "bg-danger")">
-                                            @(producto.Stock > 0 ? $"Stock: {producto.Stock}" : "Sin stock")
-                                        </span>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="product-price">$@producto.Precio.ToString("N0")</span>
+                                    <span class="product-stock @(producto.Stock > 0 ? "stock-available" : "stock-unavailable")">
+                                        @(producto.Stock > 0 ? $"Stock: {producto.Stock}" : "Sin stock")
+                                    </span>
+                                </div>
+                                
+                                @if (producto.Stock > 0)
+                                {
+                                    <div class="quantity-selector">
+                                        <button class="quantity-btn" 
+                                                @onclick="() => DecrementarCantidad(producto.Id)">-</button>
+                                        <input type="number" class="quantity-input" 
+                                               @bind="cantidadesSeleccionadas[producto.Id]" 
+                                               min="1" max="@producto.Stock">
+                                        <button class="quantity-btn" 
+                                                @onclick="() => IncrementarCantidad(producto.Id, producto.Stock)">+</button>
                                     </div>
                                     
-                                    @if (producto.Stock > 0)
-                                    {
-                                        <div class="input-group mb-2">
-                                            <button class="btn btn-outline-secondary btn-sm" 
-                                                    @onclick="() => DecrementarCantidad(producto.Id)">-</button>
-                                            <input type="number" class="form-control text-center" 
-                                                   @bind="cantidadesSeleccionadas[producto.Id]" 
-                                                   min="1" max="@producto.Stock">
-                                            <button class="btn btn-outline-secondary btn-sm" 
-                                                    @onclick="() => IncrementarCantidad(producto.Id, producto.Stock)">+</button>
-                                        </div>
-                                        
-                                        <button class="btn btn-primary w-100" 
-                                                @onclick="() => AgregarAlCarrito(producto)"
-                                                disabled="@agregandoProducto">
-                                            @if (agregandoProducto)
-                                            {
-                                                <span class="spinner-border spinner-border-sm me-2"></span>
-                                            }
-                                            🛒 Agregar al Carrito
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button class="btn btn-secondary w-100" disabled>
-                                            ❌ Sin Stock
-                                        </button>
-                                    }
-                                </div>
+                                    <button class="btn btn-primary-modern w-100" 
+                                            @onclick="() => AgregarAlCarrito(producto)"
+                                            disabled="@agregandoProducto">
+                                        @if (agregandoProducto)
+                                        {
+                                            <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                                        }
+                                        else
+                                        {
+                                            <span>🛒 Agregar al Carrito</span>
+                                        }
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-modern w-100" disabled>
+                                        ❌ Sin Stock
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,46 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@inject NavigationManager Navigation
+
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-logo">
+                🛒 TechStore
+            </a>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="/" class="sidebar-item @(IsActive("/") ? "active" : "")">
+                🏠 Catálogo
+            </a>
+            <a href="/carrito" class="sidebar-item @(IsActive("/carrito") ? "active" : "")">
+                🛒 Mi Carrito
+            </a>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div>💻 Tienda Online</div>
+            <div style="font-size: 0.75rem; margin-top: 0.5rem;">
+                Powered by Blazor WebAssembly
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        @Body
+    </main>
 </div>
+
+@code {
+    private bool IsActive(string href)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        if (href == "/" && currentPath == "/")
+            return true;
+        if (href != "/" && currentPath.StartsWith(href))
+            return true;
+        return false;
+    }
+}

@@ -499,3 +499,28 @@ Cuando se reinicia el servidor, los carritos temporales (almacenados en memoria)
 ✅ **Reinicio de servidor**: Detecta carrito inexistente, crea uno nuevo automáticamente  
 ✅ **Experiencia de usuario**: Sin interrupciones, mensajes informativos en consola
 ✅ **Robustez**: Manejo completo de errores de conectividad
+
+---
+
+## 🎨 **FIX BOOTSTRAP: Estilos CSS Corregidos**
+
+### **Problema identificado:**
+Bootstrap CSS no se cargaba debido a ruta incorrecta en `index.html`:
+- **Ruta incorrecta**: `lib/bootstrap/dist/css/bootstrap.min.css` 
+- **Error**: GET http://localhost:5177/lib/bootstrap/dist/css/bootstrap.min.css 404 (Not Found)
+
+### **Solución implementada:**
+1. **Ruta corregida**: `lib/bootstrap/css/bootstrap.min.css` (sin carpeta `dist`)
+2. **Bootstrap JS agregado**: `lib/bootstrap/js/bootstrap.bundle.min.js` para componentes interactivos
+3. **Verificación**: Archivos Bootstrap confirmados en `wwwroot/lib/bootstrap/`
+
+### **Archivos modificados:**
+- `cliente/wwwroot/index.html`: Rutas corregidas para CSS y JS de Bootstrap
+
+### **Resultado:**
+✅ **Bootstrap CSS**: Carga correctamente, estilos aplicados
+✅ **Bootstrap JS**: Disponible para componentes interactivos  
+✅ **UI mejorada**: Cards, botones, grid, colores funcionando
+✅ **Responsive**: Layout adaptable a diferentes tamaños de pantalla
+
+---
