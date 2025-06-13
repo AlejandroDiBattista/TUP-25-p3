@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SQLite" Version="9.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\modelos_compartidos\modelos_compartidos.csproj" />
+  </ItemGroup>
+
 </Project>

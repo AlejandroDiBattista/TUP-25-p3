@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using modelos_compartidos;
 
 namespace cliente.Services;
 
