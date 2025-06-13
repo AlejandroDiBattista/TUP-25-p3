@@ -10,9 +10,11 @@
 <!-- Content Header -->
 <div class="content-header">
     <div class="row align-items-center">
-        <div class="col-lg-6">            <h1 class="page-title">Gaming PC Store - DualTech</h1>
+        <div class="col-lg-6">
+            <h1 class="page-title">Gaming PC Store - DualTech</h1>
             <p class="page-subtitle">Los mejores componentes para gaming de PC. Arma tu build perfecta con nosotros</p>
-        </div>        <div class="col-lg-6">
+        </div>
+        <div class="col-lg-6">
             <div class="search-container">
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative flex-grow-1">
@@ -36,10 +38,10 @@
 </div>
 
 <!-- Main Content -->
-<div class="container-fluid px-4">
-    <!-- Search Results Info -->
+<div class="container-fluid px-4">    <!-- Search Results Info -->
     @if (!string.IsNullOrEmpty(terminoBusquedaActual))
-    {        <div class="alert alert-info shadow-modern fade-in">
+    {
+        <div class="alert alert-info shadow-modern fade-in">
             <h5><Icon Name="search" Size="20" Class="icon-primary" /> Resultados para: <strong>"@terminoBusquedaActual"</strong></h5>
             <p class="mb-0">Encontrados @(productos?.Count ?? 0) componentes</p>
         </div>
@@ -47,9 +49,9 @@
 
     <!-- Cart Info -->
     @if (carritoId != null && totalItemsCarrito > 0)
-    {
-        <div class="alert alert-success shadow-modern fade-in">
-            <div class="d-flex justify-content-between align-items-center">                <div>
+    {        <div class="alert alert-success shadow-modern fade-in">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
                     <strong><Icon Name="shopping-cart" Size="16" Class="icon-success" /> Tienes @totalItemsCarrito componentes en tu carrito</strong>
                 </div>
                 <button class="btn btn-success-modern btn-sm" @onclick="IrAlCarrito">
@@ -59,16 +61,17 @@
         </div>
     }
 
-    <!-- Loading State -->
-    @if (cargando)
+    <!-- Loading State -->    @if (cargando)
     {
         <div class="text-center py-5">
-            <div class="loading-spinner mx-auto mb-3"></div>            <h4>Cargando componentes gaming...</h4>
+            <div class="loading-spinner mx-auto mb-3"></div>
+            <h4>Cargando componentes gaming...</h4>
             <p class="text-muted">Un momento por favor</p>
         </div>
     }
     else if (!string.IsNullOrEmpty(error))
-    {        <div class="alert alert-danger shadow-modern" role="alert">
+    {
+        <div class="alert alert-danger shadow-modern" role="alert">
             <h4 class="alert-heading"><Icon Name="alert-circle" Size="20" Class="icon-danger" /> Oops! Algo salió mal</h4>
             <p>@error</p>
             <button class="btn btn-outline-modern" @onclick="CargarProductos">
@@ -79,10 +82,11 @@
     else
     {
         <!-- Products Grid -->
-        <div class="row g-4">
-            @if (productos == null || !productos.Any())
+        <div class="row g-4">            @if (productos == null || !productos.Any())
             {
-                <div class="col-12 text-center py-5">                    <div class="fade-in">                        <h2 class="text-gradient"><Icon Name="package-x" Size="48" /> No hay componentes disponibles</h2>
+                <div class="col-12 text-center py-5">
+                    <div class="fade-in">
+                        <h2 class="text-gradient"><Icon Name="package-x" Size="48" /> No hay componentes disponibles</h2>
                         <p class="text-muted">@(string.IsNullOrEmpty(terminoBusquedaActual) ? "Vuelve pronto para ver nuevos componentes." : "Intenta con otros términos de búsqueda.")</p>
                     </div>
                 </div>
@@ -90,16 +94,16 @@
             else
             {
                 @foreach (var producto in productos)
-                {
-                    <div class="col-xl-4 col-lg-6 col-md-6 fade-in">
-                        <div class="card product-card">                            <img src="@GetImageUrl(producto.ImagenUrl)" class="product-image" 
+                {                    <div class="col-xl-4 col-lg-6 col-md-6 fade-in">
+                        <div class="card product-card">
+                            <img src="@GetImageUrl(producto.ImagenUrl)" class="product-image" 
                                  alt="@producto.Nombre" loading="lazy" 
                                  onerror="this.src='images/placeholder.jpeg'">
                             
                             <div class="product-card-body">
                                 <h5 class="product-title">@producto.Nombre</h5>
                                 <p class="product-description">@producto.Descripcion</p>
-                                  <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <span class="product-price">AR$ @producto.Precio.ToString("N2")</span>
                                     <span class="product-stock @(producto.Stock > 0 ? "stock-available" : "stock-unavailable")">
                                         @(producto.Stock > 0 ? $"Stock: {producto.Stock}" : "Sin stock")
@@ -120,18 +124,18 @@
                                     
                                     <button class="btn btn-primary-modern w-100" 
                                             @onclick="() => AgregarAlCarrito(producto)"
-                                            disabled="@agregandoProducto">
-                                        @if (agregandoProducto)
+                                            disabled="@agregandoProducto">                                        @if (agregandoProducto)
                                         {
-                                            <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>                                        }
+                                            <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                                        }
                                         else
                                         {
                                             <span><Icon Name="shopping-cart" Size="16" /> Agregar al Carrito</span>
                                         }
                                     </button>
-                                }
-                                else
-                                {                                    <button class="btn btn-outline-modern w-100" disabled>
+                                }                                else
+                                {
+                                    <button class="btn btn-outline-modern w-100" disabled>
                                         <Icon Name="x-circle" Size="16" /> Sin Stock
                                     </button>
                                 }
@@ -149,10 +153,10 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">
-                <div class="modal-header">
+            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">                <div class="modal-header">
                     <h5 class="modal-title">@tituloNotificacion</h5>
-                </div>                <div class="modal-body">
+                </div>
+                <div class="modal-body">
                     <div class="modal-icon @tipoNotificacion">
                         @if (tipoNotificacion == "success")
                         {
@@ -175,33 +179,7 @@
     </div>
 }
 
-<style>
-    .producto-card {
-        transition: transform 0.2s;
-    }
-    
-    .producto-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .producto-imagen {
-        height: 200px;
-        object-fit: cover;
-    }
-    
-    .input-group input[type="number"] {
-        -moz-appearance: textfield;
-    }
-    
-    .input-group input[type="number"]::-webkit-outer-spin-button,
-    .input-group input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-</style>
-
-@code {
-    private List<ProductoDto> productos = new();
+@code {private List<ProductoDto> productos = new();
     private Dictionary<int, int> cantidadesSeleccionadas = new();
     private string terminoBusqueda = "";
     private string terminoBusquedaActual = "";
@@ -211,7 +189,9 @@
     
     // Estado del carrito
     private string? carritoId;
-    private int totalItemsCarrito = 0;    // Variables para la notificación
+    private int totalItemsCarrito = 0;
+    
+    // Variables para la notificación
     private bool mostrarNotificacion = false;
     private string tituloNotificacion = "";
     private string mensajeNotificacion = "";
@@ -221,7 +201,9 @@
     {
         await InicializarCarrito();
         await CargarProductos();
-    }    private async Task InicializarCarrito()
+    }
+    
+    private async Task InicializarCarrito()
     {
         // Intentar recuperar carrito existente del localStorage
         try
@@ -298,14 +280,14 @@
     {
         terminoBusquedaActual = terminoBusqueda.Trim();
         await CargarProductos();
-    }
-
-    private async Task LimpiarBusqueda()
+    }    private async Task LimpiarBusqueda()
     {
         terminoBusqueda = "";
         terminoBusquedaActual = "";
         await CargarProductos();
-    }    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
+    }
+    
+    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
@@ -321,15 +303,15 @@
         {
             cantidadesSeleccionadas[productoId]++;
         }
-    }
-
-    private void DecrementarCantidad(int productoId)
+    }    private void DecrementarCantidad(int productoId)
     {
         if (cantidadesSeleccionadas[productoId] > 1)
         {
             cantidadesSeleccionadas[productoId]--;
         }
-    }    private async Task AgregarAlCarrito(ProductoDto producto)
+    }
+    
+    private async Task AgregarAlCarrito(ProductoDto producto)
     {
         if (string.IsNullOrEmpty(carritoId))
         {
@@ -338,11 +320,12 @@
         }
 
         try
-        {
-            agregandoProducto = true;
+        {            agregandoProducto = true;
             var cantidad = cantidadesSeleccionadas[producto.Id];
-              var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
-              if (exito)
+            
+            var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
+            
+            if (exito)
             {
                 await ActualizarContadorCarrito();
                 MostrarNotificacion("Producto Agregado", 
@@ -375,8 +358,8 @@
                     MostrarNotificacion("Error", 
                         "No se pudo crear un carrito. Intenta recargar la página.", "error");
                 }
-            }
-        }        catch (Exception ex)
+            }        }
+        catch (Exception ex)
         {
             MostrarNotificacion("Error", $"Error: {ex.Message}", "error");
         }
@@ -384,7 +367,9 @@
         {
             agregandoProducto = false;
         }
-    }    private async Task ActualizarContadorCarrito()
+    }
+    
+    private async Task ActualizarContadorCarrito()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
         
@@ -404,12 +389,15 @@
                 totalItemsCarrito = carrito.TotalItems;
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex)        {
             Console.WriteLine($"Error al actualizar contador del carrito: {ex.Message}");
             totalItemsCarrito = 0;
-        }    }private async Task IrAlCarrito()
-    {        if (string.IsNullOrEmpty(carritoId))
+        }
+    }
+
+    private async Task IrAlCarrito()
+    {
+        if (string.IsNullOrEmpty(carritoId))
         {
             MostrarNotificacion("Sin Carrito", "No hay un carrito activo. Se creará uno automáticamente.", "error");
             return;
@@ -417,12 +405,12 @@
 
         // Navegar a la página del carrito
         Navigation.NavigateTo("/carrito");
-    }
-
-    private void CerrarNotificacion()
+    }    private void CerrarNotificacion()
     {
         mostrarNotificacion = false;
-    }    private void MostrarNotificacion(string titulo, string mensaje, string tipo)
+    }
+    
+    private void MostrarNotificacion(string titulo, string mensaje, string tipo)
     {
         tituloNotificacion = titulo;
         mensajeNotificacion = mensaje;

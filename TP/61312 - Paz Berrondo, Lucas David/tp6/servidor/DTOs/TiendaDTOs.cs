@@ -1,9 +1,6 @@
 namespace servidor.DTOs;
 
-/// <summary>
-/// DTO para transferir datos de productos entre cliente y servidor.
-/// Incluye toda la información necesaria para mostrar productos en el catálogo.
-/// </summary>
+// DTO para transferir datos de productos entre cliente y servidor
 public class ProductoDto
 {
     public int Id { get; set; }
@@ -14,10 +11,7 @@ public class ProductoDto
     public string ImagenUrl { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// DTO para enviar datos del carrito al cliente.
-/// Incluye items y totales calculados.
-/// </summary>
+// DTO para enviar datos del carrito al cliente (incluye items y totales)
 public class CarritoDto
 {
     public string Id { get; set; } = string.Empty;
@@ -26,9 +20,7 @@ public class CarritoDto
     public int TotalItems { get; set; }
 }
 
-/// <summary>
-/// DTO para items del carrito.
-/// </summary>
+// DTO para items individuales del carrito
 public class ItemCarritoDto
 {
     public int ProductoId { get; set; }
@@ -39,9 +31,7 @@ public class ItemCarritoDto
     public string ImagenUrl { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// DTO para actualizar la cantidad de un producto en el carrito.
-/// </summary>
+// DTO para actualizar la cantidad de un producto en el carrito
 public class ActualizarItemCarritoDto
 {
     public int Cantidad { get; set; }

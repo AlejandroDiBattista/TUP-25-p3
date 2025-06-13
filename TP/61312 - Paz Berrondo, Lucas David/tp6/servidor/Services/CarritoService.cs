@@ -46,28 +46,21 @@ public class CarritoService
         if (!_carritos.TryGetValue(carritoId, out var carrito))
         {
             return null;
-        }
-
-        // Cargar datos actualizados de productos para cada item del carrito
+        }        // Actualizar datos de productos desde BD para obtener precios y stock actuales
         foreach (var item in carrito.Items)
         {
             var producto = await _context.Productos.FindAsync(item.ProductoId);
             if (producto != null)
             {
                 item.Producto = producto;
-                // Actualizar precio en caso de que haya cambiado
-                item.PrecioUnitario = producto.Precio;
+                item.PrecioUnitario = producto.Precio; // Sincronizar precio actual
             }
         }
 
         return carrito;
     }
 
-    /// <summary>
-    /// Convierte un carrito en memoria a un DTO para enviar al cliente.
-    /// </summary>
-    /// <param name="carrito">Carrito a convertir</param>
-    /// <returns>DTO del carrito con datos completos</returns>
+    // Convierte un carrito en memoria a DTO para enviar al cliente
     public CarritoDto ConvertirADto(Carrito carrito)
     {
         return new CarritoDto
@@ -87,11 +80,7 @@ public class CarritoService
         };
     }
 
-    /// <summary>
-    /// Vacía completamente un carrito eliminando todos sus items.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito a vaciar</param>
-    /// <returns>True si se vació exitosamente, false si el carrito no existe</returns>
+    // Vacía completamente un carrito eliminando todos sus items
     public bool VaciarCarrito(string carritoId)
     {
         if (!_carritos.TryGetValue(carritoId, out var carrito))
@@ -102,13 +91,7 @@ public class CarritoService
         carrito.Items.Clear();
         Console.WriteLine($"🗑️ Carrito {carritoId} vaciado exitosamente");
         return true;
-    }
-
-    /// <summary>
-    /// Elimina un carrito completamente del sistema.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito a eliminar</param>
-    /// <returns>True si se eliminó exitosamente, false si no existía</returns>
+    }    // Elimina un carrito completamente del sistema
     public bool EliminarCarrito(string carritoId)
     {
         var eliminado = _carritos.Remove(carritoId);

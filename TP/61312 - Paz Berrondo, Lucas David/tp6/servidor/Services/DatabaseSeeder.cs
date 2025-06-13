@@ -3,25 +3,18 @@ using servidor.Models;
 
 namespace servidor.Services;
 
-/// <summary>
-/// Servicio encargado de poblar la base de datos con datos iniciales.
-/// Se ejecuta al iniciar la aplicación para asegurar que haya productos disponibles.
-/// </summary>
+// Servicio para poblar la base de datos con datos iniciales (productos gaming PC)
 public static class DatabaseSeeder
 {
-    /// <summary>
-    /// Inicializa la base de datos con productos de ejemplo si está vacía.
-    /// Los productos son consistentes (temática de tecnología) con imágenes representativas.
-    /// </summary>
-    /// <param name="context">Contexto de la base de datos</param>
+    // Inicializa la BD con productos de ejemplo si está vacía
     public static void SeedDatabase(TiendaContext context)
     {
-        // Verificar si ya existen productos en la base de datos
         if (context.Productos.Any())
         {
-            // Si ya hay productos, no necesitamos hacer seeding
-            return;
-        }        // Lista de productos de gaming de PC
+            return; // Ya hay productos, no necesitamos hacer seeding
+        }
+        
+        // Productos de gaming de PC con precios en ARS
         var productos = new List<Producto>
         {
             new Producto

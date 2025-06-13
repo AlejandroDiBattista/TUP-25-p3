@@ -70,13 +70,19 @@ html, body {
 }
 
 .sidebar-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     padding: 1rem 1.5rem;
     color: rgba(255,255,255,0.8);
     text-decoration: none;
     transition: var(--transition);
     border-left: 4px solid transparent;
     font-weight: 500;
+}
+
+.sidebar-item .lucide-icon {
+    margin-top: -1px; /* Ajuste fino para perfecta alineación */
 }
 
 .sidebar-item:hover {
@@ -268,7 +274,7 @@ html, body {
 }
 
 /* ===========================
-   QUANTITY SELECTOR MODERNO
+   QUANTITY SELECTOR
    ========================== */
 .quantity-selector {
     background: #f8fafc;
@@ -311,7 +317,7 @@ html, body {
 }
 
 /* ===========================
-   BOTONES MODERNOS
+   BOTONES
    ========================== */
 .btn-modern {
     border-radius: 12px;
@@ -377,7 +383,7 @@ html, body {
 }
 
 /* ===========================
-   CART SUMMARY MODERNO
+   CART SUMMARY
    ========================== */
 .cart-summary {
     background: white;
@@ -434,7 +440,7 @@ html, body {
 }
 
 /* ===========================
-   MODAL MODERNO
+   MODAL
    ========================== */
 .modal-modern {
     backdrop-filter: blur(10px);
@@ -466,7 +472,7 @@ html, body {
 }
 
 /* ===========================
-   MODALES BOOTSTRAP MODERNOS
+   MODALES BOOTSTRAP EXTRA
    ========================== */
 
 /* Modal de Confirmación */
@@ -1034,7 +1040,9 @@ html, body {
    ICONOS SVG MINIMALISTAS
    ========================== */
 .lucide-icon {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     vertical-align: middle;
     flex-shrink: 0;
     stroke: currentColor;

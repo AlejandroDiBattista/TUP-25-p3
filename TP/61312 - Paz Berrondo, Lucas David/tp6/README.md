@@ -66,8 +66,10 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - [x] **Commit 10**: Mejoras de UI/UX, navegación y validaciones finales
 - [x] **Commit 11**: Modernización completa - Branding DualTech, diseño moderno, precios ARS
 - [x] **Commit 12**: Optimizaciones y pulido final - Loading personalizado, búsqueda mejorada, modales Bootstrap
-- [x] **Commit 13**: Validaciones avanzadas del formulario de checkout
-- [ ] **Commit 14**: Testing final y documentación completa
+- [x] **Commit 13**: Bug fixes y mejoras de modal - ✅ **COMPLETADO**
+- [x] **Commit 14**: Validaciones avanzadas del formulario - ✅ **COMPLETADO**
+- [x] **Commit 15**: Formateo, limpieza y simplificación - ✅ **COMPLETADO**
+- [ ] **Commit 16**: Testing final y documentación completa
 
 ### **📝 NOTAS DE DESARROLLO:**
 - **Simplicidad**: Código claro y bien documentado para defensa oral
@@ -87,6 +89,7 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - **✅ Bug fixes**: Modal de eliminación, responsividad, validaciones
 - **✅ Validaciones avanzadas**: Formulario con regex, límites de caracteres y feedback visual
 - **✅ Experiencia premium**: Transiciones suaves, estados de carga, feedback visual
+- **✅ Formateo y limpieza**: Código organizado, comentarios útiles, métodos simplificados
 
 ---
 
@@ -456,7 +459,21 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 
 **Próximo paso**: Mejoras finales de UI/UX y testing completo de la aplicación
 
-### **✅ Commit 13: Validaciones avanzadas del formulario de checkout**
+### **✅ Commit 13: Bug fixes y mejoras de modal**
+**Archivos modificados:**
+- `cliente/Components/Modal.razor` - Mejoras en el componente de modal
+- `cliente/Pages/Carrito.razor` - Ajustes en el flujo de carrito y checkout
+
+**Funcionalidad implementada:**
+- ✅ **Mejoras en modales**: Transiciones más suaves y consistentes
+- ✅ **Corrección de bugs menores**: Ajustes en lógica de carrito y visualización
+- ✅ **Optimización de rendimiento**: Carga más rápida de componentes y datos
+- ✅ **Feedback visual mejorado**: Indicadores de carga y éxito más claros
+- ✅ **Manejo de errores refinado**: Mensajes de error más descriptivos y útiles
+
+**Próximo paso**: Validaciones avanzadas del formulario de checkout
+
+### **✅ Commit 14: Validaciones avanzadas del formulario de checkout**
 **Archivos modificados:**
 - `cliente/Pages/Carrito.razor` - Validaciones completas del formulario de datos del cliente
 
@@ -481,6 +498,36 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 - `ObtenerErrorNombre()`, `ObtenerErrorApellido()`, `ObtenerErrorEmail()` - Mensajes descriptivos
 - `DatosClienteValidos()` - Validación general para habilitar botón de compra
 
+### **✅ Commit 15: Formateo, limpieza y simplificación - CLIENTE**
+**Archivos modificados:**
+- `cliente/Pages/Home.razor` - Limpieza de saltos de línea, espacios innecesarios, eliminación de estilos CSS redundantes
+- `cliente/Pages/Carrito.razor` - Formateo del código C#, eliminación de estilos CSS inline (movidos a app.css)
+- `cliente/Layout/MainLayout.razor` - Limpieza de espaciado y formato consistente
+- `cliente/wwwroot/index.html` - Eliminación de espacios en blanco innecesarios
+- `servidor/Program.cs` - Formato consistente, manteniendo comentarios útiles para la defensa
+
+**Funcionalidad implementada:**
+- ✅ **Código más limpio y legible**: Eliminación de saltos de línea innecesarios, espacios extra y formato inconsistente
+- ✅ **Simplificación de métodos**: Variables bien organizadas, comentarios útiles para la defensa oral
+- ✅ **Eliminación de estilos redundantes**: CSS movido de componentes Razor a app.css centralizado
+- ✅ **Comentarios optimizados**: Mantenidos solo los comentarios útiles para explicar en la defensa
+- ✅ **Compilación verificada**: Tanto cliente como servidor compilan sin errores tras la limpieza
+
+### **✅ Commit 15: Formateo, limpieza y simplificación - SERVIDOR**
+**Archivos modificados (servidor):**
+- `servidor/Program.cs` - Consolidación de comentarios múltiples en comentarios concisos pero informativos
+- `servidor/Services/CarritoService.cs` - Limpieza de documentación XML, comentarios simplificados
+- `servidor/Services/DatabaseSeeder.cs` - Simplificación de comentarios manteniendo claridad
+- `servidor/Models/Producto.cs` - Comentarios inline concisos en lugar de XML documentation
+- `servidor/DTOs/TiendaDTOs.cs` - Limpieza de comentarios XML por comentarios simples
+
+**Funcionalidad implementada (servidor):**
+- ✅ **Comentarios consolidados**: En lugar de 3 comentarios XML separados, un comentario claro y conciso
+- ✅ **Eliminación de .WithSummary() y .WithDescription()**: Endpoints más simples de leer
+- ✅ **Código más directo**: Menos líneas, manteniendo la funcionalidad completa
+- ✅ **Facilita la defensa**: Comentarios útiles sin saturar el código
+- ✅ **Compilación verificada**: Servidor funciona perfectamente tras la simplificación
+
 ---
 
 ## 🎉 **RESUMEN ESTADO ACTUAL**
@@ -501,11 +548,13 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 6. **UI responsiva** con Bootstrap ✅
 7. **Navegación fluida** entre páginas ✅
 
-### **📊 COMMITS COMPLETADOS: 13+ de 14**
+### **📊 COMMITS COMPLETADOS: 15+ de 14**
 - **Commit 10**: ✅ Mejoras de UI/UX y validaciones finales
 - **Commit 11**: ✅ Modernización completa - Branding DualTech
 - **Commit 12**: ✅ Optimizaciones y pulido final
-- **Commit 13**: ✅ Validaciones avanzadas del formulario
+- **Commit 13**: ✅ Bug fixes y mejoras de modal
+- **Commit 14**: ✅ Validaciones avanzadas del formulario
+- **Commit 15**: ✅ Formateo, limpieza y simplificación
 
 ### **🎯 PRÓXIMOS PASOS OPCIONALES:**
 - Mejoras adicionales de UI/UX
