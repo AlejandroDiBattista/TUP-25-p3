@@ -331,6 +331,7 @@ a, .btn-link {
     padding: 0.5rem;
     border-radius: 10px;
     border: 1px solid #ffbe5c;
+    margin-left: 1rem;
 }
 
 .quantity-btn {
