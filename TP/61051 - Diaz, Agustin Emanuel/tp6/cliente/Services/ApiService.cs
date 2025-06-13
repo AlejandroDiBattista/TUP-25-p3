@@ -39,6 +39,162 @@ namespace cliente.Services
     }
 
     #endregion
+
+    #region Carrito
+
+        public async Task<Guid> ObtenerOCrearCarritoIdAsync()
+        {
+            if (_carritoId == null)
+            {
+                try
+                {
+                    var response = await _httpClient.PostAsync("/carrito", null);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var result = JsonSerializer.Deserialize<JsonElement>(content);
+                        _carritoId = Guid.Parse(result.GetProperty("carritoId").GetString()!);
+                    }
+                    else
+                    {
+                        _carritoId = Guid.NewGuid();
+                    }
+                }
+                catch
+                {
+                    _carritoId = Guid.NewGuid();
+                }
+            }
+            return _carritoId.Value;
+        }
+
+        public async Task<Carrito?> ObtenerCarritoAsync()
+        {
+            try
+            {
+                var carritoId = await ObtenerOCrearCarritoIdAsync();
+                var carrito = await _httpClient.GetFromJsonAsync<Carrito>($"/carrito/{carritoId}");
+                return carrito;
+            }
+            catch
+            {
+                return new Carrito { Id = await ObtenerOCrearCarritoIdAsync() };
+            }
+        }
+
+        public async Task<Carrito?> ObtenerCarritoConProductosAsync()
+        {
+            try
+            {
+                var carrito = await ObtenerCarritoAsync();
+                if (carrito == null || !carrito.Items.Any())
+                    return carrito;
+
+                // Obtener todos los productos para completar la información del carrito
+                var productos = await ObtenerProductosAsync();
+                
+                foreach (var item in carrito.Items)
+                {
+                    item.Producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                }
+
+                return carrito;
+            }
+            catch
+            {
+                return new Carrito { Id = await ObtenerOCrearCarritoIdAsync() };
+            }
+        }
+
+        public async Task<bool> AgregarProductoAsync(int productoId, int cantidad = 1)
+        {
+            try
+            {
+                var carritoId = await ObtenerOCrearCarritoIdAsync();
+                var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/{productoId}", cantidad);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    OnCarritoActualizado?.Invoke();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> EliminarProductoAsync(int productoId)
+        {
+            try
+            {
+                var carritoId = await ObtenerOCrearCarritoIdAsync();
+                var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    OnCarritoActualizado?.Invoke();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> VaciarCarritoAsync()
+        {
+            try
+            {
+                var carritoId = await ObtenerOCrearCarritoIdAsync();
+                var response = await _httpClient.PostAsync($"/carrito/vaciar?id={carritoId}", null);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    OnCarritoActualizado?.Invoke();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> EliminarCarritoAsync()
+        {
+            try
+            {
+                var carritoId = await ObtenerOCrearCarritoIdAsync();
+                var response = await _httpClient.DeleteAsync($"/carrito?id={carritoId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    _carritoId = null; // Reset del carrito
+                    OnCarritoActualizado?.Invoke();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<int> ObtenerCantidadItemsAsync()
+        {
+            var carrito = await ObtenerCarritoAsync();
+            return carrito?.TotalItems ?? 0;
+        }
+
+        #endregion
+
   }
 }
 
