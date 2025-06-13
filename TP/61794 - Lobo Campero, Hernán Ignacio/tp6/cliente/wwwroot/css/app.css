@@ -710,6 +710,78 @@ p {
 }
 
 /* ==============================
+   PAGINACIÓN PERSONALIZADA - TUC BYTE
+   ============================== */
+
+/* Estilos base para botones de paginación */
+.pagination .page-link {
+    color: var(--primary-orange);
+    background-color: var(--secondary-white);
+    border: 2px solid var(--primary-orange);
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem 0.75rem;
+    margin: 0 2px;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+/* Hover de botones de paginación */
+.pagination .page-link:hover {
+    color: var(--secondary-white);
+    background-color: var(--primary-orange);
+    border-color: var(--primary-orange);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-orange);
+}
+
+/* Botón activo (página actual) */
+.pagination .page-item.active .page-link {
+    color: var(--secondary-white);
+    background-color: var(--primary-orange-dark);
+    border-color: var(--primary-orange-dark);
+    box-shadow: var(--shadow-orange);
+    font-weight: 600;
+}
+
+.pagination .page-item.active .page-link:hover {
+    background-color: var(--primary-red-orange);
+    border-color: var(--primary-red-orange);
+}
+
+/* Botones deshabilitados */
+.pagination .page-item.disabled .page-link {
+    color: var(--secondary-gray-medium);
+    background-color: var(--secondary-gray-light);
+    border-color: var(--secondary-gray-light);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    color: var(--secondary-gray-medium);
+    background-color: var(--secondary-gray-light);
+    border-color: var(--secondary-gray-light);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Focus para accesibilidad */
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
+    outline: none;
+}
+
+/* Estilo compacto para móviles */
+@media (max-width: 576px) {
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        margin: 0 1px;
+    }
+}
+
+/* ==============================
    MODALES Y POPUPS
    ============================== */
 .modal-content {
@@ -1132,5 +1204,457 @@ a:hover, .btn-link:hover {
     .navbar .form-control {
         padding: 0.5rem 0.7rem;
         font-size: 0.9rem;
+    }
+}
+
+/* ==============================
+   SUBTÍTULOS DE CARDS PERSONALIZADOS
+   ============================== */
+
+/* Color personalizado para subtítulos de cards */
+.card-text.small.text-muted {
+    color: #919191 !important;
+}
+
+/* Color personalizado para texto en input de búsqueda */
+.form-control.border-orange {
+    color: #919191 !important;
+}
+
+/* Color cuando el input está activo/focused */
+.form-control.border-orange:focus {
+    color: #919191 !important;
+    border-color: var(--primary-orange) !important;
+    box-shadow: none !important;
+}
+
+/* Color del placeholder también */
+.form-control.border-orange::placeholder {
+    color: #919191 !important;
+    opacity: 0.7;
+}
+
+/* Color personalizado para todos los elementos text-muted */
+.text-muted {
+    color: #919191 !important;
+}
+
+/* Headers con el mismo gradiente que price-tag */
+.card-header.bg-gradient-primary,
+.card-header.bg-gradient-secondary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%) !important;
+    color: var(--secondary-white) !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+/* Asegurar que todos los elementos dentro del header sean blancos */
+.card-header.bg-gradient-primary *,
+.card-header.bg-gradient-secondary * {
+    color: var(--secondary-white) !important;
+}
+
+/* Específicamente para h5 y iconos dentro de headers */
+.card-header.bg-gradient-primary h5,
+.card-header.bg-gradient-secondary h5,
+.card-header.bg-gradient-primary .mb-0,
+.card-header.bg-gradient-secondary .mb-0 {
+    color: var(--secondary-white) !important;
+}
+
+/* Iconos dentro de headers */
+.card-header.bg-gradient-primary i,
+.card-header.bg-gradient-secondary i {
+    color: var(--secondary-white) !important;
+}
+
+/* Elementos específicos adicionales en blanco */
+h6.mb-1.text-gradient {
+    color: var(--secondary-white) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: var(--secondary-white) !important;
+    background-clip: unset !important;
+}
+
+input.form-control.text-center {
+    color: var(--secondary-white) !important;
+    background-color: transparent !important;
+}
+
+/* ==============================
+   MÁXIMA ESPECIFICIDAD PARA ELEMENTOS BLANCOS
+   ============================== */
+
+/* Selectores ultra-específicos para h6 con text-gradient */
+body .container .card .card-body h6.mb-1.text-gradient,
+body .container .row .col h6.mb-1.text-gradient,
+body main .card h6.mb-1.text-gradient,
+html body h6.mb-1.text-gradient {
+    color: #ffffff !important;
+    background: none !important;
+    background-image: none !important;
+    background-clip: initial !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Selectores ultra-específicos para input centrado */
+body .container .card .card-body input.form-control.text-center,
+body .container .row .col input.form-control.text-center,
+body main .card input.form-control.text-center,
+html body input.form-control.text-center {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Forzar estilo para cualquier combinación posible */
+h6[class*="text-gradient"] {
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+input[class*="text-center"][class*="form-control"] {
+    color: #ffffff !important;
+}
+
+/* ==============================
+   CORRECCIONES PARA CARRITO
+   ============================== */
+
+/* Remover línea blanca debajo de items del carrito */
+.cart-item {
+    border-bottom: none !important;
+}
+
+.cart-item.border-bottom {
+    border-bottom: none !important;
+}
+
+/* Asegurar que el botón de borrar esté dentro del contenedor */
+.cart-item .row {
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+.cart-item .col-md-1 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    max-width: 60px !important;
+    flex: 0 0 60px !important;
+}
+
+/* Ajustar las otras columnas para dar espacio */
+.cart-item .col-md-6 {
+    flex: 0 0 calc(50% - 30px) !important;
+    max-width: calc(50% - 30px) !important;
+}
+
+.cart-item .col-md-3 {
+    flex: 0 0 calc(25% - 15px) !important;
+    max-width: calc(25% - 15px) !important;
+}
+
+.cart-item .col-md-2 {
+    flex: 0 0 calc(25% - 15px) !important;
+    max-width: calc(25% - 15px) !important;
+}
+
+/* Botón de borrar más compacto */
+.cart-item .btn-outline-danger {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* Estilo personalizado para botones de cantidad (+ y -) */
+.btn-outline-secondary {
+    background: linear-gradient(to bottom, #6c757d 0%, #495057 100%) !important;
+    border: 1px solid #495057 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(to bottom, #5a6268 0%, #343a40 100%) !important;
+    border-color: #343a40 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.btn-outline-secondary:active,
+.btn-outline-secondary:focus {
+    background: linear-gradient(to bottom, #495057 0%, #343a40 100%) !important;
+    border-color: #343a40 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(108, 117, 125, 0.25) !important;
+}
+
+.btn-outline-secondary:disabled {
+    background: linear-gradient(to bottom, #e9ecef 0%, #dee2e6 100%) !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    opacity: 0.65;
+}
+
+/* ==============================
+   PÁGINA DE CONFIRMACIÓN MEJORADA
+   ============================== */
+
+/* Estilos para la tabla de resumen */
+.table {
+    color: var(--secondary-white) !important;
+    background-color: transparent !important;
+    margin-bottom: 0 !important;
+}
+
+.table-responsive {
+    border: none !important;
+    overflow: visible !important;
+}
+
+.table th {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%) !important;
+    color: var(--secondary-white) !important;
+    border: none !important;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.9rem;
+}
+
+.table td {
+    color: var(--secondary-white) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    padding: 0.75rem 0.5rem !important;
+    text-align: center;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+    max-width: 150px;
+}
+
+.table tbody tr {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.table tfoot tr {
+    background: linear-gradient(to bottom, var(--primary-orange-light) 0%, var(--primary-orange) 100%) !important;
+}
+
+.table tfoot td {
+    color: var(--secondary-white) !important;
+    font-weight: 700 !important;
+    border: none !important;
+    font-size: 1.1rem !important;
+}
+
+/* Formulario de confirmación mejorado */
+.form-label {
+    color: var(--secondary-white) !important;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    color: #919191 !important;
+    border-radius: var(--border-radius-sm);
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--primary-orange) !important;
+    color: #919191 !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25) !important;
+}
+
+.form-control::placeholder {
+    color: rgba(145, 145, 145, 0.6) !important;
+}
+
+/* Asegurar que el texto ingresado sea visible */
+input.form-control[type="text"],
+input.form-control[type="email"] {
+    color: #919191 !important;
+}
+
+input.form-control[type="text"]:focus,
+input.form-control[type="email"]:focus {
+    color: #919191 !important;
+}
+
+/* Botones mejorados en confirmación */
+.btn-primary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%) !important;
+    border: none !important;
+    color: var(--secondary-white) !important;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: var(--transition-fast);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to bottom, var(--primary-orange-dark) 0%, var(--primary-red-orange) 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-orange-lg) !important;
+}
+
+.btn-outline-secondary {
+    background: linear-gradient(to bottom, #6c757d 0%, #495057 100%) !important;
+    border: 1px solid #495057 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(to bottom, #5a6268 0%, #343a40 100%) !important;
+    border-color: #343a40 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Cart total mejorado */
+.cart-total {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cart-total div {
+    color: var(--secondary-white) !important;
+}
+
+.cart-total strong {
+    color: var(--secondary-white) !important;
+}
+
+.cart-total .fs-6 {
+    color: var(--secondary-white) !important;
+}
+
+/* Selectores ultra-específicos para cart-total */
+body .container .card .card-body .cart-total div,
+body .container .row .col .cart-total div,
+html body .cart-total div {
+    color: #ffffff !important;
+}
+
+body .container .card .card-body .cart-total strong,
+body .container .row .col .cart-total strong,
+html body .cart-total strong {
+    color: #ffffff !important;
+}
+
+body .container .card .card-body .cart-total .fs-6,
+body .container .row .col .cart-total .fs-6,
+html body .cart-total .fs-6 {
+    color: #ffffff !important;
+}
+
+/* Forzar todo el contenido de cart-total */
+.cart-total.text-center div,
+.cart-total.text-center strong,
+.cart-total.text-center * {
+    color: #ffffff !important;
+}
+
+/* Badge mejorado */
+.badge.bg-primary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%) !important;
+    color: var(--secondary-white) !important;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Mensajes de validación */
+.validation-message {
+    color: #ff6b6b !important;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* Títulos mejorados */
+h5.text-gradient {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-light) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* ==============================
+   LAYOUT OPTIMIZADO PARA CONFIRMACIÓN
+   ============================== */
+
+/* Ajustes para evitar scroll horizontal */
+.table-responsive {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+/* Columnas de tabla más eficientes */
+.table th:nth-child(1), /* Producto */
+.table td:nth-child(1) {
+    width: 40% !important;
+    text-align: left !important;
+    padding-left: 0.75rem !important;
+}
+
+.table th:nth-child(2), /* Cantidad */
+.table td:nth-child(2) {
+    width: 15% !important;
+    min-width: 60px !important;
+}
+
+.table th:nth-child(3), /* Precio */
+.table td:nth-child(3) {
+    width: 22.5% !important;
+}
+
+.table th:nth-child(4), /* Total */
+.table td:nth-child(4) {
+    width: 22.5% !important;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.8rem !important;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.25rem !important;
+    }
+    
+    .table th:nth-child(1),
+    .table td:nth-child(1) {
+        width: 35% !important;
+    }
+    
+    .table th:nth-child(2),
+    .table td:nth-child(2) {
+        width: 20% !important;
+    }
+    
+    .table th:nth-child(3),
+    .table td:nth-child(3) {
+        width: 22.5% !important;
+    }
+    
+    .table th:nth-child(4),
+    .table td:nth-child(4) {
+        width: 22.5% !important;
     }
 }
