@@ -87,6 +87,29 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
         await _httpClient.DeleteAsync($"carritos/{carritoId}/{productoId}");
     }
 
+public class CarritoResponse
+{
+    public List<ItemCarrito> Carrito { get; set; }
+    public decimal Total { get; set; }
+}
+
+public class AgregarCarritoRequest
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+};
+public class ConfirmacionRequest
+{
+    public string Nombre { get; set; } = string.Empty;
+    public string Apellido { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+}
+
+public class Carrito
+{
+    public Guid Id { get; set; }
+    public List<ItemCarrito> Items { get; set; } = new List<ItemCarrito>();
+}
 public class ItemCarrito
 {
     public int ProductoId { get; set; }
