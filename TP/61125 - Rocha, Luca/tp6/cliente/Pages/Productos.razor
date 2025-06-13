@@ -37,6 +37,7 @@
 
         @if (!string.IsNullOrWhiteSpace(productoEditando.ImagenUrl))
         {
+            <p>URL guardada: @productoEditando.ImagenUrl</p> <!-- Línea para verificar la URL -->
             <img src="@productoEditando.ImagenUrl" alt="Vista previa" class="img-thumbnail mb-3" style="max-height: 120px;" />
         }
 
@@ -55,6 +56,7 @@ else
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
+                    <p>URL guardada: @p.ImagenUrl</p> <!-- Línea para verificar la URL -->
                     <img src="@p.ImagenUrl" alt="@p.Nombre" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
                     <div>
                         <strong>@p.Nombre</strong> – $@p.Precio<br />
