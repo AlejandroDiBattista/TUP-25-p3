@@ -291,20 +291,78 @@
 </style>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "query")]
+    public string? Query { get; set; }
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
+    private List<Producto> productos = new();
+    private bool cargando = true;
+    private int? agregandoProducto = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync(Query);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar productos: {ex.Message}");
+            productos = new List<Producto>();
+        }
+        finally
+        {
             cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AgregarAlCarrito(Producto producto)
+    {
+        if (producto.Stock == 0 || agregandoProducto == producto.Id)
+            return;
+
+        agregandoProducto = producto.Id;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.AgregarProductoAsync(producto.Id);
+            
+            if (exito)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"¡{producto.Nombre} agregado al carrito!");
+                
+                // Opcional: redirigir al carrito
+                Navigation.NavigateTo("/carrito");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error al agregar el producto al carrito");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", "Error al agregar el producto al carrito");
+        }
+        finally
+        {
+            agregandoProducto = null;
+            StateHasChanged();
         }
     }
 }
