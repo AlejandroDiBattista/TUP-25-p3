@@ -1,4 +1,60 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@inject CarritoService CarritoService
+@inject IJSRuntime JS
+
+<div class="main-layout">
+    <div class="sidebar @(sidebarOpen ? "open" : "")">
+        <div class="sidebar-header d-flex align-items-center justify-content-between px-3 py-2">
+            <span class="navbar-brand fw-bold text-white">TecnoZone</span>
+            <button class="btn btn-link text-white d-md-none" @onclick="ToggleSidebar">
+                <span class="bi bi-list" style="font-size: 1.5rem;"></span>
+            </button>
+        </div>
+        <ul class="nav flex-column pt-2">
+            <li class="nav-item">
+                <NavLink href="/" class="nav-link text-white" Match="NavLinkMatch.All">
+                    <span class="bi bi-house"></span> Inicio
+                </NavLink>
+            </li>
+            <li class="nav-item d-flex align-items-center">
+                <NavLink href="/carrito" class="nav-link text-white d-flex align-items-center">
+                    <span class="bi bi-cart"></span> Carrito
+                    @if (CarritoService.Items.Count > 0)
+                    {
+                        <span class="badge bg-warning text-dark ms-2">@CarritoService.Items.Count</span>
+                    }
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink href="/historial" class="nav-link text-white">
+                    <span class="bi bi-journal-text"></span> Historial
+                </NavLink>
+            </li>
+            <li class="nav-item mt-3">
+                <button class="btn btn-sm btn-light w-100 d-flex align-items-center justify-content-center" @onclick="ToggleDarkMode" title="Modo oscuro/claro">
+                    <span class="bi" @(darkMode ? "bi-moon-fill" : "bi-brightness-high-fill") style="font-size:1.2rem"></span>
+                    <span class="ms-2">@((darkMode ? "Modo oscuro" : "Modo claro"))</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <main class="flex-grow-1 p-4" style="min-height: 100vh;">
+        @Body
+    </main>
 </div>
+
+@code {
+    private bool sidebarOpen = false;
+    private bool darkMode = false;
+
+    private void ToggleSidebar()
+    {
+        sidebarOpen = !sidebarOpen;
+    }
+
+    private async Task ToggleDarkMode()
+    {
+        darkMode = !darkMode;
+        await JS.InvokeVoidAsync("toggleDarkMode", darkMode);
+    }
+}

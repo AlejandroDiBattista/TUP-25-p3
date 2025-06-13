@@ -1,0 +1,122 @@
+@page "/historial"
+@using cliente.Models
+@inject ApiService ApiService
+
+<div class="container">
+    <h1 class="mb-4">Historial de Compras</h1>
+
+    <div class="mb-3">
+        <label class="form-label">Email del cliente:</label>
+        <div class="input-group">
+            <input type="email" 
+                   class="form-control" 
+                   @bind="emailCliente" 
+                   @bind:event="oninput"
+                   placeholder="Ingrese el email usado en la compra" />
+            <button class="btn btn-primary" @onclick="BuscarHistorial">
+                <i class="bi bi-search me-2"></i> Buscar
+            </button>
+        </div>
+    </div>
+
+    @if (cargando)
+    {
+        <div class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Buscando...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            @error
+        </div>
+    }
+    else if (busquedaRealizada)
+    {
+        if (ventas != null && ventas.Any())
+        {
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Productos</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var venta in ventas)
+                        {
+                            <tr>
+                                <td>@venta.Fecha.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach (var detalle in venta.Detalles)
+                                        {
+                                            <li>
+                                                @detalle.Producto.Nombre x @detalle.Cantidad 
+                                                ($@(detalle.PrecioUnitario.ToString("N2")))
+                                            </li>
+                                        }
+                                    </ul>
+                                </td>
+                                <td>$@venta.Total.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No se encontraron compras para el email: @emailCliente
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private string emailCliente;
+    private List<VentaResponse> ventas;
+    private bool cargando;
+    private string error;
+    private bool busquedaRealizada;
+
+    private async Task BuscarHistorial()
+    {
+        if (string.IsNullOrWhiteSpace(emailCliente) || !emailCliente.Contains("@"))
+        {
+            error = "Por favor, ingrese un email válido";
+            return;
+        }
+
+        try
+        {
+            cargando = true;
+            error = null;
+            ventas = null;
+            
+            var emailLimpio = emailCliente.Trim();
+            Console.WriteLine($"Buscando historial para: {emailLimpio}");
+            
+            ventas = await ApiService.ObtenerHistorialAsync(emailLimpio);
+            busquedaRealizada = true;
+
+            Console.WriteLine($"Ventas encontradas: {ventas?.Count ?? 0}");
+        }
+        catch (Exception ex)
+        {
+            error = $"Error al buscar historial: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

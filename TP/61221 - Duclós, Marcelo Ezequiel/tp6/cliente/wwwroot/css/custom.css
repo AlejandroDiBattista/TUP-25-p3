@@ -1,0 +1,295 @@
+/* Modo claro (default) */
+:root {
+    --content-bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #212529;
+}
+
+/* Modo oscuro */
+body.dark-mode {
+    --content-bg: #1a1a2e;
+    --card-bg: #16213e;
+    --text-color: #e1e1e1;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--content-bg) !important;
+    color: var(--text-color) !important;
+    transition: all 0.3s ease;
+}
+
+.main-layout {
+    background-color: var(--content-bg) !important;
+    min-height: 100vh;
+}
+
+main {
+    background-color: var(--content-bg) !important;
+}
+
+/* Estilos para el catálogo */
+.catalogo-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto; /* Centra el contenedor */
+}
+
+/* Ajustes de grid para productos */
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Exactamente 3 columnas */
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1200px; /* Ancho máximo para la grid */
+    margin: 0 auto; /* Centra la grid */
+}
+
+.producto-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.producto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.producto-imagen-container {
+    position: relative;
+    width: 100%;
+    padding-top: 75%; /* Relación de aspecto 4:3 */
+    overflow: hidden;
+    background-color: var(--card-bg);
+}
+
+.producto-imagen {
+    width: 100%;
+    height: 250px;
+    object-fit: contain;
+    padding: 1rem;
+}
+
+.producto-detalles {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.producto-titulo {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.producto-descripcion {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    flex-grow: 1;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 992px) {
+    .productos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+    }
+}
+
+@media (max-width: 576px) {
+    .productos-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+    }
+    
+    .catalogo-container {
+        padding: 1rem;
+    }
+}
+
+/* Resto de estilos del modo oscuro */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8f9fa;
+    color: #212529;
+    transition: all 0.3s ease;
+}
+
+/* Modo oscuro */
+body.dark-mode {
+    background-color: #1a1a2e !important;
+    color: #e1e1e1 !important;
+}
+
+/* Sidebar y navegación */
+body.dark-mode .sidebar {
+    background-color: #16213e !important;
+}
+
+body.dark-mode .sidebar-header {
+    background-color: #1a1a2e !important;
+}
+
+body.dark-mode .nav-link {
+    color: #e1e1e1 !important;
+}
+
+body.dark-mode .nav-link:hover,
+body.dark-mode .nav-link.active {
+    background-color: #0f3460 !important;
+    color: #00ff95 !important;
+}
+
+/* Tarjetas y contenedores */
+body.dark-mode .card {
+    background-color: #16213e !important;
+    border-color: #1f4068 !important;
+    color: #e1e1e1 !important;
+}
+
+body.dark-mode .modal-content {
+    background-color: #16213e !important;
+    color: #e1e1e1 !important;
+}
+
+/* Tablas */
+body.dark-mode .table {
+    color: #e1e1e1 !important;
+    border-color: #1f4068 !important;
+}
+
+body.dark-mode .table td,
+body.dark-mode .table th {
+    border-color: #1f4068 !important;
+}
+
+/* Formularios */
+body.dark-mode .form-control {
+    background-color: #1f4068 !important;
+    border-color: #162447 !important;
+    color: #e1e1e1 !important;
+}
+
+body.dark-mode .form-control:focus {
+    background-color: #162447 !important;
+    border-color: #0f3460 !important;
+    color: #e1e1e1 !important;
+}
+
+/* Botones */
+body.dark-mode .btn-primary {
+    background-color: #0f3460 !important;
+    border-color: #162447 !important;
+}
+
+body.dark-mode .btn-primary:hover {
+    background-color: #162447 !important;
+    border-color: #1f4068 !important;
+}
+
+body.dark-mode .btn-outline-secondary {
+    color: #e1e1e1 !important;
+    border-color: #1f4068 !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background-color: #1f4068 !important;
+    color: #e1e1e1 !important;
+}
+
+/* Alertas y mensajes */
+body.dark-mode .alert {
+    background-color: #162447 !important;
+    border-color: #1f4068 !important;
+    color: #e1e1e1 !important;
+}
+
+body.dark-mode .alert-warning {
+    background-color: #332b00 !important;
+    border-color: #665500 !important;
+    color: #ffd700 !important;
+}
+
+body.dark-mode .alert-danger {
+    background-color: #350000 !important;
+    border-color: #660000 !important;
+    color: #ff6b6b !important;
+}
+
+body.dark-mode .alert-success {
+    background-color: #003300 !important;
+    border-color: #006600 !important;
+    color: #00ff95 !important;
+}
+
+/* Toast notifications */
+body.dark-mode .toast {
+    background-color: #16213e !important;
+    border-color: #1f4068 !important;
+    color: #e1e1e1 !important;
+}
+
+/* Inputs y dropdowns */
+body.dark-mode .input-group-text {
+    background-color: #1f4068 !important;
+    border-color: #162447 !important;
+    color: #e1e1e1 !important;
+}
+
+/* Badges */
+body.dark-mode .badge {
+    background-color: #0f3460 !important;
+    color: #e1e1e1 !important;
+}
+
+/* Iconos */
+body.dark-mode .bi {
+    color: #e1e1e1 !important;
+}
+
+/* Botón de cierre */
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Transiciones suaves */
+.card,
+.btn,
+.form-control,
+.alert,
+.modal-content,
+.toast {
+    transition: all 0.3s ease !important;
+}
+
+/* Scrollbar personalizada para modo oscuro */
+body.dark-mode::-webkit-scrollbar {
+    width: 12px;
+}
+
+body.dark-mode::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+body.dark-mode::-webkit-scrollbar-thumb {
+    background-color: #1f4068;
+    border-radius: 6px;
+    border: 3px solid #1a1a2e;
+}
+
+/* Enlaces */
+body.dark-mode a {
+    color: #00ff95 !important;
+}
+
+body.dark-mode a:hover {
+    color: #00cc76 !important;
+}
