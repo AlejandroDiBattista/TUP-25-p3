@@ -16,9 +16,10 @@ namespace servidor.Data {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Producto>().HasData(
-                new Producto { Id = 1, Nombre = "Gorra Adidas Negra", Descripcion = "Gorra deportiva clásica", Precio = 7500, Stock = 10, ImagenUrl = "https://example.com/adidas_negra.jpg" },
-                new Producto { Id = 2, Nombre = "Gorra Nike Blanca", Descripcion = "Diseño minimalista y liviano", Precio = 8000, Stock = 12, ImagenUrl = "https://example.com/nike_blanca.jpg" },
-                new Producto { Id = 3, Nombre = "Gorra Puma Azul", Descripcion = "Estilo urbano con visera curva", Precio = 7200, Stock = 15, ImagenUrl = "https://example.com/puma_azul.jpg" },
+                new Producto { Id = 11, Nombre = "Test Imagen Web", Descripcion = "Test", Precio = 100, Stock = 1, ImagenUrl = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png" },
+                new Producto { Id = 1, Nombre = "Gorra Adidas Negra", Descripcion = "Gorra deportiva clásica", Precio = 7500, Stock = 10, ImagenUrl = "..cliente/wwwroot/img/adidasN.jpg" },
+                new Producto { Id = 2, Nombre = "Gorra Nike Blanca", Descripcion = "Diseño minimalista y liviano", Precio = 8000, Stock = 12, ImagenUrl = "https://i.pinimg.com/736x/53/e2/60/53e2602452b2086f4a19eb05a3eb73d3.jpg" },
+                new Producto { Id = 3, Nombre = "Gorra Puma Azul", Descripcion = "Estilo urbano con visera curva", Precio = 7200, Stock = 15, ImagenUrl = "https://i.pinimg.com/736x/8a/ed/1e/8aed1ec02c58f10a4ce3a32fc113462a.jpg" },
                 new Producto { Id = 4, Nombre = "Gorra Vans Roja", Descripcion = "Ideal para skaters y streetwear", Precio = 6800, Stock = 9, ImagenUrl = "https://example.com/vans_roja.jpg" },
                 new Producto { Id = 5, Nombre = "Gorra Lacoste Verde", Descripcion = "Con logo bordado clásico", Precio = 9500, Stock = 7, ImagenUrl = "https://example.com/lacoste_verde.jpg" },
                 new Producto { Id = 6, Nombre = "Gorra Under Armour Gris", Descripcion = "Resistente al sudor", Precio = 7900, Stock = 11, ImagenUrl = "https://example.com/ua_gris.jpg" },

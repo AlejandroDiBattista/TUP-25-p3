@@ -2,9 +2,10 @@
 @using cliente.Models
 @using cliente.Services
 @inject ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
 
 <h3>Catálogo de Gorras 🧢</h3>
-
+ <a href="/carrito">🛒 Carrito (@CarritoService.Items.Count)</a>
 @if (cargando)
 {
     <p>Cargando productos...</p>
@@ -26,8 +27,8 @@ else
                         <p class="card-text">@producto.Descripcion</p>
                         <p><strong>Precio:</strong> $@producto.Precio</p>
                         <p><strong>Stock:</strong> @producto.Stock</p>
-                        <button class="btn btn-primary" disabled="@(!PuedeAgregar(producto))">
-                            Agregar al carrito
+                        <button class="btn btn-primary" @onclick="() => CarritoService.Agregar(producto)">
+                        Agregar al carrito
                         </button>
                     </div>
                 </div>
@@ -37,7 +38,7 @@ else
 }
 
 @code {
-    private List<Producto> productos = new();
+    private List<cliente.Models.Producto> productos = new();
     private bool cargando = true;
 
     protected override async Task OnInitializedAsync()
@@ -50,6 +51,12 @@ else
         {
             cargando = false;
         }
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
     }
 
     private bool PuedeAgregar(Producto p) => p.Stock > 0;

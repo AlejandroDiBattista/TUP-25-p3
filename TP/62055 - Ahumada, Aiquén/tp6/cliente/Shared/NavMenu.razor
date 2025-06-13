@@ -1,14 +1,18 @@
 @using Microsoft.AspNetCore.Components
+
+@inject cliente.Services.CarritoService CarritoService
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">🧢 Tienda Gorras</a>
+        <a class="navbar-brand" href="/">🧢 Tienda Gorras</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+       
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="">Inicio</NavLink>
+                    <NavLink class="nav-link" href="/">Inicio</NavLink>
                 </li>
                 <li class="nav-item">
                     <NavLink class="nav-link" href="catalogo">Catálogo</NavLink>
@@ -17,3 +21,14 @@
         </div>
     </div>
 </nav>
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}

@@ -1,0 +1,33 @@
+@page "/carrito"
+@inject cliente.Services.CarritoService CarritoService
+
+<h3>Carrito de compras</h3>
+
+@if (CarritoService.Items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <ul>
+        @foreach (var item in CarritoService.Items)
+        {
+            <li>@item.Nombre - $@item.Precio
+                <button class="btn btn-sm btn-danger" @onclick="() => CarritoService.Quitar(item)">Quitar</button>
+            </li>
+        }
+    </ul>
+    <button class="btn btn-warning" @onclick="CarritoService.Vaciar">Vaciar carrito</button>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}
