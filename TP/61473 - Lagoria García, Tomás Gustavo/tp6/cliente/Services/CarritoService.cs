@@ -17,9 +17,26 @@ public class CarritoService
         _js = js;
     }
     
+
     public async Task<List<ItemCarrito>> ObtenerCarritoAsync(Guid carritoId)
     {
         return await _httpClient.GetFromJsonAsync<List<ItemCarrito>>($"carritos/{carritoId}");
+    public async Task<Guid> CrearCrritoAsync()
+    {
+        var response = await _httpClient.PostAsync($"carritos",null);
+        response.EnsureSuccessStatusCode();
+        var carritoIdStr = await response.Content.ReadAsStringAsync();
+        
+        if (Guid.TryParse(carritoIdStr, out var carritoId))
+        {
+            _carritoId = carritoId;
+            return carritoId;
+        }
+        else
+        {
+            throw new Exception("El backend devolvió un GUID inválido.");
+        }
+    }
     }
 
     public async Task<Guid?> ObtenerCarritoIdAsync()

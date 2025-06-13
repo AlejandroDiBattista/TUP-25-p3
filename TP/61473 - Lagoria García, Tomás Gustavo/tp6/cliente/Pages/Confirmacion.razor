@@ -1,0 +1,85 @@
+@page "/confirmacion"
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+
+<h3>Confirmación de Compra</h3>
+
+@if (carrito.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio Unitario</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in carrito)
+                {
+                    <tr>
+                        <td>@item.Nombre</td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>@item.Cantidad</td>
+                        <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <h5>Total: $@carrito.Sum(i => i.PrecioUnitario * i.Cantidad)</h5>
+
+    <div class="mt-4">
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input class="form-control" @bind="Nombre" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Apellido</label>
+            <input class="form-control" @bind="Apellido" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" @bind="Email" type="email" />
+        </div>
+
+        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    private List<ItemCarrito> carrito = new();
+    private string Nombre = string.Empty;
+    private string Apellido = string.Empty;
+    private string Email = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        carritoId = await CarritoService.ObtenerCarritoIdAsync();
+        carrito = await CarritoService.ObtenerCarritoAsync(carritoId);
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(Nombre) || string.IsNullOrWhiteSpace(Apellido) || string.IsNullOrWhiteSpace(Email))
+        {
+            return;
+        }
+
+        await CarritoService.ConfirmarCompraAsync(CarritoState.CarritoId, Nombre, Apellido, Email);
+
+        // Vaciar estado local
+        CarritoState.UpdateCantidad(0);
+
+        Navigation.NavigateTo("/catalogo");
+    }
+}
