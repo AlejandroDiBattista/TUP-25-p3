@@ -2,8 +2,7 @@
 using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
-using Compartido; // Assuming your DTOs like CarritoDto are here
-using System.Linq; // For Sum()
+using Compartido;
 
 namespace cliente.Services
 {
@@ -52,7 +51,6 @@ namespace cliente.Services
                 return _carritoId.Value;
             }
             
-            // Consider a more specific exception or handling
             throw new Exception("No se pudo crear o recuperar el ID del carrito.");
         }
 
@@ -82,18 +80,17 @@ namespace cliente.Services
         {
             if (!_carritoId.HasValue)
             {
-                // Try to initialize if not already
                 await InicializarAsync(); 
             }
 
             if (_carritoId.HasValue)
             {
                 var carrito = await _apiService.GetCarritoAsync(_carritoId.Value);
-                CantidadItems = carrito?.Sum(i => i.Cantidad) ?? 0; // Corrected: Sum directly on the list
+                CantidadItems = carrito?.Sum(i => i.Cantidad) ?? 0;
             }
             else
             {
-                CantidadItems = 0; // Should not happen if InicializarAsync works
+                CantidadItems = 0;
             }
             NotifyStateChanged();
         }
