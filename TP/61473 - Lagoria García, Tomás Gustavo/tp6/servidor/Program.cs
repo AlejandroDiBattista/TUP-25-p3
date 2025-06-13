@@ -57,10 +57,8 @@ app.MapGet("/productos", async (
     TiendaDbContext db) =>
 {
     var query = db.Productos.AsQueryable();
-    var qLower = q.ToLower();
     if (!string.IsNullOrWhiteSpace(q))
-
-        query = query.Where(p => p.Nombre.ToLower().Contains(qLower) || p.Descripcion.ToLower().Contains(qLower));
+        query = query.Where(p => p.Nombre.ToLower().Contains(q.ToLower()) || p.Descripcion.ToLower().Contains(q.ToLower()));
 
     if (precioMin.HasValue)
         query = query.Where(p => p.Precio >= precioMin.Value);
