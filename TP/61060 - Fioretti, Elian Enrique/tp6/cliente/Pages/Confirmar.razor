@@ -1,0 +1,161 @@
+@page "/confirmar"
+
+<title>Confirmar Compra</title>
+
+<div class="container">
+    <div class="mb-3">
+        <button class="btn btn-secondary" @onclick="VolverAlCatalogo" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+            <i class="bi bi-arrow-left" style="color:rgb(218, 218, 218);"></i> Volver al catálogo
+        </button>
+    </div>
+    <h2>Confirmación de Compra</h2>
+    @if (cargando)
+    {
+        <div class="alert alert-info">Cargando...</div>
+    }
+    else if (compraExitosa && comprobante != null)
+    {
+        <div class="mb-3" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+            <h4 style="color:rgba(0, 255, 64, 0.75); border:none;">Compra realizada con éxito</h4>
+            <p><strong>Cliente:</strong> @comprobante.NombreCliente @comprobante.ApellidoCliente</p>
+            <p><strong>Email:</strong> @comprobante.EmailCliente</p>
+            <p><strong>Fecha:</strong> @comprobante.Fecha.ToString("g")</p>
+            <table class="table bg-carrito-confirmacion">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in comprobante.Items)
+                    {
+                        <tr>
+                            <td>@ObtenerNombreProducto(item.ProductoId)</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@item.PrecioUnitario</td>
+                            <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="mb-3" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+                <strong>Total:</strong> $@comprobante.Total
+            </div>
+            <button class="btn btn-secondary" @onclick="VolverAlCatalogo" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+                <i class="bi bi-arrow-left" style="color:rgb(218, 218, 218);"></i> Volver al catálogo
+            </button>
+        </div>
+    }
+    else if (items == null || items.Count == 0)
+    {
+        <div class="alert alert-warning" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">El carrito está vacío.</div>
+    }
+    else
+    {
+        <table class="table bg-carrito">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@ObtenerNombreProducto(item.ProductoId)</td>
+                        <td>@item.Cantidad</td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="mb-3" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+            <strong>Total: $@items.Sum(i => i.Cantidad * i.PrecioUnitario)</strong>
+        </div>
+        <EditForm Model="datos" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-2" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+                <label>Nombre:</label>
+                <InputText class="form-control" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:none;" @bind-Value="datos.NombreCliente" required />
+            </div>
+            <div class="mb-2" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+                <label>Apellido:</label>
+                <InputText class="form-control" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:none;" @bind-Value="datos.ApellidoCliente" required />
+            </div>
+            <div class="mb-2" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218); padding:10px;">
+                <label>Email:</label>
+                <InputText class="form-control" style="background-color:rgba(0, 0, 0, 0.25); color:rgb(218, 218, 218); border:none;" @bind-Value="datos.EmailCliente" required />
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-danger" type="button" @onclick="CancelarCompra" style="background-color:rgba(255, 0, 0, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+                    Cancelar compra
+                </button>
+                <button class="btn btn-success" type="submit" style="background-color:rgba(0, 255, 64, 0.25); color:rgb(218, 218, 218); border:1px solid rgb(218, 218, 218);">
+                    Confirmar compra
+                </button>
+            </div>
+        </EditForm>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger mt-2">@error</div>
+        }
+    }
+</div>
+
+@code {
+    private List<ItemCompra> items;
+    private List<Producto> productos;
+    private RequisitosCompra datos = new();
+    private bool cargando = true;
+    private bool compraExitosa = false;
+    private string error;
+    private Compra comprobante;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync();
+        items = await ApiService.ObtenerCarritoAsync();
+        cargando = false;
+    }
+
+    private string ObtenerNombreProducto(int productoId)
+    {
+        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+        return producto?.Nombre ?? $"ID {productoId}";
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        error = null;
+        try
+        {
+            comprobante = await ApiService.ConfirmarCompraAsync(datos);
+            compraExitosa = true;
+            items = new();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+
+    private void VolverAlCatalogo()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    private async Task CancelarCompra()
+    {
+        await ApiService.VaciarCarritoAsync();
+        NavigationManager.NavigateTo("/");
+    }
+}
