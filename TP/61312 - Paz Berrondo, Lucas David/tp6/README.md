@@ -474,3 +474,28 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 - Documentación adicional
 
 **La aplicación está lista para ser usada y demostrada** 🎊
+
+---
+
+## 🐛 **FIX IMPLEMENTADO: Manejo de Carritos Expirados**
+
+### **Problema identificado:**
+Cuando se reinicia el servidor, los carritos temporales (almacenados en memoria) se pierden, pero el cliente mantiene el ID del carrito anterior en localStorage, causando errores 404.
+
+### **Solución implementada:**
+1. **Verificación de existencia**: Nuevo método `CarritoExisteAsync()` en ApiService
+2. **Auto-recuperación**: Si el carrito no existe, se limpia localStorage y se crea uno nuevo automáticamente
+3. **Manejo robusto de errores 404**: Detección específica de carritos inexistentes
+4. **Reintento automático**: Si falla agregar producto, intenta recrear carrito y agregar nuevamente
+5. **Navegación inteligente**: En página de carrito, si no existe el carrito, redirige al catálogo
+
+### **Archivos modificados:**
+- `cliente/Services/ApiService.cs`: Manejo mejorado de errores 404, nuevo método CarritoExisteAsync
+- `cliente/Pages/Home.razor`: Auto-recreación de carrito en InicializarCarrito y AgregarAlCarrito  
+- `cliente/Pages/Carrito.razor`: Verificación de existencia y redirección automática
+
+### **Comportamiento actual:**
+✅ **Primera ejecución**: Crea carrito, agrega productos normalmente
+✅ **Reinicio de servidor**: Detecta carrito inexistente, crea uno nuevo automáticamente  
+✅ **Experiencia de usuario**: Sin interrupciones, mensajes informativos en consola
+✅ **Robustez**: Manejo completo de errores de conectividad

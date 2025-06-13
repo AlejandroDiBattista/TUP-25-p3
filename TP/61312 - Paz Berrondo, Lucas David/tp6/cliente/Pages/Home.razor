@@ -191,22 +191,33 @@
     {
         await InicializarCarrito();
         await CargarProductos();
-    }
-
-    private async Task InicializarCarrito()
+    }    private async Task InicializarCarrito()
     {
         // Intentar recuperar carrito existente del localStorage
         try
         {
             carritoId = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "carritoId");
             
-            // Si no hay carrito, crear uno nuevo
+            // Si hay un carrito guardado, verificar que aún existe en el servidor
+            if (!string.IsNullOrEmpty(carritoId))
+            {
+                var carritoExiste = await ApiService.CarritoExisteAsync(carritoId);
+                if (!carritoExiste)
+                {
+                    Console.WriteLine($"⚠️ Carrito {carritoId} ya no existe en el servidor, creando uno nuevo...");
+                    carritoId = null;
+                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                }
+            }
+            
+            // Si no hay carrito o el anterior no existe, crear uno nuevo
             if (string.IsNullOrEmpty(carritoId))
             {
                 carritoId = await ApiService.CrearCarritoAsync();
                 if (!string.IsNullOrEmpty(carritoId))
                 {
                     await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
+                    Console.WriteLine($"✅ Nuevo carrito creado: {carritoId}");
                 }
             }
             
@@ -288,9 +299,7 @@
         {
             cantidadesSeleccionadas[productoId]--;
         }
-    }
-
-    private async Task AgregarAlCarrito(ProductoDto producto)
+    }    private async Task AgregarAlCarrito(ProductoDto producto)
     {
         if (string.IsNullOrEmpty(carritoId))
         {
@@ -313,8 +322,31 @@
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", 
-                    "❌ Error al agregar el producto al carrito");
+                // El carrito puede no existir, intentar recrearlo
+                Console.WriteLine("⚠️ Error al agregar producto, intentando recrear carrito...");
+                await InicializarCarrito();
+                
+                if (!string.IsNullOrEmpty(carritoId))
+                {
+                    // Intentar agregar nuevamente con el carrito recreado
+                    exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
+                    if (exito)
+                    {
+                        await ActualizarContadorCarrito();
+                        await JSRuntime.InvokeVoidAsync("alert", 
+                            $"✅ {producto.Nombre} agregado al carrito (Cantidad: {cantidad})");
+                    }
+                    else
+                    {
+                        await JSRuntime.InvokeVoidAsync("alert", 
+                            "❌ Error al agregar el producto al carrito");
+                    }
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", 
+                        "❌ No se pudo crear un carrito. Intenta recargar la página.");
+                }
             }
         }
         catch (Exception ex)
@@ -326,22 +358,32 @@
         {
             agregandoProducto = false;
         }
-    }
-
-    private async Task ActualizarContadorCarrito()
+    }    private async Task ActualizarContadorCarrito()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
         
         try
         {
             var carrito = await ApiService.ObtenerCarritoAsync(carritoId);
-            totalItemsCarrito = carrito?.TotalItems ?? 0;
+            if (carrito == null)
+            {
+                // El carrito no existe, limpiar localStorage y resetear contador
+                Console.WriteLine("⚠️ Carrito no encontrado al actualizar contador, limpiando localStorage");
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = null;
+                totalItemsCarrito = 0;
+            }
+            else
+            {
+                totalItemsCarrito = carrito.TotalItems;
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al actualizar contador del carrito: {ex.Message}");
+            totalItemsCarrito = 0;
         }
-    }    private async Task IrAlCarrito()
+    }private async Task IrAlCarrito()
     {
         if (string.IsNullOrEmpty(carritoId))
         {

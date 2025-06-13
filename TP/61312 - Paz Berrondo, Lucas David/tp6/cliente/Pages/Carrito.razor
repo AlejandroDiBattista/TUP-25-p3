@@ -268,9 +268,7 @@
     {
         await InicializarCarrito();
         await CargarCarrito();
-    }
-
-    private async Task InicializarCarrito()
+    }    private async Task InicializarCarrito()
     {
         try
         {
@@ -280,6 +278,18 @@
             {
                 error = "No se encontró un carrito activo. Redirigiendo al catálogo...";
                 await Task.Delay(2000);
+                VolverAlCatalogo();
+                return;
+            }
+
+            // Verificar que el carrito existe en el servidor
+            var carritoExiste = await ApiService.CarritoExisteAsync(carritoId);
+            if (!carritoExiste)
+            {
+                Console.WriteLine($"⚠️ Carrito {carritoId} no existe en el servidor");
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                error = "El carrito ha expirado. Redirigiendo al catálogo para crear uno nuevo...";
+                await Task.Delay(3000);
                 VolverAlCatalogo();
             }
         }

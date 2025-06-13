@@ -114,9 +114,7 @@ public class ApiService
             Console.WriteLine($"❌ Error al crear carrito: {ex.Message}");
             return null;
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Obtiene el contenido de un carrito específico.
     /// </summary>
     /// <param name="carritoId">ID del carrito</param>
@@ -125,13 +123,16 @@ public class ApiService
     {
         try 
         {
-            return await _httpClient.GetFromJsonAsync<CarritoDto>($"/api/carritos/{carritoId}", _jsonOptions);
+            var response = await _httpClient.GetAsync($"/api/carritos/{carritoId}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine($"⚠️ Carrito {carritoId} no encontrado (404)");
+                return null;
+            }
+            
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<CarritoDto>(_jsonOptions);
         } 
-        catch (HttpRequestException ex) when (ex.Message.Contains("404"))
-        {
-            Console.WriteLine($"⚠️ Carrito {carritoId} no encontrado");
-            return null;
-        }
         catch (Exception ex) 
         {
             Console.WriteLine($"❌ Error al obtener carrito {carritoId}: {ex.Message}");
@@ -156,15 +157,13 @@ public class ApiService
             Console.WriteLine($"❌ Error al vaciar carrito {carritoId}: {ex.Message}");
             return false;
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Agrega o actualiza un producto en el carrito.
     /// </summary>
     /// <param name="carritoId">ID del carrito</param>
     /// <param name="productoId">ID del producto</param>
     /// <param name="cantidad">Cantidad del producto</param>
-    /// <returns>True si se agregó exitosamente</returns>
+    /// <returns>True si se agregó exitosamente, False si el carrito no existe</returns>
     public async Task<bool> AgregarProductoAlCarritoAsync(string carritoId, int productoId, int cantidad)
     {
         try 
@@ -174,6 +173,13 @@ public class ApiService
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
             var response = await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}", content);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine($"⚠️ Carrito {carritoId} no encontrado al agregar producto {productoId}");
+                return false;
+            }
+            
             return response.IsSuccessStatusCode;
         } 
         catch (Exception ex) 
@@ -232,6 +238,25 @@ public class ApiService
         {
             Console.WriteLine($"❌ Error al confirmar compra del carrito {carritoId}: {ex.Message}");
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Verifica si un carrito existe en el servidor.
+    /// </summary>
+    /// <param name="carritoId">ID del carrito a verificar</param>
+    /// <returns>True si el carrito existe, False si no</returns>
+    public async Task<bool> CarritoExisteAsync(string carritoId)
+    {
+        try 
+        {
+            var response = await _httpClient.GetAsync($"/api/carritos/{carritoId}");
+            return response.IsSuccessStatusCode;
+        } 
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"❌ Error al verificar carrito {carritoId}: {ex.Message}");
+            return false;
         }
     }
 
