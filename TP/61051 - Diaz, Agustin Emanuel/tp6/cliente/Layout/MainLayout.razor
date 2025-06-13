@@ -1,5 +1,5 @@
 ﻿@using cliente.Services
-@inherits LayoutView
+@inherits LayoutComponentBase 
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @implements IDisposable
@@ -36,10 +36,13 @@
     private string terminoBusqueda = "";
     private int cantidadItems = 0;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        ApiService.OnCarritoActualizado += ActualizarContadorCarrito;
-        await ActualizarContadorCarrito();
+        if (firstRender)
+        {
+            ApiService.OnCarritoActualizado += () => InvokeAsync(ActualizarContadorCarrito);
+            await ActualizarContadorCarrito();
+        }
     }
 
     private async Task ActualizarContadorCarrito()
@@ -70,7 +73,7 @@
         }
     }
 
-    private async Task OnBusquedaKeyPress(KeyboardEventArgs e)
+    private void OnBusquedaKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
@@ -80,6 +83,6 @@
 
     public void Dispose()
     {
-        ApiService.OnCarritoActualizado -= ActualizarContadorCarrito;
+        ApiService.OnCarritoActualizado -= () => InvokeAsync(ActualizarContadorCarrito);
     }
 }

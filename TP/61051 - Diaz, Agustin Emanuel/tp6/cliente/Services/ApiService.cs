@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using cliente.Models;
+using cliente;
 
 namespace cliente.Services
 {
@@ -90,7 +90,6 @@ namespace cliente.Services
         if (carrito == null || !carrito.Items.Any())
           return carrito;
 
-        // Obtener todos los productos para completar la información del carrito
         var productos = await ObtenerProductosAsync();
 
         foreach (var item in carrito.Items)
@@ -111,7 +110,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/{productoId}", cantidad);
+        var response = await _httpClient.PutAsJsonAsync($"/carrito/{carritoId}/{productoId}", cantidad);
 
         if (response.IsSuccessStatusCode)
         {
@@ -131,7 +130,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+        var response = await _httpClient.DeleteAsync($"/carrito/{carritoId}/{productoId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -175,7 +174,7 @@ namespace cliente.Services
 
         if (response.IsSuccessStatusCode)
         {
-          _carritoId = null; // Reset del carrito
+          _carritoId = null;
           OnCarritoActualizado?.Invoke();
           return true;
         }
@@ -202,11 +201,11 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datosCompra);
+        var response = await _httpClient.PutAsJsonAsync($"/carrito/{carritoId}/confirmar", datosCompra);
 
         if (response.IsSuccessStatusCode)
         {
-          _carritoId = null; // Reset del carrito después de la compra
+          _carritoId = null; 
           OnCarritoActualizado?.Invoke();
           return true;
         }
@@ -278,6 +277,7 @@ namespace cliente.Services
 
     #endregion
   }
+
   public class CompraResumen
   {
     public int Id { get; set; }
@@ -351,5 +351,3 @@ public class Compra
     public string EmailCliente { get; set; } = string.Empty;
 }
 }
-
-
