@@ -279,43 +279,77 @@ namespace cliente.Services
     #endregion
   }
   public class CompraResumen
-    {
-        public int Id { get; set; }
-        public DateTime Fecha { get; set; }
-        public decimal Total { get; set; }
-        public ClienteInfo Cliente { get; set; } = new();
-        public List<ProductoCompra> Productos { get; set; } = new();
-    }
+  {
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public ClienteInfo Cliente { get; set; } = new();
+    public List<ProductoCompra> Productos { get; set; } = new();
+  }
 
-    public class CompraDetalle
-    {
-        public int Id { get; set; }
-        public DateTime Fecha { get; set; }
-        public decimal Total { get; set; }
-        public ClienteInfo Cliente { get; set; } = new();
-        public List<ProductoCompra> Productos { get; set; } = new();
-    }
+  public class CompraDetalle
+  {
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public ClienteInfo Cliente { get; set; } = new();
+    public List<ProductoCompra> Productos { get; set; } = new();
+  }
 
-    public class ClienteInfo
-    {
-        public string NombreCliente { get; set; } = string.Empty;
-        public string ApellidoCliente { get; set; } = string.Empty;
-        public string EmailCliente { get; set; } = string.Empty;
-    }
+  public class ClienteInfo
+  {
+    public string NombreCliente { get; set; } = string.Empty;
+    public string ApellidoCliente { get; set; } = string.Empty;
+    public string EmailCliente { get; set; } = string.Empty;
+  }
 
-    public class ProductoCompra
-    {
-        public string Producto { get; set; } = string.Empty;
-        public int Cantidad { get; set; }
-        public decimal PrecioUnitario { get; set; }
-        public decimal Subtotal { get; set; }
-    }
+  public class ProductoCompra
+  {
+    public string Producto { get; set; } = string.Empty;
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+    public decimal Subtotal { get; set; }
+  }
 
-    public class ApiDatos
-    {
-        public string Mensaje { get; set; } = string.Empty;
-        public DateTime Fecha { get; set; }
-    }
+  public class ApiDatos
+  {
+    public string Mensaje { get; set; } = string.Empty;
+    public DateTime Fecha { get; set; }
+  }
+    
+  public class Producto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string Descripcion { get; set; } = string.Empty;
+    public decimal Precio { get; set; }
+    public int Stock { get; set; }
+    public string ImagenUrl { get; set; } = string.Empty;
+}
+
+public class Carrito
+{
+    public Guid Id { get; set; }
+    public List<CarritoItem> Items { get; set; } = new();
+    public decimal Total => Items.Sum(i => i.Subtotal);
+    public int TotalItems => Items.Sum(i => i.Cantidad);
+}
+
+public class CarritoItem
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+    public decimal Subtotal => Cantidad * PrecioUnitario;
+    public Producto? Producto { get; set; }
+}
+
+public class Compra
+{
+    public string NombreCliente { get; set; } = string.Empty;
+    public string ApellidoCliente { get; set; } = string.Empty;
+    public string EmailCliente { get; set; } = string.Empty;
+}
 }
 
 

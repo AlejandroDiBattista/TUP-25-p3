@@ -346,7 +346,6 @@
             {
                 await JSRuntime.InvokeVoidAsync("alert", $"¡{producto.Nombre} agregado al carrito!");
                 
-                // Opcional: redirigir al carrito
                 Navigation.NavigateTo("/carrito");
             }
             else

@@ -1,0 +1,668 @@
+@page "/carrito"
+@using cliente.Models
+@using cliente.Services
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="carrito-container">
+    @if (cargando)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Cargando carrito...</p>
+        </div>
+    }
+    else if (carrito == null || !carrito.Items.Any())
+    {
+        <div class="carrito-vacio">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Tu carrito está vacío</h2>
+            <p>¡Agrega algunos productos para comenzar!</p>
+            <button class="btn-continuar-comprando" @onclick="IrACatalogo">
+                Continuar Comprando
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="carrito-header">
+            <h1 class="carrito-titulo">Mi Carrito</h1>
+            <p class="carrito-subtitulo">@carrito.TotalItems elemento(s) en tu carrito</p>
+        </div>
+
+        <div class="carrito-content">
+            <div class="carrito-items">
+                @foreach (var item in carrito.Items)
+                {
+                    <div class="carrito-item">
+                        <div class="item-imagen">
+                            <img src="@(item.Producto?.ImagenUrl ?? "https://via.placeholder.com/120x80?text=Sin+Imagen")" 
+                                 alt="@(item.Producto?.Nombre ?? "Producto")" />
+                        </div>
+                        
+                        <div class="item-info">
+                            <h3 class="item-nombre">@(item.Producto?.Nombre ?? "Producto no disponible")</h3>
+                            <p class="item-descripcion">@(item.Producto?.Descripcion ?? "")</p>
+                            <p class="item-stock">Stock disponible: @(item.Producto?.Stock ?? 0)</p>
+                        </div>
+                        
+                        <div class="item-controles">
+                            <div class="cantidad-controles">
+                                <button class="btn-cantidad" 
+                                        @onclick="() => DisminuirCantidad(item)"
+                                        disabled="@(modificandoItem == item.ProductoId)">
+                                    -
+                                </button>
+                                <span class="cantidad-actual">@item.Cantidad</span>
+                                <button class="btn-cantidad" 
+                                        @onclick="() => AumentarCantidad(item)"
+                                        disabled="@(modificandoItem == item.ProductoId || item.Cantidad >= (item.Producto?.Stock ?? 0))">
+                                    +
+                                </button>
+                            </div>
+                            
+                            <div class="item-precios">
+                                <div class="precio-unitario">$@item.PrecioUnitario.ToString("N0") c/u</div>
+                                <div class="precio-subtotal">$@item.Subtotal.ToString("N0")</div>
+                            </div>
+                            
+                            <button class="btn-eliminar" 
+                                    @onclick="() => EliminarItem(item)"
+                                    disabled="@(modificandoItem == item.ProductoId)">
+                                @if (modificandoItem == item.ProductoId)
+                                {
+                                    <span class="loading-mini">⏳</span>
+                                }
+                                else
+                                {
+                                    <span>🗑️</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="carrito-resumen">
+                <div class="resumen-card">
+                    <h3>Resumen del Pedido</h3>
+                    
+                    <div class="resumen-linea">
+                        <span>Subtotal (@carrito.TotalItems items):</span>
+                        <span>$@carrito.Total.ToString("N0")</span>
+                    </div>
+                    
+                    <div class="resumen-linea envio">
+                        <span>Envío:</span>
+                        <span>Gratis</span>
+                    </div>
+                    
+                    <div class="resumen-total">
+                        <span>Total:</span>
+                        <span>$@carrito.Total.ToString("N0")</span>
+                    </div>
+                    
+                    <div class="botones-carrito">
+                        <button class="btn-vaciar" 
+                                @onclick="VaciarCarrito"
+                                disabled="@vaciandoCarrito">
+                            @if (vaciandoCarrito)
+                            {
+                                <span>⏳ Vaciando...</span>
+                            }
+                            else
+                            {
+                                <span>🗑️ Vaciar Carrito</span>
+                            }
+                        </button>
+                        
+                        <button class="btn-confirmar-compra" 
+                                @onclick="IrAConfirmacion">
+                            <span>✅ Confirmar Compra</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="btn-continuar-comprando-small" @onclick="IrACatalogo">
+                    ← Continuar Comprando
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .carrito-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: calc(100vh - 100px);
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem;
+        color: white;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .carrito-vacio {
+        text-align: center;
+        color: white;
+        padding: 4rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        margin-top: 2rem;
+    }
+
+    .empty-cart-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.7;
+    }
+
+    .carrito-vacio h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .carrito-vacio p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.8;
+    }
+
+    .carrito-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .carrito-titulo {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .carrito-subtitulo {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .carrito-content {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+    }
+
+    .carrito-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .carrito-item {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: 120px 1fr auto;
+        gap: 1.5rem;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .carrito-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .item-imagen img {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-nombre {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .item-descripcion {
+        color: #7f8c8d;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .item-stock {
+        color: #27ae60;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .item-controles {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .cantidad-controles {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 25px;
+        padding: 0.3rem;
+    }
+
+    .btn-cantidad {
+        width: 35px;
+        height: 35px;
+        border: none;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cantidad:hover:not(:disabled) {
+        transform: scale(1.1);
+    }
+
+    .btn-cantidad:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .cantidad-actual {
+        min-width: 40px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .item-precios {
+        text-align: center;
+    }
+
+    .precio-unitario {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-bottom: 0.3rem;
+    }
+
+    .precio-subtotal {
+        font-size: 1.3rem;
+        font-weight: bold;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .btn-eliminar {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ff4757, #c44569);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-eliminar:hover:not(:disabled) {
+        transform: scale(1.1);
+    }
+
+    .btn-eliminar:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .loading-mini {
+        animation: spin 1s linear infinite;
+    }
+
+    .resumen-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 120px;
+    }
+
+    .resumen-card h3 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        text-align: center;
+    }
+
+    .resumen-linea {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+
+    .resumen-linea.envio {
+        color: #27ae60;
+        font-weight: 600;
+    }
+
+    .resumen-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-top: 2px solid #ecf0f1;
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+    }
+
+    .botones-carrito {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-vaciar {
+        padding: 1rem;
+        border: 2px solid #ff4757;
+        border-radius: 10px;
+        background: transparent;
+        color: #ff4757;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-vaciar:hover:not(:disabled) {
+        background: #ff4757;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-vaciar:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-confirmar-compra {
+        padding: 1rem;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(45deg, #00b894, #00a085);
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-confirmar-compra:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 184, 148, 0.4);
+    }
+
+    .btn-continuar-comprando,
+    .btn-continuar-comprando-small {
+        padding: 1rem 2rem;
+        border: 2px solid white;
+        border-radius: 25px;
+        background: transparent;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-continuar-comprando:hover,
+    .btn-continuar-comprando-small:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .btn-continuar-comprando-small {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .carrito-container {
+            padding: 1rem;
+        }
+
+        .carrito-content {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .carrito-item {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .item-controles {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resumen-card {
+            position: static;
+        }
+    }
+</style>
+
+@code {
+    private Carrito? carrito;
+    private bool cargando = true;
+    private int? modificandoItem = null;
+    private bool vaciandoCarrito = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            carrito = await ApiService.ObtenerCarritoConProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar carrito: {ex.Message}");
+            carrito = null;
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AumentarCantidad(CarritoItem item)
+    {
+        if (item.Producto == null || item.Cantidad >= item.Producto.Stock || modificandoItem == item.ProductoId)
+            return;
+
+        modificandoItem = item.ProductoId;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.AgregarProductoAsync(item.ProductoId, 1);
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al aumentar cantidad: {ex.Message}");
+        }
+        finally
+        {
+            modificandoItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DisminuirCantidad(CarritoItem item)
+    {
+        if (item.Cantidad <= 1 || modificandoItem == item.ProductoId)
+            return;
+
+        modificandoItem = item.ProductoId;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.AgregarProductoAsync(item.ProductoId, -1);
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al disminuir cantidad: {ex.Message}");
+        }
+        finally
+        {
+            modificandoItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task EliminarItem(CarritoItem item)
+    {
+        if (modificandoItem == item.ProductoId)
+            return;
+
+        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", 
+            $"¿Estás seguro de que quieres eliminar {item.Producto?.Nombre} del carrito?");
+        
+        if (!confirmar)
+            return;
+
+        modificandoItem = item.ProductoId;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.EliminarProductoAsync(item.ProductoId);
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al eliminar item: {ex.Message}");
+        }
+        finally
+        {
+            modificandoItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", 
+            "¿Estás seguro de que quieres vaciar todo el carrito?");
+        
+        if (!confirmar)
+            return;
+
+        vaciandoCarrito = true;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.VaciarCarritoAsync();
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al vaciar carrito: {ex.Message}");
+        }
+        finally
+        {
+            vaciandoCarrito = false;
+            StateHasChanged();
+        }
+    }
+
+    private void IrACatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}
