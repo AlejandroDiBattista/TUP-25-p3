@@ -99,9 +99,8 @@
                             <div class="product-card-body">
                                 <h5 class="product-title">@producto.Nombre</h5>
                                 <p class="product-description">@producto.Descripcion</p>
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="product-price">$@producto.Precio.ToString("N0")</span>
+                                  <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="product-price">AR$ @producto.Precio.ToString("N2")</span>
                                     <span class="product-stock @(producto.Stock > 0 ? "stock-available" : "stock-unavailable")">
                                         @(producto.Stock > 0 ? $"Stock: {producto.Stock}" : "Sin stock")
                                     </span>

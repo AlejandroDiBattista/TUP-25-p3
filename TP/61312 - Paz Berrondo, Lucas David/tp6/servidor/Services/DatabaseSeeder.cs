@@ -28,7 +28,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "RTX 5090 Gaming X Trio",
                 Descripcion = "Tarjeta gráfica NVIDIA GeForce RTX 5090 con 32GB GDDR6X. La más potente para gaming 4K y ray tracing. Incluye triple ventilador y RGB.",
-                Precio = 1899.99m,
+                Precio = 1899990.00m,
                 Stock = 5,
                 ImagenUrl = "images/rtx5090.png"
             },
@@ -36,7 +36,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "RTX 4080 Super",
                 Descripcion = "Tarjeta gráfica RTX 4080 Super con 16GB GDDR6X. Excelente para gaming 4K y creación de contenido. Refrigeración avanzada.",
-                Precio = 1199.99m,
+                Precio = 1199990.00m,
                 Stock = 8,
                 ImagenUrl = "images/rtx4080.png"
             },
@@ -44,7 +44,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "AMD Ryzen 7 9800X3D",
                 Descripcion = "Procesador AMD Ryzen 7 9800X3D de 8 núcleos y 16 hilos. Tecnología 3D V-Cache para máximo rendimiento en gaming.",
-                Precio = 699.99m,
+                Precio = 699990.00m,
                 Stock = 12,
                 ImagenUrl = "images/ryzen7-9800x3d.png"
             },
@@ -52,7 +52,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "Intel Core i9-14900K",
                 Descripcion = "Procesador Intel Core i9-14900K de 24 núcleos (8P+16E). Frecuencia hasta 6.0GHz. Ideal para gaming extremo y multitarea.",
-                Precio = 589.99m,
+                Precio = 589990.00m,
                 Stock = 10,
                 ImagenUrl = "images/i9-14900k.png"
             },
@@ -60,7 +60,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "ASUS ROG Strix Z790-E",
                 Descripcion = "Motherboard ASUS ROG Strix Z790-E Gaming WiFi. Socket LGA1700, DDR5, PCIe 5.0, WiFi 6E y RGB Aura Sync.",
-                Precio = 449.99m,
+                Precio = 449990.00m,
                 Stock = 15,
                 ImagenUrl = "images/asus-z790.png"
             },
@@ -68,7 +68,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "G.Skill Trident Z5 DDR5-6000",
                 Descripcion = "Memoria RAM DDR5-6000 32GB (2x16GB) G.Skill Trident Z5 RGB. CL30, optimizada para gaming y overclocking.",
-                Precio = 299.99m,
+                Precio = 299990.00m,
                 Stock = 20,
                 ImagenUrl = "images/gskill-ddr5.webp"
             },
@@ -76,7 +76,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "Samsung 980 PRO NVMe 2TB",
                 Descripcion = "SSD NVMe Samsung 980 PRO de 2TB. Velocidades hasta 7000MB/s. Perfecto para gaming y carga rápida de juegos.",
-                Precio = 199.99m,
+                Precio = 199990.00m,
                 Stock = 25,
                 ImagenUrl = "images/samsung-980pro.png"
             },
@@ -84,7 +84,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "Corsair RM1000x 80+ Gold",
                 Descripcion = "Fuente de poder Corsair RM1000x de 1000W, 80+ Gold, totalmente modular. Ventilador de 135mm ultra silencioso.",
-                Precio = 189.99m,
+                Precio = 189990.00m,
                 Stock = 18,
                 ImagenUrl = "images/corsair-rm1000x.png"
             },
@@ -92,7 +92,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "NZXT Kraken X73 AIO",
                 Descripcion = "Sistema de refrigeración líquida NZXT Kraken X73 de 360mm. Bomba RGB, 3 ventiladores de 120mm y software CAM.",
-                Precio = 229.99m,
+                Precio = 229990.00m,
                 Stock = 12,
                 ImagenUrl = "images/nzxt-kraken-x73.png"
             },
@@ -100,7 +100,7 @@ public static class DatabaseSeeder
             {
                 Nombre = "ASUS ROG Swift PG32UQX",
                 Descripcion = "Monitor gaming ASUS ROG Swift de 32\" 4K 144Hz. Mini LED, HDR1400, G-SYNC Ultimate. La experiencia gaming definitiva.",
-                Precio = 2999.99m,
+                Precio = 2999990.00m,
                 Stock = 3,
                 ImagenUrl = "images/asus-pg32uqx.png"
             }

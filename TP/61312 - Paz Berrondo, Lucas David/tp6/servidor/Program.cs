@@ -54,7 +54,7 @@ app.MapGet("/", () => "Servidor API de Tienda Online está en funcionamiento");
 /// <summary>
 /// Endpoint para obtener todos los productos o buscar por nombre.
 /// GET /api/productos - Obtiene todos los productos
-/// GET /api/productos?buscar=iphone - Busca productos que contengan "iphone" en el nombre
+/// GET /api/productos?buscar=rtx - Busca productos que contengan "rtx" en el nombre
 /// </summary>
 app.MapGet("/api/productos", async (TiendaContext context, string? buscar) =>
 {

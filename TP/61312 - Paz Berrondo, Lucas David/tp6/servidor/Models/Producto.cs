@@ -13,7 +13,7 @@ public class Producto
 
     /// <summary>
     /// Nombre del producto que se mostrará al cliente.
-    /// Ejemplo: "iPhone 15 Pro", "Samsung Galaxy S24"
+    /// Ejemplo: "rtx 5090 15", "Samsung m2"
     /// </summary>
     public string Nombre { get; set; } = string.Empty;
 
