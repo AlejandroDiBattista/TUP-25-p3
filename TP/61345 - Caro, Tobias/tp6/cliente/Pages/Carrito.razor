@@ -4,51 +4,88 @@
 @inject ApiService ApiService
 @inject IJSRuntime JS
 
-<PageTitle>Carrito</PageTitle>
+<PageTitle>Carrito de Compras</PageTitle>
 
-<header class="custom-header mb-4">
-    <div class="header-content">
-        <h1 class="store-title">🛒 Mi Carrito</h1>
-    </div>
-</header>
+<div class="cart-container">
+    <header class="cart-header">
+        <div class="cart-title-container">
+            <h1 class="cart-title">
+                Mi Carrito de Compras
+            </h1>
+        </div>
+        <button class="btn btn-outline-primary ms-3" @onclick="RegresarAlMenu">
+            <span class="me-1">←</span> Volver al Menú
+        </button>
+    </header>
 
-@if (!string.IsNullOrEmpty(errorMsg))
-{
-    <div class="alert alert-danger">@errorMsg</div>
-}
-
-@if (items == null)
-{
-    <p>Cargando productos del carrito...</p>
-}
-else if (items.Count == 0)
-{
-    <div class="alert alert-info">El carrito está vacío.</div>
-}
-else
-{
-    <div class="list-group">
-        @foreach (var item in items)
+    <div class="cart-content">
+        @if (!string.IsNullOrEmpty(errorMsg))
         {
-            <div class="list-group-item d-flex align-items-center bg-light rounded shadow-sm mb-2">
-                <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" style="width: 64px; height: 64px; object-fit: cover; margin-right: 1rem; border-radius: 8px; border: 1px solid #ddd;" />
-                <div class="flex-grow-1">
-                    <div class="fw-bold fs-5">@item.Producto?.Nombre</div>
-                    <div class="text-muted">Precio: $@item.PrecioUnitario</div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item, -1)">-</button>
-                    <span class="fs-5 px-2">@item.Cantidad</span>
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item, 1)" disabled="@(item.Cantidad >= (item.Producto?.Stock ?? int.MaxValue))">+</button>
-                </div>
-                <div class="text-end ms-4">
-                    <div class="fw-bold">Subtotal: $@(item.PrecioUnitario * item.Cantidad)</div>
-                </div>
+            <div class="error-alert">
+                <strong>⚠️ Error:</strong> @errorMsg
+            </div>
+        }
+
+        @if (items == null)
+        {
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="text-muted mb-0">Cargando productos del carrito...</p>
+            </div>
+        }
+        else if (items.Count == 0)
+        {
+            <div class="empty-cart">
+                <div class="empty-cart-icon">🛍️</div>
+                <p class="empty-cart-text mb-0">Tu carrito está vacío</p>
+                <small class="text-muted">¡Agrega algunos productos para comenzar!</small>
+            </div>
+        }
+        else
+        {
+            <div class="cart-items">
+                @foreach (var item in items)
+                {
+                    <div class="cart-item d-flex align-items-center">
+                        <img src="@item.Producto?.ImagenUrl" 
+                             alt="@item.Producto?.Nombre" 
+                             class="product-image" />
+                        
+                        <div class="product-info">
+                            <div class="product-name">@item.Producto?.Nombre</div>
+                            <div class="product-price">Precio unitario: $@item.PrecioUnitario</div>
+                        </div>
+                        
+                        <div class="quantity-controls">
+                            <button class="quantity-btn-less" 
+                                    @onclick="() => CambiarCantidad(item, -1)"
+                                    title="Reducir cantidad">
+                                −
+                            </button>
+                            <span class="quantity-display">@item.Cantidad</span>
+                            <button class="quantity-btn" 
+                                    @onclick="() => CambiarCantidad(item, 1)" 
+                                    disabled="@(item.Cantidad >= (item.Producto?.Stock ?? int.MaxValue))"
+                                    title="Aumentar cantidad">
+                                +
+                            </button>
+                        </div>
+                        
+                        <div class="subtotal-section">
+                            <div class="text-muted small">Subtotal</div>
+                            <div class="subtotal-amount">$@(item.PrecioUnitario * item.Cantidad)</div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="total-section">
+                <div class="text-light opacity-75 mb-1">Total del carrito</div>
+                <h2 class="total-amount">$@items.Sum(i => i.PrecioUnitario * i.Cantidad)</h2>
             </div>
         }
     </div>
-    <div class="fw-bold mt-4 fs-4 text-end">Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</div>
-}
+</div>
 
 @code {
     private List<ItemCompra> items;
@@ -101,4 +138,11 @@ else
         }
         await CargarItems();
     }
+
+    private void RegresarAlMenu()
+    {
+        // Redirige a la página principal (Home)
+        NavigationManager.NavigateTo("/");
+    }
+    [Inject] private NavigationManager NavigationManager { get; set; }
 }
