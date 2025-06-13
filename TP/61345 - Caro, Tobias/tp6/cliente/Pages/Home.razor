@@ -37,19 +37,44 @@
     {
         // Intentar obtener el carritoId de localStorage
         var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
-        if (!int.TryParse(idStr, out carritoId) || carritoId == 0)
+        if (!int.TryParse(idStr, out carritoId) || carritoId <= 0)
         {
-            // Si no existe, inicializar uno nuevo
+            // Si no existe o es inválido, inicializar uno nuevo
             carritoId = await ApiService.InicializarCarritoAsync();
             await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
         }
-        // cartCount = await CarritoService.ObtenerCantidad();
-        cartCount = 0; // Cambia esto por lógica real si quieres.
+        if (carritoId > 0)
+        {
+            var cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            if (cantidad == -1) // Carrito no existe en backend
+            {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = await ApiService.InicializarCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+                cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            }
+            cartCount = cantidad > 0 ? cantidad : 0;
+        }
+        else
+            cartCount = 0;
     }
 
-    private void ActualizarCartCount()
+    private async void ActualizarCartCount()
     {
-        cartCount++;
+        if (carritoId > 0)
+        {
+            var cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            if (cantidad == -1)
+            {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = await ApiService.InicializarCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+                cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            }
+            cartCount = cantidad > 0 ? cantidad : 0;
+        }
+        else
+            cartCount = 0;
         StateHasChanged();
     }
 }

@@ -29,16 +29,16 @@ using (var scope = app.Services.CreateScope())
     {
         db.Productos.AddRange(new[]
         {
-            new Producto { Nombre = "iPhone 14", Descripcion = "Apple iPhone 14 128GB", Precio = 999, Stock = 20, ImagenUrl = " " },
-            new Producto { Nombre = "Samsung Galaxy S22", Descripcion = "Samsung Galaxy S22 5G", Precio = 899, Stock = 15, ImagenUrl = "https://example.com/galaxy.jpg" },
-            new Producto { Nombre = "Coca Cola 2L", Descripcion = "Botella de gaseosa 2L", Precio = 1.99M, Stock = 100, ImagenUrl = "https://example.com/coca.jpg" },
-            new Producto { Nombre = "Auriculares Sony", Descripcion = "Auriculares Bluetooth", Precio = 49.99M, Stock = 30, ImagenUrl = "https://example.com/sony.jpg" },
-            new Producto { Nombre = "Mouse Logitech G502", Descripcion = "Mouse gamer Logitech", Precio = 59.99M, Stock = 25, ImagenUrl = "https://example.com/g502.jpg" },
-            new Producto { Nombre = "Teclado Mecánico", Descripcion = "Teclado retroiluminado RGB", Precio = 79.99M, Stock = 12, ImagenUrl = "https://example.com/teclado.jpg" },
-            new Producto { Nombre = "Notebook Dell", Descripcion = "Laptop Dell Inspiron 15", Precio = 1199, Stock = 10, ImagenUrl = "https://example.com/dell.jpg" },
-            new Producto { Nombre = "Smartwatch Xiaomi", Descripcion = "Reloj inteligente Mi Band", Precio = 39.99M, Stock = 50, ImagenUrl = "https://example.com/xiaomi.jpg" },
-            new Producto { Nombre = "Cargador Anker", Descripcion = "Cargador rápido USB-C", Precio = 29.99M, Stock = 40, ImagenUrl = "https://example.com/anker.jpg" },
-            new Producto { Nombre = "Tablet Lenovo", Descripcion = "Tablet Android 10.1\"", Precio = 199.99M, Stock = 18, ImagenUrl = "https://example.com/lenovo.jpg" },
+            new Producto { Nombre = "Google Pixel 8 Pro", Descripcion = "Google Pixel 8 Pro 128GB - Obsidiana", Precio = 999, Stock = 15, ImagenUrl = "https://celularesindustriales.com.ar/wp-content/uploads/71h9zq4viSL._AC_UF8941000_QL80_.jpg" },
+            new Producto { Nombre = "Google Pixel Watch 2", Descripcion = "Google Pixel Watch 2 con LTE - Plata/Azul Celeste", Precio = 399, Stock = 20, ImagenUrl = "https://http2.mlstatic.com/D_609452-MLU77279991570_072024-C.jpg" },
+            new Producto { Nombre = "Google Pixel Buds Pro", Descripcion = "Google Pixel Buds Pro - Porcelana", Precio = 199, Stock = 25, ImagenUrl = "https://i5.walmartimages.com/seo/Google-Pixel-Buds-Pro-Wireless-Earbuds-with-Active-Noise-Cancellation-Bluetooth-Earbuds-Fog_5f8d8e03-bfe9-4099-994c-cea7552ce02d.9cdcbd2e072b93f0fb8ec60dcfc98ca7.jpeg" },
+            new Producto { Nombre = "Google Nest Hub Max", Descripcion = "Google Nest Hub Max con Asistente de Google", Precio = 229, Stock = 10, ImagenUrl = "https://lh3.googleusercontent.com/uQZNPuGyf7dKvtGZWjoiyGcPg_A44yUS2tx-o2--dyuwp9A1vR4Efh1UF28KKLpGUg=w895" },
+            new Producto { Nombre = "Google Nest Doorbell (Batería)", Descripcion = "Google Nest Doorbell con batería", Precio = 179, Stock = 12, ImagenUrl = "https://i5.walmartimages.com/seo/Google-Nest-Doorbell-Battery-Video-Doorbell-Camera-Wireless-Doorbell-Security-Camera-Snow_807fb01e-45c2-43b7-815c-69a78955ee7f.aacdb8a51e4600aabdfdddb3d729343c.jpeg" },
+            new Producto { Nombre = "Google Chromecast con Google TV (4K)", Descripcion = "Chromecast con Google TV - Nieve", Precio = 49, Stock = 30, ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_820731-MEC49046529482_022022-O.webp" },
+            new Producto { Nombre = "Google Nest Mini", Descripcion = "Google Nest Mini (2da gen.) - Tiza", Precio = 49, Stock = 40, ImagenUrl = "https://www.cdmarket.com.ar/image/0/1000_1300-nestmininegro.jpg" },
+            new Producto { Nombre = "Google Wifi (Pack de 3)", Descripcion = "Sistema Wi-Fi en malla Google Wifi (3 unidades)", Precio = 199, Stock = 8, ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_890254-MLA32739750061_112019-O.webp" },
+            new Producto { Nombre = "Fitbit Charge 6", Descripcion = "Fitbit Charge 6 - Negro Obsidiana", Precio = 159, Stock = 18, ImagenUrl = "https://m.media-amazon.com/images/I/61ZtqtvoD2L.jpg" },
+            new Producto { Nombre = "Google Pixel Tablet", Descripcion = "Google Pixel Tablet con base de carga y altavoz", Precio = 499, Stock = 7, ImagenUrl = "https://storage.googleapis.com/support-kms-prod/DwjEEz9EqLvL0HHbIZsdtjj2uMWg5KttRFxa" }
         });
         db.SaveChanges();
     }
@@ -83,7 +83,8 @@ app.MapGet("/carritos/{carritoId}", async (AppDbContext db, int carritoId) =>
                 i.Producto.Nombre,
                 i.Producto.Descripcion,
                 i.Producto.ImagenUrl,
-                i.Producto.Precio
+                i.Producto.Precio,
+                Stock = i.Producto.Stock
             },
             i.Cantidad,
             i.PrecioUnitario
@@ -146,7 +147,7 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (AppDbContext db, int car
     }
     else
     {
-        item.Cantidad += cantidad;
+        item.Cantidad = cantidad;
     }
     await db.SaveChangesAsync();
     return Results.Ok();
@@ -162,6 +163,15 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", async (AppDbContext db, int 
     db.ItemsCompra.Remove(item);
     await db.SaveChangesAsync();
     return Results.Ok();
+});
+
+// GET /carritos/{carritoId}/cantidad → Devuelve la cantidad total de productos en el carrito
+app.MapGet("/carritos/{carritoId}/cantidad", async (AppDbContext db, int carritoId) =>
+{
+    var carrito = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (carrito == null) return Results.NotFound();
+    int cantidad = carrito.Items.Sum(i => i.Cantidad);
+    return Results.Ok(cantidad);
 });
 
 app.Run();

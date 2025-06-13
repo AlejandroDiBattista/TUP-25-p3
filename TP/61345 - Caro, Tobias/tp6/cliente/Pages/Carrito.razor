@@ -6,7 +6,16 @@
 
 <PageTitle>Carrito</PageTitle>
 
-<h2 class="mb-4">Productos en el carrito</h2>
+<header class="custom-header mb-4">
+    <div class="header-content">
+        <h1 class="store-title">🛒 Mi Carrito</h1>
+    </div>
+</header>
+
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
 
 @if (items == null)
 {
@@ -21,25 +30,30 @@ else
     <div class="list-group">
         @foreach (var item in items)
         {
-            <div class="list-group-item d-flex align-items-center">
-                <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" style="width: 64px; height: 64px; object-fit: cover; margin-right: 1rem;" />
+            <div class="list-group-item d-flex align-items-center bg-light rounded shadow-sm mb-2">
+                <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" style="width: 64px; height: 64px; object-fit: cover; margin-right: 1rem; border-radius: 8px; border: 1px solid #ddd;" />
                 <div class="flex-grow-1">
-                    <div class="fw-bold">@item.Producto?.Nombre</div>
-                    <div class="text-muted">Cantidad: @item.Cantidad</div>
+                    <div class="fw-bold fs-5">@item.Producto?.Nombre</div>
+                    <div class="text-muted">Precio: $@item.PrecioUnitario</div>
                 </div>
-                <div class="text-end">
-                    <div>Precio: $@item.PrecioUnitario</div>
-                    <div>Subtotal: $@(item.PrecioUnitario * item.Cantidad)</div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item, -1)">-</button>
+                    <span class="fs-5 px-2">@item.Cantidad</span>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item, 1)" disabled="@(item.Cantidad >= (item.Producto?.Stock ?? int.MaxValue))">+</button>
+                </div>
+                <div class="text-end ms-4">
+                    <div class="fw-bold">Subtotal: $@(item.PrecioUnitario * item.Cantidad)</div>
                 </div>
             </div>
         }
     </div>
-    <div class="fw-bold mt-3">Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</div>
+    <div class="fw-bold mt-4 fs-4 text-end">Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</div>
 }
 
 @code {
     private List<ItemCompra> items;
     private int carritoId;
+    private string errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,13 +63,42 @@ else
             items = new List<ItemCompra>();
             return;
         }
+        await CargarItems();
+    }
+
+    private async Task CargarItems()
+    {
         try
         {
             items = await ApiService.ObtenerItemsCarritoAsync(carritoId);
         }
-        catch (Exception ex)
+        catch
         {
             items = new List<ItemCompra>();
         }
+        StateHasChanged();
+    }
+
+    private async Task CambiarCantidad(ItemCompra item, int delta)
+    {
+        errorMsg = string.Empty;
+        if (delta == 0) return;
+        int nuevaCantidad = item.Cantidad + delta;
+        if (nuevaCantidad < 1)
+        {
+            await ApiService.EliminarDelCarrito(carritoId, item.Producto.Id);
+        }
+        else
+        {
+            try
+            {
+                await ApiService.AgregarAlCarrito(carritoId, item.Producto.Id, nuevaCantidad);
+            }
+            catch (HttpRequestException ex)
+            {
+                errorMsg = "No hay stock suficiente para este producto.";
+            }
+        }
+        await CargarItems();
     }
 }

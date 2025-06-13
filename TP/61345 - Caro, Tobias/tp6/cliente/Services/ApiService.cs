@@ -63,6 +63,32 @@ public class ApiService {
         throw new Exception("No se pudo obtener el id del carrito");
     }
 
+    public async Task EliminarDelCarrito(int carritoId, int productoId)
+    {
+        var response = await _httpClient.DeleteAsync($"carritos/{carritoId}/{productoId}");
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<int> ObtenerCantidadCarritoAsync(int carritoId)
+    {
+        var response = await _httpClient.GetAsync($"carritos/{carritoId}/cantidad");
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return -1; // Indicador especial para carrito inexistente
+        response.EnsureSuccessStatusCode();
+        var cantidadStr = await response.Content.ReadAsStringAsync();
+        if (int.TryParse(cantidadStr, out int cantidad))
+            return cantidad;
+        // Si viene como JSON: { "value": 3 }
+        try
+        {
+            using var doc = JsonDocument.Parse(cantidadStr);
+            if (doc.RootElement.TryGetProperty("value", out var valueProp))
+                return valueProp.GetInt32();
+        }
+        catch { }
+        return 0;
+    }
+
     public class CompraCarritoRespuesta
     {
         public int Id { get; set; }
