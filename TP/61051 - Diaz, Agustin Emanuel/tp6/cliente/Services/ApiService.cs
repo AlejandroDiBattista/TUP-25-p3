@@ -1,26 +1,45 @@
 using System.Net.Http.Json;
+using System.Text.Json;
+using cliente.Models;
 
-namespace cliente.Services;
-
-public class ApiService {
+namespace cliente.Services
+{
+  public class ApiService
+  {
     private readonly HttpClient _httpClient;
+    private Guid? _carritoId;
 
-    public ApiService(HttpClient httpClient) {
-        _httpClient = httpClient;
+    public event Action? OnCarritoActualizado;
+
+    public ApiService(HttpClient httpClient)
+    {
+      _httpClient = httpClient;
     }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
+    #region Productos
+
+    public async Task<List<Producto>> ObtenerProductosAsync(string? query = null)
+    {
+      try
+      {
+        var url = "/productos";
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+          url += $"?query={Uri.EscapeDataString(query)}";
         }
+
+        var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+        return productos ?? new List<Producto>();
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Error al obtener productos: {ex.Message}");
+        return new List<Producto>();
+      }
     }
+
+    #endregion
+  }
 }
 
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
-}
+
