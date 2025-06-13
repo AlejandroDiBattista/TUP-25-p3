@@ -1,0 +1,81 @@
+@page "/confirmacion"
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
+@inject cliente.Services.ApiService ApiService
+@using System.ComponentModel.DataAnnotations
+
+<h3>Confirmación de compra</h3>
+
+@if (!compraConfirmada)
+{
+    <div class="mb-3">
+        <strong>Total ítems:</strong> @CarritoService.TotalItems() <br />
+        <strong>Importe total:</strong> $@CarritoService.Total()
+    </div>
+    <EditForm Model="@form" OnValidSubmit="OnSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-2">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="@form.Nombre" />
+        </div>
+        <div class="mb-2">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="@form.Apellido" />
+        </div>
+        <div class="mb-2">
+            <label>Email:</label>
+            <InputText class="form-control" @bind-Value="@form.Email" />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+}
+else
+{
+    <div class="alert alert-success">
+        ¡Compra confirmada! Gracias por tu compra.
+    </div>
+    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+}
+
+@code {
+    private CompraForm form = new();
+    private bool compraConfirmada = false;
+
+    private async Task OnSubmit()
+    {
+        var compra = new CompraDTO
+        {
+            Nombre = form.Nombre,
+            Apellido = form.Apellido,
+            Email = form.Email,
+            Items = CarritoService.Items.Select(i => new ItemCompraDTO
+            {
+                ProductoId = i.Producto.Id,
+                NombreProducto = i.Producto.Nombre,
+                PrecioUnitario = i.Producto.Precio,
+                Cantidad = i.Cantidad
+            }).ToList()
+        };
+
+        await ApiService.RegistrarCompraAsync(compra);
+        compraConfirmada = true;
+        CarritoService.Vaciar();
+    }
+
+    private void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/catalogo");
+    }
+
+    public class CompraForm
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; }
+    }
+}

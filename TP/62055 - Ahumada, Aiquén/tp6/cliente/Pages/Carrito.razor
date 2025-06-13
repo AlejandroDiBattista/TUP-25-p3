@@ -1,5 +1,6 @@
 @page "/carrito"
 @inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
 
 <h3>Carrito de compras</h3>
 
@@ -9,15 +10,38 @@
 }
 else
 {
-    <ul>
-        @foreach (var item in CarritoService.Items)
-        {
-            <li>@item.Nombre - $@item.Precio
-                <button class="btn btn-sm btn-danger" @onclick="() => CarritoService.Quitar(item)">Quitar</button>
-            </li>
-        }
-    </ul>
-    <button class="btn btn-warning" @onclick="CarritoService.Vaciar">Vaciar carrito</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio unitario</th>
+                <th>Cantidad</th>
+                <th>Importe</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => CarritoService.Quitar(item.Producto)" disabled="@(item.Cantidad == 1)">-</button>
+                        <span class="mx-2">@item.Cantidad</span>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => CarritoService.Agregar(item.Producto)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                    </td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => CarritoService.Eliminar(item.Producto)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><strong>Total:</strong> $@CarritoService.Total()</p>
+    <button class="btn btn-warning me-2" @onclick="CarritoService.Vaciar">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
 }
 
 @code {
@@ -29,5 +53,10 @@ else
     public void Dispose()
     {
         CarritoService.OnChange -= StateHasChanged;
+    }
+
+    private void ConfirmarCompra()
+    {
+        Navigation.NavigateTo("/confirmacion");
     }
 }

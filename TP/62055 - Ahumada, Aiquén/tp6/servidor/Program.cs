@@ -42,5 +42,11 @@ app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha 
 app.MapGet("/api/productos", async (TiendaDbContext db) =>
     await db.Productos.ToListAsync()
 );
+app.MapPost("/api/compras", async (servidor.Data.TiendaDbContext db, servidor.Models.Compra compra) =>
+{
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
 
 app.Run();
