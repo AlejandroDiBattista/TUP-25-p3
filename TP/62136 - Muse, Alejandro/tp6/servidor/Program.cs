@@ -2,11 +2,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+    options.AddPolicy("AllowClientApp", policy =>
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+              .AllowAnyMethod()
+    );
 });
 
 // Agregar controladores si es necesario

@@ -1,59 +1,140 @@
-﻿@page "/"
+@page "/"
+@using Compartido
 @using cliente.Services
+@using System.Linq
 @inject ApiService ApiService
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager NavigationManager
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <input type="text" class="form-control" placeholder="Buscar productos..." @bind="searchTerm" @oninput="BuscarProductos" />
         </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary w-100" @onclick="BuscarProductosManual">Buscar</button>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+    @if (productos == null && !cargando && string.IsNullOrEmpty(error))
+    {
+        <p><em>Cargando productos...</em></p>
+    }
+    else if (cargando)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    else if (productos?.Any() == true)
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var producto in productos)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="@(!string.IsNullOrWhiteSpace(producto.ImagenUrl) ? producto.ImagenUrl : "https://via.placeholder.com/300x200.png?text=Sin+Imagen")" class="card-img-top" alt="@producto.Nombre" style="max-height:200px;object-fit:contain;padding-top:10px;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text flex-grow-1">@producto.Descripcion</p>
+                            <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
+                            <p class="card-text"><strong>Stock:</strong> @(producto.Stock>0?producto.Stock.ToString():"Agotado")</p>
+                            <button class="btn btn-success mt-auto" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@(producto.Stock<=0)">
+                                <i class="fas fa-cart-plus"></i> Agregar al carrito
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
+    else
+    {
+        <p>No se encontraron productos.</p>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private string? searchTerm;
+    private Producto[]? productos;
+    private string? error;
+    private bool cargando;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        await HandleLocationAsync(NavigationManager.Uri);
     }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+        => await InvokeAsync(() => HandleLocationAsync(args.Location));
+
+    private async Task HandleLocationAsync(string uri)
+    {
+
+        if (uri.Contains("?"))
+        {
+            var qs = uri.Split('?', 2)[1];
+            var param = qs.Split('&').FirstOrDefault(p => p.StartsWith("search="));
+            searchTerm = param!=null? Uri.UnescapeDataString(param.Split('=',2)[1]) : null;
+        }
+        else
+        {
+            searchTerm = null;
+        }
+        await CargarProductosAsync(searchTerm);
+    }
+
+    private async Task CargarProductosAsync(string? busqueda)
+    {
+        cargando = true;
+        error = null;
+        try
+        {
+            productos = await ApiService.GetProductosAsync(busqueda);
+        }
+        catch (Exception ex)
+        {
+            error = $"Error al cargar productos: {ex.Message}";
+            Console.WriteLine(ex);
+        }
+        finally { cargando = false; }
+    }
+
+    private async Task BuscarProductos(ChangeEventArgs _) => await CargarProductosAsync(searchTerm);
+
+    private void BuscarProductosManual()
+    {
+        var query = string.IsNullOrEmpty(searchTerm) ? string.Empty : $"?search={Uri.EscapeDataString(searchTerm)}";
+        NavigationManager.NavigateTo($"/{query}");
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        error = null;
+        try
+        {
+            var seleccionado = productos?.FirstOrDefault(p=>p.Id==productoId);
+            if (seleccionado==null||seleccionado.Stock<=0)
+            {
+                error="Producto no disponible.";
+                return;
+            }
+            var carritoId = await CarritoStateService.GetCarritoIdAsync();
+            var res = await ApiService.AgregarOActualizarItemCarritoAsync(carritoId,productoId,1);
+            if (res!=null)
+            {
+                await CarritoStateService.ActualizarCantidadItems();
+
+            }
+            else error="Error al agregar el producto.";
+        }
+        catch(Exception ex){ error=$"Error: {ex.Message}"; Console.WriteLine(ex); }
+    }
+
+    public void Dispose() => NavigationManager.LocationChanged -= OnLocationChanged;
 }

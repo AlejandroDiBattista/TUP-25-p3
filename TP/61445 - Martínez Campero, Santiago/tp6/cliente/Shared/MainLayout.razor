@@ -1,0 +1,54 @@
+@using cliente.Services
+@using Microsoft.AspNetCore.Components
+
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager NavigationManager
+
+<header class="bg-light border-bottom fixed-top">
+  <div class="container d-flex align-items-center py-2">
+    <a class="navbar-brand me-4" href="/" @onclick:preventDefault="true" @onclick="GoHome" style="cursor:pointer;">
+      <!-- Logo enlarged to 80px height -->
+      <img src="/miLogo.png" alt="Mi Logo" style="height:80px;" />
+    </a>
+    <input type="text" class="form-control me-auto" placeholder="Buscar productos..." @bind="searchTerm" @oninput="PerformSearch" />
+    <a class="nav-link text-dark ms-3" href="/carrito">
+      <i class="bi bi-cart-fill fs-4"></i>
+      <span class="badge bg-danger">@CarritoStateService.CantidadItems</span>
+    </a>
+  </div>
+</header>
+
+<div class="page" style="padding-top: 80px;">
+    @Body
+</div>
+
+@code {
+    private string? searchTerm;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        CarritoStateService.OnChange += StateHasChanged;
+        await CarritoStateService.InicializarAsync();
+    }
+
+    public void Dispose()
+    {
+        CarritoStateService.OnChange -= StateHasChanged;
+    }
+
+    private void PerformSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString();
+        var url = string.IsNullOrWhiteSpace(searchTerm) ? "/" : $"/?search={Uri.EscapeDataString(searchTerm)}";
+        NavigationManager.NavigateTo(url);
+    }
+
+    private void GoHome()
+    {
+
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}
