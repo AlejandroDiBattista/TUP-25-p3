@@ -75,19 +75,34 @@ public static class CarritoEndpoints
     return Results.Ok();
   });
 
-   app.MapDelete("/carritos/{carritoId}/{productoId}", async (Guid carritoId, int productoId, TiendaContext db) =>
+    app.MapDelete("/carritos/{carritoId}/{productoId}", async (Guid carritoId, int productoId, TiendaContext db) =>
+ {
+   var item = await db.ItemsCarrito
+      .FirstOrDefaultAsync(ic => ic.CarritoId == carritoId && ic.ProductoId == productoId);
+
+   if (item is null)
+     return Results.NotFound("El producto no está en el carrito");
+
+   db.ItemsCarrito.Remove(item);
+   await db.SaveChangesAsync();
+
+   return Results.Ok("Producto eliminado del carrito");
+ });
+
+   app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaContext db) =>
 {
-    var item = await db.ItemsCarrito
-        .FirstOrDefaultAsync(ic => ic.CarritoId == carritoId && ic.ProductoId == productoId);
+    var carrito = await db.Carritos
+        .Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (item is null)
-        return Results.NotFound("El producto no está en el carrito");
+    if (carrito is null)
+        return Results.NotFound("Carrito no encontrado");
 
-    db.ItemsCarrito.Remove(item);
+    carrito.Items.Clear();
     await db.SaveChangesAsync();
 
-    return Results.Ok("Producto eliminado del carrito");
+    return Results.Ok("Carrito vaciado correctamente");
 });
-
+   
   }
 }
