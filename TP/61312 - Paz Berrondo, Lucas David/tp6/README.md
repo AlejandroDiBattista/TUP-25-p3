@@ -3,7 +3,7 @@
 
 ---
 
-**Estado actual**: 🟢 Commit 8-9 completados - Frontend completo implementado (Catálogo + Carrito)
+**Estado actual**: 🟢 Commit 10+ completados - Aplicación totalmente modernizada (UI/UX, branding DualTech, precios ARS, validaciones)
 
 ---
 
@@ -63,9 +63,11 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - [x] **Commit 7**: Implementación de endpoint de confirmación de compra (PUT /confirmar)
 - [x] **Commit 8**: Implementación de página de catálogo de productos (Frontend completo)
 - [x] **Commit 9**: Implementación de página de carrito de compra (Frontend completo)
-- [ ] **Commit 10**: Mejoras de UI/UX, navegación y validaciones finales
-- [ ] **Commit 11**: Testing final y documentación de código
-- [ ] **Commit 12**: Optimizaciones y pulido final
+- [x] **Commit 10**: Mejoras de UI/UX, navegación y validaciones finales
+- [x] **Commit 11**: Modernización completa - Branding DualTech, diseño moderno, precios ARS
+- [x] **Commit 12**: Optimizaciones y pulido final - Loading personalizado, búsqueda mejorada, modales Bootstrap
+- [x] **Commit 13**: Validaciones avanzadas del formulario de checkout
+- [ ] **Commit 14**: Testing final y documentación completa
 
 ### **📝 NOTAS DE DESARROLLO:**
 - **Simplicidad**: Código claro y bien documentado para defensa oral
@@ -73,6 +75,18 @@ Desarrollar una aplicación web completa de tienda online que demuestre dominio 
 - **Validaciones**: Stock en tiempo real
 - **Bootstrap**: Disponible pero no obligatorio
 - **Imágenes**: URLs representativas para productos
+
+### **🎨 MEJORAS IMPLEMENTADAS (POST-COMMITS BÁSICOS):**
+- **✅ Branding DualTech**: Logo, colores y temática gaming PC consistente
+- **✅ Diseño moderno**: UI minimalista con gradientes, sombras y animaciones
+- **✅ Precios en pesos argentinos**: Conversión USD → ARS con formato AR$ X.XXX.XX
+- **✅ Loading spinner personalizado**: Animación branded con logo DualTech
+- **✅ Búsqueda mejorada**: Fix del bug de doble Enter, layout horizontal
+- **✅ Modales Bootstrap**: Reemplazo de alerts JS por modales modernos
+- **✅ Iconos SVG**: Integración de Lucide Icons minimalistas
+- **✅ Bug fixes**: Modal de eliminación, responsividad, validaciones
+- **✅ Validaciones avanzadas**: Formulario con regex, límites de caracteres y feedback visual
+- **✅ Experiencia premium**: Transiciones suaves, estados de carga, feedback visual
 
 ---
 
@@ -442,6 +456,31 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 
 **Próximo paso**: Mejoras finales de UI/UX y testing completo de la aplicación
 
+### **✅ Commit 13: Validaciones avanzadas del formulario de checkout**
+**Archivos modificados:**
+- `cliente/Pages/Carrito.razor` - Validaciones completas del formulario de datos del cliente
+
+**Funcionalidad implementada:**
+- ✅ **Validación de nombre**: Solo letras, espacios y acentos, máximo 50 caracteres
+- ✅ **Validación de apellido**: Solo letras, espacios y acentos, máximo 50 caracteres  
+- ✅ **Validación de email**: Formato email válido con regex, máximo 100 caracteres
+- ✅ **Feedback visual en tiempo real**: Bordes rojos/verdes según validación
+- ✅ **Mensajes de error descriptivos**: Iconos + texto explicativo para cada campo
+- ✅ **Prevención de caracteres especiales**: Regex que bloquea números y símbolos en nombres
+- ✅ **Límites de longitud**: Máximo de caracteres aplicado con `maxlength`
+- ✅ **Binding en tiempo real**: Validación mientras el usuario escribe (`@bind:event="oninput"`)
+
+**Validaciones técnicas implementadas:**
+- **Nombre/Apellido**: Regex `^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$` (solo letras y espacios con acentos)
+- **Email**: Regex `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$` (formato email estándar)
+- **Longitud**: Nombre/Apellido ≤50 chars, Email ≤100 chars
+- **Estilos Bootstrap**: `.is-invalid`, `.invalid-feedback` para UI consistente
+
+**Métodos de validación creados:**
+- `ValidarNombre()`, `ValidarApellido()`, `ValidarEmail()` - Lógica de validación
+- `ObtenerErrorNombre()`, `ObtenerErrorApellido()`, `ObtenerErrorEmail()` - Mensajes descriptivos
+- `DatosClienteValidos()` - Validación general para habilitar botón de compra
+
 ---
 
 ## 🎉 **RESUMEN ESTADO ACTUAL**
@@ -462,10 +501,11 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 6. **UI responsiva** con Bootstrap ✅
 7. **Navegación fluida** entre páginas ✅
 
-### **📊 COMMITS COMPLETADOS: 7-9 de 12**
-- **Commit 7**: ✅ Endpoint confirmación de compra
-- **Commit 8**: ✅ Catálogo de productos (Frontend)
-- **Commit 9**: ✅ Carrito de compras (Frontend)
+### **📊 COMMITS COMPLETADOS: 13+ de 14**
+- **Commit 10**: ✅ Mejoras de UI/UX y validaciones finales
+- **Commit 11**: ✅ Modernización completa - Branding DualTech
+- **Commit 12**: ✅ Optimizaciones y pulido final
+- **Commit 13**: ✅ Validaciones avanzadas del formulario
 
 ### **🎯 PRÓXIMOS PASOS OPCIONALES:**
 - Mejoras adicionales de UI/UX
@@ -474,53 +514,5 @@ Invoke-WebRequest -Uri http://localhost:5055/api/carritos -Method POST
 - Documentación adicional
 
 **La aplicación está lista para ser usada y demostrada** 🎊
-
----
-
-## 🐛 **FIX IMPLEMENTADO: Manejo de Carritos Expirados**
-
-### **Problema identificado:**
-Cuando se reinicia el servidor, los carritos temporales (almacenados en memoria) se pierden, pero el cliente mantiene el ID del carrito anterior en localStorage, causando errores 404.
-
-### **Solución implementada:**
-1. **Verificación de existencia**: Nuevo método `CarritoExisteAsync()` en ApiService
-2. **Auto-recuperación**: Si el carrito no existe, se limpia localStorage y se crea uno nuevo automáticamente
-3. **Manejo robusto de errores 404**: Detección específica de carritos inexistentes
-4. **Reintento automático**: Si falla agregar producto, intenta recrear carrito y agregar nuevamente
-5. **Navegación inteligente**: En página de carrito, si no existe el carrito, redirige al catálogo
-
-### **Archivos modificados:**
-- `cliente/Services/ApiService.cs`: Manejo mejorado de errores 404, nuevo método CarritoExisteAsync
-- `cliente/Pages/Home.razor`: Auto-recreación de carrito en InicializarCarrito y AgregarAlCarrito  
-- `cliente/Pages/Carrito.razor`: Verificación de existencia y redirección automática
-
-### **Comportamiento actual:**
-✅ **Primera ejecución**: Crea carrito, agrega productos normalmente
-✅ **Reinicio de servidor**: Detecta carrito inexistente, crea uno nuevo automáticamente  
-✅ **Experiencia de usuario**: Sin interrupciones, mensajes informativos en consola
-✅ **Robustez**: Manejo completo de errores de conectividad
-
----
-
-## 🎨 **FIX BOOTSTRAP: Estilos CSS Corregidos**
-
-### **Problema identificado:**
-Bootstrap CSS no se cargaba debido a ruta incorrecta en `index.html`:
-- **Ruta incorrecta**: `lib/bootstrap/dist/css/bootstrap.min.css` 
-- **Error**: GET http://localhost:5177/lib/bootstrap/dist/css/bootstrap.min.css 404 (Not Found)
-
-### **Solución implementada:**
-1. **Ruta corregida**: `lib/bootstrap/css/bootstrap.min.css` (sin carpeta `dist`)
-2. **Bootstrap JS agregado**: `lib/bootstrap/js/bootstrap.bundle.min.js` para componentes interactivos
-3. **Verificación**: Archivos Bootstrap confirmados en `wwwroot/lib/bootstrap/`
-
-### **Archivos modificados:**
-- `cliente/wwwroot/index.html`: Rutas corregidas para CSS y JS de Bootstrap
-
-### **Resultado:**
-✅ **Bootstrap CSS**: Carga correctamente, estilos aplicados
-✅ **Bootstrap JS**: Disponible para componentes interactivos  
-✅ **UI mejorada**: Cards, botones, grid, colores funcionando
-✅ **Responsive**: Layout adaptable a diferentes tamaños de pantalla
 
 ---

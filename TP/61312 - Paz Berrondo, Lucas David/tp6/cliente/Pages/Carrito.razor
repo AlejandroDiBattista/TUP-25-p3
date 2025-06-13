@@ -154,17 +154,54 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-4">                        <strong>Total:</strong>
                         <strong class="cart-total">AR$ @carrito.Total.ToString("N2")</strong>
-                    </div>
-
-                    <!-- Formulario de datos del cliente -->
+                    </div>                    <!-- Formulario de datos del cliente -->
                     <div class="form-modern">
                         <h6 class="mb-3">📋 Datos del Cliente</h6>
-                        <input type="text" class="form-control mb-3" 
-                               placeholder="Nombre" @bind="datosCliente.NombreCliente">
-                        <input type="text" class="form-control mb-3" 
-                               placeholder="Apellido" @bind="datosCliente.ApellidoCliente">
-                        <input type="email" class="form-control mb-3" 
-                               placeholder="Email" @bind="datosCliente.EmailCliente">
+                        
+                        <!-- Campo Nombre -->
+                        <div class="mb-3">
+                            <input type="text" class="form-control @(ObtenerErrorNombre() != "" ? "is-invalid" : "")" 
+                                   placeholder="Nombre (solo letras, máx 50 caracteres)" 
+                                   @bind="datosCliente.NombreCliente" 
+                                   @bind:event="oninput"
+                                   maxlength="50">
+                            @if (!string.IsNullOrEmpty(ObtenerErrorNombre()))
+                            {
+                                <div class="invalid-feedback">
+                                    <Icon Name="alert-circle" Size="14" /> @ObtenerErrorNombre()
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Campo Apellido -->
+                        <div class="mb-3">
+                            <input type="text" class="form-control @(ObtenerErrorApellido() != "" ? "is-invalid" : "")" 
+                                   placeholder="Apellido (solo letras, máx 50 caracteres)" 
+                                   @bind="datosCliente.ApellidoCliente" 
+                                   @bind:event="oninput"
+                                   maxlength="50">
+                            @if (!string.IsNullOrEmpty(ObtenerErrorApellido()))
+                            {
+                                <div class="invalid-feedback">
+                                    <Icon Name="alert-circle" Size="14" /> @ObtenerErrorApellido()
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Campo Email -->
+                        <div class="mb-3">
+                            <input type="email" class="form-control @(ObtenerErrorEmail() != "" ? "is-invalid" : "")" 
+                                   placeholder="Email (ejemplo@dominio.com, máx 100 caracteres)" 
+                                   @bind="datosCliente.EmailCliente" 
+                                   @bind:event="oninput"
+                                   maxlength="100">
+                            @if (!string.IsNullOrEmpty(ObtenerErrorEmail()))
+                            {
+                                <div class="invalid-feedback">
+                                    <Icon Name="alert-circle" Size="14" /> @ObtenerErrorEmail()
+                                </div>
+                            }
+                        </div>
                     </div>
 
                     <button class="btn btn-success-modern w-100 btn-lg" 
@@ -399,9 +436,37 @@
     .purchase-details p {
         margin-bottom: 0.75rem;
     }
-    
-    .purchase-details p:last-child {
+      .purchase-details p:last-child {
         margin-bottom: 0;
+    }
+
+    /* Estilos de validación del formulario */
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
+        font-weight: 500;
+    }
+
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .form-control:valid {
+        border-color: #28a745;
+    }
+
+    .form-control:valid:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
     }
 </style>
 
@@ -634,15 +699,75 @@
     private void CerrarNotificacion()
     {
         mostrarNotificacion = false;
+    }    private bool DatosClienteValidos()
+    {
+        return ValidarNombre(datosCliente.NombreCliente) &&
+               ValidarApellido(datosCliente.ApellidoCliente) &&
+               ValidarEmail(datosCliente.EmailCliente);
     }
 
-    private bool DatosClienteValidos()
+    private bool ValidarNombre(string nombre)
     {
-        return !string.IsNullOrWhiteSpace(datosCliente.NombreCliente) &&
-               !string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente) &&
-               !string.IsNullOrWhiteSpace(datosCliente.EmailCliente) &&
-               datosCliente.EmailCliente.Contains("@");
-    }    private async Task ConfirmarCompra()
+        if (string.IsNullOrWhiteSpace(nombre)) return false;
+        if (nombre.Length > 50) return false;
+        
+        // Solo letras, espacios, acentos y caracteres latinos
+        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$");
+        return regex.IsMatch(nombre);
+    }
+
+    private bool ValidarApellido(string apellido)
+    {
+        if (string.IsNullOrWhiteSpace(apellido)) return false;
+        if (apellido.Length > 50) return false;
+        
+        // Solo letras, espacios, acentos y caracteres latinos
+        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$");
+        return regex.IsMatch(apellido);
+    }
+
+    private bool ValidarEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        if (email.Length > 100) return false;
+        
+        // Validación de email más robusta
+        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+        return regex.IsMatch(email);
+    }
+
+    private string ObtenerErrorNombre()
+    {
+        if (string.IsNullOrWhiteSpace(datosCliente.NombreCliente))
+            return "";
+        if (datosCliente.NombreCliente.Length > 50)
+            return "El nombre no puede tener más de 50 caracteres";
+        if (!ValidarNombre(datosCliente.NombreCliente))
+            return "El nombre solo puede contener letras y espacios";
+        return "";
+    }
+
+    private string ObtenerErrorApellido()
+    {
+        if (string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente))
+            return "";
+        if (datosCliente.ApellidoCliente.Length > 50)
+            return "El apellido no puede tener más de 50 caracteres";
+        if (!ValidarApellido(datosCliente.ApellidoCliente))
+            return "El apellido solo puede contener letras y espacios";
+        return "";
+    }
+
+    private string ObtenerErrorEmail()
+    {
+        if (string.IsNullOrWhiteSpace(datosCliente.EmailCliente))
+            return "";
+        if (datosCliente.EmailCliente.Length > 100)
+            return "El email no puede tener más de 100 caracteres";
+        if (!ValidarEmail(datosCliente.EmailCliente))
+            return "Ingrese un email válido (ejemplo@dominio.com)";
+        return "";
+    }private async Task ConfirmarCompra()
     {
         if (string.IsNullOrEmpty(carritoId) || !DatosClienteValidos()) return;
 
