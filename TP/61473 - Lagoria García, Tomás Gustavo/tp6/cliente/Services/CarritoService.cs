@@ -42,3 +42,16 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
     {
         await _httpClient.DeleteAsync($"carritos/{carritoId}");
     }
+    public async Task AumentarItemAsync(Guid? carritoId, int productoId)
+    {
+        var response = await _httpClient.PutAsync($"carritos/{carritoId}/{productoId}/aumentar", null);
+
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task DisminuirItemAsync(Guid? carritoId, int productoId)
+{
+    var response = await _httpClient.PutAsync($"carritos/{carritoId}/{productoId}/disminuir", null);
+    response.EnsureSuccessStatusCode();
+}
+
