@@ -6,7 +6,7 @@ public class ItemCompra
 
     public int ProductoId { get; set; }
     
-    public Producto Producto { get; set; }
+    public string Producto { get; set; }
 
     public int CompraId { get; set; }
 

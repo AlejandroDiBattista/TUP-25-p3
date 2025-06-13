@@ -1,6 +1,6 @@
 @using cliente.Models
 @page "/catalogo"
-@inject HttpClient Http
+@inject ApiService Api
 
 <h1 class="titulo-catalogo">Catálogo de Productos Apple</h1>
 
@@ -15,17 +15,20 @@ else if (productos.Count == 0)
 else
 {
     <div class="grid-productos">
-        @foreach (var producto in productos)
+        @foreach (var Producto in productos)
         {
             <div class="card-producto">
-                <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
-                <h3>@producto.Nombre</h3>
-                <p>@producto.Descripcion</p>
-                <p><strong>Precio:</strong> $@producto.Precio</p>
-                <p><strong>Stock:</strong> @producto.Stock unidades</p>
+                <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" width="200"/>
+                <h3>@Producto.Nombre</h3>
+                <p>@Producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@Producto.Precio</p>
+                <p><strong>Stock:</strong> @Producto.Stock unidades</p>
+                <p>
+                    
+                </p>
 
-                <button @onclick="() => AgregarAlCarrito(producto)" 
-                        disabled="@(!PuedeAgregar(producto))"
+                <button @onclick="() => AgregarAlCarrito(Producto)" 
+                        disabled="@(!PuedeAgregar(Producto))"
                         class="boton-agregar">
                     Agregar al carrito
                 </button>
@@ -39,7 +42,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos");
+        var productosApi = await Api.ObtenerProductos();
+        productos = productosApi.Select(p => new ProductoDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            Precio = p.Precio,
+            Stock = p.Stock,
+            ImagenUrl = p.ImagenUrl
+        }).ToList();
     }
 
     void AgregarAlCarrito(ProductoDto producto)
@@ -58,7 +70,7 @@ else
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Descripcion { get; set; }
-        public int Precio { get; set; }
+        public decimal Precio { get; set; }
         public int Stock { get; set; }
         public string ImagenUrl { get; set; }
     }

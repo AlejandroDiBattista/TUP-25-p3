@@ -53,4 +53,9 @@ public class ApiService
         public Guid Id { get; set; }
         public List<ItemCompra> Items { get; set; }
     }
+
+    public async Task<DatosRespuesta> ObtenerDatosAsync()
+    {
+        return await _http.GetFromJsonAsync<DatosRespuesta>("api/datos");
+    }
 }
