@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using cliente.Models
 @inject HttpClient Http
-@inject cliente.Services.CarritoService CarritoService // ¡Esta línea CRÍTICA debe estar aquí!
+@inject cliente.Services.CarritoService CarritoService
 
 <PageTitle>Catálogo de Productos</PageTitle>
 
@@ -16,15 +16,15 @@
             <input type="text" class="form-control" placeholder="Buscar productos..."
                    @bind-value="searchText" @oninput="HandleSearch" />
         </div>
-             <div class="col-auto" @key="CarritoService.TotalItemsEnCarrito"> @* ¡Añade el @key aquí! *@
-                <NavLink href="/carrito" class="btn btn-primary position-relative">
-                    <i class="bi bi-cart"></i> Carrito
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                     @CarritoService.TotalItemsEnCarrito <span class="visually-hidden">items en el carrito</span>
-                    </span>
-                </NavLink>
-            </div>
-     </div>
+        <div class="col-auto" @key="CarritoService.TotalItemsEnCarrito">
+            <NavLink href="/carrito" class="btn btn-primary position-relative">
+                <i class="bi bi-cart"></i> Carrito
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @CarritoService.TotalItemsEnCarrito <span class="visually-hidden">items en el carrito</span>
+                </span>
+            </NavLink>
+        </div>
+    </div>
 </div>
 
 <div class="container" style="margin-top: 100px;">
@@ -81,7 +81,7 @@
     {
         await LoadProducts();
 
-        debounceTimer = new System.Timers.Timer(500); // 500 ms de retardo
+        debounceTimer = new System.Timers.Timer(500);
         debounceTimer.Elapsed += async (sender, e) =>
         {
             debounceTimer?.Stop();
@@ -89,7 +89,6 @@
         };
         debounceTimer.AutoReset = false;
 
-        // Suscribirse al evento de cambio del carrito para actualizar la UI si cambia fuera de esta página
         CarritoService.OnChange += StateHasChanged;
     }
 

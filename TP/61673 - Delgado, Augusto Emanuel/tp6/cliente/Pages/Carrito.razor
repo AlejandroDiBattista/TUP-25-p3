@@ -1,6 +1,6 @@
 @page "/carrito"
 @using cliente.Models
-@inject cliente.Services.CarritoService CarritoService 
+@inject cliente.Services.CarritoService CarritoService
 
 <PageTitle>Tu Carrito de Compras</PageTitle>
 
@@ -60,12 +60,10 @@ else
     <p>Tu carrito está vacío. ¡Empieza a agregar productos de nuestro <a href="/">catálogo</a>!</p>
 }
 
-@code {
-    
+@code {   
 
     protected override void OnInitialized()
     {
-        // cuando el carrito cambie (agrego/elimino ítems desde otra página).
         CarritoService.OnChange += StateHasChanged;
     }
 
@@ -74,30 +72,26 @@ else
         CarritoService.OnChange -= StateHasChanged;
     }
 
-   private void ActualizarCantidad(CarritoItem item)
-{
-    // Limitar la cantidad a 1 como mínimo
-    if (item.Cantidad < 1)
+    private void ActualizarCantidad(CarritoItem item)
     {
-        item.Cantidad = 1;
-    }
-    // Limitar la cantidad al stock máximo del producto
-    if (item.Cantidad > item.Producto.Stock)
-    {
-        item.Cantidad = item.Producto.Stock;
-    }
+        if (item.Cantidad < 1)
+        {
+            item.Cantidad = 1;
+        }
+        if (item.Cantidad > item.Producto.Stock)
+        {
+            item.Cantidad = item.Producto.Stock;
+        }
 
-    // Si la cantidad es 0 después del ajuste, eliminar el ítem
-    if (item.Cantidad == 0)
-    {
-        CarritoService.RemoverDelCarrito(item.Producto.Id);
+        if (item.Cantidad == 0)
+        {
+            CarritoService.RemoverDelCarrito(item.Producto.Id);
+        }
+        else
+        {
+            CarritoService.AgregarOActualizarEnCarrito(item.Producto);
+        }
     }
-    else
-    {   
-        CarritoService.AgregarOActualizarEnCarrito(item.Producto); 
-    }
-   
-}
 
     private void EliminarItem(int productoId)
     {
