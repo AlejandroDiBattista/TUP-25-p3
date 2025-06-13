@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
         {
             // Permite el acceso desde el origen de tu cliente Blazor.
             // Los puertos 7000 (HTTPS) y 5000 (HTTP) son los puertos por defecto para Blazor WASM.
-            policy.WithOrigins("https://localhost:7000", "http://localhost:5000")
+           policy.WithOrigins("https://localhost:7000", "http://localhost:5000", "http://localhost:5177")
                   .AllowAnyHeader() // Permite cualquier encabezado en las solicitudes
                   .AllowAnyMethod(); // Permite cualquier método HTTP (GET, POST, PUT, DELETE, etc.)
         });
