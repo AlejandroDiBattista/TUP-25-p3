@@ -171,44 +171,52 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
     AgregarProductoDTO body,
     TiendaContext db
 ) =>
-{//Busca al carrito por el Id
-    var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
-    if (carrito == null)
-        return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
-    //Lanza un error si no se encuentra
-    var producto = await db.Productos.FindAsync(productoId);
-    if (producto == null)
-        return Results.NotFound(new { Mensaje = "Producto no encontrado" });
-    //manda un msj diciendo que el stock es insuficiente
-    if (producto.Stock < body.Cantidad)
-        return Results.BadRequest(new { Mensaje = "Stock insuficiente" });
-    //Busca producto por la Id y si no lo encuentra devuelve error
-    if (!int.TryParse(productoId, out int productoIdInt))
-        return Results.BadRequest(new { Mensaje = "El id del producto no es válido" });
-    var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoIdInt);
-    if (itemExistente != null)
+{
+    try
     {
-        // Cantidad total al actualizar la base de datos
-        //y si el producto ya existe en el carrito, actualiza la cantidad
-        var total = itemExistente.Cantidad + body.Cantidad;
-        if (producto.Stock < total)
-            return Results.BadRequest(new { Mensaje = "Stock insuficiente al actualizar cantidad" });
+        if (!int.TryParse(productoId, out int productoIdInt))
+            return Results.BadRequest(new { Mensaje = "El id del producto no es válido" });
 
-        itemExistente.Cantidad = total;
-    }
-    else
-    {
-        //Agrega el producto al carrito
-        carrito.Items.Add(new ItemCarrito
+        var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
+        if (carrito == null)
+            return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
+
+        var producto = await db.Productos.FindAsync(productoIdInt);
+        if (producto == null)
+            return Results.NotFound(new { Mensaje = "Producto no encontrado" });
+
+        if (body == null)
+            return Results.BadRequest(new { Mensaje = "El cuerpo de la solicitud es nulo" });
+
+        if (producto.Stock < body.Cantidad)
+            return Results.BadRequest(new { Mensaje = "Stock insuficiente" });
+
+        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoIdInt);
+        if (itemExistente != null)
         {
-            ProductoId = producto.Id,
-            Nombre = producto.Nombre,
-            Cantidad = body.Cantidad,
-            PrecioUnitario = producto.Precio
-        });
+            var total = itemExistente.Cantidad + body.Cantidad;
+            if (producto.Stock < total)
+                return Results.BadRequest(new { Mensaje = "Stock insuficiente al actualizar cantidad" });
+
+            itemExistente.Cantidad = total;
+        }
+        else
+        {
+            carrito.Items.Add(new ItemCarrito
+            {
+                ProductoId = productoIdInt,
+                Nombre = producto.Nombre,
+                Cantidad = body.Cantidad,
+                PrecioUnitario = producto.Precio
+            });
+        }
+        return Results.Ok(new { Mensaje = "Producto agregado/actualizado al carrito" });
     }
-    //lanza el msj que el carrito fue actualizado
-    return Results.Ok(new { Mensaje = "Producto agregado/actualizado al carrito" });
+    catch (Exception ex)
+    {
+        Console.WriteLine("ERROR en PUT /carritos: " + ex.Message);
+        return Results.Problem("Error interno: " + ex.Message);
+    }
 });
 
 //Elimir un producto del carrito
