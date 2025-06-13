@@ -1,4 +1,4 @@
-namespace cliente.Models
+namespace modelos_compartidos
 {
     public class CarritoItem
     {

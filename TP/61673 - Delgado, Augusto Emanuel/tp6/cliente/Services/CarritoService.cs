@@ -1,4 +1,4 @@
-using cliente.Models;
+using modelos_compartidos;
 using System.Collections.Generic;
 using System.Linq;
 using System;
