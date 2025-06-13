@@ -1,198 +1,31 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUCARBA</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cliente</title>
+    <base href="/" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="cliente.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-    <header>
-        <span class="logo" onclick="mostrarCatalogo()">LUCARBA</span>
-        <input class="buscador" id="buscador" type="text" placeholder="Buscar productos..." oninput="filtrarProductos()">
-        <div class="carrito-icono" onclick="mostrarCarrito()">
-            🛒 <span class="carrito-contador" id="contadorCarrito">0</span>
-        </div>
-    </header>
-    <div class="contenedor" id="vistaCatalogo"></div>
-    <div class="carrito" id="vistaCarrito" style="display:none"></div>
-    <div class="confirmacion" id="vistaConfirmacion" style="display:none"></div>
-    <script>
-        // Cambia esta URL si tu backend usa otro puerto
-        const API_URL = "http://localhost:5177";
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
 
-        let productos = [];
-        let carrito = [];
-
-        // Obtener productos del backend
-        async function cargarProductos() {
-            let q = document.getElementById('buscador').value;
-            let url = API_URL + "/productos" + (q ? "?q=" + encodeURIComponent(q) : "");
-            let resp = await fetch(url);
-            productos = await resp.json();
-            renderCatalogo();
-        }
-
-        function actualizarContadorCarrito() {
-            document.getElementById('contadorCarrito').innerText = carrito.reduce((a, i) => a + i.cantidad, 0);
-        }
-
-        function mostrarCatalogo() {
-            document.getElementById('vistaCatalogo').style.display = '';
-            document.getElementById('vistaCarrito').style.display = 'none';
-            document.getElementById('vistaConfirmacion').style.display = 'none';
-            cargarProductos();
-        }
-
-        function renderCatalogo() {
-            let html = `<div class="productos">`;
-            if (productos.length === 0) html += "<p>No se encontraron productos.</p>";
-            productos.forEach(p => {
-                html += `
-                <div class="producto">
-                    <img src="${p.imagenUrl}" alt="${p.nombre}">
-                    <h3>${p.nombre}</h3>
-                    <div>${p.descripcion}</div>
-                    <div class="precio">$${p.precio}</div>
-                    <div class="stock">Stock: ${p.stock}</div>
-                    <button onclick="agregarAlCarrito(${p.id})" ${p.stock === 0 ? "disabled" : ""}>Agregar al carrito</button>
-                </div>`;
-            });
-            html += `</div>`;
-            document.getElementById('vistaCatalogo').innerHTML = html;
-        }
-
-        function filtrarProductos() {
-            cargarProductos();
-        }
-
-        function agregarAlCarrito(id) {
-            const prod = productos.find(p => p.id === id);
-            if (!prod || prod.stock === 0) return;
-            let item = carrito.find(i => i.id === id);
-            if (item) {
-                if (item.cantidad < prod.stock) item.cantidad++;
-            } else {
-                carrito.push({ ...prod, cantidad: 1 });
-            }
-            actualizarContadorCarrito();
-            alert("¡Producto añadido al carrito!");
-        }
-
-        function mostrarCarrito() {
-            document.getElementById('vistaCatalogo').style.display = 'none';
-            document.getElementById('vistaCarrito').style.display = '';
-            document.getElementById('vistaConfirmacion').style.display = 'none';
-            renderCarrito();
-        }
-
-        function renderCarrito() {
-            if (carrito.length === 0) {
-                document.getElementById('vistaCarrito').innerHTML = `<p>El carrito está vacío.</p>
-                <span class="volver" onclick="mostrarCatalogo()">← Volver al catálogo</span>`;
-                return;
-            }
-            let total = carrito.reduce((a, i) => a + i.precio * i.cantidad, 0);
-            let html = `<h2>Carrito de compras</h2>
-            <table>
-                <tr><th>Producto</th><th>Unidades</th><th>Precio</th><th>Importe</th><th>Acciones</th></tr>`;
-            carrito.forEach((item, idx) => {
-                html += `<tr>
-                    <td>${item.nombre}</td>
-                    <td>${item.cantidad}</td>
-                    <td>$${item.precio}</td>
-                    <td>$${item.precio * item.cantidad}</td>
-                    <td class="acciones-carrito">
-                        <button onclick="cambiarCantidad(${item.id},1)">+</button>
-                        <button onclick="cambiarCantidad(${item.id},-1)">-</button>
-                        <button onclick="eliminarDelCarrito(${item.id})">Eliminar</button>
-                    </td>
-                </tr>`;
-            });
-            html += `</table>
-            <div class="resumen"><b>Total: $${total}</b></div>
-            <button onclick="vaciarCarrito()">Vaciar carrito</button>
-            <button onclick="mostrarConfirmacion()">Confirmar compra</button>
-            <span class="volver" onclick="mostrarCatalogo()">← Volver al catálogo</span>`;
-            document.getElementById('vistaCarrito').innerHTML = html;
-        }
-
-        function cambiarCantidad(id, delta) {
-            let item = carrito.find(i => i.id === id);
-            let prod = productos.find(p => p.id === id);
-            if (!item || !prod) return;
-            if (delta === 1 && item.cantidad < prod.stock) item.cantidad++;
-            if (delta === -1 && item.cantidad > 1) item.cantidad--;
-            actualizarContadorCarrito();
-            renderCarrito();
-        }
-
-        function eliminarDelCarrito(id) {
-            carrito = carrito.filter(i => i.id !== id);
-            actualizarContadorCarrito();
-            renderCarrito();
-        }
-
-        function vaciarCarrito() {
-            carrito = [];
-            actualizarContadorCarrito();
-            renderCarrito();
-        }
-
-        function mostrarConfirmacion() {
-            document.getElementById('vistaCatalogo').style.display = 'none';
-            document.getElementById('vistaCarrito').style.display = 'none';
-            document.getElementById('vistaConfirmacion').style.display = '';
-            renderConfirmacion();
-        }
-
-        function renderConfirmacion() {
-            let total = carrito.reduce((a, i) => a + i.precio * i.cantidad, 0);
-            let totalItems = carrito.reduce((a, i) => a + i.cantidad, 0);
-            let html = `<h2>Confirmación de compra</h2>
-            <div class="resumen">Total de ítems: <b>${totalItems}</b> | Importe total: <b>$${total}</b></div>
-            <form class="formulario" onsubmit="return confirmarCompra(event)">
-                <label>Nombre: <input type="text" id="nombre" required></label>
-                <label>Apellido: <input type="text" id="apellido" required></label>
-                <label>Email: <input type="email" id="email" required></label>
-                <button type="submit">Confirmar</button>
-            </form>
-            <span class="volver" onclick="mostrarCarrito()">← Volver al carrito</span>`;
-            document.getElementById('vistaConfirmacion').innerHTML = html;
-        }
-
-        async function confirmarCompra(event) {
-            event.preventDefault();
-            let compra = {
-                nombre: document.getElementById('nombre').value,
-                apellido: document.getElementById('apellido').value,
-                email: document.getElementById('email').value,
-                items: carrito.map(i => ({
-                    productoId: i.id,
-                    cantidad: i.cantidad,
-                    precioUnitario: i.precio
-                }))
-            };
-            let resp = await fetch(API_URL + "/carritos/mi-carrito/confirmar", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(compra)
-            });
-            if (resp.ok) {
-                alert("¡Compra confirmada!\nGracias por tu compra, " + compra.nombre + "!");
-                carrito = [];
-                actualizarContadorCarrito();
-                mostrarCatalogo();
-            } else {
-                let error = await resp.text();
-                alert("Error al confirmar compra: " + error);
-            }
-            return false;
-        }
-
-        // Inicializar
-        mostrarCatalogo();
-        actualizarContadorCarrito();
-    </script>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
 </body>
-</html>
