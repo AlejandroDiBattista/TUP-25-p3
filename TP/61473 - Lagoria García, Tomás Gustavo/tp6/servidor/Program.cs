@@ -57,6 +57,7 @@ app.MapGet("/productos", async (
     TiendaDbContext db) =>
 {
     var query = db.Productos.AsQueryable();
+    
     if (!string.IsNullOrWhiteSpace(q))
         query = query.Where(p => p.Nombre.ToLower().Contains(q.ToLower()) || p.Descripcion.ToLower().Contains(q.ToLower()));
 
@@ -93,6 +94,15 @@ app.MapPost("/carritos", async ( TiendaDbContext db) =>
     var id = Guid.NewGuid();
     carritos[id] = new List<ItemCarrito>();
     return Results.Ok(id);
+});
+
+app.MapGet("carritos/obtenerCarritoId", async(TiendaDbContext db) =>
+{
+    if (carritos.Count == 0)
+        return Results.NotFound();
+    
+    var primerCarritoId = carritos.Keys.FirstOrDefault();
+    return Results.Ok(carritos.Keys.FirstOrDefault());
 });
 
 
