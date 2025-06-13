@@ -148,25 +148,108 @@
 </div>
 
 @code {
+    #nullable enable
     List<ProductoDto>? productos;
+    List<ProductoDto>? productosOriginales; // Lista original para restaurar el catálogo completo
     Guid carritoId;
     bool puedeAgregar = true;
+    string busqueda = string.Empty;
+    bool mostrarModalStock = false;
+    bool mostrarModalNoEnCarrito = false;
+    int contadorCarrito = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Api.GetProductosAsync();
-        // Crear un carrito si no existe (en una app real, deberías guardar el carritoId en localStorage)
-        carritoId = await Api.CrearCarritoAsync();
+        productosOriginales = await Api.GetProductosAsync();
+        productos = productosOriginales != null ? new List<ProductoDto>(productosOriginales) : new List<ProductoDto>();
+        // Obtener o crear carritoId en localStorage
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+        {
+            carritoId = await Api.CrearCarritoAsync();
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+        }
+        await ActualizarContadorCarrito();
     }
 
     async Task AgregarAlCarrito(int productoId)
     {
         puedeAgregar = false;
-        var ok = await Api.AgregarProductoAlCarritoAsync(carritoId, productoId, 1);
+        // Obtener el carrito actual
+        var items = await Api.GetCarritoAsync(carritoId);
+        // Verificar si el producto ya está en el carrito
+        var itemExistente = items.FirstOrDefault(i => i.Id == productoId);
+        int nuevaCantidad = (itemExistente?.Cantidad ?? 0) + 1;
+        var ok = await Api.AgregarProductoAlCarritoAsync(carritoId, productoId, nuevaCantidad);
         puedeAgregar = true;
         if (ok)
-            await JS.InvokeVoidAsync("alert", "Producto agregado al carrito");
+        {
+            await ActualizarContadorCarrito();
+        }
         else
-            await JS.InvokeVoidAsync("alert", "No se pudo agregar el producto (verifica stock)");
+        {
+            mostrarModalStock = true;
+        }
+    }
+
+    async Task QuitarDelCarrito(int productoId)
+    {
+        // Verificar si el producto está en el carrito
+        var items = await Api.GetCarritoAsync(carritoId);
+        var itemExistente = items.FirstOrDefault(i => i.Id == productoId);
+        if (itemExistente != null)
+        {
+            await Api.EliminarProductoDelCarritoAsync(carritoId, productoId);
+            await ActualizarContadorCarrito();
+            // Forzar actualización visual del contador en MainLayout
+            await JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", (contadorCarrito - itemExistente.Cantidad).ToString());
+        }
+        else
+        {
+            mostrarModalNoEnCarrito = true;
+        }
+    }
+
+    async Task ActualizarContadorCarrito()
+    {
+        var items = await Api.GetCarritoAsync(carritoId);
+        contadorCarrito = items?.Sum(i => i.Cantidad) ?? 0;
+        await JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", contadorCarrito.ToString());
+        StateHasChanged();
+    }
+
+    void CerrarModalStock()
+    {
+        mostrarModalStock = false;
+    }
+
+    void CerrarModalNoEnCarrito()
+    {
+        mostrarModalNoEnCarrito = false;
+    }
+
+    async Task BuscarProductos()
+    {
+        if (productosOriginales == null) return;
+        if (string.IsNullOrWhiteSpace(busqueda))
+        {
+            productos = new List<ProductoDto>(productosOriginales);
+        }
+        else
+        {
+            productos = productosOriginales
+                .Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void OnInputBusquedaSoloReset(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(busqueda))
+        {
+            _ = BuscarProductos(); // Restaurar catálogo completo si el input queda vacío
+        }
     }
 }
