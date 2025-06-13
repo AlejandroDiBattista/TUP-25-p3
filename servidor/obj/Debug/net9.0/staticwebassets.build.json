@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "J/tStgSyHPGSk4HEsf/FSL7h7hIcCowysBOGq3BeYio=",
+  "Source": "servidor",
+  "BasePath": "_content/servidor",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

@@ -1,0 +1,50 @@
+@page "/confirmacion"
+@inject CarritoService CarritoService
+@inject NavigationManager nav
+@using cliente.Dtos
+
+<h3>Confirmación de Compra</h3>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<EditForm Model="cliente" OnValidSubmit="Confirmar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Nombre</label>
+        <InputText class="form-control" @bind-Value="cliente.Nombre" />
+    </div>
+    <div class="mb-3">
+        <label>Apellido</label>
+        <InputText class="form-control" @bind-Value="cliente.Apellido" />
+    </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="cliente.Email" />
+    </div>
+
+    <button class="btn btn-success">Confirmar</button>
+</EditForm>
+
+@code {
+    private dtos.ClienteDto cliente = new();
+    private string? error;
+
+    private async Task Confirmar()
+    {
+        try
+        {
+            await CarritoService.ConfirmarCompra(cliente);
+            nav.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            error = "No se pudo confirmar la compra. Verificá que el carrito no esté vacío.";
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

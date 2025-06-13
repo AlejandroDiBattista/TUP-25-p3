@@ -1,0 +1,44 @@
+@page "/productos"
+@using cliente.Services
+@using cliente.Dtos
+
+@inject ProductoService ProductoService
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h3>Productos</h3>
+
+@if (productos is null)
+{
+    <p>Cargando productos...</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var producto in productos)
+        {
+            <div class="card col-md-3 m-2 p-2">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="img-fluid" style="max-height: 150px;" />
+                <h5>@producto.Nombre</h5>
+                <p>@producto.Descripcion</p>
+                <p><strong>@producto.Precio.ToString("C")</strong></p>
+                <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<ProductoDto>? productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.ObtenerProductos();
+    }
+
+    private async Task AgregarAlCarrito(ProductoDto producto)
+    {
+        await CarritoService.AgregarProducto(producto.Id);
+        NavigationManager.NavigateTo("/carrito");
+    }
+}

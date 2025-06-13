@@ -1,0 +1,23 @@
+@inherits LayoutComponentBase
+@inject NavigationManager nav
+
+<div class="container mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="titulo" @onclick="IrAlInicio">🛍️ Tienda Online</h2>
+        <a class="btn btn-outline-dark" href="/carrito">
+            🛒 Carrito
+        </a>
+    </div>
+
+    <div class="main">@Body</div>
+</div>
+
+<style>
+    .titulo {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    void IrAlInicio() => nav.NavigateTo("/");
+}
