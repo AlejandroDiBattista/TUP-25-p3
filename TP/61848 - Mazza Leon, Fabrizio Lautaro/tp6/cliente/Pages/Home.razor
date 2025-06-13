@@ -1,18 +1,19 @@
 ﻿@page "/"
 @using cliente.Models
 @using cliente.Services
+@inject NavigationManager Navigation
 @inject ApiService ApiService
 @inject CarritoService CarritoService
 
 
-<PageTitle>Catálogo</PageTitle>
+<PageTitle>TiendaOnline</PageTitle>
 
 <div class="container">
     <h1 class="text-center">Catálogo de productos</h1>
 
-    <div class="mb-4 d-flex justify-content-center">
-        <input class="form-control w-50"
-               placeholder="Buscar productos en stock..."
+    <div class="buscador-productos">
+        <input class="form-control buscador-input"
+               placeholder="Buscar productos..."
                @bind="busqueda"
                @bind:event="oninput" />
     </div>
@@ -73,6 +74,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CarritoService.InicializarCarritoAsync(ApiService);
         productos = await ApiService.ObtenerProductosAsync();
 
         foreach (var producto in productos)
@@ -80,9 +82,10 @@
         cantidades[producto.Id] = 1;
         }
     }
-
+    
     void AgregarAlCarrito(Producto producto)
-    {
+    { 
+
         if (cantidades.TryGetValue(producto.Id, out int cantidad))
         {
             for (int i = 0; i < cantidad && i < producto.Stock; i++)
@@ -92,6 +95,9 @@
         }
 
         StateHasChanged();
+
+        Navigation.NavigateTo("/carrito");
+        
     }
 
 }
