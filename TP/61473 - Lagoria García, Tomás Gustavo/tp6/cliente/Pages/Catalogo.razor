@@ -73,3 +73,16 @@
   //  private readonly Guid carritoId = Guid.Parse("11111111-1111-1111-1111-111111111111");
  // Se puede inyectar o pasar como parámetro
     //[Parameter]
+    protected override async Task OnInitializedAsync()
+    {
+        Productos = await ProductoService.ObtenerProductosAsync();
+        
+        _carritoId = await CarritoService.ObtenerCarritoIdAsync();
+        Console.WriteLine($"Carrito ID: {_carritoId}");
+    /*    if (_carritoId != null)
+        {
+            var items = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);
+            _cartCount = items.Sum(i => i.Cantidad);
+        }
+        */
+    }
