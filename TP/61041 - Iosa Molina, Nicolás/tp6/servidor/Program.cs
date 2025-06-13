@@ -29,3 +29,37 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 app.Run();
+
+public class Producto
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; }
+    public string Descripcion { get; set; }
+    public double Precio { get; set; }
+    public int Stock { get; set; }
+    public string ImagenUrl { get; set; }
+    public List<ItemCompra> ItemsCompra { get; set; }
+}
+
+public class Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public double Total { get; set; }
+    public string NombreCliente { get; set; }
+    public string ApellidoCliente { get; set; }
+    public string EmailCliente { get; set; }
+    public List<ItemCompra> ItemsCompra { get; set; }
+}
+
+public class ItemCompra
+{
+    public int Id { get; set; }
+    public int ProductoId { get; set; }
+    public Producto Producto { get; set; }
+    public int CompraId { get; set; }
+    public Compra Compra { get; set; }
+    public int Cantidad { get; set; }
+    public double PrecioUnitario { get; set; }
+}
+
