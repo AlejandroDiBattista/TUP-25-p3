@@ -7,7 +7,7 @@
 <PageTitle>Productos</PageTitle>
 
 <div class="fondo-productos">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
             <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
@@ -26,10 +26,15 @@
                     <a class="nav-link" href="/productos">Productos</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/carrito">Carrito</a>
+                    <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
+                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                    <span style="margin-right: 0.3em;">Carrito</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                       @CarritoService.Items.Sum(i => i.Cantidad)
+                    </span>
+                    </a>
                 </li>
             </ul>
-
             <form class="d-flex" role="search">
                 <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
                 <button class="btn btn-outline-success" type="submit">Buscar</button>
