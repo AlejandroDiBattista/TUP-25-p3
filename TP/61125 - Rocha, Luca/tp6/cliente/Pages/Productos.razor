@@ -37,7 +37,7 @@
 
         @if (!string.IsNullOrWhiteSpace(productoEditando.ImagenUrl))
         {
-            <p>URL guardada: @productoEditando.ImagenUrl</p> <!-- Línea para verificar la URL -->
+            <p>URL guardada: @productoEditando.ImagenUrl</p> 
             <img src="@productoEditando.ImagenUrl" alt="Vista previa" class="img-thumbnail mb-3" style="max-height: 120px;" />
         }
 
@@ -56,7 +56,7 @@ else
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <p>URL guardada: @p.ImagenUrl</p> <!-- Línea para verificar la URL -->
+                    <p>URL guardada: @p.ImagenUrl</p> 
                     <img src="@p.ImagenUrl" alt="@p.Nombre" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
                     <div>
                         <strong>@p.Nombre</strong> – $@p.Precio<br />
@@ -64,6 +64,7 @@ else
                     </div>
                 </div>
                 <div>
+                    <button class="btn btn-primary btn-sm me-1" @onclick="() => AgregarAlCarrito(p)">Añadir al carrito</button> 
                     <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarProducto(p)">Editar</button>
                     <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
                 </div>
@@ -74,11 +75,13 @@ else
 
 <div class="mt-4 text-center">
     <a class="btn btn-outline-secondary" href="/">Volver al inicio</a>
+    <a class="btn btn-success" href="/carrito">Ver Carrito</a> 
 </div>
 
 @code {
     private List<Producto> productos = new();
     private Producto? productoEditando;
+    private Carrito carrito = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,5 +133,10 @@ else
     {
         await http.DeleteAsync($"api/productos/{id}");
         productos.RemoveAll(p => p.Id == id);
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        carrito.Productos.Add(producto);
     }
 }
