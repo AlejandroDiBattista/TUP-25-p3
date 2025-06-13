@@ -32,29 +32,27 @@
         </div>
     }
     else if (!string.IsNullOrEmpty(error))
-    {
-        <div class="alert alert-danger shadow-modern fade-in" role="alert">
-            <h4 class="alert-heading">❌ Oops! Algo salió mal</h4>
+    {        <div class="alert alert-danger shadow-modern fade-in" role="alert">
+            <h4 class="alert-heading"><Icon Name="alert-circle" Size="20" Class="icon-danger" /> Oops! Algo salió mal</h4>
             <p>@error</p>
             <div class="d-flex gap-2">
                 <button class="btn btn-outline-modern" @onclick="CargarCarrito">
-                    🔄 Reintentar
+                    <Icon Name="refresh-cw" Size="16" /> Reintentar
                 </button>
                 <button class="btn btn-primary-modern" @onclick="VolverAlCatalogo">
-                    ← Volver al Catálogo
+                    <Icon Name="arrow-left" Size="16" /> Volver al Catálogo
                 </button>
             </div>
         </div>
     }
     else if (carrito == null || !carrito.Items.Any())
-    {
-        <div class="text-center py-5 fade-in">
+    {        <div class="text-center py-5 fade-in">
             <div class="mb-4">
-                <div style="font-size: 6rem; opacity: 0.3;">🛒</div>
+                <Icon Name="shopping-cart" Size="96" Class="icon-muted" style="opacity: 0.3;" />
             </div>            <h2 class="text-gradient">Tu carrito está vacío</h2>
             <p class="text-muted mb-4">Agrega algunos productos increíbles para comenzar tu experiencia de compra en DualTech</p>
             <button class="btn btn-primary-modern btn-lg" @onclick="VolverAlCatalogo">
-                🛍️ Explorar Productos DualTech
+                <Icon Name="shopping-bag" Size="20" /> Explorar Productos DualTech
             </button>
         </div>
     }    else
@@ -63,9 +61,8 @@
             <!-- Lista de productos -->
             <div class="col-lg-8">
                 <div class="product-card">
-                    <div class="product-card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="product-title mb-0">📦 Productos Seleccionados</h5>
+                    <div class="product-card-body">                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="product-title mb-0"><Icon Name="package" Size="20" Class="icon-primary" /> Productos Seleccionados</h5>
                             <span class="badge-modern stock-available">
                                 @carrito.TotalItems elementos
                             </span>
@@ -118,10 +115,9 @@
                                             @if (eliminandoItem == item.ProductoId)
                                             {
                                                 <div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                                            }
-                                            else
+                                            }                                            else
                                             {
-                                                <span>🗑️</span>
+                                                <Icon Name="trash-2" Size="16" />
                                             }
                                         </button>
                                     </div>
@@ -136,9 +132,8 @@
                     <button class="btn btn-outline-modern" @onclick="VaciarCarrito" disabled="@vaciandoCarrito">
                         @if (vaciandoCarrito)
                         {
-                            <div class="loading-spinner me-2" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                        }
-                        🗑️ Vaciar Carrito
+                            <div class="loading-spinner me-2" style="width: 16px; height: 16px; border-width: 2px;"></div>                        }
+                        <Icon Name="trash-2" Size="16" /> Vaciar Carrito
                     </button>
                 </div>
             </div>
@@ -183,9 +178,8 @@
                             <div class="loading-spinner me-2" style="width: 20px; height: 20px; border-width: 2px;"></div>
                             <text>Procesando...</text>
                         }
-                        else
-                        {
-                            <text>✅ Confirmar Compra</text>
+                        else                        {
+                            <text><Icon Name="check-circle" Size="16" /> Confirmar Compra</text>
                         }
                     </button>
 
@@ -207,7 +201,7 @@
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-success">                <div class="modal-header">
-                    <h5 class="modal-title">✅ ¡Compra Confirmada en DualTech!</h5>
+                    <h5 class="modal-title"><Icon Name="check-circle" Size="20" Class="icon-success" /> ¡Compra Confirmada en DualTech!</h5>
                 </div>
                 <div class="modal-body">
                     <span class="modal-icon success">🎉</span>
@@ -231,7 +225,7 @@
                     <p class="text-muted mt-3">@compraConfirmada.Mensaje</p>
                 </div>                <div class="modal-footer">
                     <button type="button" class="btn btn-primary-modern" @onclick="VolverAlCatalogo">
-                        🛍️ Seguir Comprando en DualTech
+                        <Icon Name="shopping-bag" Size="16" /> Seguir Comprando en DualTech
                     </button>
                 </div>
             </div>
@@ -244,12 +238,13 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-confirm">
-                <div class="modal-header">
-                    <h5 class="modal-title">⚠️ Confirmar Eliminación</h5>
+            <div class="modal-content modal-confirm">                <div class="modal-header">
+                    <h5 class="modal-title"><Icon Name="alert-triangle" Size="20" Class="icon-warning" /> Confirmar Eliminación</h5>
                 </div>
                 <div class="modal-body">
-                    <span class="modal-icon warning">🗑️</span>
+                    <div class="modal-icon warning">
+                        <Icon Name="trash-2" Size="48" Class="icon-warning" />
+                    </div>
                     <h5>¿Eliminar producto del carrito?</h5>
                     <p class="text-muted">Esta acción no se puede deshacer.</p>
                 </div>
@@ -271,12 +266,13 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-confirm">
-                <div class="modal-header">
-                    <h5 class="modal-title">⚠️ Vaciar Carrito</h5>
+            <div class="modal-content modal-confirm">                <div class="modal-header">
+                    <h5 class="modal-title"><Icon Name="alert-triangle" Size="20" Class="icon-warning" /> Vaciar Carrito</h5>
                 </div>
                 <div class="modal-body">
-                    <span class="modal-icon warning">🛒</span>
+                    <div class="modal-icon warning">
+                        <Icon Name="shopping-cart" Size="48" Class="icon-warning" />
+                    </div>
                     <h5>¿Vaciar todo el carrito?</h5>
                     <p class="text-muted">Se eliminarán todos los productos del carrito.</p>
                 </div>
@@ -301,9 +297,17 @@
             <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">
                 <div class="modal-header">
                     <h5 class="modal-title">@tituloNotificacion</h5>
-                </div>
-                <div class="modal-body">
-                    <span class="modal-icon @tipoNotificacion">@iconoNotificacion</span>
+                </div>                <div class="modal-body">
+                    <div class="modal-icon @tipoNotificacion">
+                        @if (tipoNotificacion == "success")
+                        {
+                            <Icon Name="check-circle" Size="48" Class="icon-success" />
+                        }
+                        else
+                        {
+                            <Icon Name="alert-circle" Size="48" Class="icon-danger" />
+                        }
+                    </div>
                     <p>@mensajeNotificacion</p>
                 </div>
                 <div class="modal-footer">
@@ -425,11 +429,9 @@
     private bool mostrarModalEliminar = false;
     private bool mostrarModalVaciar = false;
     private bool mostrarNotificacion = false;
-    private int productoAEliminar = 0;
-    private string tituloNotificacion = "";
+    private int productoAEliminar = 0;    private string tituloNotificacion = "";
     private string mensajeNotificacion = "";
     private string tipoNotificacion = "";
-    private string iconoNotificacion = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -560,17 +562,16 @@
             
             if (exito)
             {
-                await CargarCarrito(); // Recargar carrito
-                MostrarNotificacion("✅ Producto Eliminado", "El producto se eliminó correctamente del carrito", "success", "✅");
+                await CargarCarrito(); // Recargar carrito                MostrarNotificacion("Producto Eliminado", "El producto se eliminó correctamente del carrito", "success");
             }
             else
             {
-                MostrarNotificacion("❌ Error", "No se pudo eliminar el producto del carrito", "error", "❌");
+                MostrarNotificacion("Error", "No se pudo eliminar el producto del carrito", "error");
             }
         }
         catch (Exception ex)
         {
-            MostrarNotificacion("❌ Error", $"Error: {ex.Message}", "error", "❌");
+            MostrarNotificacion("Error", $"Error: {ex.Message}", "error");
         }
         finally
         {
@@ -602,17 +603,16 @@
             
             if (exito)
             {
-                await CargarCarrito(); // Recargar carrito
-                MostrarNotificacion("✅ Carrito Vaciado", "Todos los productos fueron eliminados del carrito", "success", "🛒");
+                await CargarCarrito(); // Recargar carrito                MostrarNotificacion("Carrito Vaciado", "Todos los productos fueron eliminados del carrito", "success");
             }
             else
             {
-                MostrarNotificacion("❌ Error", "No se pudo vaciar el carrito", "error", "❌");
+                MostrarNotificacion("Error", "No se pudo vaciar el carrito", "error");
             }
         }
         catch (Exception ex)
         {
-            MostrarNotificacion("❌ Error", $"Error: {ex.Message}", "error", "❌");
+            MostrarNotificacion("Error", $"Error: {ex.Message}", "error");
         }
         finally
         {
@@ -623,14 +623,11 @@
     private void CancelarVaciar()
     {
         mostrarModalVaciar = false;
-    }
-
-    private void MostrarNotificacion(string titulo, string mensaje, string tipo, string icono)
+    }    private void MostrarNotificacion(string titulo, string mensaje, string tipo)
     {
         tituloNotificacion = titulo;
         mensajeNotificacion = mensaje;
         tipoNotificacion = tipo;
-        iconoNotificacion = icono;
         mostrarNotificacion = true;
     }
 
@@ -666,15 +663,14 @@
                 {
                     await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoId", nuevoCarritoId);
                 }
-            }
-            else
+            }            else
             {
-                MostrarNotificacion("❌ Error", "No se pudo confirmar la compra. Intenta nuevamente.", "error", "❌");
+                MostrarNotificacion("Error", "No se pudo confirmar la compra. Intenta nuevamente.", "error");
             }
         }
         catch (Exception ex)
         {
-            MostrarNotificacion("❌ Error", $"Error al procesar la compra: {ex.Message}", "error", "❌");
+            MostrarNotificacion("Error", $"Error al procesar la compra: {ex.Message}", "error");
         }
         finally
         {

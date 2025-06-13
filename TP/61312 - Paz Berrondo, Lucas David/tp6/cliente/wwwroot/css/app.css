@@ -869,3 +869,86 @@ html, body {
     opacity: 0;
     transform: translateX(100%);
 }
+
+/* ===========================
+   ICONOS SVG MINIMALISTAS
+   ========================== */
+.lucide-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    transition: var(--transition);
+}
+
+/* Variantes de iconos */
+.icon-primary {
+    color: #667eea;
+}
+
+.icon-success {
+    color: #10b981;
+}
+
+.icon-warning {
+    color: #f59e0b;
+}
+
+.icon-danger {
+    color: #ef4444;
+}
+
+.icon-muted {
+    color: #6b7280;
+}
+
+/* Tamaños predefinidos */
+.icon-xs {
+    width: 12px;
+    height: 12px;
+}
+
+.icon-sm {
+    width: 14px;
+    height: 14px;
+}
+
+.icon-md {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-lg {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-xl {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-2xl {
+    width: 32px;
+    height: 32px;
+}
+
+/* Efectos hover */
+.btn:hover .lucide-icon {
+    transform: scale(1.1);
+}
+
+.sidebar-item:hover .lucide-icon {
+    color: #3498db;
+}
+
+/* Iconos en modales */
+.modal-icon .lucide-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+}

@@ -2,23 +2,21 @@
 @inject NavigationManager Navigation
 
 <div class="app-container">    <!-- Sidebar Navigation -->
-    <nav class="sidebar">
-        <div class="sidebar-header">
+    <nav class="sidebar">        <div class="sidebar-header">
             <a href="/" class="sidebar-logo">
-                🛒 DualTech
+                <Icon Name="gamepad-2" Size="24" Class="icon-primary" /> DualTech
             </a>
         </div>
         
         <div class="sidebar-menu">            <a href="/" class="sidebar-item @(IsActive("/") ? "active" : "")">
-                � Gaming Store
+                <Icon Name="home" Size="16" /> Gaming Store
             </a>
             <a href="/carrito" class="sidebar-item @(IsActive("/carrito") ? "active" : "")">
-                🛒 Mi Carrito
+                <Icon Name="shopping-cart" Size="16" /> Mi Carrito
             </a>
         </div>
-        
-        <div class="sidebar-footer">
-            <div>🎮 DualTech Gaming</div>
+          <div class="sidebar-footer">
+            <div><Icon Name="gamepad-2" Size="16" Class="icon-primary" /> DualTech Gaming</div>
             <div style="font-size: 0.75rem; margin-top: 0.5rem;">
                 Powered by Dual Athloner
             </div>
