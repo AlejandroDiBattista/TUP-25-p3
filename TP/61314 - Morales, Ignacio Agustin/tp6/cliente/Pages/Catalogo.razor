@@ -1,7 +1,7 @@
 @page "/catalogo"
 @inject HttpClient Http
 
-<h2 class="titulo-catalogo">Catálogo de Productos Apple</h2>
+<h1 class="titulo-catalogo">Catálogo de Productos Apple</h1>
 
 @if (productos == null)
 {
@@ -17,7 +17,7 @@ else
         @foreach (var producto in productos)
         {
             <div class="card-producto">
-                <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
+                <img src="@($"https://localhost:5184/{producto.ImagenUrl}")" alt="@producto.Nombre" />
                 <h3>@producto.Nombre</h3>
                 <p>@producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@producto.Precio</p>
@@ -38,7 +38,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("https://localhost:5001/productos");
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos");
     }
 
     void AgregarAlCarrito(ProductoDto producto)
