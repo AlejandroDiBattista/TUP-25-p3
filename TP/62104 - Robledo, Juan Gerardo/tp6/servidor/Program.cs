@@ -1,9 +1,20 @@
+using Microsoft.EntityFrameworkCore;
+using servidor.data;
+using servidor.models;
+using System.ComponentModel.DataAnnotations;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar Entity Framework para guardar tienda.db
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
 // Agregar servicios CORS para permitir solicitudes desde el cliente
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:5247")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -13,6 +24,14 @@ builder.Services.AddCors(options => {
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// Crear la base de datos si no existe
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    context.Database.EnsureCreated();
+}
+
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
