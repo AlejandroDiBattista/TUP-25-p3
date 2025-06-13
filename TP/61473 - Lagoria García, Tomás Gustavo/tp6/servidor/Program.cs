@@ -87,27 +87,11 @@ var carritos = new Dictionary<Guid, List<ItemCarrito>>();
 
 // POST /carritos → crea un nuevo carrito
 
-app.MapPost("/carritos", async (AgregarCarritoRequest req, TiendaDbContext db) =>
+app.MapPost("/carritos", async ( TiendaDbContext db) =>
 {
-    var producto = await db.Productos.FindAsync(req.ProductoId);
-    if (producto == null)
-        return Results.NotFound("Producto no encontrado");
-
-    if (producto.Stock < req.Cantidad)
-        return Results.BadRequest("Stock insuficiente");
-
+    
     var id = Guid.NewGuid();
-
-    carritos[id] = new List<ItemCarrito>()
-    {
-        new ItemCarrito
-        {
-            ProductoId = producto.Id,
-            Nombre = producto.Nombre,
-            PrecioUnitario = producto.Precio,
-            Cantidad = req.Cantidad
-        }
-    };
+    carritos[id] = new List<ItemCarrito>();
     return Results.Ok(id);
 });
 
