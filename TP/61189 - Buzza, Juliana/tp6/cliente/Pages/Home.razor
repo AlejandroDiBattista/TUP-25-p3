@@ -1,59 +1,160 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@page "/{SearchTerm?}" 
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.ApiService.CartStateService CartStateService
+@inject NavigationManager Navigation
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>CalzadoEstilo - Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<h1 class="text-4xl font-extrabold text-center text-brown mb-8" style="font-family: 'Inter', sans-serif;">Nuestro Catálogo de Calzado</h1>
+
+@if (Loading)
+{
+    <p class="text-center text-gray-600">Cargando productos...</p>
+    <div class="flex justify-center items-center h-64">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-24 w-24"></div>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+}
+else if (Productos.Any())
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @foreach (var producto in Productos)
+        {
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-200">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="w-full h-48 object-cover object-center rounded-t-lg">
+                <div class="p-6 flex flex-col justify-between h-[calc(100%-12rem)]">
+                    <div>
+                        <h2 class="text-xl font-semibold text-brown mb-2">@producto.Nombre</h2>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">@producto.Descripcion</p>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                    <div class="flex justify-between items-baseline mb-4">
+                        <span class="text-2xl font-bold text-accent">€@producto.Precio</span>
+                        <span class="text-sm text-gray-500">Stock: @producto.Stock</span>
                     </div>
+                    @if (producto.Stock > 0)
+                    {
+                        <button @onclick="() => AddToCart(producto)"
+                                class="w-full bg-brown text-white py-3 px-4 rounded-full font-semibold hover:bg-darkbrown focus:outline-none focus:ring-2 focus:ring-brown-light focus:ring-opacity-75 transition-all duration-300 shadow-md flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Agregar al Carrito</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="w-full bg-gray-400 text-white py-3 px-4 rounded-full font-semibold cursor-not-allowed shadow-md">
+                            Sin Stock
+                        </button>
+                    }
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div>
+}
+else
+{
+    <p class="text-center text-gray-600">No se encontraron productos.</p>
+}
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="fixed top-24 right-4 bg-accent text-white p-4 rounded-lg shadow-lg transform transition-transform duration-300 @(ShowMessage ? "translate-x-0 opacity-100" : "translate-x-full opacity-0")" role="alert">
+        @Message
+    </div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    [Parameter]
+    public string? SearchTerm { get; set; }
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    private List<cliente.Models.Producto> Productos = new();
+    private bool Loading = true;
+    private int? CartId;
+    private string? Message;
+    private bool ShowMessage = false;
+    private System.Timers.Timer? messageTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartStateService.OnCartIdChanged += HandleCartIdChanged;
+        CartId = CartStateService.CartId;
+        await LoadProducts();
+    }
+
+    private void HandleCartIdChanged()
+    {
+        CartId = CartStateService.CartId;
+        StateHasChanged();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        Loading = true;
+        try
+        {
+            Productos = await ApiService.GetProductos(SearchTerm);
         }
+        catch (HttpRequestException ex)
+        {
+            ShowNotification($"Error al cargar productos: {ex.Message}", true);
+            Productos = new();
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private async Task AddToCart(cliente.Models.Producto producto)
+    {
+        try
+        {
+            if (CartId == null)
+            {
+                CartId = await ApiService.InitializeCart();
+            }
+
+            await ApiService.AddOrUpdateProductInCart(CartId.Value, producto.Id, 1);
+            ShowNotification($"{producto.Nombre} agregado al carrito.", false);
+        }
+        catch (HttpRequestException ex)
+        {
+            ShowNotification($"Error al agregar {producto.Nombre} al carrito: {ex.Message}", true);
+        }
+    }
+
+    private void ShowNotification(string message, bool isError)
+    {
+        Message = message;
+        ShowMessage = true;
+
+        if (messageTimer != null)
+        {
+            messageTimer.Dispose();
+        }
+
+        messageTimer = new System.Timers.Timer(3000);
+        messageTimer.Elapsed += (sender, e) =>
+        {
+            ShowMessage = false;
+            InvokeAsync(StateHasChanged);
+            messageTimer?.Dispose();
+        };
+        messageTimer.AutoReset = false;
+        messageTimer.Start();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (messageTimer != null)
+        {
+            messageTimer.Dispose();
+        }
+        CartStateService.OnCartIdChanged -= HandleCartIdChanged;
     }
 }
