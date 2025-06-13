@@ -1,0 +1,61 @@
+@page "/carrito"
+@using cliente.Services
+@using cliente.Shared
+@inject ApiService ApiService
+@inject IJSRuntime JS
+
+<PageTitle>Carrito</PageTitle>
+
+<h2 class="mb-4">Productos en el carrito</h2>
+
+@if (items == null)
+{
+    <p>Cargando productos del carrito...</p>
+}
+else if (items.Count == 0)
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var item in items)
+        {
+            <div class="list-group-item d-flex align-items-center">
+                <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" style="width: 64px; height: 64px; object-fit: cover; margin-right: 1rem;" />
+                <div class="flex-grow-1">
+                    <div class="fw-bold">@item.Producto?.Nombre</div>
+                    <div class="text-muted">Cantidad: @item.Cantidad</div>
+                </div>
+                <div class="text-end">
+                    <div>Precio: $@item.PrecioUnitario</div>
+                    <div>Subtotal: $@(item.PrecioUnitario * item.Cantidad)</div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="fw-bold mt-3">Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</div>
+}
+
+@code {
+    private List<ItemCompra> items;
+    private int carritoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!int.TryParse(idStr, out carritoId) || carritoId == 0)
+        {
+            items = new List<ItemCompra>();
+            return;
+        }
+        try
+        {
+            items = await ApiService.ObtenerItemsCarritoAsync(carritoId);
+        }
+        catch (Exception ex)
+        {
+            items = new List<ItemCompra>();
+        }
+    }
+}

@@ -67,9 +67,30 @@ app.MapPost("/carritos", async (AppDbContext db) =>
 // GET /carritos/{carrito} → Trae los ítems del carrito
 app.MapGet("/carritos/{carritoId}", async (AppDbContext db, int carritoId) =>
 {
-    var carrito = await db.Compras.Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.Id == carritoId);
+    var carrito = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
     if (carrito == null) return Results.NotFound();
-    return Results.Ok(carrito);
+
+    var result = new {
+        Id = carrito.Id,
+        Items = carrito.Items.Select(i => new {
+            i.Id,
+            Producto = new {
+                i.Producto.Id,
+                i.Producto.Nombre,
+                i.Producto.Descripcion,
+                i.Producto.ImagenUrl,
+                i.Producto.Precio
+            },
+            i.Cantidad,
+            i.PrecioUnitario
+        }).ToList()
+    };
+
+    return Results.Ok(result);
 });
 
 // DELETE /carritos/{carrito} → Vacía el carrito
@@ -108,13 +129,14 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (AppDbContext db, int carrit
     return Results.Ok();
 });
 
-// PUT /carritos/{carrito}/{producto} → Agrega producto o actualiza cantidad
+// PUT /carritos/{carritoId}/{productoId}?cantidad=1
 app.MapPut("/carritos/{carritoId}/{productoId}", async (AppDbContext db, int carritoId, int productoId, int cantidad) =>
 {
     var carrito = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
     var producto = await db.Productos.FindAsync(productoId);
     if (carrito == null || producto == null) return Results.NotFound();
     if (producto.Stock < cantidad) return Results.BadRequest("No hay stock suficiente");
+
     var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
     if (item == null)
     {
@@ -124,7 +146,7 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (AppDbContext db, int car
     }
     else
     {
-        item.Cantidad = cantidad;
+        item.Cantidad += cantidad;
     }
     await db.SaveChangesAsync();
     return Results.Ok();

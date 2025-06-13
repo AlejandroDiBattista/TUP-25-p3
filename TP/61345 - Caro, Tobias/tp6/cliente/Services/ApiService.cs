@@ -27,9 +27,50 @@ public class ApiService {
         var json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<List<Producto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
-}
 
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
+    public async Task AgregarAlCarrito(int carritoId, int productoId, int cantidad)
+    {
+        var response = await _httpClient.PutAsync(
+            $"carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<List<ItemCompra>> ObtenerItemsCarritoAsync(int carritoId)
+    {
+        var response = await _httpClient.GetAsync($"carritos/{carritoId}");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        var carrito = JsonSerializer.Deserialize<CompraCarritoRespuesta>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return carrito?.Items ?? new List<ItemCompra>();
+    }
+
+    public async Task<int> InicializarCarritoAsync()
+    {
+        var response = await _httpClient.PostAsync("carritos", null);
+        response.EnsureSuccessStatusCode();
+        var idString = await response.Content.ReadAsStringAsync();
+        // El backend responde con el id como número, o como JSON ("1"). Intentamos parsear ambos.
+        if (int.TryParse(idString, out int id))
+            return id;
+        // Si viene como JSON: { "value": 1 }
+        try
+        {
+            using var doc = JsonDocument.Parse(idString);
+            if (doc.RootElement.TryGetProperty("value", out var valueProp))
+                return valueProp.GetInt32();
+        }
+        catch { }
+        throw new Exception("No se pudo obtener el id del carrito");
+    }
+
+    public class CompraCarritoRespuesta
+    {
+        public int Id { get; set; }
+        public List<ItemCompra> Items { get; set; }
+    }
+
+    public class DatosRespuesta {
+        public string Mensaje { get; set; }
+        public DateTime Fecha { get; set; }
+    }
 }

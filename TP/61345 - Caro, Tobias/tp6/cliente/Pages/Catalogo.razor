@@ -1,5 +1,6 @@
 @using cliente.Services
 @using cliente.Shared
+@using Microsoft.AspNetCore.Components
 @inject ApiService ApiService
 
 <div class="container my-4">
@@ -30,7 +31,7 @@
                                 {
                                     <p class="text-secondary">Stock: @(producto.GetType().GetProperty("Stock")?.GetValue(producto, null) ?? "-")</p>
                                 }
-                                <button class="btn-card">Agregar al carrito</button>
+                                <button class="btn-card" @onclick="() => AgregarAlCarrito(producto.Id)">Agregar al carrito</button>
                             </div>
                         </div>
                     </div>
@@ -41,6 +42,8 @@
 </div>
 
 @code {
+    [Parameter] public int CarritoId { get; set; }
+    [Parameter] public EventCallback OnProductoAgregado { get; set; }
     private List<Producto> productos;
     private string errorMsg;
 
@@ -53,6 +56,20 @@
         catch (Exception ex)
         {
             errorMsg = $"Error al cargar productos: {ex.Message}";
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        try
+        {
+            await ApiService.AgregarAlCarrito(CarritoId, productoId, 1);
+            if (OnProductoAgregado.HasDelegate)
+                await OnProductoAgregado.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMsg = $"Error al agregar al carrito: {ex.Message}";
         }
     }
 }
