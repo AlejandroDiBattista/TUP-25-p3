@@ -320,8 +320,8 @@ public class TiendaDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Producto>().HasData(
-            new Producto { Id = 1, Nombre = "Celular Samsung A14", Descripcion = "Pantalla 6.6”, 128GB", Precio = 450, Stock = 20, ImagenURL = "https://images.samsung.com/is/image/samsung/p6pim/ar/sm-a145mzsearo/gallery/ar-galaxy-a14-sm-a145-sm-a145mzsearo-535983519?$684_547_PNG$" }
-            /*new Producto { Id = 2, Nombre = "Auriculares Bluetooth", Descripcion = "Cancelación de ruido", Precio = 60, Stock = 50, ImagenURL = "https://via.placeholder.com/200" },
+            new Producto { Id = 1, Nombre = "Celular Samsung A14", Descripcion = "Pantalla 6.6”, 128GB", Precio = 450, Stock = 20, ImagenURL = "https://images.samsung.com/is/image/samsung/p6pim/ar/sm-a145mzsearo/gallery/ar-galaxy-a14-sm-a145-sm-a145mzsearo-535983519?$684_547_PNG$" },
+            new Producto { Id = 2, Nombre = "Auriculares Bluetooth", Descripcion = "Cancelación de ruido", Precio = 60, Stock = 50, ImagenURL = "https://via.placeholder.com/200" },
             new Producto { Id = 3, Nombre = "Smart TV 43” LG", Descripcion = "Full HD, WebOS", Precio = 310, Stock = 10, ImagenURL = "https://via.placeholder.com/200" },
             new Producto { Id = 4, Nombre = "Gaseosa Cola 2L", Descripcion = "Pack de 6 unidades", Precio = 9, Stock = 100, ImagenURL = "https://via.placeholder.com/200" },
             new Producto { Id = 5, Nombre = "Notebook Lenovo i5", Descripcion = "8GB RAM, 512GB SSD", Precio = 700, Stock = 15, ImagenURL = "https://via.placeholder.com/200" },
@@ -330,7 +330,7 @@ public class TiendaDbContext : DbContext
             new Producto { Id = 8, Nombre = "Powerbank 10.000mAh", Descripcion = "Carga rápida USB-C", Precio = 35, Stock = 35, ImagenURL = "https://via.placeholder.com/200" },
             new Producto { Id = 9, Nombre = "Tablet 10”", Descripcion = "Android 13, 64GB", Precio = 220, Stock = 12, ImagenURL = "https://via.placeholder.com/200" },
             new Producto { Id = 10, Nombre = "Teclado Inalámbrico", Descripcion = "Compacto, multimedia", Precio = 18, Stock = 25, ImagenURL = "https://via.placeholder.com/200" }
-        */
+        
         );
     }
 }
