@@ -12,44 +12,61 @@
 }
 else if (items.Count == 0)
 {
-    <p>El carrito está vacío.</p>
+    <div class="card shadow p-4 text-center" style="max-width:500px;margin:2rem auto;">
+        <h4>El carrito está vacío.</h4>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in items)
-            {
-                <tr>
-                    <td>
-                        <img src="@item.ImagenUrl" alt="@item.Nombre" style="width:50px;height:50px;object-fit:contain;" />
-                        @item.Nombre
-                    </td>
-                    <td>$@item.Precio</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, item.Cantidad - 1)" disabled="@(item.Cantidad <= 1)">-</button>
-                        <span class="mx-2">@item.Cantidad</span>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, item.Cantidad + 1)">+</button>
-                    </td>
-                    <td>$@item.Subtotal</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item)">Eliminar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <div class="mb-3">
-        <b>Total: $@items.Sum(i => i.Subtotal)</b>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card shadow p-4 mb-4">
+                    <h3 class="mb-4">Detalle del Carrito</h3>
+                    @foreach (var item in items)
+                    {
+                        <div class="card flex-row flex-wrap flex-md-nowrap align-items-center shadow border border-primary bg-light p-2 mb-3"
+                            style="min-height:180px; max-height:240px;">
+                            <div class="d-flex align-items-center justify-content-center bg-white border-end border-2 border-primary"
+                                style="min-width:200px;max-width:240px;width:45%;min-height:180px;max-height:220px;">
+                                <img src="@item.ImagenUrl" alt="@item.Nombre" class="img-fluid rounded"
+                                    style="max-height:180px;max-width:100%;object-fit:contain;">
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-between p-3"
+                                style="min-width:180px;width:55%;min-height:180px;">
+                                <h5 class="card-title mb-2"
+                                    style="font-weight:bold;font-size:1.2rem;">@item.Nombre</h5>
+                                <p class="card-text text-muted mb-2"
+                                    style="font-size:1.1rem;">Subtotal: $@item.Subtotal.ToString("N2")</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-success me-2" style="font-size:1.25rem;">$@item.Precio.ToString("N2")</span>
+                                    <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @item.Stock</span>
+                                </div>
+                                <div class="d-flex gap-2 mt-1 align-items-center">
+                                    <button class="btn btn-sm btn-secondary me-1"
+                                        @onclick="() => CambiarCantidad(item, item.Cantidad - 1)"
+                                        disabled="@(item.Cantidad <= 1)">−</button>
+                                    <span class="mx-1" style="font-size:1.1rem;">@item.Cantidad</span>
+                                    <button class="btn btn-sm btn-secondary ms-1"
+                                        @onclick="() => CambiarCantidad(item, item.Cantidad + 1)"
+                                        disabled="@(item.Cantidad >= item.Stock)">+</button>
+                                    <button class="btn btn-outline-danger btn-sm ms-2"
+                                        @onclick="() => EliminarProducto(item)">Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="mt-4 mb-3 text-end">
+                        <span class="badge bg-warning text-dark" style="font-size:1.3rem;">Total: $@items.Sum(i => i.Subtotal).ToString("N2")</span>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
+                        <button class="btn btn-danger me-md-2 mb-2 mb-md-0" @onclick="VaciarCarrito">Vaciar carrito</button>
+                        <button class="btn btn-success me-md-2 mb-2 mb-md-0" @onclick="ConfirmarCompra">Confirmar compra</button>
+                        <button class="btn btn-celeste-continuar" @onclick="ContinuarAgregando">Continuar agregando</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
     <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
