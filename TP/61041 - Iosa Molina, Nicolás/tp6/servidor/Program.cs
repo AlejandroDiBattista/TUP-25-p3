@@ -20,6 +20,30 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// Crear la base de datos y cargar datos de ejemplo
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
+    db.Database.EnsureCreated(); // <-- Aquí se crea la base de datos si no existe
+
+    if (!db.Productos.Any())
+    {
+        db.Productos.AddRange(
+            new Producto { Nombre = "iPhone 15", Descripcion = "Celular Apple", Precio = 1200, Stock = 10, ImagenUrl = "https://store.storeimages.cdn-apple.com/iphone15.jpg" },
+            new Producto { Nombre = "Samsung Galaxy S24", Descripcion = "Celular Samsung", Precio = 1100, Stock = 8, ImagenUrl = "https://images.samsung.com/galaxy-s24.jpg" },
+            new Producto { Nombre = "Xiaomi Redmi Note 13", Descripcion = "Celular Xiaomi", Precio = 400, Stock = 15, ImagenUrl = "https://xiaomi.com/redmi-note-13.jpg" },
+            new Producto { Nombre = "Auriculares JBL", Descripcion = "Auriculares inalámbricos", Precio = 150, Stock = 20, ImagenUrl = "https://jbl.com/auriculares.jpg" },
+            new Producto { Nombre = "Cargador USB-C", Descripcion = "Cargador rápido", Precio = 30, Stock = 50, ImagenUrl = "https://images.cargadorusb-c.jpg" },
+            new Producto { Nombre = "Coca Cola 2L", Descripcion = "Gaseosa 2 litros", Precio = 3, Stock = 100, ImagenUrl = "https://cocacola.com/2l.jpg" },
+            new Producto { Nombre = "Pepsi 2L", Descripcion = "Gaseosa 2 litros", Precio = 2.8, Stock = 90, ImagenUrl = "https://pepsi.com/2l.jpg" },
+            new Producto { Nombre = "Funda iPhone 15", Descripcion = "Funda silicona", Precio = 25, Stock = 30, ImagenUrl = "https://fundas.com/iphone15.jpg" },
+            new Producto { Nombre = "Mouse Logitech", Descripcion = "Mouse inalámbrico", Precio = 40, Stock = 25, ImagenUrl = "https://logitech.com/mouse.jpg" },
+            new Producto { Nombre = "Teclado Redragon", Descripcion = "Teclado mecánico", Precio = 60, Stock = 18, ImagenUrl = "https://redragon.com/teclado.jpg" }
+        );
+        db.SaveChanges();
+    }
+}
+
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
