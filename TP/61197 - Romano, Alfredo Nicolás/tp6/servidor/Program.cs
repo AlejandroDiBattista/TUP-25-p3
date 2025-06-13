@@ -22,6 +22,12 @@ builder.Services.AddDbContext<TiendaContext>(options =>
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 
+// Configuración de serialización camelCase
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+
 var app = builder.Build();
 
 // Configurar el pipeline de solicitudes HTTP
