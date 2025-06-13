@@ -13,7 +13,6 @@ namespace cliente.Services
         {
             _httpClient = httpClient;
             _cartStateService = cartStateService;
-            _httpClient.BaseAddress = new Uri("https://localhost:7295/");
         }
 
         public async Task<List<Producto>> GetProductos(string? query = null)
@@ -73,6 +72,7 @@ namespace cliente.Services
             _cartStateService.SetCartId(null); 
             return await response.Content.ReadFromJsonAsync<Compra>() ?? throw new Exception("Error al confirmar la compra.");
         }
+
         public class CartStateService
         {
             private readonly HttpClient _httpClient; 
@@ -127,7 +127,7 @@ namespace cliente.Services
             {
                 try
                 {
-                    var response = await _httpClient.GetFromJsonAsync<List<CarritoItemDto>>($"https://localhost:7295/carritos/{cartId}");
+                    var response = await _httpClient.GetFromJsonAsync<List<CarritoItemDto>>($"http://localhost:5184/carritos/{cartId}");
                     ItemCount = response?.Sum(item => item.Cantidad) ?? 0;
                 }
                 catch (Exception)
