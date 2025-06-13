@@ -16,7 +16,7 @@ else if (carrito.Items.Count == 0)
 }
 else
 {
-    <table class="table">
+    <table class="table table-striped align-middle">
         <thead>
             <tr>
                 <th>Producto</th>
@@ -31,7 +31,7 @@ else
             {
                 <tr>
                     <td>
-                        <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="height:40px;width:40px;object-fit:cover;" />
+                        <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="height:40px;width:40px;object-fit:cover;margin-right:8px;" />
                         @item.Producto.Nombre
                     </td>
                     <td>@item.PrecioUnitario.ToString("C")</td>
@@ -51,9 +51,11 @@ else
     <div>
         <b>Total: </b> @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")
     </div>
-    <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
-    <button class="btn btn-success" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Confirmar compra</button>
-    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Seguir comprando</button>
+    <div class="mb-3">
+        <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-success me-2" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Confirmar compra</button>
+        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Seguir comprando</button>
+    </div>
 }
 
 @code

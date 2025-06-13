@@ -18,20 +18,22 @@ else if (productos.Count == 0)
 }
 else
 {
-    <div>
+    <div class="row">
         @foreach (var prod in productos)
         {
-            <div style="border:1px solid #ccc; margin:10px; padding:10px; display:inline-block; width:250px;">
-                <img src="@prod.ImagenUrl" alt="@prod.Nombre" style="width:100%; height:120px; object-fit:cover;" />
-                <h5>@prod.Nombre</h5>
-                <p>@prod.Descripcion</p>
-                <b>Precio:</b> @prod.Precio.ToString("C")
-                <br />
-                <b>Stock:</b> @prod.Stock
-                <br />
-                <button class="btn btn-primary" disabled="@(@prod.Stock == 0)" @onclick="() => AgregarAlCarrito(prod.Id)">
-                    Agregar al carrito
-                </button>
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="height: 180px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@prod.Nombre</h5>
+                        <p class="card-text">@prod.Descripcion</p>
+                        <p class="mb-1"><b>Precio:</b> $ @prod.Precio.ToString()</p>
+                        <p class="mb-2"><b>Stock:</b> @prod.Stock</p>
+                        <button class="btn btn-primary mt-auto" disabled="@(@prod.Stock == 0)" @onclick="() => AgregarAlCarrito(prod.Id)">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
             </div>
         }
     </div>
