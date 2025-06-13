@@ -1,5 +1,14 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: 'northernArmy', Arial, sans-serif;
+    font-size: 1.05rem;
+    color: rgb(218, 218, 218);
+
+    background: url('http://localhost:5184/img/hud/background.png') no-repeat center center fixed;
+    background-size: cover;
 }
 
 h1:focus {
