@@ -9,10 +9,9 @@
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
             <span class="navbar-logo me-2">
-                <!-- Puedes usar un SVG o emoji aquí -->
                 <svg width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
                     <rect width="16" height="16" rx="4" fill="#fff"/>
-                    <text x="8" y="12" text-anchor="middle" font-size="12" fill="#3358ff" font-family="Segoe UI, Arial, sans-serif">🏬</text>
+                    <text x="8" y="12" text-anchor="middle" font-size="15" fill="#3358ff" font-family="Segoe UI, Arial, sans-serif">🛒</text>
                 </svg>
             </span>
             <span class="navbar-title ms-2">
@@ -21,10 +20,17 @@
                 </NavLink>
             </span>
         </div>
-        <a class="btn btn-light tienda-cart ms-auto" href="/carrito" style="position: absolute; right: 36px; top: 15px;">
-            <img src="imagenes/carrito.png" alt="Carrito" style="width:50px; height:50px;">
-            <path d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 14H4a.5.5 0 0 1-.491-.408L1.01 2H.5a.5.5 0 0 1-.5-.5zM3.14 6l1.25 6h8.22l1.25-6H3.14z"/>
+        <a class="btn btn-light tienda-cart ms-auto" href="/carrito" style="position: absolute; right: 60px; top: 15px;">
+            <img src="imagenes/carrito4.jpg" alt="Carrito" style="width:75px; height:75px;">
         </a>
+        <a href="/carrito" class="carrito-icono"></a>
+
+        @if (CarritoService.CantidadTotal > 0)
+        {
+            <span class="badge bg-danger" style="position: absolute; right: 26px; top: 25px; font-size: 35px; color: white;">
+                @CarritoService.CantidadTotal
+            </span>
+        }
     </div>
 </nav>
 <main>
