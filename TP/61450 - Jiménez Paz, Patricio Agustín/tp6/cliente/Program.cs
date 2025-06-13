@@ -16,4 +16,7 @@ builder.Services.AddScoped<ApiService>();
 // Registrar el servicio de carrito
 builder.Services.AddScoped<CarritoService>();
 
+// Registrar el servicio de notificaciones
+builder.Services.AddSingleton<NotificationService>();
+
 await builder.Build().RunAsync();
