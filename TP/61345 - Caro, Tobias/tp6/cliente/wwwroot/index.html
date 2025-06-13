@@ -19,16 +19,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Tai+Heritage+Pro:wght@400;700&display=swap" rel="stylesheet">    
 </head>
 
-<body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+<body style="background-color: transparent;">
+    <div id="splash" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;background:black;transition:opacity 0.8s;">
+        <div style="width:15vw;height:35vh;display:flex;align-items:center;justify-content:center;font-size:2.5vw;color:blanchedalmond;border-radius:1.5vw;background:rgba(0,0,0,0.7);box-shadow:0 0 20px #000;">
+            &#128206; Black Store
+        </div>
     </div>
-
     <script src="_framework/blazor.webassembly.js"></script>
+    <div id="app" style="visibility:visible;"></div>
+    <script>
+        setTimeout(function() {
+            var splash = document.getElementById('splash');
+            splash.style.opacity = 0;
+            setTimeout(function() {
+                splash.style.display = 'none';
+                document.getElementById('app').style.visibility = 'visible';
+            }, 700); // Espera a que termine la transición
+        }, 1500);
+    </script>
+
+    <!-- <script src="_framework/blazor.webassembly.js"></script> -->
 </body>
 
 
