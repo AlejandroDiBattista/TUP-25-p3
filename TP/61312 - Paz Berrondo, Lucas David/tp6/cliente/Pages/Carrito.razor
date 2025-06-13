@@ -5,18 +5,17 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
-<PageTitle>Mi Carrito - TechStore</PageTitle>
+<PageTitle>Mi Carrito - DualTech</PageTitle>
 
 <!-- Content Header -->
 <div class="content-header">
     <div class="row align-items-center">
         <div class="col-lg-6">
-            <h1 class="page-title">Mi Carrito de Compras</h1>
-            <p class="page-subtitle">Revisa y confirma tus productos seleccionados</p>
-        </div>
-        <div class="col-lg-6 text-end">
+            <h1 class="page-title">Mi Carrito DualTech</h1>
+            <p class="page-subtitle">Revisa y confirma tus productos seleccionados en DualTech</p>
+        </div>        <div class="col-lg-6 text-end">
             <button class="btn btn-outline-modern" @onclick="VolverAlCatalogo">
-                ← Seguir Comprando
+                ← Seguir Comprando en DualTech
             </button>
         </div>
     </div>
@@ -52,11 +51,10 @@
         <div class="text-center py-5 fade-in">
             <div class="mb-4">
                 <div style="font-size: 6rem; opacity: 0.3;">🛒</div>
-            </div>
-            <h2 class="text-gradient">Tu carrito está vacío</h2>
-            <p class="text-muted mb-4">Agrega algunos productos increíbles para comenzar tu experiencia de compra</p>
+            </div>            <h2 class="text-gradient">Tu carrito DualTech está vacío</h2>
+            <p class="text-muted mb-4">Agrega algunos productos increíbles para comenzar tu experiencia de compra en DualTech</p>
             <button class="btn btn-primary-modern btn-lg" @onclick="VolverAlCatalogo">
-                🛍️ Explorar Productos
+                🛍️ Explorar Productos DualTech
             </button>
         </div>
     }    else
@@ -208,13 +206,12 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-success">
-                <div class="modal-header">
-                    <h5 class="modal-title">✅ ¡Compra Confirmada!</h5>
+            <div class="modal-content modal-success">                <div class="modal-header">
+                    <h5 class="modal-title">✅ ¡Compra Confirmada en DualTech!</h5>
                 </div>
                 <div class="modal-body">
                     <span class="modal-icon success">🎉</span>
-                    <h4 class="text-gradient mb-3">¡Gracias por tu compra!</h4>
+                    <h4 class="text-gradient mb-3">¡Gracias por confiar en DualTech!</h4>
                     
                     <div class="purchase-summary">
                         <div class="summary-row">
@@ -232,10 +229,9 @@
                     </div>
                     
                     <p class="text-muted mt-3">@compraConfirmada.Mensaje</p>
-                </div>
-                <div class="modal-footer">
+                </div>                <div class="modal-footer">
                     <button type="button" class="btn btn-primary-modern" @onclick="VolverAlCatalogo">
-                        🛍️ Seguir Comprando
+                        🛍️ Seguir Comprando en DualTech
                     </button>
                 </div>
             </div>
