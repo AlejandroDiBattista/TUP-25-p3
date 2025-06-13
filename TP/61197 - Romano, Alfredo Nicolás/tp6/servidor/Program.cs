@@ -4,15 +4,23 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins("http://localhost:5184")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
+});
+
+// Configuración de serialización camelCase
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
 // Configuración de EF Core con SQLite
@@ -21,12 +29,6 @@ builder.Services.AddDbContext<TiendaContext>(options =>
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
-
-// Configuración de serialización camelCase
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
-{
-    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-});
 
 var app = builder.Build();
 
