@@ -466,9 +466,7 @@
 
     private async Task ActualizarCantidad(int productoId, int nuevaCantidad)
     {
-        if (string.IsNullOrEmpty(carritoId) || nuevaCantidad < 1) return;
-
-        try
+        if (string.IsNullOrEmpty(carritoId) || nuevaCantidad < 1) return;        try
         {
             actualizandoItem = productoId;
             
@@ -480,12 +478,12 @@
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "❌ Error al actualizar la cantidad");
+                MostrarNotificacion("Error", "No se pudo actualizar la cantidad. Verifica el stock disponible.", "error");
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"❌ Error: {ex.Message}");
+            MostrarNotificacion("Error", $"Error al actualizar la cantidad: {ex.Message}", "error");
         }
         finally
         {
