@@ -60,22 +60,26 @@ app.MapPost("/carrito", () =>
   return Results.Ok(new { carritoId = nuevoCarrito.Id });
 });
 
-app.MapPost("/carrito/agregar", async ([FromQuery] Guid id, [FromBody] CarritoItem item, ApplicationDbContext db) =>
+app.MapPut("/carritos/{id}/{productoId}", async (
+    [FromRoute] Guid id,
+    [FromRoute] int productoId,
+    [FromBody] int cantidad,
+    ApplicationDbContext db) =>
 {
-  if (!carritos.TryGetValue(id, out var carrito))
-    return Results.NotFound("Carrito no encontrado");
+    if (!carritos.TryGetValue(id, out var carrito))
+        return Results.NotFound("Carrito no encontrado");
 
-  var producto = await db.Productos.FindAsync(item.ProductoId);
-  if (producto == null || producto.Stock < item.Cantidad)
-    return Results.BadRequest("Producto no válido o sin stock");
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null || producto.Stock < cantidad)
+        return Results.BadRequest("Producto no válido o sin stock");
 
-  var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == item.ProductoId);
-  if (existente != null)
-    existente.Cantidad += item.Cantidad;
-  else
-    carrito.Items.Add(item);
+    var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (existente != null)
+        existente.Cantidad += cantidad;
+    else
+        carrito.Items.Add(new CarritoItem { ProductoId = productoId, Cantidad = cantidad });
 
-  return Results.Ok(carrito);
+    return Results.Ok(carrito);
 });
 
 app.MapPost("/comprar", async ([FromQuery] Guid id, [FromBody] Compra datosCompra, ApplicationDbContext db) =>
