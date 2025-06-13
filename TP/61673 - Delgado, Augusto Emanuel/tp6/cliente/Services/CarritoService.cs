@@ -63,6 +63,35 @@ namespace cliente.Services
             }
         }
 
+        public void EstablecerCantidadEnCarrito(Producto producto, int cantidad)
+        {
+            var existingItem = Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
+
+            if (cantidad <= 0)
+            {
+                if (existingItem != null)
+                {
+                    Items.Remove(existingItem);
+                    Console.WriteLine($"[CarritoService] Removido {producto.Nombre} del carrito (cantidad <= 0).");
+                }
+            }
+            else
+            {
+                if (existingItem != null)
+                {
+                    existingItem.Cantidad = cantidad;
+                    Console.WriteLine($"[CarritoService] Cantidad de {producto.Nombre} establecida a: {cantidad}");
+                }
+                else
+                {
+                    Items.Add(new CarritoItem { Producto = producto, Cantidad = cantidad });
+                    Console.WriteLine($"[CarritoService] Agregado {producto.Nombre} con cantidad: {cantidad}");
+                }
+            }
+            SaveCarritoToLocalStorage();
+            NotifyStateChanged();
+        }
+
         public void AgregarOActualizarEnCarrito(Producto producto)
         {
             var existingItem = Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
@@ -76,7 +105,7 @@ namespace cliente.Services
                 }
                 else
                 {
-                    Console.WriteLine($"[CarritoService] No hay suficiente stock para {producto.Nombre} (actual: {existingItem.Cantidad}, max: {producto.Stock})");
+                    Console.WriteLine($"[CarritoService] No hay suficiente stock para {producto.Nombre} (actual: {existingItem.Cantidad}, max: {existingItem.Producto.Stock})");
                 }
             }
             else

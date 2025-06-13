@@ -1,5 +1,6 @@
 @page "/carrito"
 @using cliente.Models
+@inject NavigationManager Navigation
 @inject cliente.Services.CarritoService CarritoService
 
 <PageTitle>Tu Carrito de Compras</PageTitle>
@@ -8,59 +9,83 @@
 
 @if (CarritoService.Items.Any())
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio Unitario</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="row">
+        <div class="col-md-8">
             @foreach (var item in CarritoService.Items)
             {
-                <tr>
-                    <td>
-                        <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
-                        @item.Producto.Nombre
-                    </td>
-                    <td>$@item.Producto.Precio</td>
-                    <td>
-                        <input type="number" @bind-value="item.Cantidad"
-                               @bind-value:event="oninput"
-                               min="1" max="@item.Producto.Stock"
-                               @onchange="() => ActualizarCantidad(item)"
-                               class="form-control" style="width: 80px;">
-                    </td>
-                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item.Producto.Id)">Eliminar</button>
-                    </td>
-                </tr>
+                <div class="card mb-3 cart-item-card">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-md-3 col-sm-4 text-center">
+                            <img src="@item.Producto.ImagenUrl" class="img-fluid rounded-start cart-item-image" alt="@item.Producto.Nombre">
+                        </div>
+                        <div class="col-md-9 col-sm-8">
+                            <div class="card-body">
+                                <h5 class="card-title cart-item-name">@item.Producto.Nombre</h5>
+                                <p class="card-text">Precio Unitario: <strong>$@item.Producto.Precio</strong></p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <label for="cantidad-@item.Producto.Id" class="form-label mb-0 me-2">Cantidad:</label>
+                                    <div class="input-group" style="width: 140px;">
+                                        <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item, -1)"
+                                                disabled="@(item.Cantidad <= 1)">-</button>
+                                        <input type="number" @bind-value="item.Cantidad"
+                                               @bind-value:event="oninput"
+                                               @onchange="() => ActualizarCantidadManual(item)"
+                                               min="1" max="@item.Producto.Stock"
+                                               class="form-control text-center"
+                                               id="cantidad-@item.Producto.Id">
+                                        <button class="btn btn-outline-secondary btn-sm" @onclick="() => CambiarCantidad(item, 1)"
+                                                disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                                    </div>
+                                </div>
+                                <p class="card-text cart-item-subtotal">Subtotal: <strong>$@(item.Producto.Precio * item.Cantidad)</strong></p>
+                                <button class="btn btn-danger btn-sm mt-2" @onclick="() => EliminarItem(item.Producto.Id)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                <td><strong>$@CarritoService.TotalCarrito</strong></td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-outline-secondary" @onclick="VaciarCarrito">
+                    <i class="bi bi-cart-x"></i> Vaciar Carrito
+                </button>
+            </div>
+        </div>
 
-    <div class="d-grid gap-2">
-        <button class="btn btn-success btn-lg">Proceder al Pago</button>
-        <button class="btn btn-outline-secondary" @onclick="VaciarCarrito">Vaciar Carrito</button>
+        <div class="col-md-4">
+            <div class="card p-3 sticky-top" style="top: 80px;">
+                <h4 class="mb-3">Resumen del Pedido</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Ítems:
+                        <span class="badge bg-primary rounded-pill">@CarritoService.TotalItemsEnCarrito</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
+                        <strong>Total a Pagar:</strong>
+                        <strong>$@CarritoService.TotalCarrito</strong>
+                    </li>
+                </ul>
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-success btn-lg" @onclick="ProcederAlPago">
+                            <i class="bi bi-credit-card"></i> Proceder al Pago
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 }
 else
 {
-    <p>Tu carrito está vacío. ¡Empieza a agregar productos de nuestro <a href="/">catálogo</a>!</p>
+    <div class="text-center py-5">
+        <i class="bi bi-cart-x display-1 text-muted"></i>
+        <p class="lead mt-3">Tu carrito está vacío. ¡Empieza a agregar productos de nuestro <a href="/" class="text-decoration-none">catálogo</a>!</p>
+        <a href="/" class="btn btn-primary mt-3">Ir al Catálogo</a>
+    </div>
 }
 
-@code {   
+@code {
+    @inject cliente.Services.CarritoService CarritoService // ¡Esta línea ya debe estar al principio, elimínala si la ves aquí!
 
     protected override void OnInitialized()
     {
@@ -72,25 +97,28 @@ else
         CarritoService.OnChange -= StateHasChanged;
     }
 
-    private void ActualizarCantidad(CarritoItem item)
+    private void CambiarCantidad(CarritoItem item, int delta)
     {
-        if (item.Cantidad < 1)
+        int nuevaCantidad = item.Cantidad + delta;
+
+        if (nuevaCantidad < 1)
         {
-            item.Cantidad = 1;
+            nuevaCantidad = 1;
         }
-        if (item.Cantidad > item.Producto.Stock)
+        if (nuevaCantidad > item.Producto.Stock)
         {
-            item.Cantidad = item.Producto.Stock;
+            nuevaCantidad = item.Producto.Stock;
         }
 
-        if (item.Cantidad == 0)
+        if (item.Cantidad != nuevaCantidad)
         {
-            CarritoService.RemoverDelCarrito(item.Producto.Id);
+            CarritoService.EstablecerCantidadEnCarrito(item.Producto, nuevaCantidad);
         }
-        else
-        {
-            CarritoService.AgregarOActualizarEnCarrito(item.Producto);
-        }
+    }
+
+    private void ActualizarCantidadManual(CarritoItem item)
+    {
+        CarritoService.EstablecerCantidadEnCarrito(item.Producto, item.Cantidad);
     }
 
     private void EliminarItem(int productoId)
@@ -101,5 +129,10 @@ else
     private void VaciarCarrito()
     {
         CarritoService.VaciarCarrito();
+    }
+     private void ProcederAlPago()
+    {
+        Console.WriteLine("--> DEBUG: Botón 'Proceder al Pago' clickeado.");
+        Navigation.NavigateTo("/checkout");
     }
 }
