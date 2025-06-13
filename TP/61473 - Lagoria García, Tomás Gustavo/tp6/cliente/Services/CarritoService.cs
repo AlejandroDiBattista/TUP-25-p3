@@ -87,6 +87,15 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
         await _httpClient.DeleteAsync($"carritos/{carritoId}/{productoId}");
     }
 
+    public async Task ConfirmarCompraAsync(Guid carritoId, ConfirmacionRequest confirmacion)
+    {
+        var json = JsonSerializer.Serialize(confirmacion);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PutAsync($"carritos/{carritoId}/confirmar", content);
+        response.EnsureSuccessStatusCode();
+    }
+}
+
 public class CarritoResponse
 {
     public List<ItemCarrito> Carrito { get; set; }
