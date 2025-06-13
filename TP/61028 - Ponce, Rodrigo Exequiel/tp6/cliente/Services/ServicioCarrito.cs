@@ -1,4 +1,5 @@
 using cliente.Modelos;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,6 +10,12 @@ namespace cliente.Services
         public List<ItemCarrito> Items { get; set; } = new();
 
         public event Action OnChange;
+
+        // 🚨 Constructor para debug
+        public ServicioCarrito()
+        {
+            Console.WriteLine("🛒 ServicioCarrito creado");
+        }
 
         private void NotificarCambio() => OnChange?.Invoke();
 

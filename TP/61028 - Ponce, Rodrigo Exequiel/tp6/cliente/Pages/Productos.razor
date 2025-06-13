@@ -3,11 +3,12 @@
 @using cliente.Services
 @inject ServicioProductos Services
 @inject ServicioCarrito Carritoo
+@inject NavigationManager Nav
 
 <h3>Productos</h3>
 
-<p>En carrito: @Carritoo.Items.Count</p>
 
+<p>En carrito: @Carritoo.Items.Count</p>
 
 @if (productos == null)
 {
@@ -26,6 +27,8 @@ else
     </ul>
 }
 
+<button @onclick="IrAlCarrito">Ir al carrito</button>
+
 @code {
     List<Producto> productos;
 
@@ -36,6 +39,12 @@ else
 
     void AgregarAlCarrito(Producto producto)
     {
+        Console.WriteLine("Agregando: " + producto.Nombre);
         Carritoo.AgregarAlCarrito(producto);
+    }
+
+    void IrAlCarrito()
+    {
+        Nav.NavigateTo("/carrito");
     }
 }
