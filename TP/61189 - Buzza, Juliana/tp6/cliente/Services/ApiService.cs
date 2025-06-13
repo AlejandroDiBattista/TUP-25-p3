@@ -13,7 +13,7 @@ namespace cliente.Services
         {
             _httpClient = httpClient;
             _cartStateService = cartStateService;
-            _httpClient.BaseAddress = new Uri("https://localhost:7001/");
+            _httpClient.BaseAddress = new Uri("https://localhost:7295/");
         }
 
         public async Task<List<Producto>> GetProductos(string? query = null)
@@ -127,7 +127,7 @@ namespace cliente.Services
             {
                 try
                 {
-                    var response = await _httpClient.GetFromJsonAsync<List<CarritoItemDto>>($"https://localhost:7001/carritos/{cartId}");
+                    var response = await _httpClient.GetFromJsonAsync<List<CarritoItemDto>>($"https://localhost:7295/carritos/{cartId}");
                     ItemCount = response?.Sum(item => item.Cantidad) ?? 0;
                 }
                 catch (Exception)
