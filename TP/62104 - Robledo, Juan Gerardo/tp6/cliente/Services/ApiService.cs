@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+/*using System.Net.Http.Json;
 
 namespace cliente.Services;
 
@@ -24,3 +24,4 @@ public class DatosRespuesta {
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
 }
+*/
