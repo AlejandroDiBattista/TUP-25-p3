@@ -18,6 +18,63 @@ public class ApiService {
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
     }
+
+    // MODELOS
+    public class Producto {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+
+    public class CarritoItemDto {
+        public int Id { get; set; }
+        public int ProductoId { get; set; }
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public string ImagenUrl { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    public class ConfirmacionDto {
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Email { get; set; }
+    }
+
+    // SERVICIO API
+    public async Task<List<Producto>> ObtenerProductosAsync(string? busqueda = null) {
+        var url = "/api/productos" + (string.IsNullOrWhiteSpace(busqueda) ? "" : $"?busqueda={busqueda}");
+        return await _httpClient.GetFromJsonAsync<List<Producto>>(url) ?? new();
+    }
+
+    public async Task<Guid> CrearCarritoAsync() {
+        var resp = await _httpClient.PostAsync("/api/carritos", null);
+        var id = await resp.Content.ReadFromJsonAsync<Guid>();
+        return id;
+    }
+
+    public async Task<List<CarritoItemDto>> ObtenerCarritoAsync(Guid carritoId) {
+        return await _httpClient.GetFromJsonAsync<List<CarritoItemDto>>($"/api/carritos/{carritoId}") ?? new();
+    }
+
+    public async Task AgregarProductoAsync(Guid carritoId, int productoId, int cantidad) {
+        await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+    }
+
+    public async Task QuitarProductoAsync(Guid carritoId, int productoId) {
+        await _httpClient.DeleteAsync($"/api/carritos/{carritoId}/{productoId}");
+    }
+
+    public async Task VaciarCarritoAsync(Guid carritoId) {
+        await _httpClient.DeleteAsync($"/api/carritos/{carritoId}");
+    }
+
+    public async Task ConfirmarCompraAsync(Guid carritoId, ConfirmacionDto datos) {
+        await _httpClient.PutAsJsonAsync($"/api/carritos/{carritoId}/confirmar", datos);
+    }
 }
 
 public class DatosRespuesta {
