@@ -99,3 +99,33 @@ private void NavegarCarrito()
         Productos = await ProductoService.ObtenerProductosAsync(Busqueda);
     }
 
+    private async Task AgregarAlCarrito(Producto producto)
+    { 
+         if (producto.Stock <= 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Sin stock disponible.");
+            return;
+        }
+   //  Guid carritoId = await CarritoService.ObtenerCarritoId();
+
+ /*    var Nuevo = new AgregarCarritoRequest
+        {
+            ProductoId = producto.Id,
+            Cantidad = 1
+        };
+     var nuevoCarritoId = await CarritoService.AgregarOActualizarItemAsync(carritoId, producto.Id, Nuevo);
+
+         if (carritoId == null)
+    {
+        await CarritoService.GuardarCarritoIdAsync(nuevoCarritoId);
+    }
+*/   
+  await CarritoService.AumentarItemAsync(_carritoId.Value, producto.Id);
+        await JS.InvokeVoidAsync("alert", $"{producto.Nombre} agregado al carrito.");
+        // Refrescar productos para actualizar stock
+    Productos = await ProductoService.ObtenerProductosAsync(Busqueda); // refresca stock
+ var items = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);
+     _cartCount = items.Sum(i => i.Cantidad);
+ 
+    }
+}
