@@ -1,0 +1,78 @@
+@page "/carrito"
+@using cliente.Modelos
+@using cliente.Services
+@inject CartService CartService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Carrito de Compras</PageTitle>
+
+<h3>Carrito de Compras</h3>
+
+@if (!CartService.Items.Any())
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Unidades</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CartService.Items)
+            {
+                var producto = CartService.GetProductDetails(item.Key);
+                var cantidad = item.Value;
+                var importe = producto.Precio * cantidad;
+
+                <tr>
+                    <td>@producto.Nombre</td>
+                    <td>@producto.Precio.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Decrementar(producto.Id)">-</button>
+                        <span class="mx-2">@cantidad</span>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Incrementar(producto)">+</button>
+                    </td>
+                    <td>@importe.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                <td><strong>@CalcularTotal().ToString("C")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="mt-4">
+        <button class="btn btn-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
+        <button class="btn btn-success ms-2" @onclick="IrAConfirmacion">Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    private async Task VaciarCarrito() => await CartService.EmptyCartAsync();
+    private void IrAConfirmacion() => NavigationManager.NavigateTo("/confirmacion");
+    private async Task Incrementar(Producto p) => await CartService.AddToCartAsync(p);
+    private async Task Decrementar(int id) => await CartService.RemoveFromCartAsync(id);
+
+    private decimal CalcularTotal()
+    {
+        decimal total = 0;
+        foreach(var item in CartService.Items)
+        {
+            var producto = CartService.GetProductDetails(item.Key);
+            if (producto != null)
+            {
+                total += producto.Precio * item.Value;
+            }
+        }
+        return total;
+    }
+}
