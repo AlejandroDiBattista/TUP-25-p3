@@ -10,7 +10,7 @@ namespace cliente.Services
         public int CantidadItems { get; private set; }
         
         // Evento que se dispara cuando el carrito cambia.
-        public event Action? OnChange;
+        public event Action OnChange;
 
         public CarritoService(HttpClient http)
         {

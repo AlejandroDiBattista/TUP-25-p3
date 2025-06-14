@@ -1,6 +1,8 @@
-﻿@implements IDisposable
+﻿@inherits LayoutComponentBase
+@implements IDisposable
 @inject NavigationManager NavManager
 @inject CarritoService CarritoService
+@using cliente.Services
 
 <div class="page">
     <header class="fixed-top shadow-sm">
@@ -14,7 +16,7 @@
                 <!-- Espacio para el buscador y el carrito -->
                 <div class="d-flex align-items-center ms-auto">
 
-                    <!-- 2. Buscador (funcionalidad se puede agregar después) -->
+                    <!-- 2. Buscador -->
                     <div class="input-group me-3">
                         <input type="text" class="form-control" placeholder="Buscar perfumes..." @bind="terminoBusqueda" @onkeyup="HandleSearch" />
                         <button class="btn btn-outline-secondary" type="button" @onclick="RealizarBusqueda">
@@ -44,9 +46,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Suscribirse al evento para que el contador se actualice automáticamente
         CarritoService.OnChange += StateHasChanged;
-        // Cargar el estado inicial del carrito al cargar la app
         await CarritoService.InicializarCarrito();
     }
 
@@ -70,7 +70,6 @@
         }
     }
 
-    // Es crucial desuscribirse del evento para evitar memory leaks
     public void Dispose()
     {
         CarritoService.OnChange -= StateHasChanged;

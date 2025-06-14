@@ -1,59 +1,68 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject NavigationManager NavManager
+@using cliente.Shared
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>PerfumeShop - Catálogo</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
+@if (productos == null)
+{
+    <p class="text-center"><em>Cargando perfumes...</em></p>
+}
+else
+{
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+        @foreach (var p in productos)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" style="height: 200px; object-fit: contain; padding: 10px;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@p.Nombre</h5>
+                        <p class="card-text flex-grow-1">@p.Descripcion</p>
+                        <p class="card-text"><strong>Stock:</strong> @p.Stock</p>
+                        <h4 class="card-text text-end mb-3">$@p.Precio.ToString("N2")</h4>
+                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0)">
+                            @if(p.Stock > 0) {
+                                <i class="bi bi-cart-plus-fill"></i><span> Agregar al carrito</span>
+                            } else {
+                                <span>Sin Stock</span>
+                            }
+                        </button>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private List<Producto>? productos;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+    {
+        // Pide los productos a la API al cargar la página
+        productos = await Http.GetFromJsonAsync<List<Producto>>("/api/productos");
+        // Asegura que el carrito esté listo
+        await CarritoService.InicializarCarrito();
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        if (CarritoService.CarritoId.HasValue)
+        {
+            var response = await Http.PutAsync($"/api/carritos/{CarritoService.CarritoId}/agregar/{productoId}?cantidad=1", null);
+            if(response.IsSuccessStatusCode)
+            {
+                await CarritoService.ActualizarCantidad();
+                NavManager.NavigateTo("/carrito");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error al agregar el producto: {error}");
+            }
         }
     }
 }
