@@ -147,7 +147,14 @@ app.MapPut(
 
         producto.Stock -= 1; // Reducir el stock del producto
         await db.SaveChangesAsync();
-        return Results.Ok(carrito);
+
+        // Recargar el carrito con los productos actualizados
+        var carritoActualizado = await db
+            .Carritos.Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        return Results.Ok(carritoActualizado);
     }
 );
 
@@ -182,7 +189,13 @@ app.MapDelete(
         }
 
         await db.SaveChangesAsync();
-        return Results.Ok(carrito);
+        // Recargar el carrito con los productos actualizados
+        var carritoActualizado = await db
+            .Carritos.Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        return Results.Ok(carritoActualizado);
     }
 );
 
