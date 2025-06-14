@@ -12,28 +12,36 @@
             </a>
 
             <input @bind="busqueda" @bind:event="oninput" type="text" placeholder="Buscar productos..." class="search-box" />
-        <a class="btn btn-dark btn-lg mt-2" href="/catalogo">Ver Catálogo</a>
+        <a class="btn btn-dark btn-lg mt-2" href="/catalogo">📱 Ver Catálogo</a>
             <a href="/carrito" class="carrito-icono">
                 🛒 (@CantidadCarrito)
             </a>
         </div>
     </header>
-    @if (IsHomePage)
+        
+    <main class="contenido">
+        @Body
+         @if (IsHomePage)
+        {
+            <div class="home-content">
+                <h1>Bienvenido a la Apple Store Tucumán</h1>
+                <p>Descubre los últimos productos de Apple y disfruta de una experiencia única de compra.</p>
+            </div>
+        }
+        @if (IsHomePage)
     {
         <div class="main-layout @(IsHomePage ? "home-background" : "")">
             <img src="/logoaplle.jpg" alt="Apple Store Tucumán" class="img-fluid rounded" />
         </div>
     }
-    
-
-    <main class="contenido">
-        @Body
+        
     </main>
       
     <footer class="footer">
         <p>💼 Emprender con tecnología es nuestro motor, y verte feliz con tu compra es nuestro objetivo.</p>
-        <p>San Miguel de Tucumán , Argentina</p>
+        <p><strong>Ubicación:</strong> San Miguel de Tucumán , Argentina</p>
         <p>&copy; Apple Store</p>
+        
     </footer>
 </div>
 

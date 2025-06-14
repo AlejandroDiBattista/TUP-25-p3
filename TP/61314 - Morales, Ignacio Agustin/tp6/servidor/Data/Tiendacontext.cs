@@ -49,7 +49,7 @@ public class TiendaDb : DbContext
                Nombre = "Iphone 16 Pro MAX",
                Descripcion = "Celular más demandado del mercado",
                 Stock = 6,
-                 Precio = 120000000,
+                 Precio = 1200000,
                   ImagenUrl = "/iph16promax.webp" },
 
             new Producto
@@ -65,7 +65,7 @@ public class TiendaDb : DbContext
              Nombre = "MacBook Air",
               Descripcion = "Notebook eficaz",
                Stock = 12,
-                Precio = 220000000,
+                Precio = 2200000,
                  ImagenUrl = "/macair.webp" },
 
             new Producto
@@ -73,7 +73,7 @@ public class TiendaDb : DbContext
               Nombre = "MacBook Pro",
                Descripcion = "Notebook más potente",
                 Stock = 8,
-                 Precio = 390000000,
+                 Precio = 3800000,
                   ImagenUrl = "/macpro.webp" },
 
             new Producto 
@@ -97,7 +97,7 @@ public class TiendaDb : DbContext
              Nombre = "Ipad Pro",
               Descripcion = "Ipad más potente y avanzado",
                Stock = 9,
-                Precio = 130000000,
+                Precio = 1300000,
                  ImagenUrl = "/ipadpro.webp" }
         );
 

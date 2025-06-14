@@ -181,3 +181,166 @@ h1.titulo-catalogo {
     font-size: 0.9rem;
     margin-top: 0.5rem;
 }
+
+.titulo-carrito {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 20px auto;  
+    text-align: center;
+    color: #1c1c1e;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.tabla-carrito {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #fcf5f5;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(46, 28, 28, 0.1);
+}
+
+.tabla-carrito th, .tabla-carrito td {
+    padding: 7px;
+    text-align: center;
+    border-bottom: 1px solid #131212;
+    font-size: 1rem;
+}
+
+.tabla-carrito th {
+    background-color: #070707;
+    color: #ffe7e7;
+}
+
+.tabla-carrito button {
+    background-color: #fcfcfc;
+    color: rgb(0, 0, 0);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.tabla-carrito button:hover {
+    background-color: #005fa3;
+}
+
+.total {
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-align: right;
+    margin-right: 5%;
+    color: #1c1c1c;
+}
+
+.acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 20px 5% 40px 0;
+}
+
+.boton-vaciar {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.boton-vaciar:hover {
+    background-color: #b02a37;
+}
+
+.boton-confirmar {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.boton-confirmar:hover {
+    background-color: #218838;
+}
+
+.titulo-confirmacion {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #020202;
+}
+
+.resumen-compra {
+    background-color: #1f1f1f;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #ddd;
+    font-size: 1.1rem;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    margin: auto;
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.formulario label {
+    color: #ccc;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.formulario input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.boton-confirmar {
+    margin-top: 15px;
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.boton-confirmar:hover {
+    background-color: #218838;
+}
+
+.validation-message {
+    color: #ff4d4d;
+    font-size: 0.9rem;
+}
+.confirmacion-exitosa {
+    color: #28a745;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
