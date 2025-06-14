@@ -236,13 +236,13 @@ using (var scope = app.Services.CreateScope())
   {
     db.Productos.AddRange(new[]
     {
-            new Producto { Nombre = "Celular Samsung", Descripcion = "Galaxy A52", Precio = 600, Stock = 5, ImagenUrl = "images/samsung.jpg" },
-            new Producto { Nombre = "Celular iPhone", Descripcion = "iPhone 12", Precio = 450, Stock = 3, ImagenUrl = "images/iphone.jpg" },
+            new Producto { Nombre = "Samsung Galaxy A52", Descripcion = "Galaxy A52, 128GB", Precio = 600, Stock = 5, ImagenUrl = "images/samsung.jpg" },
+            new Producto { Nombre = "iPhone 12", Descripcion = "iPhone 12, 256GB", Precio = 450, Stock = 3, ImagenUrl = "images/iphone.jpg" },
             new Producto { Nombre = "Notebook HP", Descripcion = "Intel i5 10° gen", Precio = 900, Stock = 4, ImagenUrl = "images/hp.jpg" },
-            new Producto { Nombre = "Mouse Logitech", Descripcion = "Inalámbrico", Precio = 100, Stock = 10, ImagenUrl = "images/mouse.jpg" },
+            new Producto { Nombre = "Mouse Logitech G502", Descripcion = "Inalámbrico", Precio = 100, Stock = 10, ImagenUrl = "images/mouse.jpg" },
             new Producto { Nombre = "Auriculares JBL", Descripcion = "Bluetooth", Precio = 150, Stock = 8, ImagenUrl = "images/jbl.jpg" },
             new Producto { Nombre = "Monitor LG", Descripcion = "24 pulgadas Full HD", Precio = 160, Stock = 2, ImagenUrl = "images/monitor.jpg" },
-            new Producto { Nombre = "Teclado Redragon", Descripcion = "Mecánico RGB", Precio = 100, Stock = 6, ImagenUrl = "images/teclado.jpg" },
+            new Producto { Nombre = "Teclado Redragon", Descripcion = "Mecánico RGB", Precio = 100, Stock = 10, ImagenUrl = "images/teclado.jpg" },
             new Producto { Nombre = "Cargador portátil", Descripcion = "10000 mAh", Precio = 80, Stock = 9, ImagenUrl = "images/cargador.jpg" },
             new Producto { Nombre = "MacBook Pro M1", Descripcion = "Macbook M1 Pro 16 pulgadas", Precio = 1500, Stock = 6, ImagenUrl = "images/macbook.jpg" },
             new Producto { Nombre = "Silla gamer", Descripcion = "Silla gamer Redragon", Precio = 700, Stock = 15, ImagenUrl = "images/silla.jpg" }
