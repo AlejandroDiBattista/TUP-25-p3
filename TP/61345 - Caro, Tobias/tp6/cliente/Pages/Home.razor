@@ -1,59 +1,84 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Pages
 @inject ApiService ApiService
+@inject IJSRuntime JS
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Black Store //</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+<header class="custom-header">
+    <div class="header-content">
+        <h1 class="store-title">&#128206 Black Store //</h1>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
-    </div>
-</div>
+<a class="alert-container" href="/carrito">
+    @if (cartCount == 0)
+    {
+        <div class="alert alert-info">No hay productos en el carrito.</div>
+    }
+    else if (cartCount == 1)
+    {
+        <div class="alert alert-warning">Hay 1 producto en el carrito.</div>
+    }
+    else
+    {
+        <div class="alert alert-success">Hay @cartCount productos en el carrito</div>
+    }
+</a>
+</header>
+
+
+
+<Catalogo CarritoId="carritoId" OnProductoAgregado="ActualizarCartCount" />
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private int cartCount = 0;
+    private int carritoId;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+    {
+        // Intentar obtener el carritoId de localStorage
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!int.TryParse(idStr, out carritoId) || carritoId <= 0)
+        {
+            // Si no existe o es inválido, inicializar uno nuevo
+            carritoId = await ApiService.InicializarCarritoAsync();
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
         }
+        if (carritoId > 0)
+        {
+            var cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            if (cantidad == -1) // Carrito no existe en backend
+            {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = await ApiService.InicializarCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+                cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            }
+            cartCount = cantidad > 0 ? cantidad : 0;
+        }
+        else
+            cartCount = 0;
+    }
+
+    private async void ActualizarCartCount()
+    {
+        if (carritoId > 0)
+        {
+            var cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            if (cantidad == -1)
+            {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = await ApiService.InicializarCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+                cantidad = await ApiService.ObtenerCantidadCarritoAsync(carritoId);
+            }
+            cartCount = cantidad > 0 ? cantidad : 0;
+        }
+        else
+            cartCount = 0;
+        StateHasChanged();
     }
 }
+
+
