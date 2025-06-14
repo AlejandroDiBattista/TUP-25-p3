@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. CONFIGURACIÓN DE SERVICIOS ---
 
-// Agregar servicios CORS
+
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -16,20 +16,20 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Configurar el serializador JSON para ignorar ciclos.
+
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-// Registrar el DbContext para Entity Framework Core
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 
 var app = builder.Build();
 app.UseStaticFiles();
-// --- 2. CONFIGURACIÓN DEL PIPELINE DE SOLICITUDES HTTP ---
+
 
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
@@ -37,7 +37,7 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseCors("AllowClientApp");
 
-// --- 3. DEFINICIÓN DE LOS ENDPOINTS DE LA API ---
+
 
 app.MapGet("/", () => "Servidor de la Tienda de Perfumes está en funcionamiento.");
 
@@ -60,7 +60,7 @@ app.MapPost("/api/carritos", async (ApplicationDbContext db) =>
     return Results.Ok(nuevaCompra.Id);
 });
 
-// --- ** ENDPOINT ACTUALIZADO CON DTOs ** ---
+
 app.MapGet("/api/carritos/{carritoId:int}", async (ApplicationDbContext db, int carritoId) =>
 {
     var compra = await db.Compras
@@ -71,7 +71,7 @@ app.MapGet("/api/carritos/{carritoId:int}", async (ApplicationDbContext db, int 
 
     if (compra == null) return Results.NotFound("Carrito no encontrado.");
 
-    // Mapear manualmente a un DTO para evitar problemas de serialización
+    
     var compraDto = new CompraResumenDto(
         compra.Id,
         compra.Items.Select(i => new ItemCompraResumenDto(
@@ -155,10 +155,10 @@ app.MapPut("/api/carritos/{carritoId:int}/confirmar", async (ApplicationDbContex
     return Results.Ok("¡Compra confirmada con éxito!");
 });
 
-// --- 4. EJECUTAR LA APLICACIÓN ---
+
 app.Run();
 
-// --- DEFINICIÓN DE TIPOS (DTOs) ---
+
 public record ClienteDto(string Nombre, string Apellido, string Email);
 
 // DTOs para evitar problemas de serialización en respuestas complejas.

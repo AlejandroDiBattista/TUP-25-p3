@@ -39,14 +39,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Nos suscribimos al evento del carrito.
+        
         CarritoService.OnChange += OnCartChanged;
 
-        // **LÓGICA MEJORADA Y MÁS SEGURA**
-        // Ahora el layout controla el flujo:
-        // 1. Pide la inicialización.
-        // 2. Una vez inicializado, pide la actualización del contador.
-        // Esto evita que el servicio dispare eventos durante su propia inicialización.
+        
         try
         {
             await CarritoService.InicializarCarrito();
@@ -54,13 +50,12 @@
         }
         catch (Exception ex)
         {
-            // Si algo falla, solo lo registramos en la consola.
-            // La barra de error ya no aparecerá.
+            
             Console.WriteLine($"Error durante la inicialización: {ex.Message}");
         }
     }
 
-    // Este método se asegura de que la actualización de la UI se haga de forma segura
+    
     private void OnCartChanged()
     {
         InvokeAsync(StateHasChanged);

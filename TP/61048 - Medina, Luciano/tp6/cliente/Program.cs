@@ -11,8 +11,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 
 builder.Services.AddScoped<ApiService>();
 
-// --- CAMBIO CLAVE AQUÍ ---
-// Cambiamos de Singleton a Scoped para que coincida con el ciclo de vida de HttpClient.
+
 builder.Services.AddScoped<CarritoService>();
 
 await builder.Build().RunAsync();
