@@ -13,7 +13,7 @@
 }
 else if (carrito.Count == 0)
 {
-    <p>El carrito está vacío.</p>
+    <p style="color:#c00; font-size:2rem; font-weight:bold; text-align:center;">El carrito está vacío.</p>
     <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
 }
 else
@@ -99,7 +99,7 @@ else
             carrito = await ApiService.ObtenerCarritoAsync(carritoId);
             error = null;
         } catch (HttpRequestException ex) {
-            // Si el carrito no existe (404), borra el carritoId y crea uno nuevo automáticamente
+            
             if (ex.StatusCode == System.Net.HttpStatusCode.NotFound) {
                 await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
                 carritoId = await ApiService.CrearCarritoAsync();

@@ -114,6 +114,7 @@ app.MapPut("/api/carritos/{carritoId}/{productoId}", async (TiendaContext db, Gu
     var prod = await db.Productos.FindAsync(productoId);
     if (carrito == null || prod == null) return Results.NotFound();
     if (prod.Stock < cantidad) return Results.BadRequest("Sin stock suficiente");
+
     var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
     if (item == null)
     {
@@ -149,16 +150,16 @@ void InicializarBaseDeDatos(WebApplication app)
     {
         db.Productos.AddRange(new[]
         {
-            new Producto { Nombre = "Zapatilla Nike Air Max", Descripcion = "Running, Talle 46", Precio = 120000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Adidas Ultraboost", Descripcion = "Training, Talle 46", Precio = 135000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Puma RS-X", Descripcion = "Casual, Talle 46", Precio = 110000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Converse Chuck Taylor", Descripcion = "Clásica, Talle 46", Precio = 95000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Reebok Classic", Descripcion = "Urbanas, Talle 46", Precio = 98000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Vans Old Skool", Descripcion = "Skate, Talle 46", Precio = 90000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Fila Disruptor", Descripcion = "Moda, Talle 46", Precio = 85000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla New Balance 574", Descripcion = "Running, Talle 46", Precio = 105000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Asics Gel", Descripcion = "Deportiva, Talle 46", Precio = 115000, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Zapatilla Topper Urbana", Descripcion = "Diaria, Talle 46", Precio = 70000, Stock = 20, ImagenUrl = "" }
+            new Producto { Nombre = "Zapatilla Nike Air Max", Descripcion = "Running, Talle 46", Precio = 120000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Adidas Ultraboost", Descripcion = "Training, Talle 46", Precio = 135000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Puma RS-X", Descripcion = "Casual, Talle 46", Precio = 110000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Converse Chuck Taylor", Descripcion = "Clásica, Talle 46", Precio = 95000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Reebok Classic", Descripcion = "Urbanas, Talle 46", Precio = 98000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Vans Old Skool", Descripcion = "Skate, Talle 46", Precio = 90000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Fila Disruptor", Descripcion = "Moda, Talle 46", Precio = 85000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla New Balance 574", Descripcion = "Running, Talle 46", Precio = 105000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Asics Gel", Descripcion = "Deportiva, Talle 46", Precio = 115000, Stock = 20 },
+            new Producto { Nombre = "Zapatilla Topper Urbana", Descripcion = "Diaria, Talle 46", Precio = 70000, Stock = 20 }
         });
         db.SaveChanges();
     }
