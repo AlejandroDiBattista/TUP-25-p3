@@ -29,10 +29,6 @@ if (app.Environment.IsDevelopment()) {
 app.UseCors("AllowClientApp");
 
 
-// =================================================================
-// ENDPOINTS DE LA API
-// =================================================================
-
 app.MapGet("/api/productos", async (TiendaDbContext db, string? q) => {
     var productosQuery = db.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(q))
@@ -55,84 +51,69 @@ app.MapPost("/api/carritos", async (TiendaDbContext db) => {
 
 app.MapPut("/api/carritos/{carritoId:guid}/productos/{productoId:int}", async (Guid carritoId, int productoId, TiendaDbContext db) => {
     var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
-    if (carrito is null)
-    {
-        return Results.NotFound("El carrito no existe.");
-    }
+    if (carrito is null) { return Results.NotFound("El carrito no existe."); }
     var producto = await db.Productos.FindAsync(productoId);
-    if (producto is null)
-    {
-        return Results.NotFound("El producto no existe.");
-    }
+    if (producto is null) { return Results.NotFound("El producto no existe."); }
     var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
-    if (itemEnCarrito is not null)
-    {
-        if (producto.Stock > itemEnCarrito.Cantidad)
-        {
-            itemEnCarrito.Cantidad++;
-        }
-        else
-        {
-            return Results.BadRequest("No hay suficiente stock para agregar otra unidad de este producto.");
-        }
-    }
-    else
-    {
-        if (producto.Stock > 0)
-        {
-            var nuevoItem = new CarritoItem
-            {
-                ProductoId = producto.Id,
-                Cantidad = 1
-            };
-            carrito.Items.Add(nuevoItem);
-        }
-        else
-        {
-            return Results.BadRequest("Producto sin stock.");
-        }
+    if (itemEnCarrito is not null) {
+        if (producto.Stock > itemEnCarrito.Cantidad) { itemEnCarrito.Cantidad++; }
+        else { return Results.BadRequest("No hay suficiente stock para agregar otra unidad de este producto."); }
+    } else {
+        if (producto.Stock > 0) {
+            carrito.Items.Add(new CarritoItem { ProductoId = producto.Id, Cantidad = 1 });
+        } else { return Results.BadRequest("Producto sin stock."); }
     }
     await db.SaveChangesAsync();
     return Results.Ok(carrito);
 });
 
-// <<< CÓDIGO AÑADIDO INICIA AQUÍ >>>
-// Endpoint para eliminar un producto de un carrito
 app.MapDelete("/api/carritos/{carritoId:guid}/productos/{productoId:int}", async (Guid carritoId, int productoId, TiendaDbContext db) => {
-    // 1. Buscamos el carrito, incluyendo sus items.
+    var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+    if (carrito is null) { return Results.NotFound("El carrito no existe."); }
+    var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (itemEnCarrito is null) { return Results.NotFound("El producto no se encuentra en el carrito."); }
+    if (itemEnCarrito.Cantidad > 1) {
+        itemEnCarrito.Cantidad--;
+    } else {
+        db.CarritoItems.Remove(itemEnCarrito);
+    }
+    await db.SaveChangesAsync();
+    return Results.Ok(carrito);
+});
+
+
+app.MapGet("/api/carritos/{carritoId:guid}", async (Guid carritoId, TiendaDbContext db) => {
+  
+    var carrito = await db.Carritos
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito is null)
+    {
+        return Results.NotFound("El carrito no existe.");
+    }
+
+    return Results.Ok(carrito);
+});
+
+app.MapDelete("/api/carritos/{carritoId:guid}", async (Guid carritoId, TiendaDbContext db) => {
     var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
     if (carrito is null)
     {
         return Results.NotFound("El carrito no existe.");
     }
 
-    // 2. Buscamos el item específico dentro del carrito.
-    var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
-    if (itemEnCarrito is null)
+
+    if (carrito.Items.Any())
     {
-        // Si el item no está en el carrito, no hay nada que borrar.
-        return Results.NotFound("El producto no se encuentra en el carrito.");
+        db.CarritoItems.RemoveRange(carrito.Items);
+        await db.SaveChangesAsync();
     }
 
-    // 3. Aplicamos la lógica de eliminación.
-    if (itemEnCarrito.Cantidad > 1)
-    {
-        // Si hay más de uno, simplemente reducimos la cantidad.
-        itemEnCarrito.Cantidad--;
-    }
-    else
-    {
-        // Si solo hay uno, eliminamos el item por completo de la base de datos.
-        db.CarritoItems.Remove(itemEnCarrito);
-    }
 
-    // 4. Guardamos los cambios.
-    await db.SaveChangesAsync();
-
-    // 5. Devolvemos el carrito actualizado.
     return Results.Ok(carrito);
 });
-// <<< CÓDIGO AÑADIDO TERMINA AQUÍ >>>
 
 
 app.Run();
