@@ -7,8 +7,9 @@
 
 <h3>Productos</h3>
 
-
 <p>Productos: @Carritoo.Items.Sum(i => i.Cantidad)</p>
+
+<input placeholder="Buscar productos..." @bind="busqueda" />
 
 @if (productos == null)
 {
@@ -17,7 +18,10 @@
 else
 {
     <ul>
-        @foreach (var prod in productos)
+        @foreach (var prod in productos.Where(p =>
+            string.IsNullOrWhiteSpace(busqueda) ||
+            p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+            p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase)))
         {
             <li>
                 @prod.Nombre - $@prod.Precio (Stock: @prod.Stock)
@@ -31,6 +35,7 @@ else
 
 @code {
     List<Producto> productos;
+    string busqueda = "";
 
     protected override async Task OnInitializedAsync()
     {

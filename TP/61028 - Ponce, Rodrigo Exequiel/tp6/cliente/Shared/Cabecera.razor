@@ -1,0 +1,16 @@
+@using cliente.Services
+@using cliente.Modelos
+@inject NavigationManager Nav
+@inject ServicioCarrito Carrito
+
+<header style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:#af3a3a;position:sticky;top:0;">
+    <div style="display:flex;align-items:center;cursor:pointer;" @onclick='() => Nav.NavigateTo("/")'>
+        <img src="img/logo.png" alt="Logo" style="height:40px;margin-right:10px;" />
+        <span style="font-size:1.5rem;font-weight:bold;">Tienda Online</span>
+    </div>
+    <input placeholder="Buscar productos..." style="margin-right:1rem;" />
+    <div style="cursor:pointer;" @onclick='() => Nav.NavigateTo("/carrito")'>
+        <span style="font-size:1.5rem;">🛒</span>
+        <span style="font-weight:bold;">@Carrito.Items.Sum(i => i.Cantidad)</span>
+    </div>
+</header>
