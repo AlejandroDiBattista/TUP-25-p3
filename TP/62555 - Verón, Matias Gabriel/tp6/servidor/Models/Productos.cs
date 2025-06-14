@@ -1,4 +1,4 @@
-namespace.Servidor.Models;
+namespace Servidor.Models;
 
 public class Producto {
     public int Id { get; set; }
@@ -9,5 +9,5 @@ public class Producto {
     public string ImagenUrl { get; set; }
 
 
-    public List<ItemCompra> ItemsCompra { get; set; } = new();
+    public List<DetalleCompra> Detalles { get; set; } = new();
 }

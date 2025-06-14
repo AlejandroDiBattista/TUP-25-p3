@@ -1,6 +1,9 @@
-namespace Servidor.Models;
 
-public class Compra
+namespace cliente.Models;
+
+using System;
+
+public class CompraResumen
 {
     public int Id { get; set; }
     public DateTime Fecha { get; set; }
@@ -8,6 +11,5 @@ public class Compra
     public string NombreCliente { get; set; }
     public string ApellidoCliente { get; set; }
     public string EmailCliente { get; set; }
-
-    public List<DetalleCompra> Detalles { get; set; } = new();
+    public List<DetalleCompraResumen> Detalles { get; set; }
 }

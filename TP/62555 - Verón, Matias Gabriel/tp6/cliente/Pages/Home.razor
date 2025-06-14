@@ -2,29 +2,22 @@
 @using cliente.Services
 @using cliente.Models
 @inject ApiService ApiService
+@inject NavigationManager NavManager
 @inject cliente.Services.CarritoService CarritoService
 
-<PageTitle>Inicio</PageTitle>
+<link rel="stylesheet" href="css/home.css" />
+
+<PageTitle> Fútbol Retro </PageTitle>
 
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+            <h1> CAMISETAS QUE HICIERON HISTORIA </h1>
         </div>
     </div>
-
     <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+  
     </div>
-
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-success" @onclick="ObtenerProductos">Cargar productos</button>
-        </div>
-    </div>
-
     <div class="row">
         <div class="col-12">
             @if (cargando)
@@ -47,107 +40,201 @@
             }
         </div>
     </div>
-     <div class="row mt-4">
-        <div class="col-12">
-            <input class=" form-control" type="text" placeholder="Buscar productos..." @bind="textoBusqueda" @bind:event= "oninput"/>
+    <div class="row mt-4">
+        <div class="col-12 d-flex justify-content-center">
+            <div class="input-group buscador-productos" style="max-width: 350px;">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                <input class="form-control border-start-0" type="text" placeholder="Buscar productos..." @bind="textoBusqueda" @bind:event="oninput" />
+            </div>
         </div>
-
-     </div>
+    </div>
+    @if (!string.IsNullOrEmpty(mensajeAgregar))
+    {
+        <div class="alert alert-info">@mensajeAgregar</div>
+    }
     @if (productos is not null && productos.Any())
     {
-        <div class="row mt-4">
-            <div class="col-12">
-                <h2>Productos disponibles</h2>
-            </div>
+        <div class="productos-grid">
             @foreach (var producto in ProductosFiltrados)
             {
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="card-img-top" style="height: 200px; object-fit: cover;" />
-                        <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            <p class="card-text">@producto.Descripcion</p>
-                            <p><strong>Precio:</strong> $@producto.Precio</p>
-                            <p><strong>Stock:</strong> @producto.Stock unidades</p>
-                            <button class="btn btn-primary" @onclick="() => CarritoService.AgregarAlCarrito(producto, 1)">Agregar al carrito</button>
-                        </div>
+                <div class="producto-card card">
+                    <div class="img-hover-container">
+                        <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="card-img-top" />
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p><strong>Precio:</strong> $@producto.Precio</p>
+                        <p><strong>Stock:</strong> @producto.Stock unidades</p>
+                        <button class="btn btn-primary btn-agregar"
+                                @onclick="() => AgregarProductoAlCarrito(producto)"
+                                disabled="@(producto.Stock == 0)">
+                            Agregar al carrito
+                        </button>
+                        @if (producto.Stock == 0)
+                        {
+                            <span class="text-danger ms-2">Sin stock</span>
+                        }
                     </div>
                 </div>
             }
         </div>
     }
 </div>
-<h2>Carrito de tus Compras</h2>
-
-@if (CarritoService.ObtenerCarrito().Any())
-{
-    <ul>
-        @foreach (var item in CarritoService.ObtenerCarrito())
-        {
-            <li>
-                @item.Producto.Nombre - Cantidad: @item.Cantidad - Subtotal: $@(item.Producto.Precio * item.Cantidad)
-                <button @onclick="() => CarritoService.QuitarDelCarrito(item.Producto)">Quitar</button>
-            </li>
-        }
-    </ul>
-    <p><strong>Total: $@CarritoService.CalcularTotal()</strong></p>
-    <button @onclick="CarritoService.VaciarCarrito">Vaciar carrito</button>
-}
-else
-{
-    <p>El carrito está vacío.</p>
-}
 
 @code {
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
     private List<Producto> productos;
-    
-   private string textoBusqueda = "";
+    private string mensajeAgregar = "";
+    private string textoBusqueda = "";
+    private int carritoId = 0;
+    private List<CarritoItem> itemsCarrito = new();
+    private bool MostrarConfirmacion = false;
+    private string nombreCliente = "";
+    private string apellidoCliente = "";
+    private string emailCliente = "";
+    private string errorConfirmacion = "";
 
-private IEnumerable<Producto> ProductosFiltrados =>
-    string.IsNullOrWhiteSpace(textoBusqueda)
-        ? productos
-        : productos?.Where(p =>
-            (!string.IsNullOrEmpty(p.Nombre) && p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
-            (!string.IsNullOrEmpty(p.Descripcion) && p.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
-        );
+    private IEnumerable<Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? productos
+            : productos?.Where(p =>
+                (!string.IsNullOrEmpty(p.Nombre) && p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(p.Descripcion) && p.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
+            );
+
+   protected override async Task OnInitializedAsync()
+{
+    await ObtenerProductos();
+
+    await InicializarCarrito();
+
+    await ObtenerCarrito();
+}
+    private async Task InicializarCarrito()
+    {
+        if (CarritoService.CarritoId == 0)
+        {
+            var carrito = await ApiService.CrearCarrito();
+            if (carrito != null && carrito.Id != 0)
+                CarritoService.CarritoId = carrito.Id;
+        }
+        carritoId = CarritoService.CarritoId;
+    }
+
     private async Task ObtenerDatosDelServidor()
     {
-        try
-        {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            datos = null;
-        }
-        finally
-        {
-            cargando = false;
-        }
+        cargando = true;
+        error = null;
+        datos = await ApiService.ObtenerDatosAsync();
+        cargando = false;
     }
 
     private async Task ObtenerProductos()
     {
-        try
+        cargando = true;
+        error = null;
+        productos = await ApiService.ObtenerProductosAsync();
+        cargando = false;
+    }
+
+    private async Task ObtenerCarrito()
+    {
+        if (carritoId != 0)
         {
-            cargando = true;
-            error = null;
-            productos = await ApiService.ObtenerProductosAsync();
+            var carrito = await ApiService.ObtenerCarrito(carritoId);
+            itemsCarrito = carrito?.Items ?? new List<CarritoItem>();
+            StateHasChanged();
         }
-        catch (Exception ex)
+    }
+
+    private async Task AgregarProductoAlCarrito(Producto producto)
+    {
+        if (carritoId == 0)
         {
-            error = ex.Message;
-            productos = null;
+            var carrito = await ApiService.CrearCarrito();
+            if (carrito == null || carrito.Id == 0)
+                return;
+            carritoId = carrito.Id;
         }
-        finally
+        bool success = await ApiService.AgregarProductoAlCarrito(carritoId, producto.Id, 1);
+        if (success)
         {
-            cargando = false;
+            await ObtenerCarrito();
         }
+    }
+
+    private async Task CambiarCantidad(Producto producto, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1 || nuevaCantidad > producto.Stock)
+        return;
+
+    bool success = await ApiService.AgregarProductoAlCarrito(carritoId, producto.Id, nuevaCantidad);
+    if (success)
+    {
+        await ObtenerCarrito(); // Refresca la lista del carrito
+    }
+    }
+
+    private async Task QuitarProductoDelCarrito(int carritoId, int productoId)
+    {
+        var result = await ApiService.QuitarProductoDelCarrito(carritoId, productoId);
+        mensajeAgregar = result.Message;
+        if (result.Success)
+        {
+            await ObtenerCarrito();
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        var result = await ApiService.VaciarCarrito(carritoId);
+        if (result.Success)
+        {
+            mensajeAgregar = "Carrito vaciado correctamente.";
+            itemsCarrito.Clear();
+        }
+        else
+        {
+            mensajeAgregar = $"Error: No se pudo vaciar el carrito: {result.Message}";
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        errorConfirmacion = "";
+        if (string.IsNullOrWhiteSpace(nombreCliente) || string.IsNullOrWhiteSpace(apellidoCliente) || string.IsNullOrWhiteSpace(emailCliente))
+        {
+            errorConfirmacion = "Todos los campos son obligatorios.";
+            return;
+        }
+        if (!emailCliente.Contains("@"))
+        {
+            errorConfirmacion = "El email no es válido.";
+            return;
+        }
+        // Llamar al endpoint para confirmar la compra
+        var dto = new CompraDTO
+        {
+            NombreCliente = nombreCliente,
+            ApellidoCliente = apellidoCliente,
+            EmailCliente = emailCliente
+        };
+        var resumen = await ApiService.ConfirmarCompra(carritoId, dto);
+        if (resumen == null)
+        {
+            errorConfirmacion = "No se pudo confirmar la compra.";
+            return;
+        }
+        MostrarConfirmacion = false;
+        nombreCliente = "";
+        apellidoCliente = "";
+        emailCliente = "";
+        await ObtenerProductos();
+        await ObtenerCarrito();
+        mensajeAgregar = "¡Compra confirmada!";
+        NavManager.NavigateTo($"/confirmacion?nombreCliente={nombreCliente}");
     }
 }

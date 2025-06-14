@@ -6,46 +6,91 @@ namespace cliente.Services
 {
     public class CarritoService
     {
-        private List<CarritoItem> _carrito;
+        private List<CarritoItem> _items = new List<CarritoItem>();
+        
+        // Evento para notificar cambios a los componentes
+        public event Action OnChange;
+        
+        // Propiedad pública para acceder a los items
+        public IReadOnlyList<CarritoItem> Items => _items.AsReadOnly();
 
-        public CarritoService()
+        private int _carritoId = 0;
+        public int CarritoId
         {
-            _carrito = new List<CarritoItem>();
+            get => _carritoId;
+            set => _carritoId = value;
         }
 
         public void AgregarAlCarrito(Producto producto, int cantidad)
         {
-            var itemExistente = _carrito.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            // Validación básica
+            if (producto == null || cantidad <= 0) return;
+            
+            var itemExistente = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            
             if (itemExistente != null)
             {
                 itemExistente.Cantidad += cantidad;
             }
             else
             {
-                _carrito.Add(new CarritoItem { Producto = producto, Cantidad = cantidad });
+                _items.Add(new CarritoItem 
+                { 
+                    Producto = producto, 
+                    Cantidad = cantidad 
+                });
             }
+            
+            NotificarCambios();
         }
-        public void QuitarDelCarrito(Producto producto)
+
+        public void ModificarCantidad(Producto producto, int nuevaCantidad)
         {
-            var itemExistente = _carrito.FirstOrDefault(i => i.Producto.Id == producto.Id);
-            if (itemExistente != null)
+            var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            
+            if (item != null)
             {
-                _carrito.Remove(itemExistente);
+                if (nuevaCantidad <= 0)
+                {
+                    QuitarDelCarrito(producto);
+                }
+                else if (nuevaCantidad <= producto.Stock) // Validar stock
+                {
+                    item.Cantidad = nuevaCantidad;
+                    NotificarCambios();
+                }
             }
         }
 
-        public List<CarritoItem> ObtenerCarrito()
+        public void QuitarDelCarrito(Producto producto)
         {
-            return _carrito;
+            var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            if (item != null)
+            {
+                _items.Remove(item);
+                NotificarCambios();
+            }
         }
 
         public void VaciarCarrito()
         {
-            _carrito.Clear();
+            _items.Clear();
+            NotificarCambios();
         }
+
         public decimal CalcularTotal()
         {
-            return _carrito.Sum(item => item.Producto.Precio * item.Cantidad);
+            return _items.Sum(item => item.Producto.Precio * item.Cantidad);
+        }
+
+        public int ObtenerCantidadTotal()
+        {
+            return _items.Sum(item => item.Cantidad);
+        }
+
+        private void NotificarCambios()
+        {
+            OnChange?.Invoke();
         }
     }
 }
