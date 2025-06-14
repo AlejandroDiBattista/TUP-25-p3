@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     './**/*.{razor,html}',
-    './**/(Layout|Pages)/*.{razor,html}', // Include only Layout and Pages folders
+    './**/(Layout|Pages|Components)/*.{razor,html}', // Include only Layout and Pages folders
   ],
   theme: {
     extend: {},
