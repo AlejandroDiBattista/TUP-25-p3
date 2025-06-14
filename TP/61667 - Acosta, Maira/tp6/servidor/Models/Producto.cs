@@ -9,5 +9,6 @@ namespace servidor.Models
         public int Stock { get; set; }
         public string ImagenUrl { get; set; }
     }
+   
 
 }
