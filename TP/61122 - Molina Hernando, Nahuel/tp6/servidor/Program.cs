@@ -159,16 +159,16 @@ using (var scope = app.Services.CreateScope())
     {
         db.Productos.AddRange(new List<Producto>
         {
-            new Producto { Nombre = "iPhone 11 Negro", Descripcion = "Color: Negro, 64GB, Cámara: 12MP", Precio = 300000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 11 Pro Verde", Descripcion = "Color: Verde, 256GB, Cámara: 12MP triple", Precio = 350000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 12 Blanco", Descripcion = "Color: Blanco, 128GB, Cámara: 12MP dual", Precio = 400000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 12 Pro Azul", Descripcion = "Color: Azul, 256GB, Cámara: 12MP triple", Precio = 450000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 13 Rosa", Descripcion = "Color: Rosa, 128GB, Cámara: 12MP dual", Precio = 500000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 13 Pro Grafito", Descripcion = "Color: Grafito, 256GB, Cámara: 12MP triple", Precio = 550000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 14 Morado", Descripcion = "Color: Morado, 128GB, Cámara: 12MP dual", Precio = 600000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 14 Pro Plata", Descripcion = "Color: Plata, 256GB, Cámara: 48MP triple", Precio = 650000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 15 Amarillo", Descripcion = "Color: Amarillo, 256GB, Cámara: 48MP dual", Precio = 700000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 16 Pro Max Titanio", Descripcion = "Color: Titanio, 512GB, Cámara: 48MP triple", Precio = 800000, Stock = 10, ImagenUrl = "" }
+            new Producto { Nombre = "iPhone 11 Negro", Descripcion = "Color: Negro, 64GB, Cámara: 12MP", Precio = 300000, Stock = 10, ImagenUrl = "https://images-na.ssl-images-amazon.com/images/I/61gYe3YaoxL._AC_SL1500_.jpg" },
+            new Producto { Nombre = "iPhone 11 Pro Verde", Descripcion = "Color: Verde, 256GB, Cámara: 12MP triple", Precio = 350000, Stock = 10, ImagenUrl = "https://img.pccomponentes.com/articles/23/232741/verdeeee.jpg" },
+            new Producto { Nombre = "iPhone 12 Blanco", Descripcion = "Color: Blanco, 128GB, Cámara: 12MP dual", Precio = 400000, Stock = 10, ImagenUrl = "https://media3.allzone.es/595850-large_default/smartphones-iphone-12-128gb-blanco-705256.jpg" },
+            new Producto { Nombre = "iPhone 12 Pro Azul", Descripcion = "Color: Azul, 256GB, Cámara: 12MP triple", Precio = 450000, Stock = 10, ImagenUrl = "https://img.pccomponentes.com/articles/32/328890/1391-apple-iphone-12-pro-max-256gb-azul-pacifico-libre.jpg" },
+            new Producto { Nombre = "iPhone 13 Rosa", Descripcion = "Color: Rosa, 128GB, Cámara: 12MP dual", Precio = 500000, Stock = 10, ImagenUrl = "https://media3.allzone.es/994382-large_default/smartphones-iphone-13-128gb-rosa-iphone13128gbpink.jpg" },
+            new Producto { Nombre = "iPhone 13 Pro Grafito", Descripcion = "Color: Grafito, 256GB, Cámara: 12MP triple", Precio = 550000, Stock = 10, ImagenUrl = "https://img.pccomponentes.com/articles/57/578933/1686-apple-iphone-13-pro-256gb-grafito-libre.jpg" },
+            new Producto { Nombre = "iPhone 14 Morado", Descripcion = "Color: Morado, 128GB, Cámara: 12MP dual", Precio = 600000, Stock = 10, ImagenUrl = "https://m.media-amazon.com/images/I/619f09kK7tL._AC_SL1500_.jpg" },
+            new Producto { Nombre = "iPhone 14 Pro Plata", Descripcion = "Color: Plata, 256GB, Cámara: 48MP triple", Precio = 650000, Stock = 10, ImagenUrl = "https://resources.claroshop.com/medios-plazavip/fotos/productos_sears1/original/3589788.jpg" },
+            new Producto { Nombre = "iPhone 15 Amarillo", Descripcion = "Color: Amarillo, 256GB, Cámara: 48MP dual", Precio = 700000, Stock = 10, ImagenUrl = "https://www.zaraphone.com/wp-content/uploads/2023/10/iPhone-15-Amarillo.jpg" },
+            new Producto { Nombre = "iPhone 16 Pro Max Titanio", Descripcion = "Color: Titanio, 512GB, Cámara: 48MP triple", Precio = 800000, Stock = 10, ImagenUrl = "https://pisces.bbystatic.com/image2/BestBuy_US/images/products/9471f613-7d82-400e-97ed-7dca6c0101af.jpg" }
         });
         db.SaveChanges();
     }
