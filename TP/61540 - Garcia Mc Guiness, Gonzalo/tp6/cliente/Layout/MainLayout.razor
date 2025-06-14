@@ -7,10 +7,10 @@
         <img src="img/f1logo.svg" alt="F1 Logo" style="height: 40px;" />
         <span class="ms-2">Tienda Formula 1</span>
     </a>
-    <form class="d-flex ms-auto" @onsubmit="Buscar">
-        <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
-        <button class="btn btn-outline-light" type="submit">Buscar</button>
-    </form>
+        <form class="d-flex ms-auto" @onsubmit="Buscar">
+            <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
+            <button class="btn btn-outline-light" type="submit">Buscar</button>
+        </form>
     <a href="/carrito" class="btn btn-outline-light position-relative ms-3">
         <span style="font-size: 1.5rem;">🛒</span>
         <span class="visually-hidden">Carrito</span>
@@ -20,7 +20,7 @@
     </a>
 </nav>
 
-<div class="page">
+<div class="page px-3">
     @Body
 </div>
 

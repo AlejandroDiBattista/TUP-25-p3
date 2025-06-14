@@ -6,38 +6,44 @@
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Routing
 
-<h3>Catálogo de Productos</h3>
+<div class="fondo-productos">
+    <div class="container mt-4">
+        <div class="titulos">
+            <h2 class="fw-bold text-dark">Catálogo de Productos</h2>
+        </div>
 
-@if (productos is null)
-{
-    <p>Cargando productos...</p>
-}
-else if (productos.Count == 0)
-{
-    <p>No se encontraron productos.</p>
-}
-else
-{
-    <div class="row">
-        @foreach (var prod in productos)
+        @if (productos is null)
         {
-            <div class="col-md-4 col-lg-3 mb-4">
-                <div class="card h-100">
-                    <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="height: 180px; object-fit: cover;" />
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">@prod.Nombre</h5>
-                        <p class="card-text">@prod.Descripcion</p>
-                        <p class="mb-1"><b>Precio:</b> $ @prod.Precio.ToString()</p>
-                        <p class="mb-2"><b>Stock:</b> @prod.Stock</p>
-                        <button class="btn btn-primary mt-auto" disabled="@(@prod.Stock == 0)" @onclick="() => AgregarAlCarrito(prod.Id)">
-                            Agregar al carrito
-                        </button>
+            <p>Cargando productos...</p>
+        }
+        else if (productos.Count == 0)
+        {
+            <p>No se encontraron productos.</p>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var prod in productos)
+                {
+                    <div class="col-md-4 col-lg-3 mb-4">
+                        <div class="card h-100">
+                            <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="width: 100% ,height: 100px; object-fit: cover;" />
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@prod.Nombre</h5>
+                                <p class="card-text">@prod.Descripcion</p>
+                                <p class="mb-1"><b>Precio:</b> $ @prod.Precio.ToString()</p>
+                                <p class="mb-2"><b>Stock:</b> @prod.Stock</p>
+                                <button class="btn btn-agregar mt-auto" disabled="@(@prod.Stock == 0)" @onclick="() => AgregarAlCarrito(prod.Id)">
+                                    Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         }
     </div>
-}
+</div>
 
 @code {
     List<Producto>? productos;

@@ -270,7 +270,6 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, int carri
 {
     var compra = await db.Compras
         .Include(c => c.Items)
-        .ThenInclude(i => i.Producto)
         .FirstOrDefaultAsync(c => c.Id == carritoId);
 
     if (compra == null) return Results.NotFound("Carrito no encontrado");
@@ -278,11 +277,12 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, int carri
 
     foreach (var item in compra.Items)
     {
-        if (item.Producto != null)
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto != null)
         {
-            if (item.Producto.Stock < item.Cantidad)
-                return Results.BadRequest($"No hay suficiente stock para {item.Producto.Nombre}");
-            item.Producto.Stock -= item.Cantidad;
+            if (producto.Stock < item.Cantidad)
+                return Results.BadRequest($"No hay suficiente stock para {producto.Nombre}");
+            producto.Stock -= item.Cantidad;
         }
     }
 
@@ -292,23 +292,29 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, int carri
     compra.Fecha = DateTime.Now;
     compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
 
+    Console.WriteLine("Stock descontado, guardando cambios...");
     await db.SaveChangesAsync();
+    Console.WriteLine("Stock descontado, guardando cambios...");
 
-    return Results.Ok(new {
+    return Results.Ok(new
+    {
         compra.Id,
         compra.Fecha,
         compra.Total,
         compra.NombreCliente,
         compra.ApellidoCliente,
         compra.EmailCliente,
-        Items = compra.Items.Select(i => new {
+        Items = compra.Items.Select(i => new
+        {
             i.Id,
             i.ProductoId,
-            Producto = new {
+            Producto = new
+            {
                 i.Producto?.Id,
                 i.Producto?.Nombre,
                 i.Producto?.Descripcion,
                 i.Producto?.Precio,
+                i.Producto?.Stock,
                 i.Producto?.ImagenUrl
             },
             i.Cantidad,

@@ -3,60 +3,70 @@
 @inject CarritoService CarritoService
 @inject NavigationManager NavigationManager
 
-<h3>carrito de Compras</h3>
+<div class="fondo-productos">
+    <div class="container mt-4">
+        <div class="titulos">
+            <h2 class="fw-bold text-dark">Carrito de Compras</h2>
+        </div>
 
-@if (carrito is null)
-{
-    <p>Cargando carrito...</p>
-}
-else if (carrito.Items.Count == 0)
-{
-    <p>El carrito esta vacio.</p>
-    <a class="btn btn-secondary" href="/">Volver al catalogo</a>
-}
-else
-{
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio Unitario</th>
-                <th>Cantidad</th>
-                <th>Importe</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in carrito.Items)
-            {
-                <tr>
-                    <td>
-                        <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="height:40px;width:40px;object-fit:cover;margin-right:8px;" />
-                        @item.Producto.Nombre
-                    </td>
-                    <td>@item.PrecioUnitario.ToString("C")</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad - 1)" disabled="@(item.Cantidad == 1)">-</button>
-                        <span class="mx-2">@item.Cantidad</span>
-                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
-                    </td>
-                    <td>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" @onclick="() => QuitarProducto(item.ProductoId)">Quitar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <div>
-        <b>Total: </b> @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")
+        @if (carrito is null)
+        {
+            <p class="fw-bold text-white">Cargando carrito...</p>
+        }
+        else if (carrito.Items.Count == 0)
+        {
+            <p class="fw-bold text-white">El carrito esta vacio.</p>
+            <div class="">
+                <button class="btn btn-primary" @onclick="VolverAlCatalogo">Seguir comprando</button>
+            </div>
+            <a class="btn btn-secondary" href="/">Volver al catalogo</a>
+        }
+        else
+        {
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio Unitario</th>
+                        <th>Cantidad</th>
+                        <th>Importe</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carrito.Items)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="height:40px;width:40px;object-fit:cover;margin-right:8px;" />
+                                @item.Producto.Nombre
+                            </td>
+                            <td>$ @item.PrecioUnitario.ToString()</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad - 1)" disabled="@(item.Cantidad == 1)">-</button>
+                                <span class="mx-2">@item.Cantidad</span>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                            </td>
+                            <td>$ @((item.Cantidad * item.PrecioUnitario).ToString())</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" @onclick="() => QuitarProducto(item.ProductoId)">Quitar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="fw-bold text-white">
+                <b>Total: </b> $ @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString()
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-agregar me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+                <button class="btn btn-primary me-2" @onclick="VolverAlCatalogo">Seguir comprando</button>
+                <button class="btn btn-success me-2" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Confirmar compra</button>
+                
+            </div>
+        }
     </div>
-    <div class="mb-3">
-        <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
-        <button class="btn btn-success me-2" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Confirmar compra</button>
-        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Seguir comprando</button>
-    </div>
-}
+</div>
 
 @code
 {

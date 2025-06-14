@@ -5,48 +5,54 @@
 @using System.ComponentModel.DataAnnotations
 @using cliente.Services
 
-<h3>Confirmar compra</h3>
-
-@if (carrito is null)
-{
-    <p>Cargando carrito...</p>
-}
-else if (carrito.Items.Count == 0)
-{
-    <p>El carrito esta vacio.</p>
-}
-else
-{
-    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div>
-            <label>Nombre:</label>
-            <InputText @bind-Value="datosCliente.Nombre" class="form-control"/>
-        </div>
-        <div>
-            <label>Apellido:</label>
-            <InputText @bind-Value="datosCliente.Apellido" class="form-control"/>
-        </div>
-        <div>
-            <label>Email:</label>
-            <InputText @bind-Value="datosCliente.Email" class="form-control"/>
+<div class="fondo-productos">
+    <div class="container mt-4">
+        <div class="titulos">
+            <h2 class="fw-bold text-dark">Carrito de Compras</h2>
         </div>
 
-        <h5>Resumen de compra</h5>
-        <ul>
-            @foreach (var item in carrito.Items)
-            {
-                <li>@item.Producto.Nombre x @item.Cantidad - @((item.Cantidad * item.PrecioUnitario).ToString("C"))</li>
-            }
-        </ul>
-        <b>Total: @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</b>
-        <br />
-        <button class="btn btn-success" type="submit">Confirmar compra</button>
-    </EditForm>
-}
+        @if (carrito is null)
+        {
+            <p>Cargando carrito...</p>
+        }
+        else if (carrito.Items.Count == 0)
+        {
+            <p>El carrito esta vacio.</p>
+        }
+        else
+        {
+            <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
+                <div>
+                    <label class="fw-bold text-white">Nombre:</label>
+                    <InputText @bind-Value="datosCliente.Nombre" class="form-control"/>
+                </div>
+                <div>
+                    <label class="fw-bold text-white">Apellido:</label>
+                    <InputText @bind-Value="datosCliente.Apellido" class="form-control"/>
+                </div>
+                <div>
+                    <label class="fw-bold text-white">Email:</label>
+                    <InputText @bind-Value="datosCliente.Email" class="form-control"/>
+                </div>
+                <div class="fw-bold text-white">
+                    <h5>Resumen de compra</h5>
+                    <ul>
+                        @foreach (var item in carrito.Items)
+                        {
+                            <li> @item.Producto.Nombre x @item.Cantidad - $ @((item.Cantidad * item.PrecioUnitario).ToString())</li>
+                        }
+                    </ul>
+                    <b>Total: $ @carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString()</b>
+                    <br />
+                    <button class="btn btn-success" type="submit">Confirmar compra</button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>  
 @code
 {
     cliente.Services.Carrito? carrito;
@@ -60,7 +66,7 @@ else
     async Task ConfirmarCompra()
     {
         await CarritoService.ConfirmarCompraAsync(datosCliente);
-        NavigationManager.NavigateTo("/comprado");
+        NavigationManager.NavigateTo("/", true);
     }
 
     public class ClienteDto

@@ -52,7 +52,7 @@ namespace cliente.Services
         public async Task ConfirmarCompraAsync(object datosCliente)
         {
             if (!CarritoId.HasValue) return;
-            await _http.PostAsJsonAsync($"/carritos/{CarritoId}/confirmar", datosCliente);
+            await _http.PutAsJsonAsync($"/carritos/{CarritoId}/confirmar", datosCliente);
             CarritoId = null;
             NotificarCambio();
         }
