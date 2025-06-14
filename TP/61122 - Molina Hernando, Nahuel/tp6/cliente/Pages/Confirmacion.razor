@@ -1,0 +1,141 @@
+@page "/confirmacion"
+@using cliente.Models
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Confirmar compra</h3>
+
+@if (cargando)
+{
+    <p>Cargando resumen...</p>
+}
+else if (items is null || items.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <h5>Resumen de la compra</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="mb-3">
+        <strong>Total: $@(items?.Sum(i => i.Producto.Precio * i.Cantidad) ?? 0)</strong>
+    </div>
+
+    <h5>Datos del cliente</h5>
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <div class="mb-2">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
+        </div>
+        <div class="mb-2">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="cliente.Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
+        </div>
+        <div class="mb-2">
+            <label>Email:</label>
+            <InputText class="form-control" @bind-Value="cliente.Email" type="email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success mt-3">@mensaje</div>
+    <button class="btn btn-primary mt-2" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+}
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger mt-3">@error</div>
+}
+
+@code {
+    string carritoId;
+    List<CarritoItem> items;
+    ClienteDatos cliente = new();
+    bool cargando = true;
+    string mensaje;
+    string error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarResumen();
+    }
+
+    async Task CargarResumen()
+    {
+        cargando = true;
+        mensaje = error = null;
+        carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!string.IsNullOrEmpty(carritoId))
+            carritoId = carritoId.Trim('"');
+        if (!string.IsNullOrEmpty(carritoId))
+        {
+            try
+            {
+                items = await ApiService.ObtenerCarritoAsync(carritoId);
+            }
+            catch
+            {
+                error = "No se pudo cargar el carrito.";
+                items = null;
+            }
+        }
+        else
+        {
+            items = null;
+        }
+        cargando = false;
+        StateHasChanged();
+    }
+
+    async Task ConfirmarCompra()
+    {
+        mensaje = error = null;
+        try
+        {
+            var respuesta = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
+            mensaje = $"¡Compra confirmada! Número de compra: {respuesta.Id}. Total: ${respuesta.Total}";
+            await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+            items = null;
+        }
+        catch
+        {
+            error = "No se pudo confirmar la compra. Intenta nuevamente.";
+        }
+    }
+
+    void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+
+
