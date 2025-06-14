@@ -1,0 +1,14 @@
+@page "/gracias"
+@inject NavigationManager nav
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="text-center bg-white p-5 rounded shadow-lg">
+        <h2 class="text-success mb-3">¡Gracias por tu compra!</h2>
+        <p class="text-secondary mb-4">Tu pedido fue confirmado correctamente. Te enviaremos un email con los detalles.
+        </p>
+
+        <button class="btn btn-success" @onclick="@(() => nav.NavigateTo("/"))">
+            Volver al inicio
+        </button>
+    </div>
+</div>
