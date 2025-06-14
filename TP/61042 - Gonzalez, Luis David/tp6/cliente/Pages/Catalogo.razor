@@ -1,0 +1,114 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@using cliente.Services
+@inject cliente.Services.ApiService Api
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="header">
+    
+    <button @onclick="IrAlCarrito" class="carrito-btn" style="font-size:2.2rem; padding:0.5rem 1.5rem; color:red;">
+        <span style="font-size:2.8rem; vertical-align:middle;">🛒</span> <span class="contador" style="font-size:1.5rem;">@cantidadCarrito</span>
+    </button>
+</div>
+
+<div style="color:red; font-size:1.5rem; text-align:center; margin-bottom:1rem;">Carrito de compra</div>
+
+<div class="productos">
+    @if (productos == null)
+    {
+        <p>Cargando productos...</p>
+    }
+    else if (!productos.Any())
+    {
+        <p>No hay productos.</p>
+    }
+    else
+    {
+        @foreach (var p in productos)
+        {
+            <div class="producto">
+               
+                <h3>@p.Nombre</h3>
+                <p>@p.Descripcion</p>
+                <p><b>Stock:</b> @p.Stock</p>
+                <p><b>Precio:</b> $@p.Precio</p>
+                <button @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0)">Agregar al carrito</button>
+            </div>
+        }
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@code {
+    string busqueda = "";
+    List<Producto> productos;
+    int cantidadCarrito = 0;
+    Guid carritoId;
+    string error = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            await CargarCarritoId();
+            await Buscar();
+            await ActualizarCantidadCarrito();
+        } catch (Exception ex) {
+            error = ex.Message;
+        }
+    }
+
+    async Task Buscar()
+    {
+        try {
+            productos = await Api.ObtenerProductosAsync(busqueda);
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al cargar productos: " + ex.Message;
+        }
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        try {
+            await Api.AgregarProductoAsync(carritoId, productoId, 1);
+            await ActualizarCantidadCarrito();
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al agregar al carrito: " + ex.Message;
+        }
+    }
+
+    async Task CargarCarritoId()
+    {
+        try {
+            var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+            if (!Guid.TryParse(idStr, out carritoId))
+            {
+                carritoId = await Api.CrearCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+            }
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al obtener carrito: " + ex.Message;
+        }
+    }
+
+    async Task ActualizarCantidadCarrito()
+    {
+        try {
+            var items = await Api.ObtenerCarritoAsync(carritoId);
+            cantidadCarrito = items.Sum(i => i.Cantidad);
+            StateHasChanged();
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al cargar el carrito: " + ex.Message;
+        }
+    }
+
+    void IrAlCarrito() => Nav.NavigateTo("/carrito");
+}

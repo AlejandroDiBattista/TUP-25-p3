@@ -1,12 +1,11 @@
-﻿@page "/"
-@using cliente.Services
+﻿@using cliente.Services
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
 
 <div class="container">
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-10">
             <h1>Comunicación Cliente-Servidor</h1>
         </div>
     </div>
@@ -21,7 +20,7 @@
         <div class="col-12">            
             @if (cargando) {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
+            } else if (datos != null) {                <div class="card" style="width: 500px;">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>
