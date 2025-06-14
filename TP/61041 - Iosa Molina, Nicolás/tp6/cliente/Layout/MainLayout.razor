@@ -1,4 +1,68 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<header class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-3">
+    <div class="container">
+        <a href="/" class="navbar-brand">
+            <img src="/icono.webp" alt="Logo" style="height:40px;"/> Tienda Online
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link @(NavMenuActive("/") ? "active" : "")" href="/">Catálogo</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <a href="/carrito" class="btn btn-light position-relative me-2">
+                    <i class="bi bi-cart"></i> Carrito
+                    @if (cantidadCarrito > 0)
+                    {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @cantidadCarrito
+                        </span>
+                    }
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="page container pb-4">
     @Body
 </div>
+
+@code {
+    private int cantidadCarrito = 0;
+    private string currentUrl = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarCantidadCarrito();
+        ApiService.OnCarritoChanged += ActualizarCantidadCarrito;
+        
+        var navigationManager = new Uri(NavigationManager.Uri);
+        currentUrl = navigationManager.AbsolutePath;
+    }
+
+    private async Task ActualizarCantidadCarrito()
+    {
+        var carrito = await ApiService.GetCarrito();
+        cantidadCarrito = carrito?.Count ?? 0;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnCarritoChanged -= ActualizarCantidadCarrito;
+    }
+
+    private bool NavMenuActive(string href)
+    {
+        return currentUrl.Equals(href, StringComparison.OrdinalIgnoreCase);
+    }
+}

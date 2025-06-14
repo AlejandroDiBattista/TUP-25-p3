@@ -1,0 +1,139 @@
+@page "/"
+@inject ApiService ApiService
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <input class="form-control" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+        </div>
+    </div>
+    <div class="row">
+        @if (productos == null)
+        {
+            <div class="col-12"><div class="alert alert-info">Cargando productos...</div></div>
+        }
+        else if (productos.Count == 0)
+        {
+            <div class="col-12"><div class="alert alert-warning">No se encontraron productos.</div></div>
+        }
+        else
+        {
+            @foreach (var p in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        @if (string.IsNullOrEmpty(p.ImagenUrl))
+                        {
+                            <img src="/images/no-image.png" class="card-img-top" style="height:200px;object-fit:contain;" />
+                        }
+                        else
+                        {
+                            <img src="@p.ImagenUrl" class="card-img-top" style="height:200px;object-fit:contain;" onerror="this.src='/images/no-image.png'" />
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <p class="card-text">@p.Descripcion</p>
+                            <p class="card-text"><b>Stock:</b> @p.Stock</p>
+                            <p class="card-text"><b>Precio:</b> $@p.Precio</p>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Cantidad</span>
+                                <input type="number" class="form-control" min="1" max="@p.Stock" value="@GetCantidad(p.Id)" @oninput="e => CambiarCantidad(p.Id, e.Value?.ToString())" disabled="@(p.Stock == 0)" />
+                            </div>
+                            @if (GetCantidadEnCarrito(p.Id) > 0)
+                            {
+                                <div class="alert alert-info py-1 px-2 mb-2">Ya estás llevando este producto.</div>
+                            }
+                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(p)" disabled="@(p.Stock == 0)">
+                                @(p.Stock == 0 ? "Sin stock" : "Agregar al carrito")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<ProductoDto> productos;
+    private string _busqueda = "";
+    private string busqueda
+    {
+        get => _busqueda;
+        set
+        {
+            if (_busqueda != value)
+            {
+                _busqueda = value;
+                _ = CargarProductos();
+            }
+        }
+    }
+
+    private Dictionary<int, int> cantidades = new();
+
+    private int GetCantidadEnCarrito(int productoId)
+    {
+        var item = carrito?.FirstOrDefault(i => i.ProductoId == productoId);
+        return item?.Cantidad ?? 0;
+    }
+
+    private List<ItemCarritoDto> carrito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+        carrito = await ApiService.ObtenerCarritoAsync();
+    }
+
+    private int GetCantidad(int productoId)
+    {
+        if (cantidades.TryGetValue(productoId, out var c) && c > 0)
+            return c;
+        var enCarrito = GetCantidadEnCarrito(productoId);
+        return enCarrito > 0 ? enCarrito : 1;
+    }
+
+    private async void CambiarCantidad(int productoId, string? value)
+    {
+        if (int.TryParse(value, out var cantidad) && cantidad > 0)
+            cantidades[productoId] = cantidad;
+        else
+            cantidades[productoId] = 1;
+            
+        if (GetCantidadEnCarrito(productoId) > 0)
+        {
+            _ = ApiService.AgregarAlCarritoAsync(productoId, cantidades[productoId]);
+            _ = RefrescarCarrito();
+        }
+    }
+
+    private async Task RefrescarCarrito()
+    {
+        carrito = await ApiService.ObtenerCarritoAsync();
+        StateHasChanged();
+    }
+
+    private async Task AgregarAlCarrito(ProductoDto producto)
+    {
+        var cantidad = GetCantidad(producto.Id);
+        await ApiService.AgregarAlCarritoAsync(producto.Id, cantidad);
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await ApiService.ObtenerProductosAsync(busqueda);
+        carrito = await ApiService.ObtenerCarritoAsync();
+        if (productos != null)
+        {
+            foreach (var p in productos)
+            {
+                var enCarrito = GetCantidadEnCarrito(p.Id);
+                if (!cantidades.ContainsKey(p.Id) || cantidades[p.Id] < 1)
+                    cantidades[p.Id] = enCarrito > 0 ? enCarrito : 1;
+            }
+        }
+        StateHasChanged();
+    }
+}
