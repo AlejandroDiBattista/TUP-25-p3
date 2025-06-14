@@ -4,7 +4,6 @@
 @inject CarritoService CarritoService
 @inject ApiService ApiService
 
-
 <PageTitle>Inicio</PageTitle>
 
 <div class="fondo-home">
@@ -37,9 +36,9 @@
             </li>
           </ul>
 
-          <form class="d-flex" role="search" @onsubmit="BuscarProducto">
+          <form class="d-flex" role="search" >
             <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
-            <button class="btn btn-outline-success" type="submit">Buscar</button>
+            <button class="btn btn-outline-success" type="button">Buscar</button>
           </form>
         </div>
       </div>
@@ -55,7 +54,6 @@
         </p>
         
         <button class="btn btn-outline-light" @onclick="@(() => NavigationManager.NavigateTo("/productos"))">¡Comprar!</button>
-        @inject NavigationManager NavigationManager
       </div>
       <div class="contenedor-imagen">
           <img src="imagenes/selenafondp.webp" alt="Selena Gomez" class="imagen-inicio">

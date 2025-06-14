@@ -37,7 +37,7 @@
                 </ul>
                 
                 <form class="d-flex" role="search" @onsubmit="BuscarProducto">
-                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
+                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" @bind="textoBusquedaInput"/>
                     <button class="btn btn-outline-success" type="submit">Buscar</button>
                 </form>
             </div>
@@ -59,7 +59,7 @@
         else
         {
             <div class="row">
-                @foreach (var producto in productos)
+                @foreach (var producto in ProductosFiltrados)
                 {
                     <div class="col-md-4 mb-4">
                         <div class="card h-100 d-flex flex-column">
@@ -93,7 +93,7 @@
     private List<cliente.Modelos.Producto> productos;
     private bool mostrarMensaje = false;
     private string textoBusqueda = "";
-
+    private string textoBusquedaInput = "";
 
     protected override async Task OnParametersSetAsync()
     {
@@ -103,7 +103,7 @@
     private IEnumerable<cliente.Modelos.Producto> ProductosFiltrados =>
         string.IsNullOrWhiteSpace(textoBusqueda)
             ? productos
-            : productos.Where(p => p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
+            : productos.Where(p => QuitarAcentos(p.Nombre).Contains(QuitarAcentos(textoBusqueda), StringComparison.OrdinalIgnoreCase));
 
     private async Task AgregarAlCarrito(cliente.Modelos.Producto producto)
     {
@@ -121,9 +121,22 @@
         StateHasChanged();
     }
 
-    private Task BuscarProducto()
+    private void BuscarProducto()
     {
-        return Task.CompletedTask;
+        textoBusqueda = textoBusquedaInput;
     }
+
+    private static string QuitarAcentos(string texto)
+{
+    if (string.IsNullOrEmpty(texto)) return texto;
+    var normalized = texto.Normalize(System.Text.NormalizationForm.FormD);
+    var sb = new System.Text.StringBuilder();
+    foreach (var c in normalized)
+    {
+        if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            sb.Append(c);
+    }
+    return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
 }
+
 }    
