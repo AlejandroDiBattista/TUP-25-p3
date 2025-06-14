@@ -23,12 +23,12 @@ else
                         <h6 class="my-0">Total de productos</h6>
                         <small class="text-muted">Cantidad de items diferentes</small>
                     </div>
-                    @* CORRECCIÓN AQUÍ: Usamos .Count en lugar de GroupBy *@
+
                     <span class="text-muted">@CartService.Items.Count</span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total (ARS)</span>
-                    @* CORRECCIÓN AQUÍ: Llamamos a un método para calcular el total *@
+            
                     <strong>@CalcularTotal().ToString("C")</strong>
                 </li>
             </ul>
@@ -73,16 +73,15 @@ else
         NavigationManager.NavigateTo("/compra-exitosa");
     }
 
-    // <<< MÉTODO AÑADIDO PARA CALCULAR EL TOTAL CORRECTAMENTE >>>
     private decimal CalcularTotal()
     {
         decimal total = 0;
         foreach(var item in CartService.Items)
         {
-            var producto = CartService.GetProductDetails(item.Key); // item.Key es el productId
+            var producto = CartService.GetProductDetails(item.Key); 
             if (producto != null)
             {
-                total += producto.Precio * item.Value; // item.Value es la cantidad
+                total += producto.Precio * item.Value; 
             }
         }
         return total;

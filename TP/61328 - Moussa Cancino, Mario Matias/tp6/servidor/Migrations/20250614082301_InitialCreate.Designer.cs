@@ -11,7 +11,7 @@ using servidor;
 namespace servidor.Migrations
 {
     [DbContext(typeof(TiendaDbContext))]
-    [Migration("20250614043730_InitialCreate")]
+    [Migration("20250614082301_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,6 +20,44 @@ namespace servidor.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
 
+            modelBuilder.Entity("servidor.Carrito", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carritos");
+                });
+
+            modelBuilder.Entity("servidor.CarritoItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("CarritoId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarritoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("CarritoItems");
+                });
+
             modelBuilder.Entity("servidor.Compra", b =>
                 {
                     b.Property<int>("Id")
@@ -27,15 +65,18 @@ namespace servidor.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ApellidoCliente")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EmailCliente")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NombreCliente")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Total")
@@ -80,12 +121,15 @@ namespace servidor.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Descripcion")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ImagenUrl")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Nombre")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Precio")
@@ -103,7 +147,7 @@ namespace servidor.Migrations
                         {
                             Id = 1,
                             Descripcion = "El último smartphone de Apple con chip A16 Bionic.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://laplatacells.com.ar/img/Public/1169/62057-producto-iphone-14-pro-space-black-pdp-image-position-1a-mxla.jpg",
                             Nombre = "iPhone 14 Pro",
                             Precio = 999.99m,
                             Stock = 50
@@ -112,7 +156,7 @@ namespace servidor.Migrations
                         {
                             Id = 2,
                             Descripcion = "El buque insignia de Samsung con un S Pen integrado.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://images.samsung.com/is/image/samsung/p6pim/in/2302/gallery/in-galaxy-s23-s918-446812-sm-s918bzrcins-534868449?$684_547_PNG$",
                             Nombre = "Samsung Galaxy S23 Ultra",
                             Precio = 1199.99m,
                             Stock = 40
@@ -121,7 +165,7 @@ namespace servidor.Migrations
                         {
                             Id = 3,
                             Descripcion = "La magia de Google en un teléfono, con el chip Tensor G2.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://www.alemaniacell.com/uploads/imagen-principal23306-1-1690494033.JPG",
                             Nombre = "Google Pixel 7 Pro",
                             Precio = 899.00m,
                             Stock = 60
@@ -130,7 +174,7 @@ namespace servidor.Migrations
                         {
                             Id = 4,
                             Descripcion = "Protección suave y elegante para tu iPhone.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://acdn-us.mitiendanube.com/stores/001/643/020/products/silicone-case-con-logo-iphone-16-pro-azul-oscuro-18c6317df9dedf6c3817260731913348-640-0.png",
                             Nombre = "Funda de Silicona para iPhone",
                             Precio = 49.00m,
                             Stock = 150
@@ -139,7 +183,7 @@ namespace servidor.Migrations
                         {
                             Id = 5,
                             Descripcion = "Carga tu dispositivo a toda velocidad.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_903078-MLU77836658064_072024-O.webp",
                             Nombre = "Cargador Rápido USB-C 30W",
                             Precio = 35.50m,
                             Stock = 200
@@ -148,7 +192,7 @@ namespace servidor.Migrations
                         {
                             Id = 6,
                             Descripcion = "Cancelación de ruido activa y audio espacial.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://ipoint.com.ar/25134-thickbox_default/apple-airpods-pro-2da-generacion.jpg",
                             Nombre = "AirPods Pro (2da Gen)",
                             Precio = 249.00m,
                             Stock = 80
@@ -157,7 +201,7 @@ namespace servidor.Migrations
                         {
                             Id = 7,
                             Descripcion = "Máxima protección contra rayones y golpes.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://acdn-us.mitiendanube.com/stores/078/254/products/full-glue-03-8c85bbc0b5da12d85016298455797656-640-0-972d15eba548f5d7f317107817449057-640-0.png",
                             Nombre = "Protector de Pantalla de Vidrio",
                             Precio = 25.00m,
                             Stock = 300
@@ -166,7 +210,7 @@ namespace servidor.Migrations
                         {
                             Id = 8,
                             Descripcion = "Monitor de salud avanzado y diseño moderno.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://cdn.kemik.gt/2023/06/R-920-BLACK-SAMSUNG-1200X1200-1-1-768x768.-700x700.jpg",
                             Nombre = "Samsung Galaxy Watch 5",
                             Precio = 279.99m,
                             Stock = 70
@@ -175,7 +219,7 @@ namespace servidor.Migrations
                         {
                             Id = 9,
                             Descripcion = "Nunca te quedes sin batería fuera de casa.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://static.bidcom.com.ar/publicacionesML/productos/KCABLE03/1000x1000-KCABLE03.jpg",
                             Nombre = "Batería Externa 10000mAh",
                             Precio = 45.00m,
                             Stock = 120
@@ -184,11 +228,28 @@ namespace servidor.Migrations
                         {
                             Id = 10,
                             Descripcion = "Mantén tu teléfono seguro y a la vista mientras conduces.",
-                            ImagenUrl = "https://placehold.co/300x200/png",
+                            ImagenUrl = "https://dcdn-us.mitiendanube.com/stores/002/611/582/products/soporte-auto-8ffc2a832392b199f917190750449559-1024-1024.webp",
                             Nombre = "Soporte de Coche Magnético",
                             Precio = 22.99m,
                             Stock = 180
                         });
+                });
+
+            modelBuilder.Entity("servidor.CarritoItem", b =>
+                {
+                    b.HasOne("servidor.Carrito", null)
+                        .WithMany("Items")
+                        .HasForeignKey("CarritoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("servidor.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
                 });
 
             modelBuilder.Entity("servidor.ItemCompra", b =>
@@ -208,6 +269,11 @@ namespace servidor.Migrations
                     b.Navigation("Compra");
 
                     b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("servidor.Carrito", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("servidor.Compra", b =>

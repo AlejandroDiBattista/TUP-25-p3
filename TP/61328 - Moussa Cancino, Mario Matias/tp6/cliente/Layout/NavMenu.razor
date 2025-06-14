@@ -34,7 +34,7 @@
 </nav>
 
 @code {
-    private string searchQuery = string.Empty; // <<< CORRECCIÓN AQUÍ
+    private string searchQuery = string.Empty; 
 
     protected override void OnInitialized() {
         CartService.OnChange += StateHasChanged;
