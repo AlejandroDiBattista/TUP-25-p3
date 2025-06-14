@@ -17,11 +17,9 @@ public class CarritoService
         _httpClient = httpClient;
         _js = js;
     }
-    
 
     public async Task<List<ItemCarrito>> ObtenerCarritoAsync(Guid carritoId)
     {
-        return await _httpClient.GetFromJsonAsync<List<ItemCarrito>>($"carritos/{carritoId}");
         var response = await _httpClient.GetFromJsonAsync<CarritoResponse>($"carritos/{carritoId}");
     var items= response.Carrito;
     var total = response.Total;
@@ -56,15 +54,9 @@ public class CarritoService
     }
 /*
     public async Task<Guid?> ObtenerCarritoIdAsync()
-{
-    var carritoIdStr = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
         if (Guid.TryParse(carritoIdStr, out var carritoId))
         {
-           return carritoId;
         }
-     
-    return null;
-}
 
 public async Task GuardarCarritoIdAsync(Guid carritoId)
 {
@@ -116,7 +108,6 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
         await _httpClient.DeleteAsync($"carritos/{carritoId}/{productoId}");
     }
 
-    public async Task ConfirmarCompraAsync(Guid carritoId, ConfirmacionRequest confirmacion)
     {
         var json = JsonSerializer.Serialize(confirmacion);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
