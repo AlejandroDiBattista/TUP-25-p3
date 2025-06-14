@@ -3,7 +3,7 @@
 @inject cliente.Services.CartStateService CartStateService 
 @inject NavigationManager Navigation
 
-<PageTitle>Parisian Chic - Carrito</PageTitle>
+<PageTitle>Paris Shoes - Carrito</PageTitle>
 
 <h1 class="text-4xl font-extrabold text-center text-black-text mb-8" style="font-family: 'Inter', sans-serif;">Tu Carrito de Compras</h1>
 
@@ -17,34 +17,41 @@
 else if (CartItems.Any())
 {
     <div class="bg-white-bg p-6 mb-8">
-        <div class="grid grid-cols-5 gap-4 font-semibold text-black-text border-b pb-3 mb-4 border-medium-gray">
+        <div class="grid grid-cols-6 gap-4 font-semibold text-black-text border-b pb-3 mb-4 border-medium-gray">
             <div class="col-span-2">Producto</div>
             <div>Cantidad</div>
             <div>Precio Unitario</div>
             <div>Importe</div>
+            <div></div>
         </div>
         @foreach (var item in CartItems)
         {
-            <div class="grid grid-cols-5 gap-4 items-center py-4 border-b border-light-gray last:border-b-0">
+            <div class="grid grid-cols-6 gap-4 items-center py-4 border-b border-light-gray last:border-b-0">
                 <div class="col-span-2 flex items-center space-x-4">
                     <img src="@item.ProductoImagenUrl" alt="@item.ProductoNombre" class="w-20 h-20 object-cover">
                     <span class="text-black-text font-medium">@item.ProductoNombre</span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <button @onclick="() => UpdateQuantity(item, item.Cantidad - 1)"
-                            class="bg-medium-gray text-white-bg px-3 py-1 rounded-full hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-medium-gray transition-colors duration-200 flex items-center justify-center"
-                            disabled="@(item.Cantidad <= 1)">
+                                class="bg-medium-gray text-white-bg px-3 py-1 rounded-full hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-medium-gray transition-colors duration-200 flex items-center justify-center"
+                                disabled="@(item.Cantidad <= 1)">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                     </button>
                     <span class="font-bold text-lg text-black-text">@item.Cantidad</span>
                     <button @onclick="() => UpdateQuantity(item, item.Cantidad + 1)"
-                            class="bg-medium-gray text-white-bg px-3 py-1 rounded-full hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-medium-gray transition-colors duration-200 flex items-center justify-center"
-                            disabled="@(item.Cantidad >= item.ProductoStock)">
+                                class="bg-medium-gray text-white-bg px-3 py-1 rounded-full hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-medium-gray transition-colors duration-200 flex items-center justify-center">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                     </button>
                 </div>
                 <div class="text-dark-gray">@string.Format(new System.Globalization.CultureInfo("es-AR"), "$ {0:N0}", item.PrecioUnitario)</div>
                 <div class="text-black-text font-bold">@string.Format(new System.Globalization.CultureInfo("es-AR"), "$ {0:N0}", item.Cantidad * item.PrecioUnitario)</div>
+                <div class="flex items-center justify-center">
+                    <button @onclick="() => RemoveItem(item)"
+                            class="bg-red-500 text-white-bg p-2 rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors duration-200"
+                            title="Eliminar producto">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
             </div>
         }
         <div class="flex justify-end items-center mt-6 pt-4 border-t border-medium-gray">
@@ -54,7 +61,7 @@ else if (CartItems.Any())
 
     <div class="flex flex-wrap justify-between gap-4 mt-6">
         <a href="/" class="flex-1 bg-dark-gray text-white-bg py-3 px-6 rounded-full font-semibold hover:bg-black-accent focus:outline-none focus:ring-2 focus:ring-medium-gray transition-all duration-300 shadow-md text-center">
-            Volver a Parisian Chic
+            Volver al catálogo
         </a>
         <button @onclick="ClearCart"
                 class="flex-1 bg-dark-gray text-white-bg py-3 px-6 rounded-full font-semibold hover:bg-black-accent focus:outline-none focus:ring-2 focus:ring-medium-gray transition-all duration-300 shadow-md">
@@ -71,7 +78,7 @@ else
     <p class="text-center text-dark-gray text-lg">Tu carrito está vacío.</p>
     <div class="flex justify-center mt-6">
         <a href="/" class="bg-black-accent text-white-bg py-3 px-6 rounded-full font-semibold hover:bg-dark-gray transition-all duration-300 shadow-md">
-            Volver a Parisian Chic
+            Volver al catálogo
         </a>
     </div>
 }
@@ -113,14 +120,21 @@ else
             if (CartId.HasValue)
             {
                 CartItems = await ApiService.GetCartItems(CartId.Value);
+                Console.WriteLine($"--- Cart loaded for CartId: {CartId.Value} ---");
+                foreach (var item in CartItems)
+                {
+                    Console.WriteLine($"Producto: {item.ProductoNombre}, Cantidad en Carrito: {item.Cantidad}, Stock disponible (desde servidor): {item.ProductoStock}");
+                }
+                Console.WriteLine("------------------------------------------");
             }
             else
             {
                 CartItems = new();
             }
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) 
         {
+            Console.WriteLine($"Error en LoadCartItems: {ex.Message}"); 
             ShowNotification($"Error al cargar los ítems del carrito: {ex.Message}", true); 
             CartItems = new();
         }
@@ -132,53 +146,62 @@ else
 
     private async Task UpdateQuantity(cliente.Models.CarritoItemDto item, int newQuantity)
     {
+        ShowNotification(null, false); 
+
         if (CartId == null) return;
+
+        Console.WriteLine($"[UpdateQuantity] Producto: {item.ProductoNombre}, Cantidad actual en carrito: {item.Cantidad}, Nueva cantidad deseada: {newQuantity}, Stock disponible (desde item): {item.ProductoStock}");
 
         if (newQuantity <= 0)
         {
+            Console.WriteLine($"[UpdateQuantity] Eliminando ítem: {item.ProductoNombre} (cantidad <= 0)"); // Debugging
             await RemoveItem(item);
         }
-        else if (newQuantity > item.ProductoStock)
-        {
-            ShowNotification($"No hay suficiente stock para {item.ProductoNombre}. Stock disponible: {item.ProductoStock}", true); 
-        }
-        else
+        else 
         {
             try
             {
-                await ApiService.AddOrUpdateProductInCart(CartId.Value, item.ProductoId, newQuantity);
-                await LoadCartItems(); 
-            }
-            catch (HttpRequestException ex)
-            {
-                if (ex.Message.Contains("No hay suficiente stock"))
+                string? error = await ApiService.AddOrUpdateProductInCart(CartId.Value, item.ProductoId, newQuantity);
+
+                if (error != null)
                 {
-                    ShowNotification($"No hay suficiente stock de {item.ProductoNombre}. Stock disponible: {item.ProductoStock}", true);
+                    Console.WriteLine($"[UpdateQuantity] Error del servidor: {error}");
+                    ShowNotification(error, true);
                 }
                 else
                 {
-                    ShowNotification($"Error al actualizar la cantidad de {item.ProductoNombre}: {ex.Message}", true);
+                    Console.WriteLine($"[UpdateQuantity] Éxito: Actualizando carrito y recargando ítems.");
+                    await LoadCartItems(); 
                 }
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"[UpdateQuantity] Excepción inesperada: {ex.Message}"); 
+                ShowNotification($"Error inesperado al actualizar la cantidad de {item.ProductoNombre}: {ex.Message}", true);
             }
         }
     }
 
     private async Task RemoveItem(cliente.Models.CarritoItemDto item)
     {
+        ShowNotification(null, false); 
         if (CartId == null) return;
         try
         {
             await ApiService.RemoveProductFromCart(CartId.Value, item.ProductoId);
             await LoadCartItems(); 
+            ShowNotification($"'{item.ProductoNombre}' ha sido eliminado del carrito.", false);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) 
         {
-            ShowNotification($"Error al eliminar {item.ProductoNombre} del carrito: {ex.Message}", true); // Pasa true
+            Console.WriteLine($"Error en RemoveItem: {ex.Message}"); 
+            ShowNotification($"Error al eliminar {item.ProductoNombre} del carrito: {ex.Message}", true); 
         }
     }
 
     private async Task ClearCart()
     {
+        ShowNotification(null, false); 
         if (CartId == null) return;
         try
         {
@@ -187,14 +210,16 @@ else
             CartStateService.SetCartId(null); 
             ShowNotification("Carrito vaciado correctamente.", false); 
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) 
         {
+            Console.WriteLine($"Error en ClearCart: {ex.Message}");
             ShowNotification($"Error al vaciar el carrito: {ex.Message}", true); 
         }
     }
 
     private void ConfirmPurchase()
     {
+        ShowNotification(null, false); 
         if (CartId == null || !CartItems.Any())
         {
             ShowNotification("El carrito está vacío. No se puede confirmar la compra.", true); 
@@ -203,27 +228,30 @@ else
         Navigation.NavigateTo($"/confirmacion/{CartId.Value}");
     }
 
-    private void ShowNotification(string message, bool isError) 
+    private void ShowNotification(string? message, bool isError) 
     {
         Message = message;
         this.isError = isError; 
-        ShowMessage = true;
+        ShowMessage = !string.IsNullOrEmpty(message); 
 
         if (messageTimer != null)
         {
             messageTimer.Dispose();
         }
 
-        messageTimer = new System.Timers.Timer(3000); 
-        messageTimer.Elapsed += (sender, e) =>
+        if (ShowMessage) 
         {
-            ShowMessage = false;
-            this.isError = false; 
-            InvokeAsync(StateHasChanged);
-            messageTimer?.Dispose();
-        };
-        messageTimer.AutoReset = false;
-        messageTimer.Start();
+            messageTimer = new System.Timers.Timer(3000); 
+            messageTimer.Elapsed += (sender, e) =>
+            {
+                ShowMessage = false;
+                this.isError = false; 
+                InvokeAsync(StateHasChanged);
+                messageTimer?.Dispose();
+            };
+            messageTimer.AutoReset = false;
+            messageTimer.Start();
+        }
         InvokeAsync(StateHasChanged); 
     }
 

@@ -65,3 +65,37 @@ h1 {
 
 .hover\:bg-dark-gray:hover { background-color: var(--color-dark-gray); }
 .focus\:ring-dark-gray:focus { --tw-ring-color: var(--color-dark-gray); }
+/* Base */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+.bg-medium-gray { background-color: #e0e0e0; }
+.bg-dark-gray { background-color: #616161; }
+.bg-light-gray { background-color: #f0f0f0; } 
+.bg-white-bg { background-color: #ffffff; }
+.text-black-text { color: #212121; }
+.text-dark-gray { color: #616161; }
+.text-white-bg { color: #ffffff; } 
+.bg-black-accent { background-color: #212121; } 
+
+.border-medium-gray { border-color: #bdbdbd; }
+.border-light-gray { border-color: #e0e0e0; }
+
+
+.carousel-container {
+    position: relative;
+}
+
+@-webkit-keyframes spinner {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+*:focus {
+    outline: none;
+}

@@ -1,26 +1,23 @@
-<!-- Cliente/wwwroot/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Parisian Chic</title>
+    <title>Paris Shoes</title>
     <base href="/" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="cliente.styles.css" rel="stylesheet" />
-    <!-- Fuentes: Inter y Lora desde Google Fonts -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Configuración de Tailwind para usar colores personalizados */
         :root {
-            --color-light-gray: #F5F5F5; /* Fondo claro, casi blanco */
-            --color-medium-gray: #CCCCCC; /* Borde, elementos secundarios */
-            --color-dark-gray: #666666; /* Texto secundario, iconos */
-            --color-black-text: #222222; /* Texto principal, títulos */
-            --color-black-accent: #000000; /* Acentos fuertes, botones principales */
-            --color-white: #FFFFFF; /* Fondos de tarjetas, texto en elementos oscuros */
+            --color-light-gray: #F5F5F5; 
+            --color-medium-gray: #CCCCCC; 
+            --color-dark-gray: #666666;
+            --color-black-text: #222222; 
+            --color-black-accent: #000000; 
+            --color-white: #FFFFFF; 
         }
     </style>
     <script>
@@ -33,11 +30,11 @@
                         'dark-gray': 'var(--color-dark-gray)',
                         'black-text': 'var(--color-black-text)',
                         'black-accent': 'var(--color-black-accent)',
-                        'white-bg': 'var(--color-white)', // Nuevo nombre para el blanco
+                        'white-bg': 'var(--color-white)', 
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        serif: ['Lora', 'serif'], // Añadimos la fuente Lora
+                        serif: ['Lora', 'serif'], 
                     },
                 }
             }
@@ -46,17 +43,10 @@
 </head>
 <body class="bg-white-bg font-sans antialiased">
     <div id="app">
-        <!-- Contenido de carga inicial con logo y texto -->
         <div class="loading-container">
             <img src="/Imagenes/logo.jpg" alt="Cargando..." class="loading-logo rounded-full shadow-lg animate-pulse" />
             <div class="loading-text text-black-text text-lg font-semibold mt-4">Cargando tienda...</div>
         </div>
-    </div>
-
-    <div id="blazor-error-ui">
-        Un error no controlado ha ocurrido.
-        <a href="" class="reload">Recargar</a>
-        <a class="dismiss">x</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>

@@ -3,7 +3,7 @@
 @inject cliente.Services.CartStateService CartStateService 
 @inject NavigationManager Navigation 
 
-<PageTitle>Parisian Chic - Confirmación</PageTitle>
+<PageTitle>Paris Shoes - Confirmación</PageTitle>
 
 <h1 class="text-4xl font-extrabold text-center text-black-text mb-8" style="font-family: 'Inter', sans-serif;">Confirmar Compra</h1>
 
@@ -62,11 +62,17 @@ else
                 <ValidationMessage For="@(() => ConfirmationData.EmailCliente)" class="text-red-500 text-xs mt-1" />
             </div>
 
-            <button type="submit"
-                    class="w-full bg-black-accent text-white-bg py-3 px-6 rounded-full font-semibold hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-medium-gray focus:ring-opacity-75 transition-all duration-300 shadow-md flex items-center justify-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span>Confirmar Compra</span>
-            </button>
+            <div class="flex flex-wrap justify-between gap-4 mt-6">
+                <button type="button" @onclick="HandleCancelPurchase"
+                        class="flex-1 bg-dark-gray text-white-bg py-3 px-6 rounded-full font-semibold hover:bg-black-accent focus:outline-none focus:ring-2 focus:ring-medium-gray transition-all duration-300 shadow-md">
+                    Cancelar Compra
+                </button>
+                <button type="submit"
+                        class="flex-1 bg-black-accent text-white-bg py-3 px-6 rounded-full font-semibold hover:bg-dark-gray focus:outline-none focus:ring-2 focus:ring-medium-gray focus:ring-opacity-75 transition-all duration-300 shadow-md flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Confirmar Compra</span>
+                </button>
+            </div>
         </EditForm>
     </div>
 }
@@ -103,7 +109,7 @@ else
         {
             CartItems = await ApiService.GetCartItems(CartId);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) 
         {
             ShowNotification($"Error al cargar el resumen del carrito: {ex.Message}", true); 
             CartItems = new();
@@ -116,41 +122,66 @@ else
 
     private async Task HandleConfirmPurchase()
     {
+        ShowNotification(null, false); 
+
         try
         {
-            await ApiService.ConfirmPurchase(CartId, ConfirmationData);
-            CartStateService.SetCartId(null);
-            ShowNotification("¡Compra confirmada con éxito! Volviendo al catálogo en 3 segundos...", false); 
-            await Task.Delay(3000);
-            Navigation.NavigateTo("/");
+            var result = await ApiService.ConfirmPurchase(CartId, ConfirmationData);
+            cliente.Models.Compra? confirmedCompra = result.Item1;
+            string? errorMessage = result.Item2;
+
+            if (errorMessage != null)
+            {
+                ShowNotification(errorMessage, true);
+            }
+            else if (confirmedCompra != null)
+            {
+                CartStateService.SetCartId(null); 
+                ShowNotification("¡Compra confirmada con éxito! Volviendo al catálogo en 3 segundos...", false); 
+                await Task.Delay(3000);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ShowNotification("Error inesperado al confirmar la compra. Intente nuevamente.", true);
+            }
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) 
         {
-            ShowNotification($"Error al confirmar la compra: {ex.Message}", true);
+            ShowNotification($"Error inesperado al confirmar la compra: {ex.Message}", true);
         }
     }
 
-    private void ShowNotification(string message, bool isError)
+    private void HandleCancelPurchase()
+    {
+        ShowNotification(null, false); 
+        Navigation.NavigateTo("/carrito"); 
+    }
+
+    private void ShowNotification(string? message, bool isError) 
     {
         Message = message;
         this.isError = isError; 
-        ShowMessage = true;
+        ShowMessage = !string.IsNullOrEmpty(message); 
 
         if (messageTimer != null)
         {
             messageTimer.Dispose();
         }
 
-        messageTimer = new System.Timers.Timer(3000); 
-        messageTimer.Elapsed += (sender, e) =>
+        if (ShowMessage) 
         {
-            ShowMessage = false;
-            this.isError = false; 
-            InvokeAsync(StateHasChanged);
-            messageTimer?.Dispose();
-        };
-        messageTimer.AutoReset = false;
-        messageTimer.Start();
+            messageTimer = new System.Timers.Timer(3000); 
+            messageTimer.Elapsed += (sender, e) =>
+            {
+                ShowMessage = false;
+                this.isError = false; 
+                InvokeAsync(StateHasChanged);
+                messageTimer?.Dispose();
+            };
+            messageTimer.AutoReset = false;
+            messageTimer.Start();
+        }
         InvokeAsync(StateHasChanged);
     }
 

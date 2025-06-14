@@ -5,7 +5,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Parisian Chic - Inicio</PageTitle>
+<PageTitle>Paris Shoes - Inicio</PageTitle>
 
 <div class="relative w-full h-80 bg-medium-gray mb-8 rounded-lg overflow-hidden shadow-xl">
     <div class="carousel-container relative w-full h-full">
@@ -36,13 +36,13 @@
         {
             <span @onclick="() => SetSlide(i)" 
                 class="block w-3 h-3 rounded-full cursor-pointer transition-colors duration-200 
-                        @(i == currentSlideIndex ? "bg-white-bg opacity-75" : "bg-dark-gray opacity-50")"></span>
+                                @(i == currentSlideIndex ? "bg-white-bg opacity-75" : "bg-dark-gray opacity-50")"></span>
         }
     </div>
 </div>
 
 
-<h1 class="text-4xl font-extrabold text-center text-black-text mb-8">Nuestros Productos</h1>
+<h1 class="text-4xl font-extrabold text-center text-black-text mb-8">Catálogo</h1>
 
 @if (Loading)
 {
@@ -62,9 +62,9 @@ else if (Productos.Any())
                     <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="w-full h-full object-cover object-center">
                     <!-- Icono de carrito en la esquina superior derecha de la imagen -->
                     <button @onclick="() => AddToCart(producto)"
-                            class="absolute top-3 right-3 bg-white-bg p-2 rounded-full shadow-md hover:bg-light-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:ring-opacity-75 transition-all duration-200"
-                            title="Añadir al carrito"
-                            disabled="@(producto.Stock <= 0)">
+                                class="absolute top-3 right-3 bg-white-bg p-2 rounded-full shadow-md hover:bg-light-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:ring-opacity-75 transition-all duration-200"
+                                title="Añadir al carrito"
+                                disabled="@(producto.Stock <= 0)">
                         <svg class="w-6 h-6 text-black-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13H4m6 10a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
                     </button>
                     @if (producto.Stock <= 0)
@@ -121,10 +121,12 @@ else
     private bool isError = false; 
     private System.Timers.Timer? messageTimer;
 
+    private List<cliente.Models.CarritoItemDto> cartItems = new(); 
+
     private string[] BannerImages = {
         "/Imagenes/banner1.jpg", 
         "/Imagenes/banner2.jpg", 
-        "/Imagenes/banner3.jpg"  
+        "/Imagenes/banner3.jpg"  
     };
     private int currentSlideIndex = 0;
     private System.Timers.Timer? autoSlideTimer;
@@ -141,18 +143,34 @@ else
         {
             StartAutoSlide();
             await LoadProducts(); 
+            if (CartId.HasValue)
+            {
+                await LoadCartItems();
+            }
         }
     }
 
     private void HandleCartIdChanged()
     {
         CartId = CartStateService.CartId;
+        if (CartId.HasValue)
+        {
+            InvokeAsync(LoadCartItems); 
+        }
+        else
+        {
+            cartItems = new(); 
+        }
         StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await LoadProducts();
+        if (CartId.HasValue)
+        {
+            await LoadCartItems();
+        }
     }
 
     private async Task LoadProducts()
@@ -173,52 +191,93 @@ else
         }
     }
 
+    private async Task LoadCartItems()
+    {
+        if (CartId.HasValue)
+        {
+            try
+            {
+                cartItems = await ApiService.GetCartItems(CartId.Value);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar los ítems del carrito: {ex.Message}");
+                ShowNotification($"Error al cargar el contenido del carrito: {ex.Message}", true);
+                cartItems = new(); 
+            }
+        }
+        else
+        {
+            cartItems = new(); 
+        }
+        StateHasChanged(); 
+    }
+
     private async Task AddToCart(cliente.Models.Producto producto)
     {
+        ShowNotification(null, false); 
+
         try
         {
             if (CartId == null)
             {
                 CartId = await ApiService.InitializeCart();
+                await LoadCartItems(); 
             }
 
-            await ApiService.AddOrUpdateProductInCart(CartId.Value, producto.Id, 1);
-            Navigation.NavigateTo("/carrito"); 
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.Message.Contains("No hay suficiente stock"))
+            var existingCartItem = cartItems.FirstOrDefault(item => item.ProductoId == producto.Id);
+            int currentQuantityInCart = existingCartItem?.Cantidad ?? 0;
+            
+            int newQuantity = currentQuantityInCart + 1;
+
+            if (newQuantity > producto.Stock)
             {
-                ShowNotification($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}", true); 
+                ShowNotification($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}", true);
+                return; 
+            }
+
+            string? error = await ApiService.AddOrUpdateProductInCart(CartId.Value, producto.Id, newQuantity);
+
+            if (error != null)
+            {
+                ShowNotification(error, true);
             }
             else
             {
-                ShowNotification($"Error al agregar {producto.Nombre} al carrito: {ex.Message}", true); 
+                await LoadCartItems(); 
+                ShowNotification($"'{producto.Nombre}' ha sido agregado en el carrito.", false);
             }
+        }
+        catch (Exception ex) 
+        {
+            ShowNotification($"Error inesperado al agregar {producto.Nombre} al carrito: {ex.Message}", true);
         }
     }
 
-    private void ShowNotification(string message, bool isError)
+    private void ShowNotification(string? message, bool isError)
     {
         Message = message;
         this.isError = isError; 
-        ShowMessage = true;
+        ShowMessage = !string.IsNullOrEmpty(message); 
 
         if (messageTimer != null)
         {
             messageTimer.Dispose();
         }
 
-        messageTimer = new System.Timers.Timer(3000); 
-        messageTimer.Elapsed += (sender, e) =>
+        if (ShowMessage) 
         {
-            ShowMessage = false;
-            this.isError = false; 
-            InvokeAsync(StateHasChanged);
-            messageTimer?.Dispose();
-        };
-        messageTimer.AutoReset = false;
-        messageTimer.Start();
+            messageTimer = new System.Timers.Timer(3000); 
+            messageTimer.Elapsed += (sender, e) =>
+            {
+                ShowMessage = false;
+                this.isError = false; 
+                InvokeAsync(StateHasChanged);
+                messageTimer?.Dispose();
+            };
+            messageTimer.AutoReset = false;
+            messageTimer.Start();
+        }
         InvokeAsync(StateHasChanged); 
     }
 
