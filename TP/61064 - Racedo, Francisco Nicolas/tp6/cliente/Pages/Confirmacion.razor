@@ -58,6 +58,19 @@
         background-color: #0887a6;
         color: #fff;
     }
+    .btn-modificar {
+        background-color: #fd7e14;
+        color: #fff;
+        border: none;
+        border-radius: 2rem;
+        font-weight: bold;
+        padding: 0.5rem 1.5rem;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-modificar:hover, .btn-modificar:focus {
+        background-color: #c76a0b;
+        color: #fff;
+    }
 </style>
 
 <h2>Confirmación de Compra</h2>
@@ -68,7 +81,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-card">
                 <div class="modal-header">
-                    <h5 class="modal-title">¡Venta exitosa!</h5>
+                    <h5 class="modal-title">¡Compra realizada con éxito!</h5>
                 </div>
                 <div class="modal-body">
                     <p>La compra fue confirmada con éxito.</p>
@@ -139,9 +152,7 @@ else
                     <div class="d-flex gap-2 mt-4">
                         <button class="btn btn-success btn-confirmar flex-fill" type="submit" disabled="@enviando">Confirmar compra</button>
                         <button class="btn btn-danger btn-cancelar flex-fill" type="button" @onclick="MostrarCancelarModal" disabled="@enviando">Cancelar compra</button>
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        <button class="btn btn-celeste-modificar" type="button" @onclick="VolverAlCarrito" disabled="@enviando">
+                        <button class="btn btn-modificar flex-fill" type="button" @onclick="VolverAlCarrito" disabled="@enviando">
                             <i class="bi bi-arrow-left"></i> Modificar compra
                         </button>
                     </div>
@@ -162,10 +173,48 @@ else
                         <h5 class="modal-title">Compra cancelada</h5>
                     </div>
                     <div class="modal-body">
-                        <p>La compra fue cancelada.</p>
+                        <p>La compra fue cancelada con éxito.</p>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @if (mostrarConfirmarCancelacion)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content modal-card">
+                    <div class="modal-header">
+                        <h5 class="modal-title">¿Desea cancelar la compra?</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>Si acepta, la compra será cancelada y no podrá recuperarse.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-danger" @onclick="AceptarCancelarCompra">Aceptar</button>
+                        <button class="btn btn-secondary" @onclick="CancelarCancelarCompra">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @if (mostrarConfirmarCompra)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content modal-card">
+                    <div class="modal-header">
+                        <h5 class="modal-title">¿Desea confirmar la compra?</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>Si acepta, la compra será procesada y no podrá modificarse.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success" @onclick="AceptarConfirmarCompra">Aceptar</button>
+                        <button class="btn btn-secondary" @onclick="CancelarConfirmarCompra">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -182,6 +231,9 @@ else
     string mensaje = "";
     bool ventaExitosa = false;
     bool mostrarCancelacion = false;
+    bool mostrarConfirmarCancelacion = false;
+    bool mostrarConfirmarCompra = false;
+    bool confirmarCompraPendiente = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -197,35 +249,53 @@ else
 
     async Task ConfirmarCompra()
     {
-        enviando = true;
-        mensaje = "";
-        try
+        // En vez de ejecutar directamente, mostramos el modal de confirmación
+        mostrarConfirmarCompra = true;
+        confirmarCompraPendiente = true;
+    }
+
+    async void AceptarConfirmarCompra()
+    {
+        mostrarConfirmarCompra = false;
+        if (confirmarCompraPendiente)
         {
-            var dto = new cliente.Services.ConfirmarCompraDto
+            confirmarCompraPendiente = false;
+            enviando = true;
+            mensaje = "";
+            try
             {
-                Nombre = form.Nombre,
-                Apellido = form.Apellido,
-                Email = form.Email
-            };
-            var ok = await Api.ConfirmarCompraAsync(carritoId, dto);
-            if (ok)
-            {
-                ventaExitosa = true;
-                // No limpies items aquí, espera a navegar
+                var dto = new cliente.Services.ConfirmarCompraDto
+                {
+                    Nombre = form.Nombre,
+                    Apellido = form.Apellido,
+                    Email = form.Email
+                };
+                var ok = await Api.ConfirmarCompraAsync(carritoId, dto);
+                if (ok)
+                {
+                    ventaExitosa = true;
+                    StateHasChanged(); // Forzar renderizado inmediato del modal de éxito
+                }
+                else
+                {
+                    mensaje = "No se pudo confirmar la compra. Verifica los datos o el stock.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                mensaje = "No se pudo confirmar la compra. Verifica los datos o el stock.";
+                mensaje = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                enviando = false;
             }
         }
-        catch (Exception ex)
-        {
-            mensaje = $"Error: {ex.Message}";
-        }
-        finally
-        {
-            enviando = false;
-        }
+    }
+
+    void CancelarConfirmarCompra()
+    {
+        mostrarConfirmarCompra = false;
+        confirmarCompraPendiente = false;
     }
 
     void VolverAlCatalogo()
@@ -239,7 +309,18 @@ else
 
     void MostrarCancelarModal()
     {
+        mostrarConfirmarCancelacion = true;
+    }
+
+    void AceptarCancelarCompra()
+    {
+        mostrarConfirmarCancelacion = false;
         mostrarCancelacion = true;
+    }
+
+    void CancelarCancelarCompra()
+    {
+        mostrarConfirmarCancelacion = false;
     }
 
     void VolverAlCarrito()
