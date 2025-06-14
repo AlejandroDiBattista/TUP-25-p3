@@ -7,11 +7,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 👇 Acá tenés que poner la URL real de tu backend, incluyendo el puerto correcto
+// 👉 HttpClient con base address del backend
 builder.Services.AddScoped(sp => new HttpClient {
-    BaseAddress = new Uri("http://localhost:5184") // Reemplazá con tu puerto real
+    BaseAddress = new Uri("http://localhost:5184") // Asegurate que coincida con tu backend
 });
 
-builder.Services.AddScoped<ApiService>(); // Registrar tu ApiService
+// 👉 Registro de servicios
+builder.Services.AddScoped<ApiService>();
+builder.Services.AddSingleton<CarritoService>();
 
 await builder.Build().RunAsync();
