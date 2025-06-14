@@ -1,21 +1,29 @@
 using Microsoft.EntityFrameworkCore;
 using Servidor.Modelos;
-namespace Servidor.Stock;
-public class tienda : DbContext
+
+namespace Servidor.Stock
 {
-    public DbSet<Producto> Productos { get; set; }
-    public DbSet<Compra> Compras { get; set; }
-    public DbSet<ItemCompra> ItemsCompra { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public class Tienda : DbContext
     {
-        optionsBuilder.UseSqlite("Data Source=tienda.db");
-    }
+        public Tienda(DbContextOptions<Tienda> options) : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Producto>().HasData(
-            new Producto { Id = 1, Nombre = "Huion Inspiroy Q11K V2", Descripcion = "Tableta sin pantalla y con lapiz ", Precio = 250000, Stock = 10, ImagenUrl = "https://example.com/iphone13.jpg" },
-        );
+        public DbSet<Producto> Productos { get; set; }
+        public DbSet<Compra> Compras { get; set; }
+        public DbSet<ItemCompra> ItemsCompra { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Producto>().HasData(
+                new Producto
+                {
+                    Id = 1,
+                    Nombre = "Huion Inspiroy Q11K V2",
+                    Descripcion = "Tableta sin pantalla y con lapiz",
+                    Precio = 250000,
+                    Stock = 10,
+                    ImagenUrl = "https://http2.mlstatic.com/D_NQ_NP_984330-MLA40805046216_022020-O.webp"
+                }
+            );
+        }
     }
 }
