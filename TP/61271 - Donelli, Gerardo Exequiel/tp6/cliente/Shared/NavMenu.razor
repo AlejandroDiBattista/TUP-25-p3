@@ -1,0 +1,115 @@
+@inject CarritoService CarritoService
+@inject ProductosService ProductosService 
+
+@inject NavigationManager NavigationManager
+
+@*
+    Componente de navegación principal de la aplicación.
+    Muestra el logo, buscador y carrito con contador de items.
+*@
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-shop me-2"></i>
+            Tienda Online
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="d-flex flex-grow-1 justify-content-center">
+               <div class="search-container mb-3">
+              <input class="form-control"
+                    type="search"
+                          placeholder="Buscar productos..."
+                         @oninput="e => textoBusqueda = e.Value?.ToString() ?? string.Empty"
+                    @onkeydown="ManejarBusquedaEnter" />
+
+
+            </div>
+      </div>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/carrito">
+                        <i class="bi bi-cart3"></i>
+                        @if (CarritoService.ObtenerCantidadTotal() > 0)
+                        {
+                            <span class="badge bg-primary rounded-pill">@CarritoService.ObtenerCantidadTotal()</span>
+                        }
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    /// <summary>
+    /// Se ejecuta cuando se inicializa el componente.
+    /// Suscribe al evento OnChange del CarritoService para actualizar el contador.
+    /// </summary>
+protected override async Task OnInitializedAsync()   
+ {
+        CarritoService.OnChange += StateHasChanged;
+         productos = await ProductosService.ObtenerProductosAsync();
+        productosFiltrados = productos;
+    }
+    
+
+    /// <summary>
+    /// Se ejecuta cuando se destruye el componente.
+    /// Desuscribe del evento OnChange para evitar memory leaks.
+    /// </summary>
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+
+
+ private string textoBusqueda = string.Empty;
+    private List<ProductoDTO> productos = new();
+    private List<ProductoDTO> productosFiltrados = new();
+
+   
+    
+    private void FiltrarProductos()
+    {
+        if (string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            productosFiltrados = productos;
+        }
+        else
+        {
+            var termino = textoBusqueda.ToLower();
+            productosFiltrados = productos
+                .Where(p => p.Nombre.ToLower().Contains(termino) || 
+                            p.Descripcion.ToLower().Contains(termino))
+                .ToList();
+        }
+    }
+
+private async Task ManejarBusquedaEnter(KeyboardEventArgs e)
+{
+    if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(textoBusqueda))
+    {
+NavigationManager.NavigateTo($"/?buscar={Uri.EscapeDataString(textoBusqueda)}", forceLoad: true);
+    }
+}
+
+
+
+    // Cada vez que cambia el texto, actualizamos la lista
+    private string TextoBusqueda
+    {
+        get => textoBusqueda;
+        set
+        {
+            textoBusqueda = value;
+            FiltrarProductos();
+        }
+    }
+}

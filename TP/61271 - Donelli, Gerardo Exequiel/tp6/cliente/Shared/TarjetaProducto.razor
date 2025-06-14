@@ -1,0 +1,74 @@
+@using cliente.Models
+@using cliente.Services
+
+@* 
+    Componente que representa una tarjeta de producto en el catálogo.
+    Muestra la información principal del producto y permite agregarlo al carrito.
+*@
+
+<div class="card h-100 shadow-sm">    
+    @* Contenedor de la imagen con tamaño fijo y centrado del contenido *@
+    <div class="position-relative" style="height: 200px;">
+        <img src="@(imagenError ? imagenPorDefecto : Producto.ImagenUrl)" 
+             class="card-img-top p-3 position-absolute w-100 h-100" 
+             alt="@Producto.Nombre" 
+             style="object-fit: contain;"
+             @onerror="OnImageError">
+    </div>
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title">@Producto.Nombre</h5>
+        <p class="card-text flex-grow-1">@Producto.Descripcion</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="h5 mb-0">$@Producto.Precio.ToString("N2")</span>
+            <span class="text-muted">Stock: @Producto.Stock</span>
+        </div>
+        <button class="btn btn-primary mt-3 w-100" 
+                @onclick="AgregarAlCarrito"
+                disabled="@(Producto.Stock <= 0)">
+            @(Producto.Stock > 0 ? "Agregar al carrito" : "Sin stock")
+        </button>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Producto a mostrar en la tarjeta
+    /// </summary>
+    [Parameter]
+    public ProductoDTO Producto { get; set; } = default!;
+
+    /// <summary>
+    /// Servicio para gestionar el carrito de compras
+    /// </summary>
+    [Inject]
+    public CarritoService Carrito { get; set; } = default!;
+
+    /// <summary>
+    /// Servicio para interactuar con JavaScript
+    /// </summary>
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+
+    private bool imagenError = false;
+    private string imagenPorDefecto = "images/no-image.png";
+
+    /// <summary>
+    /// Agrega el producto al carrito si hay stock disponible
+    /// </summary>
+    private void AgregarAlCarrito()
+    {
+        if (Producto.Stock > 0)
+        {
+            Carrito.AgregarItem(Producto);
+            JSRuntime.InvokeVoidAsync("alert", $"{Producto.Nombre} agregado al carrito");
+        }
+    }
+
+    /// <summary>
+    /// Maneja el error de carga de la imagen del producto
+    /// </summary>
+    private void OnImageError()
+    {
+        imagenError = true;
+    }
+}

@@ -1,0 +1,232 @@
+@page "/carrito"
+@using cliente.Models
+@using cliente.Services
+@using Microsoft.AspNetCore.Components
+
+@*
+    Componente que muestra el carrito de compras.
+    Permite modificar cantidades, eliminar productos y confirmar la compra.
+*@
+
+<PageTitle>Carrito de Compras</PageTitle>
+
+<div class="container py-4">
+    <h2 class="mb-4">Carrito de Compras</h2>
+
+    @if (!items.Any())
+    {
+        <div class="alert alert-info d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-cart me-2"></i> El carrito está vacío</span>
+            <button class="btn btn-primary btn-sm" @onclick="VolverACatalogo">Volver al catálogo</button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-end">Precio</th>
+                        <th class="text-end">Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td class="align-middle">@item.Nombre</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">                                    
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            @onclick="async () => await DecrementarCantidad(item.ProductoId)">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <span class="btn btn-sm btn-outline-secondary disabled">
+                                        @item.Cantidad
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            @onclick="() => IncrementarCantidad(item.ProductoId)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="text-end align-middle">$@item.Precio.ToString("N2")</td>
+                            <td class="text-end align-middle">$@item.Subtotal.ToString("N2")</td>
+                            <td class="text-end align-middle">
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => EliminarItem(item.ProductoId)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td class="text-end"><strong>$@total.ToString("N2")</strong></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-outline-secondary" @onclick="VolverACatalogo">
+                <i class="bi bi-arrow-left"></i> Seguir comprando
+            </button>
+            <div>
+                <button class="btn btn-outline-danger me-2" @onclick="ConfirmarVaciarCarrito">
+                    <i class="bi bi-trash"></i> Vaciar carrito
+                </button>
+                <button class="btn btn-primary" @onclick="ConfirmarCompra">
+                    <i class="bi bi-check-circle"></i> Confirmar compra
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Lista de items en el carrito
+    /// </summary>
+    private List<ItemCarrito> items = new();
+
+    /// <summary>
+    /// Total del carrito
+    /// </summary>
+    private decimal total;
+
+    /// <summary>
+    /// Servicio para gestionar el carrito de compras
+    /// </summary>
+    [Inject]
+    public CarritoService CarritoService { get; set; }
+
+    /// <summary>
+    /// Servicio de navegación
+    /// </summary>
+    [Inject]
+    public NavigationManager NavigationManager { get; set; }
+
+    /// <summary>
+    /// Servicio para interactuar con JavaScript
+    /// </summary>
+    [Inject]
+    public IJSRuntime JS { get; set; }
+
+    /// <summary>
+    /// Se ejecuta cuando se inicializa el componente
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        CargarCarrito();
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    /// <summary>
+    /// Limpia los recursos al destruir el componente
+    /// </summary>
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+
+    /// <summary>
+    /// Carga los items del carrito y calcula el total
+    /// </summary>
+    private void CargarCarrito()
+    {
+        items = CarritoService.ObtenerItems().ToList();
+        total = CarritoService.ObtenerTotal();
+    }
+
+    /// <summary>
+    /// Incrementa la cantidad de un item en el carrito
+    /// </summary>
+    /// <param name="productoId">ID del producto a incrementar</param>
+    private async Task IncrementarCantidad(int productoId)
+    {
+        var item = items.First(x => x.ProductoId == productoId);
+        if (item.Cantidad >= 10)
+        {
+            await JS.InvokeVoidAsync("alert", "No se pueden agregar más de 10 unidades del mismo producto.");
+            return;
+        }
+        CarritoService.ActualizarCantidad(productoId, item.Cantidad + 1);
+        CargarCarrito();
+    }
+
+    /// <summary>
+    /// Decrementa la cantidad de un item en el carrito
+    /// </summary>
+    /// <param name="productoId">ID del producto a decrementar</param>
+    private async Task DecrementarCantidad(int productoId)
+    {
+        var item = items.First(x => x.ProductoId == productoId);
+        if (item.Cantidad > 1)
+        {
+            CarritoService.ActualizarCantidad(productoId, item.Cantidad - 1);
+            CargarCarrito();
+        }
+        else
+        {
+            await EliminarItem(productoId);
+        }
+    }
+
+    /// <summary>
+    /// Elimina un item del carrito después de confirmar con el usuario
+    /// </summary>
+    /// <param name="productoId">ID del producto a eliminar</param>
+    private async Task EliminarItem(int productoId)
+    {
+        bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este producto del carrito?");
+        if (confirmar)
+        {
+            CarritoService.EliminarItem(productoId);
+            CargarCarrito();
+        }
+    }
+
+    /// <summary>
+    /// Vacía el carrito completamente
+    /// </summary>
+    private void VaciarCarrito()
+    {
+        CarritoService.LimpiarCarrito();
+        CargarCarrito();
+    }
+
+    /// <summary>
+    /// Solicita confirmación al usuario antes de vaciar el carrito
+    /// </summary>
+    private async Task ConfirmarVaciarCarrito()
+    {
+        bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea vaciar el carrito?");
+        if (confirmar)
+        {
+            VaciarCarrito();
+        }
+    }
+
+    /// <summary>
+    /// Navega al catálogo de productos
+    /// </summary>
+    private void VolverACatalogo()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    /// <summary>
+    /// Navega a la página de confirmación de compra
+    /// </summary>
+    private void ConfirmarCompra()
+    {
+        NavigationManager.NavigateTo("/confirmar-compra");
+    }
+}

@@ -1,0 +1,33 @@
+@using cliente.Shared
+@using cliente.Services
+@inherits LayoutComponentBase
+@inject PageTitleService PageTitleService 
+
+
+@* Componente de diseño principal que define la estructura básica de la aplicación *@
+
+<div class="page">
+    <NavMenu />
+    
+    <main class="main-content">
+        <div class="container">
+            @Body
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Tienda Online. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+@code {
+   
+    protected override void OnInitialized()
+    {
+        PageTitleService.Title = "Tienda Online"; // Título por defecto
+    }
+}
