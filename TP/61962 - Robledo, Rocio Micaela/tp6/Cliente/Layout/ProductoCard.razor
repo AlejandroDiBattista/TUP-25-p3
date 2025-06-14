@@ -1,0 +1,61 @@
+@using Cliente.Layout
+@using Cliente.Models
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject CarritoService CarritoSrv
+@inject NavigationManager NavManager
+
+<div class="producto-card">
+    <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" />
+    <div class="producto-info">
+        <h5>@Producto.Nombre</h5>
+        <p class="descripcion">@Producto.Descripcion</p>
+        <p><strong>Precio:</strong> @Producto.Precio.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</p>
+        <p><strong>Stock:</strong> @Producto.Stock</p>
+        <button class="btn-agregar" @onclick="AgregarAlCarrito">Agregar al carrito</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Producto Producto { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnProductoAgregado { get; set; }
+
+    private async Task AgregarAlCarrito()
+    {
+        const string key = "carritoId";
+        Console.WriteLine($"DEBUG: Iniciando agregado al carrito. Producto.Id = {Producto.Id}");
+
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", key);
+        if (string.IsNullOrEmpty(id))
+        {
+            Console.WriteLine("No se encontró carrito en localStorage. Creando uno nuevo...");
+            id = await Http.PostAsync("api/carritos", null)
+                .ContinueWith(async r => await r.Result.Content.ReadAsStringAsync())
+                .Unwrap();
+            await JS.InvokeVoidAsync("localStorage.setItem", key, id);
+            Console.WriteLine($"Nuevo carrito creado con ID: {id}");
+        }
+        NavManager.NavigateTo("/carrito");
+
+
+        var url = $"api/carritos/{id}/{Producto.Id}?cantidad=1";
+        Console.WriteLine($"Enviando PUT a: {url}");
+
+        var response = await Http.PutAsync(url, null);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"❌ Error al agregar al carrito: {response.StatusCode} - {error}");
+        }
+        else
+        {
+            Console.WriteLine("✅ Producto agregado exitosamente al carrito.");
+            await OnProductoAgregado.InvokeAsync();
+            await CarritoSrv.ActualizarCantidadAsync();
+        }
+    }
+}

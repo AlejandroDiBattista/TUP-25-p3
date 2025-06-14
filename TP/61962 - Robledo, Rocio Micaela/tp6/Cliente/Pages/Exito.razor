@@ -1,0 +1,14 @@
+@page "/exito"
+@inject NavigationManager Nav
+
+<h3 class="text-success">¡Compra realizada con éxito!</h3>
+<p>Gracias por tu compra. En breve recibirás un correo con los detalles.</p>
+
+<button class="btn btn-primary mt-3" @onclick="VolverAlInicio">Volver al inicio</button>
+
+@code {
+    private void VolverAlInicio()
+    {
+        Nav.NavigateTo("/");
+    }
+}

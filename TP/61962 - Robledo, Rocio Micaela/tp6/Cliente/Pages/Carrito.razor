@@ -1,0 +1,119 @@
+@page "/carrito"
+@using Cliente.Models
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject CarritoService CarritoSrv
+@inject NavigationManager Nav
+
+<h3>🛒 Carrito de Compras</h3>
+
+@if (items is null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Producto?.Nombre</td>
+                    <td>@item.PrecioUnitario.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="@(() => ActualizarCantidad(item.ProductoId, -1))">-</button>
+                        @item.Cantidad
+                        <button class="btn btn-sm btn-secondary" @onclick="@(() => ActualizarCantidad(item.ProductoId, 1))">+</button>
+                    </td>
+                    <td>@((item.Cantidad * item.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR")))</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="@(() => Quitar(item.ProductoId))">🗑</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h5>Total: @items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</h5>
+
+    <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="@(() => Nav.NavigateTo("/confirmacion"))">Confirmar compra</button>
+}
+
+@code {
+    private List<ItemCarrito>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoSrv.OnChange += CarritoActualizado;
+        await CargarCarrito();
+    }
+
+    private async void CarritoActualizado()
+    {
+        await CargarCarrito();
+        StateHasChanged(); // Refresca la UI
+    }
+
+    private async Task CargarCarrito()
+    {
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!string.IsNullOrEmpty(id))
+        {
+            items = await Http.GetFromJsonAsync<List<ItemCarrito>>($"api/carritos/{id}");
+        }
+        else
+        {
+            items = new();
+        }
+    }
+
+    public void Dispose()
+    {
+        CarritoSrv.OnChange -= CarritoActualizado;
+    }
+
+    private async Task ActualizarCantidad(int productoId, int delta)
+    {
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        var item = items!.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item is null) return;
+
+        int nuevaCantidad = item.Cantidad + delta;
+        if (nuevaCantidad <= 0)
+        {
+            await Quitar(productoId);
+            return;
+        }
+
+        await Http.PutAsync($"api/carritos/{id}/{productoId}?cantidad={delta}", null);
+        await CarritoSrv.ActualizarCantidadAsync(); // Esto llama OnChange
+    }
+
+    private async Task Quitar(int productoId)
+    {
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        await Http.DeleteAsync($"api/carritos/{id}/{productoId}");
+        await CarritoSrv.ActualizarCantidadAsync();
+    }
+
+    private async Task Vaciar()
+    {
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        await Http.DeleteAsync($"api/carritos/{id}");
+        await CarritoSrv.ActualizarCantidadAsync();
+    }
+}
