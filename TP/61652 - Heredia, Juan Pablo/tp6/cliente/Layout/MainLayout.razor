@@ -2,7 +2,56 @@
 @inject NavigationManager Nav
 @inject cliente.Services.ApiService ApiService
 @inject IJSRuntime JS
-<div class="page">
-    
-    @Body
+
+<div style="background: #141414; min-height: 100vh; color: rgb(0, 0, 0);">
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #c70000; color: rgb(0, 0, 0);">
+        <div style="font-weight: bold; font-size: 1.5rem; cursor: pointer;" @onclick="IrAHome">
+            <img src="@logoUrl" alt="Logo" style="height: 40px; vertical-align: middle;" /> Redragon
+        </div>
+        <div style="display: flex; align-items: center;">
+            <input @bind="busqueda" placeholder="Buscar..." style="margin-right: 1rem;" @bind:event="oninput" />
+            <button @onclick="Buscar" style="margin-right: 1rem; background-color: #1d1c1c; color: rgb(182, 182, 182); border: none; padding: 0.5rem 1rem; border-radius: 4px;">Buscar</button>
+            <div class="carrito-container" @onclick="IrACarrito">
+                <img src="@carritoLogoUrl" alt="Carrito" />
+                @if (ApiService.ContadorCarrito > 0)
+                {
+                    <span class="contador-burbuja">@ApiService.ContadorCarrito</span>
+                }
+            </div>
+        </div>
+    </header>
+    <main style="display: flex; justify-content: center; align-items: flex-start; min-height: 80vh;">
+        @Body
+    </main>
 </div>
+
+@code {
+    private string carritoLogoUrl = "http://localhost:5184/img/carrito.svg";
+    private string logoUrl = "http://localhost:5184/img/logo.svg";
+    string busqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ApiService.CarritoActualizado += StateHasChanged;
+
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        busqueda = query["busqueda"] ?? "";
+
+        var storage = new cliente.Services.ApiService.CarritoStorage(JS);
+        var carritoId = await storage.ObtenerCarritoId();
+        if (carritoId.HasValue)
+        {
+            await ApiService.ActualizarContadorCarrito(carritoId.Value);
+        }
+    }
+
+    void Buscar() => Nav.NavigateTo($"/?busqueda={busqueda}");
+    void IrAHome() => Nav.NavigateTo("/");
+    void IrACarrito() => Nav.NavigateTo("/carrito");
+
+    public void Dispose()
+    {
+        ApiService.CarritoActualizado -= StateHasChanged;
+    }
+}
