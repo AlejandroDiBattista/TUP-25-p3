@@ -396,3 +396,10 @@ position: absolute;
 .mb-3 {
     color: #222 !important;
 }
+.form-control,
+label,
+.validation-message,
+input,
+textarea {
+    color: #222 !important;
+}
