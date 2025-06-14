@@ -125,6 +125,11 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PutAsync($"carritos/{carritoId}/confirmar", content);
         response.EnsureSuccessStatusCode();
+        
+     var confirmacionResponse = await response.Content.ReadFromJsonAsync<ConfirmacionResponse>();
+     return confirmacionResponse.Id;
+       // return await response.Content.ReadAsStringAsync();
+
     }
 }
 
