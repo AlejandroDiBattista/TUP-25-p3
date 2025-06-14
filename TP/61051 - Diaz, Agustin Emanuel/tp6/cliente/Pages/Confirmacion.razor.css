@@ -1,4 +1,4 @@
-    .confirmacion-container {
+.confirmacion-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 2rem;
@@ -117,8 +117,10 @@
     .producto-imagen-mini {
         width: 60px;
         height: 40px;
-        object-fit: cover;
+        object-fit: contain;
         border-radius: 8px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 0.2rem;
     }
 
     .producto-detalles-mini {
@@ -340,5 +342,14 @@
 
         .resumen-card, .formulario-card {
             padding: 1.5rem;
+        }
+
+        .producto-info-mini {
+            gap: 0.75rem;
+        }
+
+        .producto-imagen-mini {
+            width: 50px;
+            height: 35px;
         }
     }
