@@ -2,58 +2,47 @@
 @using cliente.Services
 @inject ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Tienda Online</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
-    </div>
-</div>
 
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+
+@code
+{
+    // Modelos 
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
+    }
+
+    public class CarritoItem
+    {
+        public int ProductoId { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+        public int Cantidad { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
+        public decimal Subtotal => Precio * Cantidad;
+    }
+
+    public class ConfirmarCompraRequest
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string NombreCliente { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string ApellidoCliente { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Formato de email inválido")]
+        public string EmailCliente { get; set; } = string.Empty;
     }
 }
+
+
