@@ -2,6 +2,7 @@
 @using cliente.Models
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h3>Catálogo de Productos</h3>
 
@@ -29,7 +30,7 @@ else
                         <p class="card-text">@producto.Descripcion</p>
                         <p>Precio: $@producto.Precio</p>
                         <p>Stock: @producto.Stock</p>
-                        <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@((producto.Stock == 0))">
+                        <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto.Id, producto.Stock)" disabled="@((producto.Stock == 0))">
                             Agregar al carrito
                         </button>
                     </div>
@@ -39,17 +40,48 @@ else
     </div>
 }
 
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success mt-3">@mensaje</div>
+}
+
 @code {
     List<Producto> productos;
+    string carritoId;
+    string mensaje;
 
     protected override async Task OnInitializedAsync()
     {
         productos = await ApiService.ObtenerProductosAsync();
     }
 
-    async Task AgregarAlCarrito(int productoId)
+    async Task<string> ObtenerOCrearCarritoId()
     {
-        Navigation.NavigateTo("/carrito");
-        await Task.CompletedTask;
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!string.IsNullOrEmpty(id))
+            id = id.Trim('"'); 
+
+        if (string.IsNullOrEmpty(id))
+        {
+            id = await ApiService.CrearCarritoAsync();
+            id = id.Trim('"'); 
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
+        }
+        return id;
+    }
+
+    async Task AgregarAlCarrito(int productoId, int stock)
+    {
+        carritoId = await ObtenerOCrearCarritoId();
+        if (stock > 0)
+        {
+            await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, 1);
+            Navigation.NavigateTo("/carrito"); 
+        }
+        else
+        {
+            mensaje = "No hay stock disponible.";
+        }
+        StateHasChanged();
     }
 }
