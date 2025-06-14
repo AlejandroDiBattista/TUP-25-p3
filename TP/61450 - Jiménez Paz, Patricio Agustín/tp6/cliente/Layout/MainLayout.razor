@@ -10,11 +10,20 @@
         <div class="max-w-screen-xl mx-auto px-4">
             <div class="flex gap-4 items-center">
                 <div class="flex items-center justify-between grow w-full gap-2 md:gap-16">
-                    <a class="flex items-center gap-2" href="/">
+                    <a class="flex items-center gap-2 whitespace-nowrap" href="/">
                         <img src="favicon.png" alt="Logo" class="w-8 h-8" />
                         <h1 class="font-bold text-2xl">Tienda Online</h1>
                     </a>
-                    <button class="inline-flex items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors" @onclick="() => IrACarrito()">
+                    @if (Router.Uri.EndsWith("/"))
+                    {
+                        <div class="relative hidden lg:block w-full">
+                            <input type="text" placeholder="Buscar productos..." class="p-2.5 border rounded-lg block w-full border-violet-400 bg-violet-50 text-gray-900 focus:border-violet-500" />
+                            <button class="rounded-e-lg absolute top-0 right-0 h-[46px] bg-violet-700 p-2.5 font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 whitespace-nowrap">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    }
+                    <button class="inline-flex whitespace-nowrap items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors" @onclick="() => IrACarrito()">
                         <i class="fas fa-shopping-cart mr-2"></i>
                         Ver Carrito (@CantidadItems)
                     </button>
