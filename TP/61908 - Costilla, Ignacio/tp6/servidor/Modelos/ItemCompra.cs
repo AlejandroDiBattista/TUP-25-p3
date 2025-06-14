@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization; // Necesario para evitar ciclos en JSON
 
-// representa un item dentro de una compra/carrito
+
 public class ItemCompra
 {
     public int Id { get; set; }

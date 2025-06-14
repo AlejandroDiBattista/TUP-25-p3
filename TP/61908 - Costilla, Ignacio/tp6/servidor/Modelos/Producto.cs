@@ -1,4 +1,4 @@
-// representa un producto en la tienda
+
 public class Producto
 {
     public int Id { get; set; }

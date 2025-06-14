@@ -1,4 +1,4 @@
-// representa una compra confirmada o un carrito pendiente
+
 public class Compra
 {
     public int Id { get; set; }
