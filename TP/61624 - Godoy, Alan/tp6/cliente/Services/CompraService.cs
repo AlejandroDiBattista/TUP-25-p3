@@ -15,3 +15,8 @@ public class CompraService
         await _http.PostAsJsonAsync("compras", compra);
     }
 }
+
+public async Task<List<Compra>> ObtenerCompras()
+{
+    return await _http.GetFromJsonAsync<List<Compra>>("compras") ?? new List<Compra>();
+}

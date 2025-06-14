@@ -1,0 +1,39 @@
+@page "/compras"
+@inject CompraService CompraService
+
+<h3>Compras realizadas</h3>
+
+@if (compras == null)
+{
+    <p>Cargando compras...</p>
+}
+else if (compras.Count == 0)
+{
+    <p>No hay compras registradas.</p>
+}
+else
+{
+    <ul>
+        @foreach (var compra in compras)
+        {
+            <li>
+                Compra @compra.Id - Fecha: @compra.Fecha.ToString("g")
+                <ul>
+                    @foreach (var item in compra.Items)
+                    {
+                        <li>Producto ID: @item.ProductoId - Cantidad: @item.Cantidad</li>
+                    }
+                </ul>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    List<Compra>? compras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        compras = await CompraService.ObtenerCompras();
+    }
+}
