@@ -32,16 +32,16 @@ using (var scope = app.Services.CreateScope())
     if (!db.Productos.Any())
     {
         db.Productos.AddRange(
-            new Producto { Nombre = "iPhone 15", Descripcion = "Celular Apple", Precio = 1200, Stock = 10, ImagenUrl = "https://store.storeimages.cdn-apple.com/iphone15.jpg" },
-            new Producto { Nombre = "Samsung Galaxy S24", Descripcion = "Celular Samsung", Precio = 1100, Stock = 8, ImagenUrl = "https://images.samsung.com/galaxy-s24.jpg" },
-            new Producto { Nombre = "Xiaomi Redmi Note 13", Descripcion = "Celular Xiaomi", Precio = 400, Stock = 15, ImagenUrl = "https://xiaomi.com/redmi-note-13.jpg" },
-            new Producto { Nombre = "Auriculares JBL", Descripcion = "Auriculares inalámbricos", Precio = 150, Stock = 20, ImagenUrl = "https://jbl.com/auriculares.jpg" },
-            new Producto { Nombre = "Cargador USB-C", Descripcion = "Cargador rápido", Precio = 30, Stock = 50, ImagenUrl = "https://images.cargadorusb-c.jpg" },
-            new Producto { Nombre = "Coca Cola 2L", Descripcion = "Gaseosa 2 litros", Precio = 3, Stock = 100, ImagenUrl = "https://cocacola.com/2l.jpg" },
-            new Producto { Nombre = "Pepsi 2L", Descripcion = "Gaseosa 2 litros", Precio = 2.8, Stock = 90, ImagenUrl = "https://pepsi.com/2l.jpg" },
-            new Producto { Nombre = "Funda iPhone 15", Descripcion = "Funda silicona", Precio = 25, Stock = 30, ImagenUrl = "https://fundas.com/iphone15.jpg" },
-            new Producto { Nombre = "Mouse Logitech", Descripcion = "Mouse inalámbrico", Precio = 40, Stock = 25, ImagenUrl = "https://logitech.com/mouse.jpg" },
-            new Producto { Nombre = "Teclado Redragon", Descripcion = "Teclado mecánico", Precio = 60, Stock = 18, ImagenUrl = "https://redragon.com/teclado.jpg" }
+            new Producto { Nombre = "iPhone 15", Descripcion = "Celular Apple", Precio = 1200, Stock = 10, ImagenUrl = "https://maximstore.com/_next/image?url=https%3A%2F%2Fback.maximstore.com%2Fstatic%2Fimages%2F091e624b-46fa-4881-914e-527e7d3775c0.png&w=3840&q=75" },
+            new Producto { Nombre = "Samsung Galaxy S24", Descripcion = "Celular Samsung", Precio = 1100, Stock = 8, ImagenUrl = "https://images.samsung.com/is/image/samsung/p6pim/hk_en/2401/gallery/hk-en-galaxy-s24-s928-489657-sm-s9280zogtgy-539359253?$624_624_PNG$" },
+            new Producto { Nombre = "Xiaomi Redmi Note 13", Descripcion = "Celular Xiaomi", Precio = 400, Stock = 15, ImagenUrl = "https://authogar.vtexassets.com/arquivos/ids/214617/XIAOMI-REDMI-NOTE-13-GREEN-1.png?v=638715928359300000" },
+            new Producto { Nombre = "Auriculares JBL", Descripcion = "Auriculares inalámbricos", Precio = 150, Stock = 20, ImagenUrl = "https://www.jbl.com/on/demandware.static/-/Sites-masterCatalog_Harman/default/dw31bae42a/JBL_TUNE_510BT_Product%20Image_Hero_Black.png" },
+            new Producto { Nombre = "Cargador USB-C", Descripcion = "Cargador rápido", Precio = 30, Stock = 50, ImagenUrl = "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MHXH3_AV1?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1632955239000" },
+            new Producto { Nombre = "Smartwatch Xiaomi Mi Band 7", Descripcion = "Reloj inteligente", Precio = 70, Stock = 25, ImagenUrl = "https://tienda.personal.com.ar/images/720/webp/Xiaomi_Smart_Band_7_Negro1_28c5fed47d.png" },
+            new Producto { Nombre = "Altavoz Bluetooth Sony", Descripcion = "Altavoz portátil", Precio = 85, Stock = 15, ImagenUrl = "https://www.sony.com/image/5d02da5df552836db894cead8a68f5f3?fmt=pjpeg&wid=330&bgcolor=FFFFFF&bgc=FFFFFF" },
+            new Producto { Nombre = "Funda iPhone 15", Descripcion = "Funda silicona", Precio = 25, Stock = 30, ImagenUrl = "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/MT4J3?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1693594197616" },
+            new Producto { Nombre = "Mouse Logitech", Descripcion = "Mouse inalámbrico", Precio = 40, Stock = 25, ImagenUrl = "https://resource.logitechg.com/w_800,c_limit,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/gaming/en/products/g502-lightspeed-gaming-mouse/g502-lightspeed-hero.png" },
+            new Producto { Nombre = "Teclado Redragon", Descripcion = "Teclado mecánico", Precio = 60, Stock = 18, ImagenUrl = "https://redragon.es/content/uploads/2021/04/KUMARA.png" }
         );
         db.SaveChanges();
     }
