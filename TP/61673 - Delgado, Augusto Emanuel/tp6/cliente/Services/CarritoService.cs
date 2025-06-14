@@ -1,149 +1,129 @@
-using modelos_compartidos;
+#nullable enable 
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using System.Threading.Tasks;
 using Blazored.LocalStorage;
-using System.Text.Json;
+using modelos_compartidos; 
 
 namespace cliente.Services
 {
     public class CarritoService
     {
-        private const string CarritoStorageKey = "carritoDeCompras";
+        private const string CarritoKey = "carrito";
+        private readonly ILocalStorageService _localStorage;
 
         public List<CarritoItem> Items { get; private set; } = new List<CarritoItem>();
 
+        // Evento para notificar cambios en el carrito a los componentes
         public event Action? OnChange;
+
+        public CarritoService(ILocalStorageService localStorage)
+        {
+            _localStorage = localStorage;
+            
+            _ = CargarCarritoDesdeLocalStorage(); 
+        }
 
         public int TotalItemsEnCarrito => Items.Sum(item => item.Cantidad);
         public decimal TotalCarrito => Items.Sum(item => item.Producto.Precio * item.Cantidad);
 
-        private readonly ILocalStorageService _localStorageService;
 
-        public CarritoService(ILocalStorageService localStorageService)
+        public void AgregarAlCarrito(Producto producto)
         {
-            _localStorageService = localStorageService;
-            LoadCarritoFromLocalStorage();
+            var itemExistente = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+
+            if (itemExistente != null)
+            {
+                
+                if (itemExistente.Cantidad < producto.Stock)
+                {
+                    itemExistente.Cantidad++;
+                    Console.WriteLine($"--> DEBUG (CS): Cantidad de {producto.Nombre} aumentada en carrito. Nueva cantidad: {itemExistente.Cantidad}");
+                    GuardarCarritoEnLocalStorage(); 
+                    NotifyChange(); 
+                }
+                else
+                {
+                    Console.WriteLine($"--> ADVERTENCIA (CS): No se puede añadir más {producto.Nombre}. Stock máximo alcanzado ({producto.Stock}).");
+                }
+            }
+            else
+            {
+                
+                if (producto.Stock > 0)
+                {
+                    Items.Add(new CarritoItem { Producto = producto, Cantidad = 1 });
+                    Console.WriteLine($"--> DEBUG (CS): Agregado {producto.Nombre} al carrito por primera vez. Cantidad: 1");
+                    GuardarCarritoEnLocalStorage(); 
+                    NotifyChange(); 
+                }
+                else
+                {
+                    Console.WriteLine($"--> ADVERTENCIA (CS): No se puede añadir {producto.Nombre}. Sin stock disponible.");
+                }
+            }
         }
 
-        private async void LoadCarritoFromLocalStorage()
+        // Método que remueve un producto del carrito
+        public void RemoverDelCarrito(int productoId)
+        {
+            var itemExistente = Items.FirstOrDefault(i => i.Producto.Id == productoId);
+
+            if (itemExistente != null)
+            {
+                if (itemExistente.Cantidad > 1)
+                {
+                    itemExistente.Cantidad--;
+                    Console.WriteLine($"--> DEBUG (CS): Cantidad de producto {productoId} reducida. Nueva cantidad: {itemExistente.Cantidad}");
+                }
+                else
+                {
+                    Items.Remove(itemExistente);
+                    Console.WriteLine($"--> DEBUG (CS): Producto {productoId} removido del carrito.");
+                }
+                GuardarCarritoEnLocalStorage();
+                NotifyChange(); 
+            }
+        }
+
+       
+        public void VaciarCarrito()
+        {
+            Items.Clear();
+            GuardarCarritoEnLocalStorage(); 
+            Console.WriteLine("--> DEBUG (CS): Carrito vaciado.");
+        }
+
+
+        private async Task CargarCarritoDesdeLocalStorage()
         {
             try
             {
-                var jsonCarrito = await _localStorageService.GetItemAsStringAsync(CarritoStorageKey);
-
-                if (!string.IsNullOrEmpty(jsonCarrito))
+                var storedItems = await _localStorage.GetItemAsync<List<CarritoItem>>(CarritoKey);
+                if (storedItems != null)
                 {
-                    var loadedItems = JsonSerializer.Deserialize<List<CarritoItem>>(jsonCarrito);
-                    if (loadedItems != null)
-                    {
-                        Items = loadedItems;
-                        Console.WriteLine("[CarritoService] Carrito cargado desde localStorage.");
-                    }
+                    Items = storedItems;
+                    Console.WriteLine("[CarritoService] Carrito cargado desde localStorage.");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[CarritoService] Error al cargar carrito desde localStorage: {ex.Message}");
+                Items = new List<CarritoItem>(); 
             }
-            NotifyStateChanged();
+            NotifyChange(); 
         }
 
-        private async void SaveCarritoToLocalStorage()
+     
+        private void GuardarCarritoEnLocalStorage()
         {
-            try
-            {
-                var jsonCarrito = JsonSerializer.Serialize(Items);
-                await _localStorageService.SetItemAsStringAsync(CarritoStorageKey, jsonCarrito);
-                Console.WriteLine("[CarritoService] Carrito guardado en localStorage.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[CarritoService] Error al guardar carrito en localStorage: {ex.Message}");
-            }
+            _localStorage.SetItemAsync(CarritoKey, Items);
+            Console.WriteLine("[CarritoService] Carrito guardado en localStorage.");
         }
 
-        public void EstablecerCantidadEnCarrito(Producto producto, int cantidad)
-        {
-            var existingItem = Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
-
-            if (cantidad <= 0)
-            {
-                if (existingItem != null)
-                {
-                    Items.Remove(existingItem);
-                    Console.WriteLine($"[CarritoService] Removido {producto.Nombre} del carrito (cantidad <= 0).");
-                }
-            }
-            else
-            {
-                if (existingItem != null)
-                {
-                    existingItem.Cantidad = cantidad;
-                    Console.WriteLine($"[CarritoService] Cantidad de {producto.Nombre} establecida a: {cantidad}");
-                }
-                else
-                {
-                    Items.Add(new CarritoItem { Producto = producto, Cantidad = cantidad });
-                    Console.WriteLine($"[CarritoService] Agregado {producto.Nombre} con cantidad: {cantidad}");
-                }
-            }
-            SaveCarritoToLocalStorage();
-            NotifyStateChanged();
-        }
-
-        public void AgregarOActualizarEnCarrito(Producto producto)
-        {
-            var existingItem = Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
-
-            if (existingItem != null)
-            {
-                if (existingItem.Cantidad < producto.Stock)
-                {
-                    existingItem.Cantidad++;
-                    Console.WriteLine($"[CarritoService] Incrementada cantidad de {producto.Nombre}. Cantidad: {existingItem.Cantidad}");
-                }
-                else
-                {
-                    Console.WriteLine($"[CarritoService] No hay suficiente stock para {producto.Nombre} (actual: {existingItem.Cantidad}, max: {existingItem.Producto.Stock})");
-                }
-            }
-            else
-            {
-                if (producto.Stock > 0)
-                {
-                    Items.Add(new CarritoItem { Producto = producto, Cantidad = 1 });
-                    Console.WriteLine($"[CarritoService] Agregado {producto.Nombre} al carrito por primera vez. Cantidad: 1");
-                }
-                else
-                {
-                    Console.WriteLine($"[CarritoService] Producto {producto.Nombre} sin stock disponible.");
-                }
-            }
-            SaveCarritoToLocalStorage();
-            NotifyStateChanged();
-        }
-
-        public void RemoverDelCarrito(int productoId)
-        {
-            var itemToRemove = Items.FirstOrDefault(item => item.Producto.Id == productoId);
-            if (itemToRemove != null)
-            {
-                Items.Remove(itemToRemove);
-                Console.WriteLine($"[CarritoService] Removido producto con Id: {productoId}");
-                SaveCarritoToLocalStorage();
-                NotifyStateChanged();
-            }
-        }
-
-        public void VaciarCarrito()
-        {
-            Items.Clear();
-            Console.WriteLine("[CarritoService] Carrito vaciado.");
-            SaveCarritoToLocalStorage();
-            NotifyStateChanged();
-        }
-
-        private void NotifyStateChanged() => OnChange?.Invoke();
+       
+        private void NotifyChange() => OnChange?.Invoke();
     }
 }

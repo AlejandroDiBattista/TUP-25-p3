@@ -1,130 +1,130 @@
 ﻿@page "/"
 @using modelos_compartidos
-@inject HttpClient Http
 @inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
 
-<PageTitle>Catálogo de Productos</PageTitle>
+<PageTitle>Nuestros Productos</PageTitle>
 
-<div class="container-fluid fixed-top bg-light shadow-sm py-2">
-    <div class="row align-items-center">
-        <div class="col-auto">
-            <a href="/" class="text-decoration-none">
-                <h4 class="mb-0 text-primary">Tienda Online</h4>
-            </a>
+<div class="container mt-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3>Productos Disponibles</h3>
         </div>
-        <div class="col">
-            <input type="text" class="form-control" placeholder="Buscar productos..."
-                   @bind-value="searchText" @oninput="HandleSearch" />
-        </div>
-        <div class="col-auto" @key="CarritoService.TotalItemsEnCarrito">
-            <NavLink href="/carrito" class="btn btn-primary position-relative">
-                <i class="bi bi-cart"></i> Carrito
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    @CarritoService.TotalItemsEnCarrito <span class="visually-hidden">items en el carrito</span>
-                </span>
-            </NavLink>
-        </div>
+    
     </div>
-</div>
-
-<div class="container" style="margin-top: 100px;">
-    <h3 class="mb-4">Nuestros Productos</h3>
 
     @if (productos == null)
     {
-        <p><em>Cargando productos...</em></p>
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando productos...</span>
+            </div>
+            <p>Cargando productos...</p>
+        </div>
     }
-    else if (productos.Any())
+    else if (!productos.Any()) 
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-box-seam display-1 text-muted"></i>
+            <p class="lead mt-3">No se encontraron productos.</p>
+        </div>
+    }
+    else
     {
         <div class="row row-cols-1 row-cols-md-3 g-4">
             @foreach (var producto in productos)
             {
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 shadow-sm">
                         <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            <p class="card-text text-muted">@producto.Descripcion</p>
-                            <p class="card-text">
-                                <strong>Precio: $@producto.Precio</strong>
-                                <br />
-                                Stock: @producto.Stock unidades
-                            </p>
-                        </div>
-                        <div class="card-footer d-grid">
-                            @if (producto.Stock > 0)
-                            {
-                                <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-secondary" disabled>Sin Stock</button>
-                            }
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-dark">@producto.Nombre</h5>
+                            <p class="card-text text-muted flex-grow-1">@producto.Descripcion</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fs-4 fw-bold text-success">$@producto.Precio</span>
+                                @if (producto.Stock > 0)
+                                {
+                                    <span class="badge bg-info text-dark">Stock: @producto.Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Sin Stock</span>
+                                }
+                            </div>
+                            <button class="btn btn-primary mt-auto"
+                                    @onclick="() => AgregarAlCarrito(producto)"
+                                    disabled="@(producto.Stock == 0)">
+                                @if (producto.Stock == 0)
+                                {
+                                    <span>Producto Agotado</span>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-cart-plus"></i> Añadir al Carrito</span>
+                                }
+                            </button>
                         </div>
                     </div>
                 </div>
             }
         </div>
     }
-    else
-    {
-        <p>No se encontraron productos.</p>
-    }
 </div>
 
 @code {
+    #nullable enable
+
     private List<Producto>? productos;
-    private string searchText = string.Empty;
-    private System.Timers.Timer? debounceTimer;
+ 
+    @inject cliente.Services.ApiService ApiService
+    @inject cliente.Services.CarritoService CarritoService
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadProducts();
-
-        debounceTimer = new System.Timers.Timer(500);
-        debounceTimer.Elapsed += async (sender, e) =>
-        {
-            debounceTimer?.Stop();
-            await InvokeAsync(LoadProducts);
-        };
-        debounceTimer.AutoReset = false;
-
+        await CargarProductosAsync();
         CarritoService.OnChange += StateHasChanged;
-    }
-
-    private async Task LoadProducts()
-    {
-        try
-        {
-            string url = $"/productos";
-            if (!string.IsNullOrWhiteSpace(searchText))
-            {
-                url += $"?q={searchText}";
-            }
-            productos = await Http.GetFromJsonAsync<List<Producto>>(url);
-        }
-        catch (HttpRequestException ex)
-        {
-            Console.WriteLine($"Error al cargar productos: {ex.Message}");
-            productos = new List<Producto>();
-        }
-    }
-
-    private void HandleSearch(ChangeEventArgs e)
-    {
-        searchText = e.Value?.ToString() ?? string.Empty;
-        debounceTimer?.Stop();
-        debounceTimer?.Start();
-    }
-
-    private void AgregarAlCarrito(Producto producto)
-    {
-        CarritoService.AgregarOActualizarEnCarrito(producto);
     }
 
     public void Dispose()
     {
-        debounceTimer?.Dispose();
         CarritoService.OnChange -= StateHasChanged;
     }
+
+    private async Task CargarProductosAsync()
+    {
+        productos = null;
+        Console.WriteLine("--> DEBUG: Cargando productos desde la API...");
+        var fetchedProducts = await ApiService.GetProductos();
+        if (fetchedProducts != null)
+        {
+            productos = fetchedProducts;
+            Console.WriteLine($"--> DEBUG: {productos.Count} productos cargados.");
+        }
+        else
+        {
+            productos = new List<Producto>();
+            Console.WriteLine("--> ERROR: No se pudieron cargar los productos de la API.");
+        }
+    }
+
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        Console.WriteLine($"--> DEBUG: Intentando añadir {producto.Nombre} al carrito.");
+        var itemEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
+        int cantidadActualEnCarrito = itemEnCarrito?.Cantidad ?? 0;
+
+        if (producto.Stock > cantidadActualEnCarrito) 
+        {
+            CarritoService.AgregarAlCarrito(producto);
+            Console.WriteLine($"--> DEBUG: {producto.Nombre} añadido al carrito. Cantidad en carrito: {cantidadActualEnCarrito + 1}. Stock restante: {producto.Stock - (cantidadActualEnCarrito + 1)}");
+        }
+        else
+        {
+            Console.WriteLine($"--> ADVERTENCIA: No hay suficiente stock para añadir {producto.Nombre}. Stock disponible: {producto.Stock}. En carrito: {cantidadActualEnCarrito}");
+        }
+
+        StateHasChanged();
+    }
+
 }
