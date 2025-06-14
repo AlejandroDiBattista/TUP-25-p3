@@ -1,0 +1,13 @@
+.historial-container {
+    max-width: 1100px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    padding: 32px 24px;
+}
+@media (max-width: 900px) {
+    .historial-container {
+        padding: 16px 4px;
+    }
+}
