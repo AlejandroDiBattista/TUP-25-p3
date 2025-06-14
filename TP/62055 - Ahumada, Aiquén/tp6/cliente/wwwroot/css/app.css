@@ -2,7 +2,7 @@
 body, html {
     font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     
-    color: #222;
+    color: #ffffff;
     min-height: 100vh;
     position: relative;
     padding-bottom: 80px;
@@ -322,6 +322,66 @@ position: absolute;
 
 .descripcion .btn-primary:hover {
     background: #d01414;
+    color: #fff;
+    transform: scale(1.05);
+}
+.home-minimal {
+    min-height: 100vh;
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 90px; /* para no tapar el navbar */
+}
+
+.descripcion-minimal {
+    background: rgba(255,255,255,0.95);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(27, 110, 194, 0.10);
+    padding: 3rem 2.5rem 2.5rem 2.5rem;
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.logo-minimal {
+    width: 110px;
+    height: 60px;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(27, 110, 194, 0.10);
+}
+
+.descripcion-minimal h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1b6ec2;
+    margin-bottom: 1.2rem;
+    letter-spacing: -1px;
+}
+
+.descripcion-minimal p {
+    color: #444;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.btn-minimal {
+    background: #1b6ec2;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    padding: 0.9rem 2.5rem;
+    font-size: 1.15rem;
+    border-radius: 2rem;
+    box-shadow: 0 2px 8px rgba(27, 110, 194, 0.10);
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-minimal:hover {
+    background: #258cfb;
     color: #fff;
     transform: scale(1.05);
 }
