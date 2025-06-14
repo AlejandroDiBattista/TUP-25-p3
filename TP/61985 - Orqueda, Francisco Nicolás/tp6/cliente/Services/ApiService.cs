@@ -161,6 +161,21 @@ namespace cliente.Services
                 return false;
             }
         }
+
+        // Quitar producto del carrito
+        public async Task<bool> QuitarProductoDelCarritoAsync(Guid carritoId, int productoId)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al quitar producto del carrito: {ex.Message}");
+                return false;
+            }
+        }
     }
 
     public class DatosRespuesta

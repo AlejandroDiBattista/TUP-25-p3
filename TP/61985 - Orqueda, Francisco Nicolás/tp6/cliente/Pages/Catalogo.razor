@@ -2,7 +2,7 @@
 @using cliente.Models
 @inject ApiService ApiService
 @using cliente.Services
-
+@inject NavigationManager NavigationManager
 <h1>Catálogo de Productos</h1>
 
 <input @bind="busqueda" placeholder="Buscar..." />
@@ -51,10 +51,14 @@ else
         productos = await ApiService.ObtenerProductosAsync(busqueda);
     }
 
+    @code {
+    Guid carritoId;
+
     async Task AgregarAlCarrito(int productoId)
     {
-        // Aquí luego llamaremos al método de carrito
-        await Task.Yield();
-        Console.WriteLine($"Agregar producto {productoId} al carrito");
+        carritoId = await ApiService.CrearCarritoAsync() ?? Guid.NewGuid();
+        await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, 1);
+        NavigationManager.NavigateTo("/carrito");
     }
+}
 }
