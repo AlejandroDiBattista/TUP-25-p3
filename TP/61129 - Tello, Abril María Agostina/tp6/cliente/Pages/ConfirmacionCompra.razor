@@ -2,7 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using cliente.Services
 @using cliente.Modelos
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 @inject ApiService ApiService
 @inject CarritoService CarritoService
 
@@ -101,7 +101,7 @@
 
     private void VolverAProductos()
     {
-        Navigation.NavigateTo("/productos", true);
+        NavigationManager.NavigateTo("/productos", true);
     }
 
     public class FormData

@@ -9,12 +9,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Program.cs
 builder.Services.AddScoped<CarritoService>();
 
+
 // Configurar el HttpClient para apuntar al servidor API
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5299") });
-
-// Registrar el servicio API
 builder.Services.AddScoped<ApiService>();
-builder.Services.AddSingleton<cliente.Services.CarritoService>();
-
 await builder.Build().RunAsync();
 

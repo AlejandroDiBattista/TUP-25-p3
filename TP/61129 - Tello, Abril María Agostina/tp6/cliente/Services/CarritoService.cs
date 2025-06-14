@@ -52,7 +52,7 @@ namespace cliente.Services
             await GuardarCarritoAsync();
         }
 
-        private async Task GuardarCarritoAsync()
+        public async Task GuardarCarritoAsync()
         {
             await js.InvokeVoidAsync("localStorage.setItem", "carrito", JsonSerializer.Serialize(Items));
         }

@@ -3,6 +3,7 @@
 @using cliente.Modelos
 @inject ApiService ApiService
 @inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Productos</PageTitle>
 
@@ -70,7 +71,11 @@
                                 <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
                                 <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
                                 <div class="mt-auto">
-                                    <button class="btn btn-agregar-carrito" @onclick="() =>AgregarAlCarrito(producto)">Agregar al carrito</button>
+                                    <button class="btn btn-agregar-carrito"
+                                    @onclick="() => AgregarAlCarrito(producto)"
+                                    disabled="@(producto.Stock == 0)">
+                                    @(producto.Stock == 0 ? "Sin stock" : "Agregar al carrito")
+                                    </button>
                                 </div>
                                 
                             </div>
@@ -127,16 +132,16 @@
     }
 
     private static string QuitarAcentos(string texto)
-{
-    if (string.IsNullOrEmpty(texto)) return texto;
-    var normalized = texto.Normalize(System.Text.NormalizationForm.FormD);
-    var sb = new System.Text.StringBuilder();
-    foreach (var c in normalized)
     {
-        if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
-            sb.Append(c);
+        if (string.IsNullOrEmpty(texto)) return texto;
+        var normalized = texto.Normalize(System.Text.NormalizationForm.FormD);
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in normalized)
+        {
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                sb.Append(c);
+        }
+        return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
     }
-    return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
-}
 
 }    
