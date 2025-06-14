@@ -1,4 +1,78 @@
-﻿@inherits LayoutComponentBase
+﻿@implements IDisposable
+@inject NavigationManager NavManager
+@inject CarritoService CarritoService
+
 <div class="page">
-    @Body
+    <header class="fixed-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+            <div class="container-fluid">
+                <!-- 1. Logo/Home -->
+                <a class="navbar-brand" href="/">
+                    <strong>PerfumeShop</strong>
+                </a>
+
+                <!-- Espacio para el buscador y el carrito -->
+                <div class="d-flex align-items-center ms-auto">
+
+                    <!-- 2. Buscador (funcionalidad se puede agregar después) -->
+                    <div class="input-group me-3">
+                        <input type="text" class="form-control" placeholder="Buscar perfumes..." @bind="terminoBusqueda" @onkeyup="HandleSearch" />
+                        <button class="btn btn-outline-secondary" type="button" @onclick="RealizarBusqueda">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+
+                    <!-- 3. Ícono de Carrito con Contador -->
+                    <a href="/carrito" class="nav-link">
+                        <i class="bi bi-cart-fill" style="font-size: 1.5rem;"></i>
+                        <span class="badge rounded-pill bg-danger">@CarritoService.CantidadItems</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mt-5 pt-4">
+        <div class="content px-4">
+            @Body
+        </div>
+    </main>
 </div>
+
+@code {
+    private string terminoBusqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Suscribirse al evento para que el contador se actualice automáticamente
+        CarritoService.OnChange += StateHasChanged;
+        // Cargar el estado inicial del carrito al cargar la app
+        await CarritoService.InicializarCarrito();
+    }
+
+    private void HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            RealizarBusqueda();
+        }
+    }
+
+    private void RealizarBusqueda()
+    {
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+        {
+            NavManager.NavigateTo($"/buscar/{terminoBusqueda}");
+        }
+        else
+        {
+             NavManager.NavigateTo("/");
+        }
+    }
+
+    // Es crucial desuscribirse del evento para evitar memory leaks
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}

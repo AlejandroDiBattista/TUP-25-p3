@@ -9,8 +9,7 @@ namespace cliente.Services
         public int? CarritoId { get; private set; }
         public int CantidadItems { get; private set; }
         
-        // Evento que se dispara cuando el carrito cambia. 
-        // El layout se suscribirá a esto para actualizar el contador.
+        // Evento que se dispara cuando el carrito cambia.
         public event Action? OnChange;
 
         public CarritoService(HttpClient http)
@@ -22,7 +21,6 @@ namespace cliente.Services
         {
             if (CarritoId == null)
             {
-                // Llama a la API para crear un nuevo carrito (compra en estado pendiente)
                 var response = await _http.PostAsync("/api/carritos", null);
                 if (response.IsSuccessStatusCode)
                 {
@@ -43,10 +41,9 @@ namespace cliente.Services
             }
             catch
             {
-                CantidadItems = 0; // Si el carrito no se encuentra o hay error, la cantidad es 0
+                CantidadItems = 0;
             }
             
-            // Notificar a todos los suscriptores (como el MainLayout) que hubo un cambio.
             NotifyStateChanged();
         }
 
