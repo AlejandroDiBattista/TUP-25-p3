@@ -9,6 +9,8 @@ namespace servidor
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<ItemCompra> ItemsCompra { get; set; }
+        public DbSet<Carrito> Carritos { get; set; }
+        public DbSet<CarritoItem> CarritoItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
