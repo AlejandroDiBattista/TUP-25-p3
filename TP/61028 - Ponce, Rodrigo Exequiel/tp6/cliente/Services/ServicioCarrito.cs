@@ -1,4 +1,5 @@
 using cliente.Modelos;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,16 @@ namespace cliente.Services
                 item.Cantidad--;
                 if (item.Cantidad <= 0)
                     Items.Remove(item);
+                NotificarCambio();
+            }
+        }
+
+        public void RemoverItemDelCarrito(Producto producto)
+        {
+            var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            if (item != null)
+            {
+                Items.Remove(item);
                 NotificarCambio();
             }
         }
