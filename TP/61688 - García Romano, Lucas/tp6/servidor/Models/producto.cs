@@ -3,17 +3,17 @@ namespace servidor.Models;
 public class Producto
 //Son los detalles de los diferentes productos//
 {
-    public int Id { get; set; }
-    public string Nombre { get; set; } = "";
-    public string Descripcion { get; set; } = "";
-    public decimal Precio { get; set; }
+    public int Id { get; set; }//identificador unico del producto
+    public string Nombre { get; set; } = "";//nombre del producto
+    public string Descripcion { get; set; } = "";//descripcion del producto
+    public decimal Precio { get; set; }//precio del producto
 
-    //La cantidad de Productos
-    public int Stock { get; set; }
+    
+    public int Stock { get; set; }//la cantidad de Productos
 
-    //Evita que un producto no sea nulo si no tiene imagen
-    public string ImagenUrl { get; set; } = "";
+    
+    public string ImagenUrl { get; set; } = "";//evita que un producto no sea nulo si no tiene imagen
 
-    public string Marca { get; set; } = "";
+    public string Marca { get; set; } = "";//marca del producto
 
 }

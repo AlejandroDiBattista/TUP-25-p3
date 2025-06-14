@@ -27,45 +27,86 @@ else
                 <p>@producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@producto.Precio</p>
                 <p><strong>Stock:</strong> @producto.Stock</p>
-                <button class="btn btn-success" disabled="@(!ProductoDisponible(producto))" @onclick="() => AgregarAlCarrito(producto.Id.ToString())">Agregar al carrito</button>
+                @if (CantidadEnCarrito(producto.Id) > 0) // muestra la cantidad en el carrito
+                {
+                    <span class="badge bg-info text-dark" style="margin-bottom:6px;">En carrito: @CantidadEnCarrito(producto.Id)</span>
+                }
+                <button class="btn btn-success" disabled="@(!ProductoDisponible(producto))" @onclick="() => AgregarAlCarrito(producto.Id)">Agregar al carrito</button>
             </div>
         }
     </div>
 }
 
-@code {
-    private List<cliente.Services.Producto> productos;
-    private string error;
+@if (!string.IsNullOrEmpty(mensaje)) //muesta un msj de confirmacion o error
+{
+    <div class="alert alert-info">@mensaje</div> // mensaje de confirmación o error
+}
 
-    protected override async Task OnInitializedAsync()
+@code {
+    private List<cliente.Services.Producto> productos; //lista de productos del catalogo
+    private string error;//mensaje de error si ocurre
+    private string mensaje;//msj de confirmacion al agregar al carrito
+    private List<ItemCarritoDto> itemsCarrito = new();//lista de items del carrito
+
+    protected override async Task OnInitializedAsync()//inicializa el componente
+    {
+        await CargarDatos();//carga productos y items del carrito
+        CarritoService.OnCarritoActualizado += ActualizarDesdeServicio;//subscribe al evento de actualización del carrito
+    }
+
+    protected override async Task OnParametersSetAsync()//se jecuta cuando se establecen los parametros del componenete
+    {
+        await CargarDatos();//recargo los datos
+    }
+
+    private async void ActualizarDesdeServicio()//metodo que se ejecuta cuando el carrito se actualiza desde el servicio
+    {
+        await CargarDatos(); //recarga los datos
+        await InvokeAsync(StateHasChanged);//actualiza el estado para que se renderice de nuevo
+    }
+
+    private async Task CargarDatos()//cargo los productos y items del carrito
     {
         try {
-            productos = await ProductoService.ObtenerProductosAsync();
+            productos = await ProductoService.ObtenerProductosAsync() ?? new List<cliente.Services.Producto>();// obtiene los productos del servicio
+            itemsCarrito = await CarritoService.ObtenerItemsDelCarritoAsync() ?? new List<ItemCarritoDto>();// obtiene los items del carrito
             error = null;
-        } catch (Exception ex) {
-            productos = new List<cliente.Services.Producto>();
-            error = ex.Message;
+        } catch (Exception ex) { //maneja las excepciones
+            productos = new List<cliente.Services.Producto>(); //inicializa la lista de productos vacia
+            itemsCarrito = new List<ItemCarritoDto>(); //inicializa la lista de items del carrito vacia
+            error = ex.Message; //manda el msj de error
         }
     }
 
-    private bool ProductoDisponible(cliente.Services.Producto producto)
+    private bool ProductoDisponible(cliente.Services.Producto producto) //verifica si el producto tiene stock disponible
     {
-        return producto.Stock > 0;
+        return producto.Stock > 0; //evita que el producto no tenga stock
     }
 
-    private async Task AgregarAlCarrito(string productoId)
+    private int CantidadEnCarrito(int productoId)//obitiene la cantidad de un producto en el carrito
     {
-        var ok = await CarritoService.AgregarProductoAsync(productoId, 1);
-        if (ok)
+        var item = itemsCarrito.FirstOrDefault(i => i.ProductoId == productoId);//busca el item en el carrito por el Id
+        return item?.Cantidad ?? 0; //retorna la cantidad del item o 0 si no existe
+    }
+
+    private async Task AgregarAlCarrito(int productoId)//agrega un producto al carrito
+    {
+        try
         {
-            Console.WriteLine($"Producto {productoId} agregado al carrito.");
-            // Refresca el catálogo para mostrar el stock actualizado
-            productos = await ProductoService.ObtenerProductosAsync();
-            StateHasChanged();
+            var cantidadActual = CantidadEnCarrito(productoId);// obtiene la cantidad actual del producto en el carrito
+            await CarritoService.ModificarCantidadAsync(productoId, cantidadActual + 1); //agrega desde el carrito el producto +1
+            await CargarDatos(); //recarga los datos de la lista de productos y items del carrito
+            mensaje = "Producto agregado al carrito."; //msj de confirmacion
+            await InvokeAsync(StateHasChanged); //actualiza el estado par que se renderice de nuevo
         }
-        else
+        catch (Exception ex) //maneja las excepciones al agregar al carrito
         {
-            Console.WriteLine($"Error al agregar el producto {productoId}.");
+            mensaje = "Error al agregar: " + ex.Message; //msj de error al agregar al carrito
         }
+    }
+
+    public void Dispose() //libera recursos y se desuscribe del evento
+    {
+        CarritoService.OnCarritoActualizado -= ActualizarDesdeServicio; //se desuscribe del evento de actualizacion del carrito
     }
 }

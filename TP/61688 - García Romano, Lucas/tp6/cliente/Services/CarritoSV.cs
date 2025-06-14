@@ -1,71 +1,116 @@
+#nullable enable
+//evita el warning de referencia nula
+
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text;
 
 namespace cliente.Services;
 
-public class CarritoService {
+//Maneja el carrito de compras
+public class CarritoService
+{
     private readonly HttpClient _httpClient;
+    private string carritoId = string.Empty;
 
-    private string carritoId;
-
-    public CarritoService(HttpClient httpClient) {
+//recibe el HttpClient y hace una peticion a la API
+    public CarritoService(HttpClient httpClient)
+    {
         _httpClient = httpClient;
     }
 
-    public async Task<string> ObtenerOCrearCarritoAsync() {
+//un evento que se dispara cuando el carrito se actualiza
+    public event Action? OnCarritoActualizado;
+
+    //Obtiene o crea el carrito
+
+    public async Task<string> ObtenerOCrearCarritoAsync()
+    //si existe el carrito lo devuelve sino lo crea
+    {
+        //Intenta obtener el carrito
         if (!string.IsNullOrEmpty(carritoId))
+
+            //Si ya tiene un carrito, lo devuelve
             return carritoId;
 
+        //Hace una petición a la API para crear un nuevo carrito
         var response = await _httpClient.PostAsync("/carritos", null);
-        if (response.IsSuccessStatusCode) {
+        // Si el carrito existe lo devuelve
+        if (response.IsSuccessStatusCode)
+        {
+            // Lee la respuesta y obtiene el ID del carrito
             var json = await response.Content.ReadAsStringAsync();
-            // Extraer solo el valor del id del JSON: { "id": "..." }
-            carritoId = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("id").GetString();
-        } else {
-            Console.WriteLine("Error al crear el carrito");
+
+            // Analiza el JSON para obtener el ID del carrito
+            carritoId = JsonDocument.Parse(json).RootElement.GetProperty("id").GetString() ?? string.Empty;
         }
-
         return carritoId;
+        //Si no se encontro devolvera un string vacio
     }
 
-    public async Task<bool> AgregarProductoAsync(string productoId, int cantidad) {
-        var id = await ObtenerOCrearCarritoAsync();
-
-        var dto = new {
-            ProductoId = productoId,
-            Cantidad = cantidad
-        };
-
-        var response = await _httpClient.PutAsJsonAsync($"/carritos/{id}/{productoId}", dto); // Corregido: sin /api
-        return response.IsSuccessStatusCode;
-    }
-
-    public async Task<List<ItemCarritoDto>> ObtenerItemsDelCarritoAsync()
+    public async Task<List<ItemCarritoDto>> ObtenerItemsAsync() //Obtiene los items del carrito
     {
-        var id = await ObtenerOCrearCarritoAsync();
-        var items = await _httpClient.GetFromJsonAsync<List<ItemCarritoDto>>($"/carritos/{id}"); // Corregido: sin /api
-        return items ?? new List<ItemCarritoDto>();
+        var id = await ObtenerOCrearCarritoAsync();// Obtiene o crea el carrito
+        if (string.IsNullOrEmpty(id)) return new List<ItemCarritoDto>(); //retorna si no hay carrito
+        return await _httpClient.GetFromJsonAsync<List<ItemCarritoDto>>($"/carritos/{id}") ?? new List<ItemCarritoDto>(); //si no hay items da una lista vacia
     }
 
-    public async Task ModificarCantidadAsync(string productoId, int nuevaCantidad)
+    public async Task AgregarProductoAsync(int productoId, int cantidad)//Agrega un producto al carrito
     {
-        var id = await ObtenerOCrearCarritoAsync();
-        var dto = new { Cantidad = nuevaCantidad };
-        await _httpClient.PutAsJsonAsync($"/carritos/{id}/{productoId}", dto); // Corregido: sin /api
+        var id = await ObtenerOCrearCarritoAsync();// Obtiene o crea el carrito
+        if (string.IsNullOrEmpty(id)) return;//retorna si es nulo
+
+        var datos = new { Cantidad = cantidad };//crea un objeto en blanco con la cantidad del producto
+        var contenido = new StringContent(JsonSerializer.Serialize(datos), Encoding.UTF8, "application/json");//serializa los objetos a JSON
+        var response = await _httpClient.PutAsync($"/carritos/{id}/{productoId}", contenido);//Hace una peticion para agregar el producto al carrito
+        response.EnsureSuccessStatusCode();//se asegura que sea exitosa la peticion
+        OnCarritoActualizado?.Invoke();//lanza el evento de carrito actualizado
     }
 
-    public async Task VaciarCarritoAsync()
+    public async Task VaciarCarritoAsync()//vacia el carrtito
     {
-        var id = await ObtenerOCrearCarritoAsync();
-        await _httpClient.GetAsync($"/carritos/vaciar/{id}"); // Corregido: sin /api
+        var id = await ObtenerOCrearCarritoAsync();//obtiene o crea el carrito
+        if (string.IsNullOrEmpty(id)) return;//retorna si es nulo
+        await _httpClient.GetAsync($"/carritos/vaciar/{id}");//hace una peticion para vaciar el carrito
+        OnCarritoActualizado?.Invoke();//lanza el evento de carrito actualizado
     }
 
-    public string ObtenerCarritoId() => carritoId;
+    public async Task ConfirmarCompraAsync(DatosCliente cliente)//confirma la compra
+    {
+        var id = await ObtenerOCrearCarritoAsync();// Obtiene o crea el carrito
+        if (string.IsNullOrEmpty(id)) return;//retorna si es nulo
+
+        var contenido = new StringContent(JsonSerializer.Serialize(cliente), Encoding.UTF8, "application/json");//serializa los objetos a JSON
+        await _httpClient.PutAsync($"/carritos/{id}/finalizar", contenido);// Hace una petición para confirmar la compra
+        carritoId = string.Empty; //limpia el carritoId
+    }
+
+    public async Task<List<ItemCarritoDto>> ObtenerItemsDelCarritoAsync()// Obtiene los items del carrito
+    {
+        return await ObtenerItemsAsync();//retorna los items del carrito
+    }
+
+    public async Task ModificarCantidadAsync(int productoId, int nuevaCantidad)//cambia la cantidad de un producto en el carrito
+    {
+        await AgregarProductoAsync(productoId, nuevaCantidad);// llama al metodo AgregarProductoAsync con la nueva cantidad
+    }
 }
 
+// DTO para los items del carrito
 public class ItemCarritoDto
 {
-    public string ProductoId { get; set; }
-    public string Nombre { get; set; }
+    public int ProductoId { get; set; }
+    public string Nombre { get; set; } = string.Empty;// Nombre del producto
     public int Cantidad { get; set; }
     public decimal PrecioUnitario { get; set; }
+    public int Stock { get; set; } // Stock disponible
+    public decimal Subtotal => Cantidad * PrecioUnitario;
+}
+
+// DTO para datos del cliente
+public class DatosCliente
+{
+    public string Nombre { get; set; } = string.Empty;
+    public string Apellido { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 }

@@ -74,16 +74,25 @@ app.MapPost("/carritos", () =>
     return Results.Ok(new { carrito.Id });
 });
 //llama al Carrito por el ID y devuelve los detalles
-app.MapGet("/carritos/{id}", (Guid id) =>
+app.MapGet("/carritos/{id}", (Guid id, TiendaContext db) =>
 {
     var carrito = carritos.FirstOrDefault(c => c.Id == id);
 
     if (carrito == null)
         return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
-//Busca al carrito Con el ID y si es null da error
 
-
-    return Results.Ok(carrito.Items);
+    // Devuelve los items del carrito junto con el stock actual de cada producto
+    var itemsConStock = carrito.Items.Select(item => {
+        var producto = db.Productos.FirstOrDefault(p => p.Id == item.ProductoId);
+        return new {
+            item.ProductoId,
+            item.Nombre,
+            item.Cantidad,
+            item.PrecioUnitario,
+            Stock = producto?.Stock ?? 0
+        };
+    });
+    return Results.Ok(itemsConStock);
 });
 
 // Vacía el el carrito con el ID 
@@ -188,25 +197,38 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
         if (body == null)
             return Results.BadRequest(new { Mensaje = "El cuerpo de la solicitud es nulo" });
 
-        if (producto.Stock < body.Cantidad)
+        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoIdInt);
+        int cantidadNueva = body.Cantidad;
+        int cantidadActual = itemExistente?.Cantidad ?? 0;
+        int diferencia = cantidadNueva - cantidadActual;
+
+        if (cantidadNueva < 0)
+            return Results.BadRequest(new { Mensaje = "Cantidad inválida" });
+
+        if (diferencia > 0 && producto.Stock < diferencia)
             return Results.BadRequest(new { Mensaje = "Stock insuficiente" });
 
-        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoIdInt);
+        // Actualiza el stock solo por la diferencia
+        // producto.Stock -= diferencia;
+        // await db.SaveChangesAsync();
+
         if (itemExistente != null)
         {
-            var total = itemExistente.Cantidad + body.Cantidad;
-            if (producto.Stock < total)
-                return Results.BadRequest(new { Mensaje = "Stock insuficiente al actualizar cantidad" });
-
-            itemExistente.Cantidad = total;
+            if (cantidadNueva == 0)
+            {
+                carrito.Items.Remove(itemExistente);
+                return Results.Ok(new { Mensaje = "Producto eliminado del carrito" });
+            }
+            itemExistente.Cantidad = cantidadNueva;
+            itemExistente.PrecioUnitario = producto.Precio;
         }
-        else
+        else if (cantidadNueva > 0)
         {
             carrito.Items.Add(new ItemCarrito
             {
                 ProductoId = productoIdInt,
                 Nombre = producto.Nombre,
-                Cantidad = body.Cantidad,
+                Cantidad = cantidadNueva,
                 PrecioUnitario = producto.Precio
             });
         }
