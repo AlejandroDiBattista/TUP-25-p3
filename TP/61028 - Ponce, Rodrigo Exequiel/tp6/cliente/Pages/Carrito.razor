@@ -3,6 +3,8 @@
 @using cliente.Services
 @inject ServicioCarrito Carritoo
 @inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
 
 <h3>Carrito de compras</h3>
@@ -39,17 +41,27 @@ else
         </tbody>
     </table>
     <p><b>Total: $@Carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</b></p>
-    <button @onclick="VaciarCarrito">Vaciar carrito</button>
+    <h3>Productos</h3>
+    <p>Productos: @Carritoo.Items.Sum(i => i.Cantidad)</p>
+    <button @onclick="VaciarCarrito">Vaciar carrito</button> 
     <button @onclick="ConfirmarCompra" disabled="@(!Carritoo.Items.Any())">Confirmar compra</button>
 }
 
 @if (mensajeCompra != null)
 {
     <p>@mensajeCompra</p>
+    <button @onclick="PreguntarRedireccion">Volver a productos</button>
+}
+
+@if (mensajeVaciado != null)
+{
+    <p>@mensajeVaciado</p>
+    <button @onclick="RedireccionarAProductos">Volver a productos</button>
 }
 
 @code {
     string mensajeCompra = null;
+    string mensajeVaciado = null;
 
     protected override void OnInitialized()
     {
@@ -69,19 +81,20 @@ else
     void VaciarCarrito()
     {
         Carritoo.VaciarCarrito();
+        mensajeVaciado = "El carrito fue vaciado correctamente.";
     }
 
     async Task ConfirmarCompra()
     {
-        var venta = new
+        var compra = new
         {
-            items = Carritoo.Items.Select(i => new {
+            Items = Carritoo.Items.Select(i => new {
                 productoId = i.Producto.Id,
                 cantidad = i.Cantidad
             }).ToList()
         };
 
-        var respuesta = await Http.PostAsJsonAsync("ventas", venta);
+        var respuesta = await Http.PostAsJsonAsync("compras", compra); 
 
         if (respuesta.IsSuccessStatusCode)
         {
@@ -92,5 +105,19 @@ else
         {
             mensajeCompra = "Hubo un error al procesar la compra.";
         }
+    }
+
+    async Task PreguntarRedireccion()
+    {
+        bool ok = await JS.InvokeAsync<bool>("confirm", "¿Desea volver al menú principal de productos?");
+        if (ok)
+        {
+            Nav.NavigateTo("/productos");
+        }
+    }
+
+    void RedireccionarAProductos()
+    {
+        Nav.NavigateTo("/productos");
     }
 }

@@ -72,29 +72,19 @@ app.MapDelete("/productos/{id}", async (int id, TiendaContext db) =>
 
 app.MapPost("/compras", async (Compra compra, TiendaContext db) =>
 {
-    foreach (var item in compra.Items)
-    {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto == null)
-            return Results.BadRequest($"Producto con ID {item.ProductoId} no existe.");
-
-        if (producto.Stock < item.Cantidad)
-            return Results.BadRequest($"No hay suficiente stock para el producto {producto.Nombre}.");
-    }
-
-    decimal total = 0;
-    foreach (var item in compra.Items)
-    {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        producto.Stock -= item.Cantidad;
-        total += producto.Precio * item.Cantidad;
-    }
-    compra.Total = total;
+    // Validaciones y lógica aquí...
+    // Por ejemplo:
     compra.Fecha = DateTime.Now;
+    compra.Total = compra.Items.Sum(item =>
+    {
+        var producto = db.Productos.Find(item.ProductoId);
+        return producto != null ? producto.Precio * item.Cantidad : 0;
+    });
 
     db.Compras.Add(compra);
     await db.SaveChangesAsync();
-    return Results.Created($"/compras/{compra.Id}", compra);
+
+    return Results.Created($"/compras/{compra.Id}", new { compra.Id, compra.Total, compra.Fecha });
 });
 
 app.MapGet("/compras", async (TiendaContext db) =>

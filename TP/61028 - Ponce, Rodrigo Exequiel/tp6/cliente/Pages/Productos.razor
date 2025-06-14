@@ -8,7 +8,7 @@
 <h3>Productos</h3>
 
 
-<p>En carrito: @Carritoo.Items.Count</p>
+<p>Productos: @Carritoo.Items.Sum(i => i.Cantidad)</p>
 
 @if (productos == null)
 {
@@ -35,6 +35,11 @@ else
     protected override async Task OnInitializedAsync()
     {
         productos = await Services.ObtenerProductosAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        Carritoo.OnChange += StateHasChanged;
     }
 
     void AgregarAlCarrito(Producto producto)
