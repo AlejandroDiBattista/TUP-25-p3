@@ -79,3 +79,9 @@ else
         Total = ItemsCarrito.Sum(i => i.PrecioUnitario * i.Cantidad);
     }
 
+private async Task Aumentar(ItemCarrito item)
+{
+    await CarritoService.AumentarItemAsync(carritoId, item.ProductoId);
+    await CargarCarrito();
+}
+
