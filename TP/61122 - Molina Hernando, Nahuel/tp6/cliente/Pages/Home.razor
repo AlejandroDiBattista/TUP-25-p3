@@ -4,18 +4,15 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h2 class="fw-bold text-center text-dark mb-4">Catálogo de Iphones</h2>
+<h3>Catálogo de Productos</h3>
 
 @if (productos is null)
 {
-    <div class="text-center my-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <div class="mt-2">Cargando productos...</div>
-    </div>
+    <p>Cargando productos...</p>
 }
 else if (productos.Count == 0)
 {
-    <div class="alert alert-info text-center">No hay productos para mostrar.</div>
+    <p>No hay productos para mostrar.</p>
 }
 else
 {
@@ -51,7 +48,7 @@ else
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-success mt-3 text-center">@mensaje</div>
+    <div class="alert alert-success mt-3">@mensaje</div>
 }
 
 @code {
@@ -85,7 +82,6 @@ else
         if (stock > 0)
         {
             await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, 1);
-            mensaje = "Producto agregado al carrito.";
             Navigation.NavigateTo("/carrito"); 
         }
         else
