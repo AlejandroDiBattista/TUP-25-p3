@@ -5,11 +5,11 @@ using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Entity Framework para guardar tienda.db
+// Configurar Entity Framework
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
@@ -20,9 +20,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Agregar controladores si es necesario
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
 // Crear la base de datos si no existe
@@ -32,19 +29,15 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
 }
 
+app.UseCors("AllowBlazorClient");
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
-    app.UseDeveloperExceptionPage();
-}
 
-// Usar CORS con la política definida
-app.UseCors("AllowClientApp");
-
-// Almacenamiento en memoria para carritos
+// Almacenamiento en memoria para carritos (en producción sería una cache como Redis)
 var carritos = new Dictionary<string, List<CarritoItem>>();
 
-// Mapear rutas 
+// API Endpoints
+
+// Endpoint para traer todos los productos sin filtro
 app.MapGet("/productos", async (TiendaDbContext db) =>
 {
     var productos = await db.Productos.ToListAsync();
