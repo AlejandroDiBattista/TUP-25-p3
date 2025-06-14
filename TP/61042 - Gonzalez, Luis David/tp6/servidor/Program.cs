@@ -133,11 +133,9 @@ app.MapDelete("/api/carritos/{carritoId}/{productoId}", async (TiendaContext db,
     return Results.Ok();
 });
 
-public record ConfirmacionDto(string Nombre, string Apellido, string Email);
-
-// Crear la base de datos y cargar productos de ejemplo si está vacía
-using (var scope = app.Services.CreateScope())
+void InicializarBaseDeDatos(WebApplication app)
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
     db.Database.Migrate();
     if (!db.Productos.Any())
@@ -158,5 +156,7 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
+
+InicializarBaseDeDatos(app);
 
 app.Run();
