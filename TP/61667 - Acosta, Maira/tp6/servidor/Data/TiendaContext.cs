@@ -10,6 +10,8 @@ namespace servidor.Data
 
         public DbSet<Producto> Productos => Set<Producto>();
         public DbSet<Compra> Compras => Set<Compra>();
-        public DbSet<Articulocompra> ArticulosCompras => Set<Articulocompra>();
+        public DbSet<CarritoItem> CarritoItems { get; set; }
+        public DbSet<ItemCompra> ItemsCompra { get; set; }
+
     }
 }
