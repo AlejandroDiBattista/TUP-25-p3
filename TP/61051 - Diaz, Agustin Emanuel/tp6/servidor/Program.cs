@@ -75,9 +75,17 @@ app.MapPut("/carritos/{id}/{productoId}", async (
 
     var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
     if (existente != null)
-        existente.Cantidad += cantidad;
+    {
+      existente.Cantidad += cantidad;
+      existente.PrecioUnitario = producto.Precio;
+    }
     else
-        carrito.Items.Add(new CarritoItem { ProductoId = productoId, Cantidad = cantidad });
+    carrito.Items.Add(new CarritoItem
+    {
+      ProductoId = productoId,
+      Cantidad = cantidad,
+      PrecioUnitario = producto.Precio
+    });
 
     return Results.Ok(carrito);
 });
@@ -298,8 +306,9 @@ public class ApplicationDbContext : DbContext
 
 public class CarritoItem
 {
-    public int ProductoId { get; set; }
-    public int Cantidad { get; set; }
+  public int ProductoId { get; set; }
+  public int Cantidad { get; set; }
+  public decimal PrecioUnitario { get; set; } 
 }
 
 public class Carrito
