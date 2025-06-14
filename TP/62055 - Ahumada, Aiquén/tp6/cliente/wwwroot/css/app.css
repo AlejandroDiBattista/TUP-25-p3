@@ -257,7 +257,7 @@ position: absolute;
     left: 0;
     width: 100vw;
     height: calc(100vh - 70px); 
-    background: linear-gradient(135deg, #258cfb 0%, #1b6ec2 100%);
+    background:currentColor;
     display: flex;
     justify-content: center;
     align-items: center;
