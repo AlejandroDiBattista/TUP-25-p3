@@ -168,6 +168,13 @@
               </a>
             </div>
             }
+            @if (CantidadItems > 0)
+            {
+              <button
+                class="flex w-full items-center justify-center rounded-lg text-red-700 border border-red-700 px-5 py-2.5 text-sm font-medium hover:bg-red-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-red-300" @onclick="() => CarritoService.VaciarCarritoAsync()">
+                Vaciar Carrito
+              </button>
+            }
         </div>
       </div>
     </div>
