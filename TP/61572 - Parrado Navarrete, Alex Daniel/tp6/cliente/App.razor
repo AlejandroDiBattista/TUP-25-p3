@@ -1,12 +1,12 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+@using TiendaOnline.Cliente.Shared
+
+<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
-        <PageTitle>Not found</PageTitle>
         <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
+            <p>Página no encontrada.</p>
         </LayoutView>
     </NotFound>
 </Router>
