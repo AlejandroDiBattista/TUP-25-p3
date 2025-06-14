@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using servidor.models;
+#nullable enable
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,21 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
+
+app.MapGet("/productos", async ([FromServices] TiendaDb db, [FromQuery] string? busqueda) =>
+{
+    var query = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(busqueda))
+    {
+        var filtro = busqueda.Trim().ToLower();
+        query = query.Where(p =>
+            p.Nombre.ToLower().Contains(filtro) ||
+            p.Descripcion.ToLower().Contains(filtro));
+    }
+
+    return await query.ToListAsync();
+});
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment())
