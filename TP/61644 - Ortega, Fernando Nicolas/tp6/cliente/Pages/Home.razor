@@ -2,58 +2,71 @@
 @using cliente.Services
 @inject ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Catálogo</PageTitle>
 
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+    <h1 class="mb-4">Catálogo de Productos</h1>
+    <div class="mb-3">
+        <input class="form-control" placeholder="Buscar..." @bind="busqueda" @bind:event="oninput" />
+        <button class="btn btn-primary mt-2" @onclick="BuscarProductos">Buscar</button>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+        @if (cargando)
+        {
+            <div class="col-12">
+                <div class="alert alert-info">Cargando productos...</div>
+            </div>
+        }
+        else if (productos.Count == 0)
+        {
+            <div class="col-12">
+                <div class="alert alert-warning">No hay productos para mostrar.</div>
+            </div>
+        }
+        else
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height:200px;object-fit:contain;">
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
+                            <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
+                            <button class="btn btn-success" disabled="@(!PuedeAgregar(producto))">Agregar al carrito</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
-        </div>
+        }
     </div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
+    private List<Producto> productos = new();
+    private string busqueda = "";
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
     }
+
+    private async Task CargarProductos()
+    {
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync();
+        cargando = false;
+    }
+
+    private async Task BuscarProductos()
+    {
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync(busqueda);
+        cargando = false;
+    }
+
+    private bool PuedeAgregar(Producto producto) => producto.Stock > 0;
 }

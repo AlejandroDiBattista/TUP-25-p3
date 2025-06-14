@@ -39,7 +39,14 @@ app.MapGet("/productos", async (TiendaDbContext db, string? q) =>
 {
     var productos = db.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(q))
-        productos = productos.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+    {
+        var consulta = q.Trim().ToLower().Replace(" ", "");
+        productos = productos.Where(p =>
+            p.Nombre.ToLower().Replace(" ", "").Contains(consulta) ||
+            p.Descripcion.ToLower().Replace(" ", "").Contains(consulta)
+        );
+    }
+
     return await productos.ToListAsync();
 });
 app.MapPost("/carritos", async (TiendaDbContext db) =>
