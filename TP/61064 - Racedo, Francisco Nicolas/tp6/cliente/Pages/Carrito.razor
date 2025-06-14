@@ -135,6 +135,11 @@ else
     {
         Navigation.NavigateTo("/catalogo");
     }
+
+    void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/catalogo");
+    }
 }
 
 <style>
@@ -146,6 +151,39 @@ else
 }
 .btn-celeste-continuar:hover, .btn-celeste-continuar:focus {
     background-color: #0887a6;
+    color: #fff;
+}
+.btn-modificar, .btn-vaciar, .btn-confirmar {
+    border-radius: 2rem;
+    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-modificar {
+    background-color: #fd7e14;
+    color: #fff;
+    border: none;
+}
+.btn-modificar:hover, .btn-modificar:focus {
+    background-color: #c76a0b;
+    color: #fff;
+}
+.btn-vaciar {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+}
+.btn-vaciar:hover, .btn-vaciar:focus {
+    background-color: #a71d2a;
+    color: #fff;
+}
+.btn-confirmar {
+    background-color: #198754;
+    color: #fff;
+    border: none;
+}
+.btn-confirmar:hover, .btn-confirmar:focus {
+    background-color: #145c32;
     color: #fff;
 }
 </style>
