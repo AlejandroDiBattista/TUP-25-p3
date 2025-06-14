@@ -85,3 +85,9 @@ private async Task Aumentar(ItemCarrito item)
     await CargarCarrito();
 }
 
+
+private async Task Disminuir(ItemCarrito item)
+{
+    await CarritoService.DisminuirItemAsync(carritoId, item.ProductoId);
+    await CargarCarrito();
+}
