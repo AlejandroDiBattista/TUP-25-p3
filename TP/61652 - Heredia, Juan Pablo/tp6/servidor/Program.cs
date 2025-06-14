@@ -82,6 +82,31 @@ app.MapDelete("/carritos/{carritoId:int}", async ([FromServices] TiendaDb db, in
     return Results.NoContent();
 });
 
+app.MapPut("/carritos/{carritoId:int}/confirmar", async ([FromServices] TiendaDb db, int carritoId, [FromBody] ConfirmarCompra confirmacion) =>
+{
+    // Validación de datos obligatorios (aunque también se realiza en el cliente)
+    if (string.IsNullOrWhiteSpace(confirmacion.NombreCliente) ||
+        string.IsNullOrWhiteSpace(confirmacion.ApellidoCliente) ||
+        string.IsNullOrWhiteSpace(confirmacion.EmailCliente))
+    {
+        return Results.BadRequest("Debe completar nombre, apellido y email.");
+    }
+    
+    var compra = await db.Compras.FindAsync(carritoId);
+    if (compra == null)
+    {
+        return Results.NotFound("Carrito no encontrado.");
+    }
+    
+    compra.NombreCliente = confirmacion.NombreCliente;
+    compra.ApellidoCliente = confirmacion.ApellidoCliente;
+    compra.EmailCliente = confirmacion.EmailCliente;
+    compra.Fecha = DateTime.Now;
+    compra.Total = await db.ItemsCompra.Where(i => i.CompraId == carritoId).SumAsync(i => i.Cantidad * i.PrecioUnitario);
+    await db.SaveChangesAsync();
+    
+    return Results.Ok();
+});
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment())
 {
