@@ -10,6 +10,8 @@ public class CarritoService
 
     public event Action? OnChange;
 
+    public int TotalItems { get; private set; } = 0;
+
     public CarritoService(HttpClient http)
     {
         this.http = http;
@@ -24,32 +26,32 @@ public class CarritoService
         }
     }
 
-        public async Task AgregarProducto(Producto producto)
+    public async Task AgregarProducto(Producto producto)
     {
         if (producto.Stock <= 0)
-    {
-        Console.WriteLine("No se puede agregar producto sin stock.");
-        return;
-    }
+        {
+            Console.WriteLine("No se puede agregar producto sin stock.");
+            return;
+        }
 
         await AsegurarCarritoInicializado();
         await http.PutAsync($"carritos/{carritoId}/{producto.Id}", null);
-        OnChange?.Invoke();
+        await ActualizarCantidad();
     }
-public async Task IncrementarCantidad(int productoId)
-{
-    await AsegurarCarritoInicializado();
-    await http.PutAsync($"carritos/{carritoId}/{productoId}", null);
-    OnChange?.Invoke();
-}
 
+    public async Task IncrementarCantidad(int productoId)
+    {
+        await AsegurarCarritoInicializado();
+        await http.PutAsync($"carritos/{carritoId}/{productoId}", null);
+        await ActualizarCantidad();
+    }
 
     public async Task QuitarProducto(Producto producto)
     {
         if (carritoId == Guid.Empty) return;
 
         await http.DeleteAsync($"carritos/{carritoId}/{producto.Id}");
-        OnChange?.Invoke();
+        await ActualizarCantidad();
     }
 
     public async Task<List<ItemCarritoDto>> ObtenerCarrito()
@@ -60,22 +62,13 @@ public async Task IncrementarCantidad(int productoId)
         return await http.GetFromJsonAsync<List<ItemCarritoDto>>($"carritos/{carritoId}") ?? new();
     }
 
-    public async Task ConfirmarCompra()
-    {
-        if (carritoId == Guid.Empty) return;
-
-        await http.PutAsync($"carritos/{carritoId}/confirmar", null);
-        carritoId = Guid.Empty;
-        OnChange?.Invoke();
-    }
-
     public async Task ConfirmarCompra(DatosClienteDto datos)
     {
         if (carritoId == Guid.Empty) return;
 
         await http.PutAsJsonAsync($"carritos/{carritoId}/confirmar", datos);
         carritoId = Guid.Empty;
-        OnChange?.Invoke();
+        await ActualizarCantidad();
     }
 
     public async Task VaciarCarrito()
@@ -83,6 +76,20 @@ public async Task IncrementarCantidad(int productoId)
         if (carritoId == Guid.Empty) return;
 
         await http.DeleteAsync($"carritos/{carritoId}");
+        await ActualizarCantidad();
+    }
+
+    public async Task ActualizarCantidad()
+    {
+        if (carritoId == Guid.Empty)
+        {
+            TotalItems = 0;
+        }
+        else
+        {
+            var carrito = await ObtenerCarrito();
+            TotalItems = carrito.Sum(i => i.Cantidad);
+        }
         OnChange?.Invoke();
     }
 }

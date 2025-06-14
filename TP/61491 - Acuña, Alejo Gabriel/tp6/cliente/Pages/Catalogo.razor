@@ -4,21 +4,27 @@
 @inject ApiService apiService
 @inject CarritoService carrito
 
-    <div class="container mt-4">
-<div class="container text-center mt-4 mb-5">
-    <div class="d-flex flex-column align-items-center">
-        <img src="imagenes/logo.png" alt="Logo RetroFutbolStore" style="max-width: 120px;" class="mb-3" />
-        <h1 class="text-uppercase fw-bold" style="font-size: 2.5rem;">RetroFutbolStore</h1>
-        <p class="fs-5 text-muted">
-            Reviví la historia del fútbol con camisetas icónicas de todos los tiempos.
-        </p>
-    </div>
+<div class="container mt-4">
+    <div class="text-center py-4 mb-5" style="background-color: black; color: white;">
+    <img src="imagenes/logotienda.png" alt="Logo RetroFutbolStore" style="max-width: 120px;" class="mb-3" />
+    <h1 class="text-uppercase fw-bold" style="font-size: 2.5rem;">RetroFutbolStore</h1>
+    <p class="fs-5 text-light mb-0">
+        Reviví la historia del fútbol con camisetas icónicas de todos los tiempos.
+    </p>
 </div>
+
+
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="text-center flex-grow-1">Catálogo de camisetas retro</h2>
-        <a href="/Carrito">
-            <img src="imagenes/carrito.png" alt="Carrito" style="width: 70px;" class="ms-3" />
+        <a href="/Carrito" class="position-relative d-inline-block me-2">
+            <img src="imagenes/carrito.png" alt="Carrito" style="width: 70px;" />
+            @if (cantidadItems > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @cantidadItems
+                </span>
+            }
         </a>
     </div>
 
@@ -37,10 +43,9 @@
         @foreach (var producto in productosFiltrados)
         {
             <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
-                <div class="card h-100 text-center">
+                <div class="card h-100 text-center card-hover">
                     <img src="@producto.ImagenUrl" class="card-img-top img-fluid" style="max-height: 200px; object-fit: contain;" />
-                    <div class="card-body d-flex flex-column card-hover">
-
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title">@producto.Nombre</h5>
                         <p class="card-text">@producto.Descripcion</p>
                         <p><strong>Precio:</strong> $@producto.Precio</p>
@@ -56,19 +61,37 @@
     </div>
 </div>
 
+<style>
+    .card-hover:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
 @code {
     private List<Producto> productos = new();
     private string busqueda = "";
     private string mensaje = "";
+    private int cantidadItems = 0;
 
     protected override async Task OnInitializedAsync()
     {
+        carrito.OnChange += ActualizarContador;
+        await carrito.ActualizarCantidad();
+        cantidadItems = carrito.TotalItems;
         await CargarProductos();
+    }
+
+    void ActualizarContador()
+    {
+        cantidadItems = carrito.TotalItems;
+        InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await CargarProductos(); 
+        await CargarProductos();
     }
 
     private async Task CargarProductos()
