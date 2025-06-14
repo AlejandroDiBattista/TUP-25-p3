@@ -1,0 +1,22 @@
+using Servidor.Models;
+
+namespace Servidor.Data;
+
+public static class DbInitializer
+{
+    public static void Inicializar(TiendaDbContext context)
+    {
+        if (context.Productos.Any()) return;
+
+        var productos = new List<Producto>
+        {
+            new() { Nombre = "Celular A1", Descripcion = "Pantalla 6.5'', 128GB", Precio = 120000, Stock = 10, ImagenUrl = "/img/celular1.jpg" },
+            new() { Nombre = "Celular B2", Descripcion = "Pantalla 6.1'', 64GB", Precio = 98000, Stock = 15, ImagenUrl = "/img/celular2.jpg" },
+            new() { Nombre = "Auriculares", Descripcion = "Bluetooth, cancelación de ruido", Precio = 25000, Stock = 20, ImagenUrl = "/img/auriculares.jpg" },
+            // agrega al menos 7 más...
+        };
+
+        context.Productos.AddRange(productos);
+        context.SaveChanges();
+    }
+}
