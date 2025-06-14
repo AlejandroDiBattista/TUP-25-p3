@@ -229,6 +229,12 @@ nav.bar li.nav-item a{
     box-shadow: 0 2px 8px rgba(224,99,141,0.10);
     transform: scale(1.04);
 }
+.validation-message, .input-validation-error, .validation-errors, .field-validation-error {
+    color: #d32f2f !important;
+    font-size: 0.97em;
+    margin-top: 0.2em;
+}
+
 footer {
     background: #fff0f6;
     color: #c02d76;

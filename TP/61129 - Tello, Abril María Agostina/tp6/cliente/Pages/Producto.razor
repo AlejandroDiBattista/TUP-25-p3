@@ -36,7 +36,7 @@
                     </li>
                 </ul>
                 
-                <form class="d-flex" role="search">
+                <form class="d-flex" role="search" @onsubmit="BuscarProducto">
                     <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
                     <button class="btn btn-outline-success" type="submit">Buscar</button>
                 </form>
@@ -92,11 +92,18 @@
 @code {
     private List<cliente.Modelos.Producto> productos;
     private bool mostrarMensaje = false;
+    private string textoBusqueda = "";
+
 
     protected override async Task OnParametersSetAsync()
     {
         productos = await ApiService.GetProductosAsync();
     }
+
+    private IEnumerable<cliente.Modelos.Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? productos
+            : productos.Where(p => p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
 
     private async Task AgregarAlCarrito(cliente.Modelos.Producto producto)
     {
@@ -113,4 +120,10 @@
         mostrarMensaje = false;
         StateHasChanged();
     }
+
+    private Task BuscarProducto()
+    {
+        return Task.CompletedTask;
+    }
+}
 }    

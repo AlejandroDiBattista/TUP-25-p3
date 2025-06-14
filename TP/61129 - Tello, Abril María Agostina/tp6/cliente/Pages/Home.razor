@@ -4,6 +4,7 @@
 @inject CarritoService CarritoService
 @inject ApiService ApiService
 
+
 <PageTitle>Inicio</PageTitle>
 
 <div class="fondo-home">
@@ -36,7 +37,7 @@
             </li>
           </ul>
 
-          <form class="d-flex" role="search">
+          <form class="d-flex" role="search" @onsubmit="BuscarProducto">
             <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
             <button class="btn btn-outline-success" type="submit">Buscar</button>
           </form>
@@ -69,3 +70,15 @@
     </footer>
 </div>
 
+@code {
+    private string textoBusqueda = "";
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    private void BuscarProducto()
+    {
+        if (!string.IsNullOrWhiteSpace(textoBusqueda))
+            NavigationManager.NavigateTo($"/productos?busqueda={textoBusqueda}");
+        else
+            NavigationManager.NavigateTo("/productos");
+    }
+}
