@@ -74,6 +74,11 @@ namespace cliente.Services {
         public async Task ConfirmarCompraAsync(Guid carritoId, ConfirmacionDto datos) {
             await _httpClient.PutAsJsonAsync($"/api/carritos/{carritoId}/confirmar", datos);
         }
+
+        // Setea la cantidad exacta de un producto en el carrito
+        public async Task ActualizarCantidadProductoAsync(Guid carritoId, int productoId, int cantidad) {
+            await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}?cantidad={cantidad}&set=true", null);
+        }
     }
 
     public class DatosRespuesta {

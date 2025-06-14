@@ -1,5 +1,6 @@
 @page "/carrito"
 @using cliente.Services
+@using System.Globalization
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -20,6 +21,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th style="width:140px;">Imagen</th>
                 <th>Producto</th>
                 <th>Precio</th>
                 <th>Cantidad</th>
@@ -31,40 +33,36 @@ else
             @foreach (var item in carrito)
             {
                 <tr>
-                    <td>@item.Nombre</td>
-                    <td>@item.Precio.ToString("C")</td>
-                    <td>
-                        <input type="number" min="1" value="@item.Cantidad" @onchange="e => CambiarCantidad(item, e)" style="width:60px" />
+                    <td class="align-middle text-center">
+                        <img src="@(string.IsNullOrWhiteSpace(item.ImagenUrl) ? "/images/placeholder.png" : item.ImagenUrl)" alt="@item.Nombre" style="width:120px; height:120px; object-fit:contain; background:#f8f9fa; border-radius:12px; box-shadow:0 2px 8px #0001;" />
                     </td>
-                    <td>@(item.Precio * item.Cantidad).ToString("C")</td>
-                    <td>
+                    <td class="align-middle">@item.Nombre</td>
+                    <td class="align-middle">@item.Precio.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</td>
+                    <td class="align-middle">
+                        <input type="number" min="1" value="@item.Cantidad" @onchange="e => CambiarCantidad(item, e)" style="width:70px; font-size:1.2rem;" />
+                    </td>
+                    <td class="align-middle">@string.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", item.Precio * item.Cantidad)</td>
+                    <td class="align-middle">
                         <button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item)">Eliminar</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-    <div class="text-end">
-        <h5>Total: @TotalCarrito.ToString("C")</h5>
-        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
-    </div>
-    <div class="mt-3">
-        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+    <div class="row justify-content-end">
+        <div class="col-md-4">
+            <div class="alert alert-success text-center p-4 mb-3" style="font-size:2rem; font-weight:bold;">
+                TOTAL: <span class="ms-2">@TotalCarrito.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</span>
+            </div>
+            <button class="btn btn-success w-100 mb-2" @onclick="ConfirmarCompra">Confirmar compra</button>
+            <button class="btn btn-primary w-100" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+        </div>
     </div>
 }
 
 @if (!string.IsNullOrEmpty(error))
 {
     <div class="alert alert-danger">@error</div>
-}
-@if (true) // Bloque de depuración SIEMPRE visible
-{
-    <div style="background:#eee; color:#333; font-size:12px; padding:8px; margin-top:20px; border:1px solid #ccc;">
-        <b>DEBUG:</b><br />
-        carritoId: @carritoId<br />
-        carrito: @(carrito == null ? "null" : $"{carrito.Count} items")<br />
-        error: @error
-    </div>
 }
 
 @code {
@@ -101,11 +99,22 @@ else
     {
         try {
             carrito = await ApiService.ObtenerCarritoAsync(carritoId);
-            StateHasChanged();
             error = null;
+        } catch (HttpRequestException ex) {
+            // Si el carrito no existe (404), borra el carritoId y crea uno nuevo automáticamente
+            if (ex.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = await ApiService.CrearCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+                carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+                error = null;
+            } else {
+                error = "Error al cargar el carrito: " + ex.Message;
+            }
         } catch (Exception ex) {
             error = "Error al cargar el carrito: " + ex.Message;
         }
+        StateHasChanged();
     }
 
     private decimal TotalCarrito => carrito?.Sum(i => i.Precio * i.Cantidad) ?? 0;
@@ -115,7 +124,8 @@ else
         if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad) && nuevaCantidad > 0)
         {
             try {
-                await ApiService.AgregarProductoAsync(carritoId, item.ProductoId, nuevaCantidad);
+                // Cambia la cantidad al valor seleccionado (no suma, sino setea)
+                await ApiService.ActualizarCantidadProductoAsync(carritoId, item.ProductoId, nuevaCantidad);
                 await CargarCarrito();
                 error = null;
             } catch (Exception ex) {

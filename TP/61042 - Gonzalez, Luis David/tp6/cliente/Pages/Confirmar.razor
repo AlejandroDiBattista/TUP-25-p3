@@ -3,6 +3,7 @@
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@using System.Globalization
 
 <h3>Confirmar compra</h3>
 
@@ -17,8 +18,10 @@ else if (!carrito.Any())
 }
 else if (compraExitosa)
 {
-    <div class="alert alert-success">¡Compra realizada con éxito!</div>
-    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+    <div class="alert alert-primary text-center p-5 mb-4" style="font-size:2.5rem; font-weight:bold; color:#0d47a1; background-color:#e3f2fd; border:3px solid #1976d2;">
+        ¡Compra realizada con éxito!
+    </div>
+    <button class="btn btn-primary btn-lg" @onclick="VolverAlCatalogo">Volver al catálogo</button>
 }
 else
 {
@@ -36,15 +39,15 @@ else
             {
                 <tr>
                     <td>@item.Nombre</td>
-                    <td>@item.Precio.ToString("C")</td>
+                    <td>@item.Precio.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</td>
                     <td>@item.Cantidad</td>
-                    <td>@(item.Precio * item.Cantidad).ToString("C")</td>
+                    <td>@string.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", item.Precio * item.Cantidad)</td>
                 </tr>
             }
         </tbody>
     </table>
     <div class="text-end mb-3">
-        <h5>Total: @TotalCarrito.ToString("C")</h5>
+        <h2 class="display-4 fw-bold text-success">TOTAL: <span class="ms-2">@TotalCarrito.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</span></h2>
     </div>
     <EditForm Model="datos" OnValidSubmit="ConfirmarCompra">    
         <DataAnnotationsValidator />
@@ -95,7 +98,23 @@ else
 
     private async Task CargarCarrito()
     {
-        carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+        try {
+            carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+            error = null;
+        } catch (HttpRequestException ex) {
+            if (ex.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = await ApiService.CrearCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+                carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+                error = null;
+            } else {
+                error = "Error al cargar el carrito: " + ex.Message;
+            }
+        } catch (Exception ex) {
+            error = "Error al cargar el carrito: " + ex.Message;
+        }
+        StateHasChanged();
     }
 
     private decimal TotalCarrito => carrito?.Sum(i => i.Precio * i.Cantidad) ?? 0;

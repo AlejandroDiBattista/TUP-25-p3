@@ -43,17 +43,6 @@
     <div class="alert alert-danger">@error</div>
 }
 
-@if (true)
-{
-    <div style="background:#eee; color:#333; font-size:12px; padding:8px; margin-top:20px; border:2px solid #ccc;">
-        <b>DEBUG:</b><br />
-        carritoId: @carritoId<br />
-        productos: @(productos == null ? "null" : $"{productos.Count} items")<br />
-        cantidadCarrito: @cantidadCarrito<br />
-        error: @error
-    </div>
-}
-
 @code {
     string busqueda = "";
     List<Producto> productos;
