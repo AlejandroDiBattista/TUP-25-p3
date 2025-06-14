@@ -1,40 +1,279 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    height: 100%;
+    
+}
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /*background-image: url('../imagenes/lay-flat-del-hermoso-concepto-del-dia-de-san-valentin.jpg');
+    background-size: cover;         
+    background-repeat: no-repeat;*/
+    width: 100%; 
 }
 
-h1:focus {
-    outline: none;
+.fondo-home {
+    background-image: url('../imagenes/lay-flat-del-hermoso-concepto-del-dia-de-san-valentin.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    width: 100%;
 }
 
-a, .btn-link {
-    color: #0071c1;
+.fondo-productos {
+    background-color: rgb(242, 216, 224);
+    min-height: 100vh;
+    width: 100%;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+
+
+nav.navbar{
+    width: 100%;
+    height: 5em;
+    background-color:rgba(249, 249, 249, 0.553) !important;
+    font-family: "Cabin", sans-serif;
+
+}
+nav.navbar a{
+    margin-left:1.5em ;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+nav.bar li.nav-item a{
+    margin-top: 0.5em;
+}
+.btn-outline-light, .btn-outline-success{
+    border: rgb(224, 99, 141) 1.7px solid !important;
+    color: rgb(224, 99, 141) !important;
 }
 
-.content {
-    padding-top: 1.1rem;
+.btn-outline-light:hover, .btn-outline-success:hover{
+    background-color: rgb(233, 140, 171) !important;
+    color: white !important;
+    border: 1.7px solid white !important;
 }
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+.contenedor-inicio{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 5em 5vw;
+    gap: 6em;
+    width: 100%;
 }
 
-.invalid {
-    outline: 1px solid red;
+.contenido-inicio{
+    max-width: 600px;
+}
+.contenedor-inicio h1{
+    font-size: 5em;
+    margin: 0.2em 0 0.5em 0;
+    color: white;
+    text-align: left;
+    font-family: 'Tangerine', serif;
+    text-shadow: 4px 4px 4px #908f8f;
 }
 
-.validation-message {
-    color: red;
+.descripcion {
+    font-size: 1.2em;
+    margin-bottom: 2em;
+    color: rgb(48, 48, 48);
 }
+.contenedor-imagen {
+    max-width: 600px;
+}
+
+.contenedor-imagen img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 12px 48px 0 rgba(0,0,0,0.08);
+    background: white;
+    
+}
+
+.btn-comprar, .btn.btn-outline-light {
+    padding: 1em 2em !important;
+    font-size: 1.3em !important;
+    font-weight: bold !important;
+}
+/*Productos*/
+.btn-agregar-carrito {
+    width: 100%;
+    background: transparent !important;
+    color: #e0638d !important;
+    border: 2px solid #e0638d !important;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-radius: 8px;
+    padding: 0.7em 0;
+    margin-top: 0.5em;
+}
+
+.btn-agregar-carrito:hover {
+    background-color: #e0638d !important;
+    color: #fff !important;
+    border-color: #e0638d !important;
+    box-shadow: 0 2px 8px rgba(224,99,141,0.10);
+    transform: scale(1.03);
+}
+
+/*Carrito*/
+
+.btn.btn-danger {
+    background: transparent !important;
+    color: #a81d3a !important;
+    border: 2px solid #a81d3a !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn.btn-danger:hover {
+    background-color: #a81d3a !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(200,0,60,0.10);
+    transform: scale(1.04);
+}
+
+.btn.btn-secondary {
+    background: transparent !important;
+    color: #e0638d !important;
+    border: 2px solid #e0638d !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn.btn-secondary:hover {
+    background-color: #e0638d !important;
+    color: #fff !important;
+    border-color: #e0638d !important;
+    box-shadow: 0 2px 8px rgba(224,99,141,0.10);
+    transform: scale(1.04);
+}
+
+
+.btn.btn-success {
+    background: transparent !important;
+    color: #5cb85c !important;
+    border: 2px solid #5cb85c !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn.btn-success:hover {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(60,200,60,0.10);
+    transform: scale(1.04);
+}
+
+
+.mensaje-flotante {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+    padding: 2em 3em;
+    border-radius: 10px;
+    font-size: 1.3em;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    text-align: center;
+}
+/*Confirmación de compra*/
+.titulo-confirmacion {
+    font-family: 'Tangerine', cursive;
+    font-size: 3em;
+    color: #c02d76;
+    text-shadow: 2px 2px 6px #e2b6c6;
+    text-align: center;
+}
+.card-formulario {
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(192,45,118,0.08);
+    background: #fff0f6;
+}
+.resumen-compra-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(192,45,118,0.08);
+    max-width: 400px;
+    margin: 0 auto 1.5em auto;
+}
+
+.resumen-compra-total {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(192,45,118,0.10);
+    max-width: 480px;
+    width: 100%;
+    margin: 2em auto;
+}
+
+.btn-volver-catalogo {
+    background: transparent !important;
+    color: #e0638d !important;
+    border: 2px solid #e0638d !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-volver-catalogo:hover {
+    background-color: #e0638d !important;
+    color: #fff !important;
+    border-color: #e0638d !important;
+    box-shadow: 0 2px 8px rgba(224,99,141,0.10);
+    transform: scale(1.04);
+}
+.validation-message, .input-validation-error, .validation-errors, .field-validation-error {
+    color: #d32f2f !important;
+    font-size: 0.97em;
+    margin-top: 0.2em;
+}
+
+footer {
+    background: #fff0f6;
+    color: #c02d76;
+    text-align: center;
+    padding: 1em 0 1em 0;
+    font-family: "Cabin", sans-serif;
+    font-size: 1.1em;
+    box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
+    
+}
+
+.footer-carrito-fijo {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: #fff0f6;
+    color: #c02d76;
+    text-align: center;
+    padding: 1.5em 0 1em 0;
+    font-family: "Cabin", sans-serif;
+    font-size: 1.1em;
+    box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
+    z-index: 100;
+}
+.mb-footer {
+    margin-bottom: 200px; 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 #blazor-error-ui {
     color-scheme: light only;
