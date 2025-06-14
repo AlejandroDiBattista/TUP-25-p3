@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using TiendaOnline.Data; 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -11,6 +14,8 @@ builder.Services.AddCors(options => {
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
 
 var app = builder.Build();
 
@@ -27,5 +32,11 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();
