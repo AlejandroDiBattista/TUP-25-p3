@@ -1,0 +1,104 @@
+@page "/carrito"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Carrito de Compras</h3>
+
+@if (carrito == null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (carrito.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Precio.ToString("C")</td>
+                    <td>
+                        <input type="number" min="1" value="@item.Cantidad" @onchange="e => CambiarCantidad(item, e)" style="width:60px" />
+                    </td>
+                    <td>@(item.Precio * item.Cantidad).ToString("C")</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="text-end">
+        <h5>Total: @TotalCarrito.ToString("C")</h5>
+        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+    </div>
+}
+
+@code {
+    private List<CarritoItemDto> carrito;
+    private Guid carritoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarritoId();
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarritoId()
+    {
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!Guid.TryParse(idStr, out carritoId))
+        {
+            carritoId = await ApiService.CrearCarritoAsync();
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+        }
+    }
+
+    private async Task CargarCarrito()
+    {
+        carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+        StateHasChanged();
+    }
+
+    private decimal TotalCarrito => carrito?.Sum(i => i.Precio * i.Cantidad) ?? 0;
+
+    private async Task CambiarCantidad(CarritoItemDto item, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad) && nuevaCantidad > 0)
+        {
+            await ApiService.AgregarProductoAsync(carritoId, item.ProductoId, nuevaCantidad);
+            await CargarCarrito();
+        }
+    }
+
+    private async Task EliminarItem(CarritoItemDto item)
+    {
+        await ApiService.QuitarProductoAsync(carritoId, item.ProductoId);
+        await CargarCarrito();
+    }
+
+    private void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void ConfirmarCompra()
+    {
+        Navigation.NavigateTo("/confirmar");
+    }
+}
