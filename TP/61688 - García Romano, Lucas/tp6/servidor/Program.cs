@@ -217,10 +217,11 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
             if (cantidadNueva == 0)
             {
                 carrito.Items.Remove(itemExistente);
-                return Results.Ok(new { Mensaje = "Producto eliminado del carrito" });
+                return Results.Ok(new { Mensaje = "Producto eliminado del carrito", Cantidad = 0 });
             }
             itemExistente.Cantidad = cantidadNueva;
             itemExistente.PrecioUnitario = producto.Precio;
+            return Results.Ok(new { Mensaje = "Cantidad actualizada", Cantidad = cantidadNueva });
         }
         else if (cantidadNueva > 0)
         {
@@ -231,8 +232,9 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
                 Cantidad = cantidadNueva,
                 PrecioUnitario = producto.Precio
             });
+            return Results.Ok(new { Mensaje = "Producto agregado al carrito", Cantidad = cantidadNueva });
         }
-        return Results.Ok(new { Mensaje = "Producto agregado/actualizado al carrito" });
+        return Results.Ok(new { Mensaje = "Sin cambios", Cantidad = cantidadNueva });
     }
     catch (Exception ex)
     {

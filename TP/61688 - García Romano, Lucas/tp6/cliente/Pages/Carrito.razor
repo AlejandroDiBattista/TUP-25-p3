@@ -34,9 +34,10 @@ else
                     <td>@item.Nombre</td>
                     <td>@item.PrecioUnitario.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))</td>
                     <td>
-                        <button @onclick="() => CambiarCantidad(item, -1)">-</button>
+                        <button @onclick="() => CambiarCantidadLocal(item, -1)" disabled="@(item.Cantidad <= 0)">-</button>
                         @item.Cantidad
-                        <button @onclick="() => CambiarCantidad(item, 1)">+</button>
+                        <button @onclick="() => CambiarCantidadLocal(item, 1)" 
+                                disabled="@(item.Cantidad >= item.Stock)">+</button>
                     </td>
                     <td>@item.Stock</td>
                     <td>@((item.Cantidad * item.PrecioUnitario).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR")))</td>
@@ -100,13 +101,43 @@ else
                 await CarritoService.ModificarCantidadAsync(item.ProductoId, nuevaCantidad);//modifica la cantidad de items en el carrito
             }
             mensaje = string.Empty;//limpia el mensaje de error
-            
+            await CargarItems(); // Asegura recarga de items desde backend
+            await InvokeAsync(StateHasChanged); // Refresca UI correctamente
         }
         catch (Exception ex) //maneja errores al modificar la cantidad
         {
-            mensaje = "Error al modificar cantidad: " + ex.Message; //muestra un mensaje de error si ocurre un problema al modificar la cantidad
+            mensaje = ex.Message; //muestra el mensaje de error del backend (por ejemplo, 'Stock insuficiente')
         }
         
+    }
+
+    private async Task CambiarCantidadLocal(ItemCarritoDto item, int delta)
+    {
+        // Actualiza la cantidad localmente para feedback inmediato
+        var nuevaCantidad = item.Cantidad + delta;
+        if (nuevaCantidad < 0 || nuevaCantidad > item.Stock) return;
+        item.Cantidad = nuevaCantidad;
+        StateHasChanged(); // Refresca la UI inmediatamente
+        try
+        {
+            if (nuevaCantidad == 0)
+            {
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, 0);
+            }
+            else
+            {
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, nuevaCantidad);
+            }
+            mensaje = string.Empty;
+            await CargarItems(); // Sincroniza con backend
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+            await CargarItems(); // Revierte si hay error
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task VaciarCarrito() //vacia el carrito

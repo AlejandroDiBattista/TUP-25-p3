@@ -5,7 +5,7 @@ namespace servidor.Models;
 //se utiliza para que ? no sea nulo
 public class ItemCompra
 {
-    public int Id { get; set; }
+    public int Id { get; set; } //Id del item
 
     public int ProductoId { get; set; }
     //Para que el producto no sea nulo si no tiene un id

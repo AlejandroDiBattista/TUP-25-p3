@@ -4,6 +4,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text;
+using System.ComponentModel.DataAnnotations;
 
 namespace cliente.Services;
 
@@ -92,7 +93,27 @@ public class CarritoService
 
     public async Task ModificarCantidadAsync(int productoId, int nuevaCantidad)//cambia la cantidad de un producto en el carrito
     {
-        await AgregarProductoAsync(productoId, nuevaCantidad);// llama al metodo AgregarProductoAsync con la nueva cantidad
+        var id = await ObtenerOCrearCarritoAsync(); //crea o obtiene el carrito
+        if (string.IsNullOrEmpty(id)) return; //retorna si es nulo
+
+        var datos = new { Cantidad = nuevaCantidad }; //crea un objeto blanco con la cantidad del producto
+        var contenido = new StringContent(JsonSerializer.Serialize(datos), Encoding.UTF8, "application/json");//serializa los objetos a json
+        var response = await _httpClient.PutAsync($"/carritos/{id}/{productoId}", contenido); //hace una peticion para modificar la cantidad en el carrito
+        var responseContent = await response.Content.ReadAsStringAsync(); //lee el contenido de la respuesta
+        if (!response.IsSuccessStatusCode)//si no hay respuesta exitosa manda una exepcion
+        {
+            try
+            {
+                var errorObj = JsonSerializer.Deserialize<JsonElement>(responseContent);//deserializa el contenido de la respuesta
+                var mensaje = errorObj.TryGetProperty("Mensaje", out var prop) ? prop.GetString() : response.ReasonPhrase;//obtiene el mensaje de error
+                throw new Exception(mensaje);//lanza una exepcion con el msj de error
+            }
+            catch
+            {
+                throw new Exception(response.ReasonPhrase); //si no se pudo deserializar,lanza una exepcion con el mensaje de la respuesta
+            }
+        }
+        OnCarritoActualizado?.Invoke(); //lanza el evento de carrito actualizado
     }
 }
 
@@ -104,13 +125,17 @@ public class ItemCarritoDto
     public int Cantidad { get; set; }
     public decimal PrecioUnitario { get; set; }
     public int Stock { get; set; } // Stock disponible
-    public decimal Subtotal => Cantidad * PrecioUnitario;
+    public decimal Subtotal => Cantidad * PrecioUnitario; //calcula el subtotal del item
 }
 
 // DTO para datos del cliente
 public class DatosCliente
 {
+    [Required(ErrorMessage = "El nombre es obligatorio")]
     public string Nombre { get; set; } = string.Empty;
+    [Required(ErrorMessage = "El apellido es obligatorio")]
     public string Apellido { get; set; } = string.Empty;
+    [Required(ErrorMessage = "El email es obligatorio")]
+    [EmailAddress(ErrorMessage = "El email debe ser válido y contener @")]
     public string Email { get; set; } = string.Empty;
 }
