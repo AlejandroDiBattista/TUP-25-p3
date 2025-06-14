@@ -3,7 +3,7 @@
 @using cliente.Services
 @inject ApiService ApiService
 @inject cliente.Services.CarritoService CarritoService
-
+@inject NavigationManager Navigation
 <div class="inicio">
 <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
     <div class="container-fluid">
@@ -41,11 +41,17 @@
 <div class="contenido-con-margen">
     <h2 class="text-center my-4">Catálogo de Gorras</h2>
 
-    <form class="d-flex mb-4" @onsubmit="BuscarProducto">
-        <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"
-               @bind="textoBusqueda" />
+   <div class="d-flex justify-content-end mb-4">
+    <form class="d-flex" style="max-width: 300px; width: 100%;" @onsubmit="BuscarProducto">
+        <input class="form-control me-2"
+               type="search"
+               placeholder="Buscar"
+               aria-label="Search"
+               @bind="textoBusqueda"
+               @oninput="OnInputBusqueda" />
         <button class="btn btn-outline-success" type="submit">Buscar</button>
     </form>
+</div>
 
     @if (cargando)
     {
@@ -130,6 +136,14 @@
         }
         await Task.CompletedTask;
     }
+    private void OnInputBusqueda(ChangeEventArgs e)
+{
+    textoBusqueda = e.Value?.ToString() ?? "";
+    if (string.IsNullOrWhiteSpace(textoBusqueda))
+    {
+        Navigation.NavigateTo("/catalogo", forceLoad: true);
+    }
+}
 
     public void Dispose()
     {

@@ -264,7 +264,7 @@ position: absolute;
     z-index: 1;
 }
 .descripcion {
-    background: rgba(255,255,255,0.05);
+    background: rgb(226, 171, 19);
     border-radius: 1.5rem;
     box-shadow: 0 8px 32px rgba(27, 110, 194, 0.18);
     padding: 2.5rem 2rem 2rem 2rem;
