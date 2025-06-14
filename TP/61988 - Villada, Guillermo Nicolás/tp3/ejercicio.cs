@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// ---------------------
-/// CLASE LISTA ORDENADA
+/// ESTO ES LA LISTA ORDENADA RICHAR
+/// NO SE TOCO NADA ABAJO 
+/// 
 /// ---------------------
 class ListaOrdenada<T> where T : IComparable<T> {
     private List<T> elementos;
@@ -26,13 +28,13 @@ class ListaOrdenada<T> where T : IComparable<T> {
     public void Agregar(T item) {
         if (!elementos.Contains(item)) {
             elementos.Add(item);
-            elementos.Sort(); // Mantiene ordenado
+            elementos.Sort(); 
         }
     }
 
     public void Eliminar(T item) {
         if (elementos.Remove(item)) {
-            elementos.Sort(); // Reordena tras eliminar
+            elementos.Sort(); 
         }
     }
 
@@ -76,11 +78,29 @@ class Contacto : IComparable<Contacto> {
     }
 }
 
+
+
+
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
 ///// --------------------------------------------------------///
 ///   Desde acá para abajo NO se puede modificar el código   ///
 /// --------------------------------------------------------///
 
 /// PRUEBAS AUTOMATIZADAS
+
 public static void Assert<T>(T real, T esperado, string mensaje){
     if (!Equals(esperado, real)) throw new Exception($"[ASSERT FALLÓ] {mensaje} → Esperado: {esperado}, Real: {real}");
     Console.WriteLine($"[OK] {mensaje}");
