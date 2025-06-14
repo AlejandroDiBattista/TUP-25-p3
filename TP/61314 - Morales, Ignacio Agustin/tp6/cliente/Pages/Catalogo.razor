@@ -35,12 +35,9 @@ else
                 <p>@Producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@Producto.Precio</p>
                 <p><strong>Stock:</strong> @Producto.Stock unidades</p>
-                <p>
-                </p>
-
                 <button @onclick="@(async () => await AgregarAlCarrito(Producto))" 
-                        disabled="@(!PuedeAgregar(Producto))"
-                        class="boton-agregar">
+                disabled="@(!PuedeAgregar(Producto))"
+                class="boton-agregar">
                     Agregar al carrito
                 </button>
                 <p class="mensaje-agregado" style="display:none;">Producto agregado al carrito</p>

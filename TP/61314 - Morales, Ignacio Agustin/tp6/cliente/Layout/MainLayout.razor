@@ -1,5 +1,6 @@
 ﻿@using cliente.Services
 @inherits LayoutComponentBase
+@inject NavigationManager NavManager
 @inject CarritoService micarrito
 
 <div class="main-layout">
@@ -11,19 +12,27 @@
             </a>
 
             <input @bind="busqueda" @bind:event="oninput" type="text" placeholder="Buscar productos..." class="search-box" />
-
+        <a class="btn btn-dark btn-lg mt-2" href="/catalogo">Ver Catálogo</a>
             <a href="/carrito" class="carrito-icono">
                 🛒 (@CantidadCarrito)
-                
             </a>
         </div>
     </header>
+    @if (IsHomePage)
+    {
+        <div class="main-layout @(IsHomePage ? "home-background" : "")">
+            <img src="/logoaplle.jpg" alt="Apple Store Tucumán" class="img-fluid rounded" />
+        </div>
+    }
+    
 
     <main class="contenido">
         @Body
     </main>
       
     <footer class="footer">
+        <p>💼 Emprender con tecnología es nuestro motor, y verte feliz con tu compra es nuestro objetivo.</p>
+        <p>San Miguel de Tucumán , Argentina</p>
         <p>&copy; Apple Store</p>
     </footer>
 </div>
@@ -31,6 +40,7 @@
 @code {
     private string busqueda = string.Empty;
     private int CantidadCarrito => micarrito.Items.Count; 
+    private bool IsHomePage => NavManager.Uri.EndsWith("/") || NavManager.Uri.EndsWith("/home");
 }
 
 

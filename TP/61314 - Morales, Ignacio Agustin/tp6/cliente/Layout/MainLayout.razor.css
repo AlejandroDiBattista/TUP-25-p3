@@ -1,77 +1,142 @@
-.page {
-    position: relative;
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    color: #333333;
+}
+.main-layout {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    backdrop-filter: blur(5px); 
 }
 
-main {
-    flex: 1;
+
+.header {
+    background-color: rgba(200, 200, 200, 0.9);
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
-}
-
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.header .container {
     display: flex;
+    justify-content: space-between;
     align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #000;
+    text-decoration: none;
 }
 
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
+.store-name {
+    margin-left: 10px;
+}
 
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
 
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
+.search-box {
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}
 
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
+.carrito-icono {
+    text-decoration: none;
+    color: #000;
+    font-size: 1.2rem;
+}
 
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
+.home-background {
+    background: url('/logoaplle.jpg') no-repeat center center fixed;
+    background-size: 5% auto;
+    background-position: center center;
+    min-height: 100vh; 
+}
+
+
+main.contenido {
+    flex-grow: 1;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.85);
+    margin: 1rem;
+    border-radius: 10px;
+}
+
+
+.footer {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 1rem;
+    border-top: 2px solid #444;
+}
+
+.footer a {
+    margin: 0 10px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.card-producto {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.card-producto:hover {
+    transform: translateY(-5px);
+}
+
+.card-producto img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.card-producto h3 {
+    font-size: 1.2rem;
+    margin: 10px 0 5px;
+}
+
+.card-producto p {
+    margin: 5px 0;
+    font-size: 0.95rem;
+}
+
+.boton-agregar {
+    background-color: #0071e3;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.boton-agregar:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
