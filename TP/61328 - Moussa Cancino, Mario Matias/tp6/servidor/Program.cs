@@ -1,6 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using servidor;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// 1. Agregar servicios CORS que ya tenías
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -9,23 +12,20 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
-builder.Services.AddControllers();
+// 2. Registrar el DbContext para Entity Framework
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
+// 3. Usar CORS
 app.UseCors("AllowClientApp");
 
-// Mapear rutas básicas
-app.MapGet("/", () => "Servidor API está en funcionamiento");
-
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+// Por ahora no definimos endpoints, lo haremos en el siguiente paso.
 
 app.Run();
