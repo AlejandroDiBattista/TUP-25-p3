@@ -1,0 +1,169 @@
+@page "/confirmacion"
+@using cliente.Services
+@using cliente.Dtos
+@using System.ComponentModel.DataAnnotations
+@inject CarritoService CarritoService
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Confirmación de Compra</PageTitle>
+
+<div class="container mt-4">
+    <h2>Confirmación de compra</h2>
+    <h4>Resumen del carrito</h4>
+    <ul>
+        @foreach (var item in CarritoService.Items)
+        {
+            <li>@item.Producto.Nombre x @item.Cantidad = $@(item.Producto.Precio * item.Cantidad)</li>
+        }
+    </ul>
+    <h5>Total: $@CarritoService.CalcularTotal()</h5>
+
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label>Nombre</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label>Apellido</label>
+            <InputText class="form-control" @bind-Value="cliente.Apellido" />
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="cliente.Email" />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+        <a class="btn btn-primary ms-3" href="/carrito">Carrito</a>
+         <a class="btn btn-primary ms-3" href="/">Seguir comprando</a>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info mt-3">@mensaje</div>
+    }
+    <!-- Historial de compras SIEMPRE debajo del formulario y resumen -->
+    <div class="mt-5">
+        <h4>Historial de compras</h4>
+        @if (!string.IsNullOrEmpty(errorCompras))
+        {
+            <div class="alert alert-danger">@errorCompras</div>
+        }
+        else if (compras == null)
+        {
+            <div>Cargando compras...</div>
+        }
+        else if (compras.Count == 0)
+        {
+            <div>No hay compras registradas.</div>
+        }
+        else
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Email</th>
+                        <th>Total</th>
+                        <th>Productos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var compra in compras)
+                    {
+                        <tr>
+                            <td>@compra.Fecha.ToString("g")</td>
+                            <td>@compra.NombreCliente @compra.ApellidoCliente</td>
+                            <td>@compra.EmailCliente</td>
+                            <td>$@compra.Total</td>
+                            <td>
+                                <ul>
+                                    @if (compra.Items != null)
+                                    {
+                                        @foreach (var item in compra.Items)
+                                        {
+                                            <li>@(item.Producto?.Nombre ?? "") x @item.Cantidad = $@(item.PrecioUnitario * item.Cantidad)</li>
+                                        }
+                                    }
+                                </ul>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+@if (compraExitosa)
+{
+    <div class="alert alert-success mt-4 h-100" >
+        <h4>¡Compra registrada!</h4>
+        <p><strong>Nombre:</strong> @cliente.Nombre</p>
+        <p><strong>Apellido:</strong> @cliente.Apellido</p>
+        <p><strong>Email:</strong> @cliente.Email</p>
+        <p><strong>Total:</strong> $@totalCompra</p>
+        <h5>Productos comprados:</h5>
+        <ul class="mb-0">
+            @foreach (var p in productosComprados)
+            {
+                <li>@p.Nombre x @p.Cantidad = $@(p.Precio * p.Cantidad)</li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    private ClienteDto cliente = new();
+    private string mensaje;
+    private bool compraExitosa = false;
+    private decimal totalCompra = 0;
+    private List<(string Nombre, int Cantidad, decimal Precio)> productosComprados = new();
+    private List<CompraDto> compras;
+    private string errorCompras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarHistorialComprasAsync();
+    }
+
+    private async Task CargarHistorialComprasAsync()
+    {
+        try
+        {
+            compras = await ApiService.ObtenerComprasAsync();
+            errorCompras = null;
+        }
+        catch (Exception ex)
+        {
+            errorCompras = "No se pudieron cargar las compras: " + ex.Message;
+            compras = null;
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var (exito, mensajeApi) = await ApiService.ConfirmarCompraAsync(cliente);
+        mensaje = mensajeApi;
+        if (exito)
+        {
+            compraExitosa = true;
+            totalCompra = CarritoService.CalcularTotal();
+            productosComprados = CarritoService.Items.Select(i => (i.Producto.Nombre, i.Cantidad, i.Producto.Precio)).ToList();
+            await CargarHistorialComprasAsync();
+            CarritoService.VaciarCarrito();
+            await ApiService.ResetCarritoIdAsync();
+        }
+    }
+
+    public class ClienteDto
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string Email { get; set; } = string.Empty;
+    }
+}
