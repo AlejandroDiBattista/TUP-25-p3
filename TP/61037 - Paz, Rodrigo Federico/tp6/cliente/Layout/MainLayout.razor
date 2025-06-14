@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject ICarritoService CarritoService
 
 <header class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container-fluid">
@@ -9,15 +10,23 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <span class="badge bg-danger">@cantidadItems</span>
+        
         <div class="collapse navbar-collapse" id="navbarContent">
             <div class="mx-auto my-2 my-lg-0" style="width: 50%;">
-                <input class="form-control" type="search" placeholder="Buscar productos..." aria-label="Search">
+                
             </div>
 
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a href="carrito" class="nav-link">
+                    <a href="carrito" class="nav-link position-relative">
     🛒 Carrito
+    @if (cantidadItems > 0)
+    {
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            @cantidadItems
+        </span>
+    }
 </a>
                 </li>
             </ul>
@@ -28,3 +37,25 @@
 <main class="container mt-4">
     @Body
 </main>
+
+@code {
+    private int cantidadItems;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoService.CarritoActualizado += async () =>
+        {
+            await CargarCantidadItems();
+            InvokeAsync(StateHasChanged); // Refresca el layout
+        };
+
+        await CargarCantidadItems();
+    }
+
+    private async Task CargarCantidadItems()
+    {
+        var items = await CarritoService.ObtenerItemsCarritoAsync();
+        cantidadItems = items.Sum(i => i.Cantidad);
+        StateHasChanged();
+    }
+}

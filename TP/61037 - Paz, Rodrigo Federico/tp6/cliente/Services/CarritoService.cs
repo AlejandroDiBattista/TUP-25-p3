@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using cliente.Models;
 
-
 public class CarritoService : ICarritoService
 {
     private readonly HttpClient _httpClient;
@@ -19,6 +18,12 @@ public class CarritoService : ICarritoService
     {
         public Guid CarritoId { get; set; }
     }
+
+    /// 
+    public event Action? CarritoActualizado;
+    private void NotificarCambio() => CarritoActualizado?.Invoke();
+/// 
+     
 
     private async Task<Guid> ObtenerOCrearCarritoIdAsync()
     {
@@ -60,10 +65,15 @@ public class CarritoService : ICarritoService
         var items = await response.Content.ReadFromJsonAsync<List<ItemCarritoResponse>>();
         return items ?? new List<ItemCarritoResponse>();
     }
-     
-    public async Task ActualizarCantidadAsync(int productoId, int nuevaCantidad)
+
+    public async Task AgregarAlCarritoAsync(int productoId)
 {
     var carritoId = await ObtenerOCrearCarritoIdAsync();
+
+    // Obtener el carrito actual
+    var items = await ObtenerItemsCarritoAsync();
+    var itemExistente = items.FirstOrDefault(i => i.ProductoId == productoId);
+    var nuevaCantidad = (itemExistente?.Cantidad ?? 0) + 1;
 
     var response = await _httpClient.PutAsJsonAsync(
         $"/carritos/{carritoId}/{productoId}",
@@ -71,21 +81,34 @@ public class CarritoService : ICarritoService
     );
 
     response.EnsureSuccessStatusCode();
+    NotificarCambio(); // 🔔
 }
 
-    public async Task AgregarAlCarritoAsync(int productoId)
+public async Task ActualizarCantidadAsync(int productoId, int nuevaCantidad)
+{
+    var carritoId = await ObtenerOCrearCarritoIdAsync();
+    var response = await _httpClient.PutAsJsonAsync(
+        $"/carritos/{carritoId}/{productoId}",
+        new { Cantidad = nuevaCantidad }
+    );
+    response.EnsureSuccessStatusCode();
+    NotificarCambio(); // 🔔
+}
+
+public async Task EliminarProductoAsync(int productoId)
+{
+    var carritoId = await ObtenerOCrearCarritoIdAsync();
+    var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+    response.EnsureSuccessStatusCode();
+    NotificarCambio(); // 🔔
+}
+
+    public async Task VaciarCarritoAsync()
     {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-
-        // 👇 Asegurarse de que el endpoint coincida con el definido en el backend
-        var response = await _httpClient.PutAsJsonAsync(
-            $"/carritos/{carritoId}/{productoId}",
-            new { Cantidad = 1 }
-        );
-
+        var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}");
         response.EnsureSuccessStatusCode();
-
-        Console.WriteLine($"✅ Producto {productoId} agregado al carrito {carritoId}.");
+        NotificarCambio(); // 🔔
     }
-}
+ }
 

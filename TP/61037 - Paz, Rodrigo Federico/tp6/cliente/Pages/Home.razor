@@ -6,23 +6,25 @@
 
 <PageTitle>Catálogo de Productos</PageTitle>
 
+<input class="form-control mb-4" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos...">
+
 @if (listaProductos == null)
 {
-    <div class="text-center">
+    <div class="text-center mt-5">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Cargando productos...</span>
         </div>
-        <p>Cargando productos...</p>
+        <p class="mt-2">Cargando productos...</p>
     </div>
 }
-else if (!listaProductos.Any())
+else if (!ProductosFiltrados.Any())
 {
-    <div class="alert alert-info">No se encontraron productos disponibles.</div>
+    <div class="alert alert-info">No se encontraron productos.</div>
 }
 else
 {
     <div class="row">
-        @foreach (var producto in listaProductos)
+        @foreach (var producto in ProductosFiltrados)
         {
             <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
                 <div class="card h-100 shadow-sm">
@@ -32,11 +34,10 @@ else
                         <p class="card-text flex-grow-1">@producto.Descripcion</p>
                         <p class="card-text fs-5"><strong>$@producto.Precio.ToString("N2")</strong></p>
                         <p class="card-text"><small class="text-muted">Stock: @producto.Stock</small></p>
-                        
-                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarProductoAlCarrito(producto.Id)" disabled="@(producto.Stock == 0)">
+
+                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarProductoAlCarrito(producto)" disabled="@(producto.Stock == 0)">
                             @(producto.Stock == 0 ? "Sin Stock" : "Agregar al carrito")
                         </button>
-
                     </div>
                 </div>
             </div>
@@ -46,19 +47,28 @@ else
 
 @code {
     private List<Producto>? listaProductos;
+    private string busqueda = "";
 
     protected override async Task OnInitializedAsync()
     {
-        // Para simular una carga y ver el spinner, puedes agregar un delay
-        // await Task.Delay(1000); 
-        
         listaProductos = await MiServicioDeProductos.ObtenerProductosAsync();
     }
 
-    private async Task AgregarProductoAlCarrito(int productoId)
+    private async Task AgregarProductoAlCarrito(Producto producto)
     {
-        await CarritoService.AgregarAlCarritoAsync(productoId);
-        // Aquí podrías agregar una notificación para el usuario
-        Console.WriteLine($"Botón presionado para el producto {productoId}.");
+        if (producto.Stock > 0)
+        {
+            await CarritoService.AgregarAlCarritoAsync(producto.Id);
+            producto.Stock--; // 🔔 DESCUENTO el stock localmente
+            StateHasChanged(); // 🔔 Fuerza refresco de UI
+        }
     }
+
+    private IEnumerable<Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? listaProductos ?? Enumerable.Empty<Producto>()
+            : listaProductos!.Where(p =>
+                p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase)
+            );
 }
