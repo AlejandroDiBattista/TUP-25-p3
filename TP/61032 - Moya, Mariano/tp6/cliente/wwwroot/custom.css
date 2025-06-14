@@ -1,0 +1,104 @@
+:root {
+    /* ...colores ya definidos... */
+    --color-navbar-hover: #ffebee;
+    --color-navbar-link: #fff;
+    --color-navbar-link-hover: #b71c1c;
+    --font-principal: 'Roboto', Arial, sans-serif;
+}
+
+/* Loader personalizado para Blazor */
+.loading-progress circle {
+    stroke: var(--color-principal,#b71c1c);
+    stroke-width: 8;
+    fill: none;
+    opacity: 0.7;
+    animation: dash 1.2s linear infinite;
+}
+@keyframes dash {
+    0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+
+/* Navbar links hover */
+nav a {
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+    color: var(--color-navbar-link);
+    border-radius: 6px;
+    padding: 0.2rem 0.7rem;
+}
+nav a:hover, nav a:focus {
+    background: var(--color-navbar-hover);
+    color: var(--color-navbar-link-hover);
+    text-decoration: underline;
+    box-shadow: 0 2px 8px rgba(183,28,28,0.10);
+}
+
+/* Badge animado carrito */
+.carrito-badge {
+    animation: badge-pop 0.4s cubic-bezier(.68,-0.55,.27,1.55);
+}
+@keyframes badge-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+/* Animaciones y mejoras visuales para la tienda - Paleta roja */
+
+:root {
+    --color-principal: #b71c1c;
+    --color-principal-oscuro: #7f0000;
+    --color-secundario: #ffebee;
+    --color-boton: #d32f2f;
+    --color-boton-hover: #b71c1c;
+    --color-texto: #fff;
+    --color-card: #fff;
+    --color-card-shadow: rgba(183,28,28,0.10);
+}
+
+html, body {
+    font-family: var(--font-principal);
+    font-size: 1.04rem;
+    letter-spacing: 0.01em;
+    background: #fff;
+    color: #222;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.btn-anim {
+    transition: background 0.2s, color 0.2s, box-shadow 0.25s, transform 0.25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 2px 8px var(--color-card-shadow);
+    background: var(--color-boton) !important;
+    color: var(--color-texto) !important;
+}
+.btn-anim:hover, .btn-anim:focus {
+    background: var(--color-boton-hover) !important;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 18px rgba(183,28,28,0.18);
+    color: #fff;
+}
+
+.card-anim {
+    transition: box-shadow 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
+    background: var(--color-card);
+    box-shadow: 0 2px 12px var(--color-card-shadow);
+}
+.card-anim:hover {
+    box-shadow: 0 8px 32px rgba(183,28,28,0.18);
+    transform: translateY(-4px) scale(1.02);
+    transition: box-shadow 0.25s, transform 0.25s cubic-bezier(.4,0,.2,1);
+}
+
+input:focus, button:focus {
+    outline: 2px solid var(--color-principal);
+    outline-offset: 2px;
+    transition: outline 0.2s;
+}
+button, input, select, textarea {
+    font-family: var(--font-principal);
+    transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+a, .btn-anim, .card-anim, button, input[type="submit"] {
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
