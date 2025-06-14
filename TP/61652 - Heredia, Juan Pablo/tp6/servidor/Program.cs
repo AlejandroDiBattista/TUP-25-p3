@@ -1,5 +1,12 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using servidor.models;
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<TiendaDb>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+    
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
