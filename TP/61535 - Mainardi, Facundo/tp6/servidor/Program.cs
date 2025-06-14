@@ -46,6 +46,8 @@ app.UseCors("AllowClientApp");
 
 app.MapControllers();
 
+app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 
 app.MapGet("/productos", async (Tienda db, string? q) =>
 {
@@ -53,7 +55,8 @@ app.MapGet("/productos", async (Tienda db, string? q) =>
 
     if (!string.IsNullOrWhiteSpace(q))
     {
-        query = query.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
+        string filtro = q.ToLower();
+        query = query.Where(p => p.Nombre.ToLower().Contains(filtro) || p.Descripcion.ToLower().Contains(filtro));
     }
 
     var productos = await query.ToListAsync();

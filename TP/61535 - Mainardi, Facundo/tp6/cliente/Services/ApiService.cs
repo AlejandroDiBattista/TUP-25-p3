@@ -18,16 +18,21 @@ public class ApiService {
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
     }
-   public async Task<List<Producto>> ObtenerProductosAsync()
+    public async Task<List<Producto>> BuscarProductos(string filtro)
     {
         try
         {
-            var respuesta = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
-            return respuesta ?? new List<Producto>();
+            // Si el filtro está vacío, llama al endpoint sin parámetros
+            string url = string.IsNullOrWhiteSpace(filtro)
+                ? "/productos"
+                : $"/productos?q={Uri.EscapeDataString(filtro)}";
+
+            var response = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+            return response ?? new List<Producto>();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al obtener productos: {ex.Message}");
+            Console.WriteLine($"❌ Error al obtener productos: {ex.Message}");
             return new List<Producto>();
         }
     }
