@@ -8,55 +8,74 @@
 
 <PageTitle>Confirmar compra</PageTitle>
 
-<div class="container mt-5">
-    @if (compraFinalizada)
-    {
-        <div class="alert alert-success text-center" role="alert">
-            <h3>¡Compra finalizada!</h3>
-            <p>Gracias por tu compra.</p>
-            <button class="btn btn-primary mt-3" @onclick="VolverAProductos">Volver al catálogo</button>
-        </div>
-    }
-    else
-    {
-        <h2>Resumen de tu compra</h2>
-        <ul>
-            @foreach (var item in CarritoService.Items)
-            {
-                <li>@item.Producto.Nombre x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)</li>
-            }
-        </ul>
-        <p><strong>Total de ítems:</strong> @CarritoService.Items.Sum(i => i.Cantidad)</p>
-        <p><strong>Importe total:</strong> $@CarritoService.Total</p>
-
-        <EditForm Model="@formData" OnValidSubmit="ConfirmarCompra">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="mb-3">
-                <label>Nombre</label>
-                <InputText class="form-control" @bind-Value="formData.Nombre" />
-                <ValidationMessage For="@(() => formData.Nombre)" />
+<div class="fondo-productos min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card resumen-compra-total p-4" style="max-width: 430px; width: 100%;">
+        @if (!compraFinalizada)
+        {
+            <h2 class="titulo-confirmacion mb-4">Resumen de tu compra</h2>
+            <ul class="mb-3 ps-3">
+                @foreach (var item in CarritoService.Items)
+                {
+                    <li>
+                        <span style="font-weight:600">@item.Producto.Nombre</span>
+                        x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)
+                    </li>
+                }
+            </ul>
+            <p class="mb-1"><strong>Total de ítems:</strong> @CarritoService.Items.Sum(i => i.Cantidad)</p>
+            <p class="mb-3"><strong>Importe total:</strong> $@CarritoService.Total</p>
+            <hr />
+            <EditForm Model="@formData" OnValidSubmit="ConfirmarCompra">
+                <DataAnnotationsValidator />
+                
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="formData.Nombre" />
+                    <ValidationMessage For="@(() => formData.Nombre)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellido</strong></label>
+                    <InputText class="form-control" @bind-Value="formData.Apellido" />
+                    <ValidationMessage For="@(() => formData.Apellido)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="formData.Email" />
+                    <ValidationMessage For="@(() => formData.Email)" />
+                </div>
+                <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
+                    <button class="btn btn-success" type="submit">Confirmar compra</button>
+                    <button class="btn btn-secondary" type="button" @onclick="VolverAProductos">Volver a productos</button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <div class="alert alert-success text-center" role="alert">
+                <h3 class="titulo-confirmacion">¡Compra finalizada!</h3>
+                <p>Gracias por tu compra, <strong>@formData.Nombre @formData.Apellido</strong>!</p>
+                <p><strong>Email:</strong> @formData.Email</p>
+                <h5 class="mt-4">Detalle de tu compra:</h5>
+                <ul class="list-unstyled">
+                    @foreach (var item in compraFinal)
+                    {
+                        <li>@item.Producto.Nombre x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)</li>
+                    }
+                </ul>
+                <p><strong>Total de ítems:</strong> @compraFinal.Sum(i => i.Cantidad)</p>
+                <p><strong>Importe total:</strong> $@compraFinal.Sum(i => i.Producto.Precio * i.Cantidad)</p>
+                <button class="btn btn-volver-catalogo mt-3" @onclick="VolverAProductos">Volver al catálogo</button>
             </div>
-            <div class="mb-3">
-                <label>Apellido</label>
-                <InputText class="form-control" @bind-Value="formData.Apellido" />
-                <ValidationMessage For="@(() => formData.Apellido)" />
-            </div>
-            <div class="mb-3">
-                <label>Email</label>
-                <InputText class="form-control" @bind-Value="formData.Email" />
-                <ValidationMessage For="@(() => formData.Email)" />
-            </div>
-
-            <button class="btn btn-success" type="submit">Confirmar compra</button>
-        </EditForm>
-    }
+        }
+    </div>
 </div>
+
+
 
 @code {
     private FormData formData = new();
     private bool compraFinalizada = false;
+    private List<CarritoItem> compraFinal = new();
 
     private async Task ConfirmarCompra()
     {
@@ -70,8 +89,13 @@
 
         if (exito)
         {
-            CarritoService.VaciarCarrito();
-            compraFinalizada = true;
+            compraFinal = CarritoService.Items.Select(i => new CarritoItem
+        {
+            Producto = i.Producto,
+            Cantidad = i.Cantidad
+        }).ToList();
+        await CarritoService.VaciarCarrito();
+        compraFinalizada = true;
         }
     }
 

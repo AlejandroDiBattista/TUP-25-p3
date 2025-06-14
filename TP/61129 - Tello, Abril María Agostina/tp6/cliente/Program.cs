@@ -6,6 +6,8 @@ using cliente.Services;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+// Program.cs
+builder.Services.AddScoped<CarritoService>();
 
 // Configurar el HttpClient para apuntar al servidor API
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5299") });

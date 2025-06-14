@@ -1,15 +1,24 @@
-// filepath: c:\Users\juare\Documents\UTN - TUP\Programacion 3\tup-25-p3\TP\61129 - Tello, Abril María Agostina\tp6\cliente\Services\CarritoService.cs
 using cliente.Modelos;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.JSInterop;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace cliente.Services
 {
     public class CarritoService
     {
+        private readonly IJSRuntime js;
         public List<CarritoItem> Items { get; set; } = new();
 
-        public void AgregarAlCarrito(Producto producto)
+        public CarritoService(IJSRuntime js)
+        {
+            this.js = js;
+            _ = CargarCarritoAsync();
+        }
+
+        public async Task AgregarAlCarrito(Producto producto)
         {
             var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
             if (item != null)
@@ -22,9 +31,10 @@ namespace cliente.Services
                 if (producto.Stock > 0)
                     Items.Add(new CarritoItem { Producto = producto, Cantidad = 1 });
             }
+            await GuardarCarritoAsync();
         }
 
-        public void QuitarDelCarrito(Producto producto)
+        public async Task QuitarDelCarrito(Producto producto)
         {
             var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
             if (item != null)
@@ -33,11 +43,25 @@ namespace cliente.Services
                 if (item.Cantidad <= 0)
                     Items.Remove(item);
             }
+            await GuardarCarritoAsync();
         }
 
-        public void VaciarCarrito()
+        public async Task VaciarCarrito()
         {
             Items.Clear();
+            await GuardarCarritoAsync();
+        }
+
+        private async Task GuardarCarritoAsync()
+        {
+            await js.InvokeVoidAsync("localStorage.setItem", "carrito", JsonSerializer.Serialize(Items));
+        }
+
+        private async Task CargarCarritoAsync()
+        {
+            var json = await js.InvokeAsync<string>("localStorage.getItem", "carrito");
+            if (!string.IsNullOrEmpty(json))
+                Items = JsonSerializer.Deserialize<List<CarritoItem>>(json);
         }
 
         public decimal Total => Items.Sum(i => i.Producto.Precio * i.Cantidad);

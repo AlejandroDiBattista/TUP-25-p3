@@ -99,8 +99,74 @@ nav.bar li.nav-item a{
     font-size: 1.3em !important;
     font-weight: bold !important;
 }
+/*Productos*/
+.btn-agregar-carrito {
+    width: 100%;
+    background: transparent !important;
+    color: #e0638d !important;
+    border: 2px solid #e0638d !important;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-radius: 8px;
+    padding: 0.7em 0;
+    margin-top: 0.5em;
+}
 
-/* Puedes poner esto en wwwroot/css/app.css */
+.btn-agregar-carrito:hover {
+    background-color: #e0638d !important;
+    color: #fff !important;
+    border-color: #e0638d !important;
+    box-shadow: 0 2px 8px rgba(224,99,141,0.10);
+    transform: scale(1.03);
+}
+
+/*Carrito*/
+
+.btn.btn-danger {
+    background: transparent !important;
+    color: #a81d3a !important;
+    border: 2px solid #a81d3a !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn.btn-danger:hover {
+    background-color: #a81d3a !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(200,0,60,0.10);
+    transform: scale(1.04);
+}
+
+.btn.btn-secondary {
+    background: transparent !important;
+    color: #e0638d !important;
+    border: 2px solid #e0638d !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn.btn-secondary:hover {
+    background-color: #e0638d !important;
+    color: #fff !important;
+    border-color: #e0638d !important;
+    box-shadow: 0 2px 8px rgba(224,99,141,0.10);
+    transform: scale(1.04);
+}
+
+
+.btn.btn-success {
+    background: transparent !important;
+    color: #5cb85c !important;
+    border: 2px solid #5cb85c !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn.btn-success:hover {
+    background-color: #5cb85c !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(60,200,60,0.10);
+    transform: scale(1.04);
+}
+
+
 .mensaje-flotante {
     position: fixed;
     top: 50%;
@@ -116,16 +182,62 @@ nav.bar li.nav-item a{
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     text-align: center;
 }
+/*Confirmación de compra*/
+.titulo-confirmacion {
+    font-family: 'Tangerine', cursive;
+    font-size: 3em;
+    color: #c02d76;
+    text-shadow: 2px 2px 6px #e2b6c6;
+    text-align: center;
+}
+.card-formulario {
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(192,45,118,0.08);
+    background: #fff0f6;
+}
+.resumen-compra-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(192,45,118,0.08);
+    max-width: 400px;
+    margin: 0 auto 1.5em auto;
+}
 
+.resumen-compra-total {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(192,45,118,0.10);
+    max-width: 480px;
+    width: 100%;
+    margin: 2em auto;
+}
+
+.btn-volver-catalogo {
+    background: transparent !important;
+    color: #e0638d !important;
+    border: 2px solid #e0638d !important;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-volver-catalogo:hover {
+    background-color: #e0638d !important;
+    color: #fff !important;
+    border-color: #e0638d !important;
+    box-shadow: 0 2px 8px rgba(224,99,141,0.10);
+    transform: scale(1.04);
+}
 footer {
     background: #fff0f6;
     color: #c02d76;
     text-align: center;
-    padding: 1.5em 0 1em 0;
+    padding: 1em 0 1em 0;
     font-family: "Cabin", sans-serif;
     font-size: 1.1em;
     box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
-    border-top: 2px solid #f7cbe7;
+    
 }
 
 .footer-carrito-fijo {
@@ -140,13 +252,13 @@ footer {
     font-family: "Cabin", sans-serif;
     font-size: 1.1em;
     box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
-    border-top: 2px solid #f7cbe7;
     z-index: 100;
 }
-
-.container.mt-5.pt-5 {
-    margin-bottom: 90px; /* o el alto de tu footer */
+.mb-footer {
+    margin-bottom: 200px; /* Ajustá el valor según el alto de tu footer */
 }
+
+
 
 
 

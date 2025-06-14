@@ -7,87 +7,102 @@
 
 <div class="fondo-productos">
     <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-            <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/productos">Productos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
-                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
-                    <span style="margin-right: 0.3em;">Carrito</span>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                       @CarritoService.Items.Sum(i => i.Cantidad)
-                    </span>
-                    </a>
-                </li>
-            </ul>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/productos">Productos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
+                        <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                        <span style="margin-right: 0.3em;">Carrito</span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @CarritoService.Items.Sum(i => i.Cantidad)
+                        </span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
+                    <button class="btn btn-outline-success" type="submit">Buscar</button>
+                </form>
+            </div>
+        </div> 
+    </nav>
+    <main class="flex-grow1">
+        <div class="container mt-5 pt-5 mb-footer">
+            <div class="d-flex align-items-center mb-4">
+                <img src="/imagenes/shoppingcart.webp" alt="" style="width:48px; height:48px; margin-right: 1em;">
+                <h2 class="mb-0" style="font-family: 'Tangerine', serif ; font-size: 3.5em; text-shadow:4px 4px 4px #908f8f ;">Carrito de compras</h2>
+            </div>
+            
+            @if (CarritoService.Items.Count == 0)
+            {
+                <p style="font-family:'Cabin', Arial, sans-serif; ;">El carrito está vacío.</p>
+            }
+            else
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Unidades</th>
+                            <th>Precio unitario</th>
+                            <th>Importe</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in CarritoService.Items)
+                        {
+                            <tr>
+                                <td>@item.Producto.Nombre</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.Producto)">-</button>
+                                    @item.Cantidad
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.Producto)">+</button>
+                                </td>
+                                <td>$@item.PrecioUnitario</td>
+                                <td>$@item.Importe</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item.Producto)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
-                <button class="btn btn-outline-success" type="submit">Buscar</button>
-            </form>
+                <div class="card shadow-sm p-3 mb-4 bg-light rounded w-100" style="max-width: 100%;">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <div style="font-size: 1.1em; color: #c02d76; font-weight: 600;">
+                                Total de la compra
+                            </div>
+                            <div style="font-size: 2em; font-weight: bold; color: #c02d76;">
+                                $@CarritoService.Total
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column flex-sm-row gap-2 mt-3 mt-sm-0">
+                            <button class="btn btn-danger" @onclick="Vaciar">Vaciar carrito</button>
+                            <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-    </div> 
-</nav>
-<main class="flex-grow1">
-<div class="container mt-5 pt-5">
-    <div class="img-carrito">
-        <h2>Carrito de compras</h2>
-    </div>
-    @if (CarritoService.Items.Count == 0)
-    {
-        <p>El carrito está vacío.</p>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Unidades</th>
-                    <th>Precio unitario</th>
-                    <th>Importe</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in CarritoService.Items)
-                {
-                    <tr>
-                        <td>@item.Producto.Nombre</td>
-                        <td>
-                            <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.Producto)">-</button>
-                            @item.Cantidad
-                            <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.Producto)">+</button>
-                        </td>
-                        <td>$@item.PrecioUnitario</td>
-                        <td>$@item.Importe</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item.Producto)">Eliminar</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <h4>Total: $@CarritoService.Total</h4>
-        <button class="btn btn-danger" @onclick="Vaciar">Vaciar carrito</button>
-        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
-    }
-</div>
-</main>
+    </main>
 
     <footer class="footer-carrito-fijo" >
         <div class="footer-content">
@@ -95,18 +110,19 @@
             <p>Desarrollado por Abril María Agostina Tello</p>
         </div>
     </footer>
-
 </div>
 
 @code {
-    void Agregar(cliente.Modelos.Producto producto) => CarritoService.AgregarAlCarrito(producto);
-    void Quitar(cliente.Modelos.Producto producto) => CarritoService.QuitarDelCarrito(producto);
-    void Eliminar(cliente.Modelos.Producto producto)
+    private async Task Agregar(cliente.Modelos.Producto producto) => await CarritoService.AgregarAlCarrito(producto);
+    private async Task Quitar(cliente.Modelos.Producto producto) => await CarritoService.QuitarDelCarrito(producto);
+    
+    private void Eliminar(cliente.Modelos.Producto producto)
     {
         var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
         if (item != null)
             CarritoService.Items.Remove(item);
+            _ = CarritoService.VaciarCarrito(); // O mejor, creá un método async para eliminar un solo producto y guardar.
     }
-    void Vaciar() => CarritoService.VaciarCarrito();
-    void ConfirmarCompra() => Navigation.NavigateTo("/confirmacion");
+    private async Task Vaciar() => await CarritoService.VaciarCarrito();
+    private void ConfirmarCompra() => Navigation.NavigateTo("/confirmacion");
 }
