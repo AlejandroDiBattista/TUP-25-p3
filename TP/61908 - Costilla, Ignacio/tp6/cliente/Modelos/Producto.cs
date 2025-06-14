@@ -1,4 +1,4 @@
-// Representa un producto en el cliente
+
 namespace cliente.Modelos;
 public class Producto
 {

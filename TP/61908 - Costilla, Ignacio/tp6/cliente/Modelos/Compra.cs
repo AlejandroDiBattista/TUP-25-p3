@@ -1,5 +1,6 @@
-// Representa los datos del cliente para la confirmación
+
 namespace cliente.Modelos;
+
 public class Compra
 {
     public string NombreCliente { get; set; }
