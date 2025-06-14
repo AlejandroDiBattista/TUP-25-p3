@@ -11,8 +11,8 @@ using servidor.Data;
 namespace servidor.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250614020529_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250614053256_ActualizarUrlsDeImagenes")]
+    partial class ActualizarUrlsDeImagenes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,7 +103,7 @@ namespace servidor.Migrations
                         {
                             Id = 1,
                             Descripcion = "Clásico e icónico, floral-aldehídico.",
-                            ImagenUrl = "https://ejemplo.com/chanel_no5.jpg",
+                            ImagenUrl = "https://i5.walmartimages.com/seo/Chanel-No-5-Eau-de-Parfum-Spray-Perfume-for-Women-3-4-oz-100-ml_a41d96f8-fe32-487d-9f77-ce30d05d8b72.f0424d696214b0da62c279964a8174fd.jpeg",
                             Nombre = "Chanel N°5",
                             Precio = 150.00m,
                             Stock = 25
@@ -112,7 +112,7 @@ namespace servidor.Migrations
                         {
                             Id = 2,
                             Descripcion = "Fresco y amaderado, para hombres.",
-                            ImagenUrl = "https://ejemplo.com/dior_sauvage.jpg",
+                            ImagenUrl = "https://www.myperfumeshop.qa/cdn/shop/files/dior-sauvage-edt-perfume-cologne-408783.png?v=1742526282&width=400",
                             Nombre = "Dior Sauvage",
                             Precio = 120.00m,
                             Stock = 30
@@ -121,7 +121,7 @@ namespace servidor.Migrations
                         {
                             Id = 3,
                             Descripcion = "Oscuro, opulento y especiado.",
-                            ImagenUrl = "https://ejemplo.com/tom_ford_black_orchid.jpg",
+                            ImagenUrl = "https://static.sweetcare.com/img/prd/488/v-638235637318829790/tom-ford-000011tf_03.webp",
                             Nombre = "Tom Ford Black Orchid",
                             Precio = 200.00m,
                             Stock = 15
@@ -130,7 +130,7 @@ namespace servidor.Migrations
                         {
                             Id = 4,
                             Descripcion = "Fresco y mineral, unisex.",
-                            ImagenUrl = "https://ejemplo.com/jo_malone_woodsage.jpg",
+                            ImagenUrl = "https://api-assets.wikiparfum.com/_resized/nyf437ux1psfya0ekv1imq67nlx0gq8qxbdkiw2rcrkc47cug5ly8vi1ogyk-w250-q85.webp",
                             Nombre = "Jo Malone Wood Sage & Sea Salt",
                             Precio = 90.00m,
                             Stock = 40
@@ -139,7 +139,7 @@ namespace servidor.Migrations
                         {
                             Id = 5,
                             Descripcion = "Floral blanco, empolvado.",
-                            ImagenUrl = "https://ejemplo.com/gucci_bloom.jpg",
+                            ImagenUrl = "https://mcgrocer.com/cdn/shop/files/gucci-bloom-for-her-eau-de-toilette-50ml-40505979896046.jpg?v=1741307863",
                             Nombre = "Gucci Bloom",
                             Precio = 110.00m,
                             Stock = 20
@@ -148,7 +148,7 @@ namespace servidor.Migrations
                         {
                             Id = 6,
                             Descripcion = "Amaderado especiado, para hombres.",
-                            ImagenUrl = "https://ejemplo.com/paco_rabanne_1million.jpg",
+                            ImagenUrl = "https://www.farmaciasrp.com.ar/22845-large_default/paco-rabanne-1-million-elixir-parfum-intense-50-ml.jpg",
                             Nombre = "Paco Rabanne 1 Million",
                             Precio = 95.00m,
                             Stock = 35
@@ -157,7 +157,7 @@ namespace servidor.Migrations
                         {
                             Id = 7,
                             Descripcion = "Gourmand floral, dulce.",
-                            ImagenUrl = "https://ejemplo.com/lancome_lavie.jpg",
+                            ImagenUrl = "https://www.farmacialeloir.com.ar/img/articulos/2024/08/imagen1_lancome_la_vie_est_belle_eau_de_parfum_x_75ml_imagen1.webp",
                             Nombre = "Lancôme La Vie Est Belle",
                             Precio = 105.00m,
                             Stock = 28
@@ -166,7 +166,7 @@ namespace servidor.Migrations
                         {
                             Id = 8,
                             Descripcion = "Aromático fougère, para hombres.",
-                            ImagenUrl = "https://ejemplo.com/versace_eros.jpg",
+                            ImagenUrl = "https://i5.walmartimages.com/seo/Versace-Eros-Eau-De-Toilette-Natural-Spray-Cologne-for-Men-6-7-oz_db99fcd0-1642-47d8-9fe4-901b3de6fbb8_1.cdfc3acf51b7b1159936f22e63daf3fe.jpeg",
                             Nombre = "Versace Eros",
                             Precio = 85.00m,
                             Stock = 45
@@ -175,7 +175,7 @@ namespace servidor.Migrations
                         {
                             Id = 9,
                             Descripcion = "Oriental especiado, café, vainilla.",
-                            ImagenUrl = "https://ejemplo.com/ysl_black_opium.jpg",
+                            ImagenUrl = "https://static.sweetcare.com/img/prd/488/v-638200527221023353/yves-saint-laurent-017473ys_03.webp",
                             Nombre = "YSL Black Opium",
                             Precio = 115.00m,
                             Stock = 22
@@ -184,7 +184,7 @@ namespace servidor.Migrations
                         {
                             Id = 10,
                             Descripcion = "Floral oriental, dulce.",
-                            ImagenUrl = "https://ejemplo.com/ch_good_girl.jpg",
+                            ImagenUrl = "https://d3cdlnm7te7ky2.cloudfront.net/media/catalog/product/cache/e8f012862bd8df4f2e4f3ce158c4a16c/d/-/d-good-girl-edp_1.jpg",
                             Nombre = "Carolina Herrera Good Girl",
                             Precio = 130.00m,
                             Stock = 18

@@ -1,58 +1,88 @@
 using System.Net.Http.Json;
-using cliente.Shared; // Usaremos los modelos compartidos
+using cliente.Shared;
 
 namespace cliente.Services
 {
     public class CarritoService
     {
         private readonly HttpClient _http;
+        private bool isInitializing = false;
+
         public int? CarritoId { get; private set; }
         public int CantidadItems { get; private set; }
-        
-        // Evento que se dispara cuando el carrito cambia.
-        public event Action OnChange;
+        public event Action? OnChange;
 
         public CarritoService(HttpClient http)
         {
             _http = http;
         }
 
+        // --- NUEVO MÉTODO CENTRALIZADO ---
+        public async Task<bool> AgregarProductoAlCarrito(int productoId)
+        {
+            await InicializarCarrito();
+            if (CarritoId.HasValue)
+            {
+                var response = await _http.PutAsync($"/api/carritos/{CarritoId}/agregar/{productoId}?cantidad=1", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    await ActualizarCantidadDesdeApi();
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public async Task InicializarCarrito()
         {
-            if (CarritoId == null)
+            if (CarritoId != null || isInitializing) return;
+
+            try
             {
+                isInitializing = true;
                 var response = await _http.PostAsync("/api/carritos", null);
                 if (response.IsSuccessStatusCode)
                 {
                     CarritoId = await response.Content.ReadFromJsonAsync<int>();
-                    await ActualizarCantidad();
                 }
+            }
+            finally
+            {
+                isInitializing = false;
             }
         }
 
-        public async Task ActualizarCantidad()
+        public async Task ActualizarCantidadDesdeApi()
         {
             if (!CarritoId.HasValue) return;
 
             try
             {
-                var compra = await _http.GetFromJsonAsync<Compra>($"/api/carritos/{CarritoId.Value}");
-                CantidadItems = compra?.Items.Sum(i => i.Cantidad) ?? 0;
+                var compraDto = await _http.GetFromJsonAsync<CompraResumenDto>($"/api/carritos/{CarritoId.Value}");
+                this.CantidadItems = compraDto?.Items.Sum(i => i.Cantidad) ?? 0;
+                NotifyStateChanged(); 
             }
             catch
             {
-                CantidadItems = 0;
+                this.CantidadItems = 0;
+                NotifyStateChanged();
             }
-            
-            NotifyStateChanged();
         }
-
+        
+        public void EstablecerCantidad(int cantidad)
+        {
+            if (CantidadItems != cantidad)
+            {
+                CantidadItems = cantidad;
+                NotifyStateChanged();
+            }
+        }
+        
         public async Task LimpiarCarrito()
         {
             CarritoId = null;
-            CantidadItems = 0;
             await InicializarCarrito();
-            NotifyStateChanged();
+            await ActualizarCantidadDesdeApi();
         }
 
         private void NotifyStateChanged() => OnChange?.Invoke();

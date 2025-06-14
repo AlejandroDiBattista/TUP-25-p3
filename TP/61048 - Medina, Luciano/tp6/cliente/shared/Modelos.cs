@@ -1,5 +1,6 @@
 namespace cliente.Shared
 {
+    // --- Modelos Originales ---
     public class Producto
     {
         public int Id { get; set; }
@@ -36,5 +37,34 @@ namespace cliente.Shared
         public string Nombre { get; set; }
         public string Apellido { get; set; }
         public string Email { get; set; }
+    }
+
+
+    // --- **NUEVOS DTOs (Data Transfer Objects)** ---
+    // Estos son los formatos "planos" y seguros que el servidor envía.
+    // Los añadimos aquí para que el cliente pueda entender las respuestas de la API.
+    public class ProductoResumenDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public string Descripcion { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+
+    public class ItemCompraResumenDto
+    {
+        public int Id { get; set; }
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public ProductoResumenDto Producto { get; set; }
+    }
+
+    public class CompraResumenDto
+    {
+        public int Id { get; set; }
+        public List<ItemCompraResumenDto> Items { get; set; }
     }
 }

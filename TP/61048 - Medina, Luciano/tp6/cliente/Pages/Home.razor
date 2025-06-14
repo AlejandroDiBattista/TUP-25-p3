@@ -6,7 +6,11 @@
 
 <PageTitle>PerfumeShop - Catálogo</PageTitle>
 
-@if (productos == null)
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (productos == null)
 {
     <p class="text-center"><em>Cargando perfumes...</em></p>
 }
@@ -23,8 +27,14 @@ else
                         <p class="card-text flex-grow-1">@p.Descripcion</p>
                         <p class="card-text"><strong>Stock:</strong> @p.Stock</p>
                         <h4 class="card-text text-end mb-3">$@p.Precio.ToString("N2")</h4>
-                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0)">
-                            @if(p.Stock > 0) {
+                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0 || (isAddingToCart && currentProductId == p.Id))">
+                            @if(isAddingToCart && currentProductId == p.Id)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span> Agregando...</span>
+                            }
+                            else if(p.Stock > 0)
+                            {
                                 <i class="bi bi-cart-plus-fill"></i><span> Agregar al carrito</span>
                             } else {
                                 <span>Sin Stock</span>
@@ -39,30 +49,45 @@ else
 
 @code {
     private List<Producto>? productos;
+    private bool isAddingToCart = false;
+    private int currentProductId = 0;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        // Pide los productos a la API al cargar la página
-        productos = await Http.GetFromJsonAsync<List<Producto>>("/api/productos");
-        // Asegura que el carrito esté listo
-        await CarritoService.InicializarCarrito();
+        try
+        {
+            errorMessage = null;
+            productos = await Http.GetFromJsonAsync<List<Producto>>("/api/productos");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ocurrió un error al cargar los productos: {ex.Message}";
+        }
     }
 
     private async Task AgregarAlCarrito(int productoId)
     {
-        if (CarritoService.CarritoId.HasValue)
+        if (isAddingToCart) return;
+
+        isAddingToCart = true;
+        currentProductId = productoId;
+        await InvokeAsync(StateHasChanged);
+
+        // La lógica compleja ahora está en el servicio. ¡Más limpio!
+        var success = await CarritoService.AgregarProductoAlCarrito(productoId);
+
+        if (success)
         {
-            var response = await Http.PutAsync($"/api/carritos/{CarritoService.CarritoId}/agregar/{productoId}?cantidad=1", null);
-            if(response.IsSuccessStatusCode)
-            {
-                await CarritoService.ActualizarCantidad();
-                NavManager.NavigateTo("/carrito");
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error al agregar el producto: {error}");
-            }
+            NavManager.NavigateTo("/carrito");
+        }
+        else
+        {
+            // Opcional: mostrar un mensaje de error
+            Console.WriteLine("Error al agregar el producto.");
+            isAddingToCart = false;
+            currentProductId = 0;
+            await InvokeAsync(StateHasChanged);
         }
     }
 }

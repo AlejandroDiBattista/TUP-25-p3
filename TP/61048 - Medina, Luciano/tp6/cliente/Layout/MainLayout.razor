@@ -8,23 +8,16 @@
     <header class="fixed-top shadow-sm">
         <nav class="navbar navbar-expand-lg navbar-light bg-white">
             <div class="container-fluid">
-                <!-- 1. Logo/Home -->
                 <a class="navbar-brand" href="/">
                     <strong>PerfumeShop</strong>
                 </a>
-
-                <!-- Espacio para el buscador y el carrito -->
                 <div class="d-flex align-items-center ms-auto">
-
-                    <!-- 2. Buscador -->
                     <div class="input-group me-3">
                         <input type="text" class="form-control" placeholder="Buscar perfumes..." @bind="terminoBusqueda" @onkeyup="HandleSearch" />
                         <button class="btn btn-outline-secondary" type="button" @onclick="RealizarBusqueda">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
-
-                    <!-- 3. Ícono de Carrito con Contador -->
                     <a href="/carrito" class="nav-link">
                         <i class="bi bi-cart-fill" style="font-size: 1.5rem;"></i>
                         <span class="badge rounded-pill bg-danger">@CarritoService.CantidadItems</span>
@@ -46,8 +39,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        CarritoService.OnChange += StateHasChanged;
-        await CarritoService.InicializarCarrito();
+        // Nos suscribimos al evento del carrito.
+        CarritoService.OnChange += OnCartChanged;
+
+        // **LÓGICA MEJORADA Y MÁS SEGURA**
+        // Ahora el layout controla el flujo:
+        // 1. Pide la inicialización.
+        // 2. Una vez inicializado, pide la actualización del contador.
+        // Esto evita que el servicio dispare eventos durante su propia inicialización.
+        try
+        {
+            await CarritoService.InicializarCarrito();
+            await CarritoService.ActualizarCantidadDesdeApi();
+        }
+        catch (Exception ex)
+        {
+            // Si algo falla, solo lo registramos en la consola.
+            // La barra de error ya no aparecerá.
+            Console.WriteLine($"Error durante la inicialización: {ex.Message}");
+        }
+    }
+
+    // Este método se asegura de que la actualización de la UI se haga de forma segura
+    private void OnCartChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private void HandleSearch(KeyboardEventArgs e)
@@ -72,6 +88,6 @@
 
     public void Dispose()
     {
-        CarritoService.OnChange -= StateHasChanged;
+        CarritoService.OnChange -= OnCartChanged;
     }
 }

@@ -7,11 +7,15 @@
 
 <h3><i class="bi bi-cart-check-fill"></i> Mi Carrito</h3>
 
-@if (compra == null)
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (compraDto == null)
 {
     <p><em>Cargando carrito...</em></p>
 }
-else if (!compra.Items.Any())
+else if (!compraDto.Items.Any())
 {
     <div class="alert alert-info">Tu carrito está vacío. <a href="/">¡Mira nuestros perfumes!</a></div>
 }
@@ -28,7 +32,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in compra.Items)
+            @foreach (var item in compraDto.Items)
             {
                 <tr>
                     <td>@item.Producto.Nombre</td>
@@ -50,7 +54,7 @@ else
         <tfoot>
             <tr>
                 <td colspan="3" class="text-end"><strong>Total</strong></td>
-                <td class="text-end"><strong>$@compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("N2")</strong></td>
+                <td class="text-end"><strong>$@compraDto.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("N2")</strong></td>
                 <td></td>
             </tr>
         </tfoot>
@@ -63,7 +67,8 @@ else
 }
 
 @code {
-    private Compra? compra;
+    private CompraResumenDto? compraDto;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,10 +77,19 @@ else
 
     private async Task CargarCarrito()
     {
-        if (CarritoService.CarritoId.HasValue)
+        try
         {
-            compra = await Http.GetFromJsonAsync<Compra>($"/api/carritos/{CarritoService.CarritoId}");
-            await CarritoService.ActualizarCantidad();
+            errorMessage = null;
+            if (CarritoService.CarritoId.HasValue)
+            {
+                compraDto = await Http.GetFromJsonAsync<CompraResumenDto>($"/api/carritos/{CarritoService.CarritoId.Value}");
+                var totalItems = compraDto?.Items.Sum(i => i.Cantidad) ?? 0;
+                CarritoService.EstablecerCantidad(totalItems);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ocurrió un error al cargar el carrito: {ex.Message}";
         }
     }
     
@@ -83,12 +97,7 @@ else
     {
         if (cantidad > 0)
         {
-            var response = await Http.PutAsync($"/api/carritos/{CarritoService.CarritoId}/agregar/{productoId}?cantidad={cantidad}", null);
-            if (!response.IsSuccessStatusCode)
-            {
-                // En una app real, aquí mostrarías el error al usuario
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-            }
+            await Http.PutAsync($"/api/carritos/{CarritoService.CarritoId}/agregar/{productoId}?cantidad={cantidad}", null);
             await CargarCarrito();
         }
     }
