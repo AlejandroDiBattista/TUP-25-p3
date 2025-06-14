@@ -1,0 +1,111 @@
+@page "/confirmar"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager Navigation
+
+<h3>Confirmar compra</h3>
+
+@if (compraExitosa)
+{
+    <div class="alert alert-success">
+        ¡Compra realizada con éxito!
+        <br />
+        <button class="btn btn-primary mt-2" @onclick="SeguirComprando">Seguir comprando</button>
+    </div>
+}
+else if (carritoModel is null || carritoModel.Items.Count == 0)
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carritoModel.Items)
+            {
+                <tr>
+                    <td>@item.Producto?.Nombre</td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="mb-3">
+        <strong>Total: $@carritoModel.Items.Sum(i => i.Cantidad * i.PrecioUnitario)</strong>
+    </div>
+    <EditForm Model="@cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-2">
+            <InputText @bind-Value="cliente.Nombre" class="form-control" placeholder="Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
+        </div>
+        <div class="mb-2">
+            <InputText @bind-Value="cliente.Apellido" class="form-control" placeholder="Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
+        </div>
+        <div class="mb-2">
+            <InputText @bind-Value="cliente.Email" class="form-control" placeholder="Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info mt-2">@mensaje</div>
+    }
+}
+
+@code {
+    private cliente.Models.Carrito carritoModel;
+    private ClienteDto cliente = new();
+    private string mensaje;
+    private bool compraExitosa = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        if (!string.IsNullOrEmpty(carritoId))
+        {
+            carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        try
+        {
+            await CarritoService.ConfirmarCompraAsync(carritoId, cliente);
+            mensaje = "";
+            compraExitosa = true;
+            await CarritoService.VaciarCarritoAsync(carritoId);
+            CarritoStateService.NotificarCambio();
+        }
+        catch (HttpRequestException ex)
+        {
+            mensaje = $"Error al confirmar la compra: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error inesperado: {ex.Message}";
+        }
+    }
+
+    private void SeguirComprando()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

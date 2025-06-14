@@ -1,59 +1,144 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
 
+@using cliente.Services
+@using cliente.Models
+@using Microsoft.AspNetCore.Components
+
+@inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+@inject CarritoStateService CarritoStateService
+
+@using Microsoft.AspNetCore.Components.Web
 <PageTitle>Inicio</PageTitle>
 
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+            <h1 class="text-center mt-4 mb-4">Saca el mejor sonido con Fender</h1>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+        @if (cargando)
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center">Cargando datos...</div>
+            </div>
+        }
+        else if (productos != null && productos.Count > 0)
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col-md-4 mb-4 d-flex align-items-stretch">
+                    <div class="card shadow-sm h-100">
+                        <img src="@producto.ImagenUrl" class="card-img-top p-3" alt="@producto.Nombre" style="height: 220px; object-fit: contain;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p class="card-text mb-1"><strong>Precio:</strong> $@producto.Precio</p>
+                            <p class="card-text mb-3"><strong>Stock:</strong> @producto.Stock</p>
+                            <button class="btn btn-primary mt-auto"
+                                    @onclick="() => AgregarAlCarrito(producto.Id)"
+                                    disabled="@(!PuedeAgregar(producto))">
+                                Agregar al carrito
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
-        </div>
+        }
+        else if (error != null)
+        {
+            <div class="col-12">
+                <div class="alert alert-danger text-center">
+                    Error: @error
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-warning text-center">No hay productos disponibles.</div>
+            </div>
+        }
     </div>
 </div>
 
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="toast align-items-center text-bg-success border-0 show position-fixed bottom-0 end-0 m-4" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">
+                @mensaje
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="() => mensaje = null"></button>
+        </div>
+    </div>
+}
+
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> productos;
     private string error;
     private bool cargando = false;
+    private string carritoId;
+    private string mensaje;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string buscar { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        carritoId = await CarritoStateService.GetCarritoIdAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ObtenerDatosDelServidor();
+    }
+
+    private async Task ObtenerDatosDelServidor()
+    {
+        cargando = true;
+        error = null;
+
+        var todos = await ApiService.ObtenerProductosAsync();
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            productos = todos.Where(p => p.Nombre.Contains(buscar, StringComparison.OrdinalIgnoreCase) || p.Descripcion.Contains(buscar, StringComparison.OrdinalIgnoreCase)).ToList();
         }
+        else
+        {
+            productos = todos;
+        }
+
+        cargando = false;
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(carritoId))
+            {
+                var carrito = await CarritoService.CrearCarritoAsync();
+                carritoId = carrito.Id;
+                await CarritoStateService.SetCarritoIdAsync(carritoId);
+            }
+
+            await CarritoService.AgregarProductoAsync(carritoId, productoId, 1);
+            mensaje = "Producto agregado al carrito";
+            CarritoStateService.NotificarCambio();
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+    }
+
+    private bool PuedeAgregar(Producto producto)
+    {
+        return producto.Stock > 0;
     }
 }

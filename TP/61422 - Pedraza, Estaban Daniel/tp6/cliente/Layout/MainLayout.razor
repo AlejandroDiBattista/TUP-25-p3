@@ -1,4 +1,81 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@using cliente.Services
+@using cliente.Models
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+@inject CarritoService CarritoService
+@inject CarritoStateService CarritoStateService
+
+<div class="sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/" style="font-weight:bold;">
+                <img src="imagenes/fender-logo-rojo.jpg" alt="Logo" width="40" class="me-2" />
+                Tienda Fender
+            </a>
+            <form class="d-flex mx-auto" @onsubmit="Buscar">
+                <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar"
+                       @bind="busqueda" style="width: 250px;" />
+                <button class="btn btn-outline-light" type="submit">Buscar</button>
+            </form>
+            <button class="btn btn-outline-light position-relative" @onclick="IrAlCarrito">
+                <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
+                @if (contadorCarrito > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @contadorCarrito
+                    </span>
+                }
+            </button>
+        </div>
+    </nav>
 </div>
+
+<main class="container pt-4">
+    @Body
+</main>
+
+@code {
+    private string busqueda;
+    private int contadorCarrito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoStateService.OnCarritoChanged += ActualizarContadorSync;
+        await ActualizarContador();
+    }
+
+    private async void ActualizarContadorSync()
+    {
+        await ActualizarContador();
+        StateHasChanged();
+    }
+
+    public async Task ActualizarContador()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        if (!string.IsNullOrEmpty(carritoId))
+        {
+            var carrito = await CarritoService.ObtenerCarritoAsync(carritoId);
+            contadorCarrito = carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
+        }
+        else
+        {
+            contadorCarrito = 0;
+        }
+        StateHasChanged();
+    }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+        {
+            Navigation.NavigateTo($"/?buscar={busqueda}");
+        }
+    }
+
+    private void IrAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+}
