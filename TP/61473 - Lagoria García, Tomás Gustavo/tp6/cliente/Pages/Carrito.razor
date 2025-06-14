@@ -105,3 +105,16 @@ private async Task Disminuir(ItemCarrito item)
         await CargarCarrito();
     }
 
+    private async Task ConfirmarCompra()
+    {
+        var confirmacion = new ConfirmacionRequest
+        {
+            Nombre = "Cliente",
+            Apellido = "Demo",
+            Email = "cliente@demo.com"
+        };
+
+        await CarritoService.ConfirmarCompraAsync(carritoId, confirmacion);
+        await CargarCarrito();
+    }
+}
