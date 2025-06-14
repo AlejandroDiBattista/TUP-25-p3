@@ -28,6 +28,7 @@ body{
 }
 
 
+
 nav.navbar{
     width: 100%;
     height: 5em;
@@ -39,7 +40,9 @@ nav.navbar a{
     margin-left:1.5em ;
 }
 
-
+nav.bar li.nav-item a{
+    margin-top: 0.5em;
+}
 .btn-outline-light, .btn-outline-success{
     border: rgb(224, 99, 141) 1.7px solid !important;
     color: rgb(224, 99, 141) !important;
@@ -125,6 +128,25 @@ footer {
     border-top: 2px solid #f7cbe7;
 }
 
+.footer-carrito-fijo {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: #fff0f6;
+    color: #c02d76;
+    text-align: center;
+    padding: 1.5em 0 1em 0;
+    font-family: "Cabin", sans-serif;
+    font-size: 1.1em;
+    box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.04);
+    border-top: 2px solid #f7cbe7;
+    z-index: 100;
+}
+
+.container.mt-5.pt-5 {
+    margin-bottom: 90px; /* o el alto de tu footer */
+}
 
 
 
