@@ -1,0 +1,66 @@
+@page "/confirmacion"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager NavManager
+
+<PageTitle>Confirmación</PageTitle>
+
+@if (CarritoService.TotalItems == 0)
+{
+    <div class="alert alert-warning">Carrito vacío. Volviendo...</div>
+}
+else
+{
+    <div>
+        <h4>Resumen</h4>
+        <p>Total ítems: @CarritoService.TotalItems</p>
+        <p>Total a pagar: $@CarritoService.TotalImporte</p>
+    </div>
+
+    <EditForm Model="cliente" OnValidSubmit="OnSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <InputText @bind-Value="cliente.Nombre" placeholder="Nombre" class="form-control mb-2" />
+        <InputText @bind-Value="cliente.Apellido" placeholder="Apellido" class="form-control mb-2" />
+        <InputText type="email" @bind-Value="cliente.Email" placeholder="Email" class="form-control mb-2" />
+        <button type="submit" class="btn btn-success">Confirmar</button>
+    </EditForm>
+
+    @if (mensaje != null)
+    {
+        <div class="alert alert-info mt-3">@mensaje</div>
+    }
+}
+
+@code {
+    private ClienteDTO cliente = new();
+    private string mensaje;
+
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    private async Task OnSubmit()
+    {
+        try
+        {
+            await CarritoService.ConfirmarCompraAsync(cliente.Nombre, cliente.Apellido, cliente.Email);
+            mensaje = "✅ Compra registrada con éxito!";
+            await Task.Delay(2000);
+            NavManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"❌ Error: {ex.Message}";
+        }
+    }
+
+    class ClienteDTO
+    {
+        [Required] public string Nombre { get; set; }
+        [Required] public string Apellido { get; set; }
+        [Required][EmailAddress] public string Email { get; set; }
+    }
+}
