@@ -51,3 +51,10 @@ else
     <button @onclick="()=>NavegarCompra()">Confirmar compra</button>
 }
 
+@code {
+    [Parameter]
+    public Guid carritoId { get; set; } = Guid.Empty;
+
+    private List<ItemCarrito>? ItemsCarrito;
+    private decimal Total = 0;
+
