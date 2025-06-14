@@ -1,22 +1,14 @@
 
 body, html {
     font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    background: #f8fafc;
+    
     color: #222;
     min-height: 100vh;
+    position: relative;
+    padding-bottom: 80px;
 }
-.home-bg {
-    background: linear-gradient(135deg, #ece954 0%, #ecf4b1 100%);
-    border-radius: 1.5rem;
-    box-shadow: 0 4px 24px rgba(27, 110, 194, 0.10);
-    padding-bottom: 3rem;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-}
-.home-bg h1, .home-bg p, .home-bg a {
-    color: #fff ;
-   background: linear-gradient(135deg, #ece954 0%, #ecf4b1 100%);
-}
+
+
 
 
     .main-layout header {
@@ -45,7 +37,7 @@ a:hover, .btn-link:hover {
     text-decoration: underline;
 }
 
-/* Navbar */
+
 .navbar {
     border-radius: 0.5rem;
     margin-bottom: 2rem;
@@ -256,3 +248,74 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }   
+.contenido-con-margen{
+    margin-top: 90px;
+}
+.fondo{
+position: absolute;
+    top: auto; 
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 70px); 
+    background: linear-gradient(135deg, #258cfb 0%, #1b6ec2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+.descripcion {
+    background: rgba(255,255,255,0.05);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px rgba(27, 110, 194, 0.18);
+    padding: 2.5rem 2rem 2rem 2rem;
+    text-align: center;
+    color: #fff;
+    max-width: 600px;
+    width: 100%;   
+}
+
+.descripcion h1 {
+    color: #fff;
+    font-weight: 800;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 2px 8px rgba(27, 110, 194, 0.18);
+}
+
+.descripcion p {
+    color: #eaf6ff;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.footer{
+    width: 100vw;
+    background: linear-gradient(90deg, #1b6ec2 60%, #258cfb 100%);
+    color: #0b0606;
+    text-align: center;
+    padding: 1.2rem 0 1.2rem 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+    box-shadow: 0 -2px 12px rgba(27, 110, 194, 0.10);
+}
+
+.descripcion .btn-primary {
+    background: #fff;
+    color: #1b6ec2;
+    font-weight: bold;
+    border: none;
+    padding: 0.8rem 2.2rem;
+    font-size: 1.2rem;
+    border-radius: 2rem;
+    box-shadow: 0 2px 8px rgba(27, 110, 194, 0.10);
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+
+.descripcion .btn-primary:hover {
+    background: #d01414;
+    color: #fff;
+    transform: scale(1.05);
+}

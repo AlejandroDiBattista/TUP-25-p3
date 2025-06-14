@@ -3,12 +3,12 @@
 @using Microsoft.AspNetCore.Components.Web
 @inject ApiService ApiService
 @inject cliente.Services.CarritoService CarritoService
-<div class="inicio">
 
+<div class="inicio">
 <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
-        <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+        <img src="img/logo2.jpeg" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
       </a>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,10 +21,10 @@
             <a class="nav-link active" aria-current="page" href="/">Inicio</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/productos">Productos</a>
+            <a class="nav-link" href="catalogo">Productos</a>
           </li>
           <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
+                    <a class="nav-link d-flex align-items-center position-relative" href="carrito">
                     <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
                     <span style="margin-right: 0.3em;">Carrito</span>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -41,13 +41,17 @@
     </div>
   </nav>
  </div>
-
-    <div class="container home-bg">
+<div class= "fondo">
+<div class="contenido-con-margen">
+    <div class="descripcion">
         <h1 class="display-4">¡Bienvenido a la tienda de gorras más exclusivas!</h1>
         <p class="lead"><p>Tu estilo habla antes que vos. Encontrá en nuestro catálogo la gorra perfecta para cada día: urbanas, deportivas, clásicas y con onda. Elegí la que va con tu personalidad y salí a comerte el mundo con actitud.</p>
 </p>
         <a class="btn btn-primary btn-lg" href="catalogo">quiero una ya!</a>
     </div>
+   </div>
+  </div>
+  
  
 
 @code {

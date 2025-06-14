@@ -2,6 +2,45 @@
 @inject cliente.Services.CarritoService CarritoService
 @inject NavigationManager Navigation
 
+<div class="contenido-con-margen">
+<div class="inicio">
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="img/logo2.jpeg" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="catalogo">Productos</a>
+          </li>
+          <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center position-relative" href="carrito">
+                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                    <span style="margin-right: 0.3em;">Carrito</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                       @CarritoService.Items.Sum(i => i.Cantidad)
+                    </span>
+                    </a>
+                </li>
+        </ul>
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
+          <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+      </div>
+    </div>
+  </nav>
+ </div>
+
 <h3>Carrito de compras</h3>
 
 @if (CarritoService.Items.Count == 0)
@@ -43,6 +82,7 @@ else
     <button class="btn btn-warning me-2" @onclick="CarritoService.Vaciar">Vaciar carrito</button>
     <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
 }
+</div>
 
 @code {
     protected override void OnInitialized()

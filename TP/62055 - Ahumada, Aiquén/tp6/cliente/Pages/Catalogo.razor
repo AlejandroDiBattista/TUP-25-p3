@@ -4,8 +4,46 @@
 @inject ApiService ApiService
 @inject cliente.Services.CarritoService CarritoService
 
-<h3>Catálogo de Gorras 🧢</h3>
+<div class="inicio">
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="img/logo2.jpeg" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="catalogo">Productos</a>
+          </li>
+          <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center position-relative" href="carrito">
+                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                    <span style="margin-right: 0.3em;">Carrito</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                       @CarritoService.Items.Sum(i => i.Cantidad)
+                    </span>
+                    </a>
+                </li>
+        </ul>
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/>
+          <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+      </div>
+    </div>
+  </nav>
+ </div>
+ <div class="contenido-con-margen">
  <a href="/carrito">🛒 Carrito (@CarritoService.Items.Count)</a>
+ 
 @if (cargando)
 {
     <p>Cargando productos...</p>
@@ -35,7 +73,10 @@ else
             </div>
         }
     </div>
+ 
+
 }
+</div>
 
 @code {
     private List<cliente.Models.Producto> productos = new();

@@ -26,7 +26,7 @@ namespace servidor.Data {
                 new Producto { Id = 7, Nombre = "Gorra DC Shoes Negra", Descripcion = "Gorra plana con logo", Precio = 7300, Stock = 14, ImagenUrl = "https://i.pinimg.com/736x/b7/9d/c3/b79dc3710e4703a5371687ecf73dd380.jpg" },
                 new Producto { Id = 8, Nombre = "Gorra Quiksilver Blanca", Descripcion = "Estilo surfero y relajado", Precio = 7050, Stock = 10, ImagenUrl = "https://i.pinimg.com/736x/8b/8e/32/8b8e32f614f8f0740bc965e8ece575b0.jpg" },
                 new Producto { Id = 9, Nombre = "Gorra new era Marrón", Descripcion = "Diseño Urbano ", Precio = 7600, Stock = 8, ImagenUrl = "https://i.pinimg.com/736x/48/39/b8/4839b813136b7479e33b316bf2627c87.jpg" },
-                new Producto { Id = 10, Nombre = "Gorra New Era LAKERS", Descripcion = "Gorra oficial del equipo LA Lakers", Precio = 9900, Stock = 6, ImagenUrl = "https://es.pinterest.com/pin/4594868019071322112/" }
+                new Producto { Id = 10, Nombre = "Gorra MLB | New Era Cap", Descripcion = "Gorra oficial de la MLB", Precio = 9900, Stock = 6, ImagenUrl = "https://i.pinimg.com/736x/65/d9/86/65d986cb04cafd398169ed1ae4b0a9b4.jpg" }
             );
         }
     }
