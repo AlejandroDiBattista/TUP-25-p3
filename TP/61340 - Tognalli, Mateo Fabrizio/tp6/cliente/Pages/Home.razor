@@ -114,12 +114,15 @@
     }
 </div>
 
-@code {
-    [Parameter]
+@code {    [Parameter]
     [SupplyParameterFromQuery]
-    public string busqueda { get; set; } = "";    private List<ProductoDto> productos = new();
+    public string busqueda { get; set; } = "";
+    
+    private List<ProductoDto> productos = new();
     private bool cargando = true;
-    private int? agregandoProducto = null;    protected override async Task OnInitializedAsync()
+    private int? agregandoProducto = null;
+    
+    protected override async Task OnInitializedAsync()
     {
         await JSRuntime.InvokeVoidAsync("eval", "document.title = 'TechStore - Catálogo'");
         await CargarProductos();
@@ -144,9 +147,10 @@
         }
         finally
         {
-            cargando = false;
-        }
-    }private async Task AgregarAlCarrito(ProductoDto producto)
+            cargando = false;        }
+    }
+
+    private async Task AgregarAlCarrito(ProductoDto producto)
     {
         agregandoProducto = producto.Id;
         try
@@ -167,16 +171,16 @@
         {
             await JSRuntime.InvokeVoidAsync("console.error", $"Error al agregar producto: {ex.Message}");
             await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al agregar el producto.");
-        }
-        finally
+        }        finally
         {
             agregandoProducto = null;
-        }    }
-
-    private void LimpiarBusqueda()
+        }
+    }    private void LimpiarBusqueda()
     {
         Navigation.NavigateTo("/");
-    }    private async Task ManejarErrorImagen(ErrorEventArgs e, int productoId)
+    }
+
+    private async Task ManejarErrorImagen(ErrorEventArgs e, int productoId)
     {
         // Cambiar a imagen por defecto si falla la carga - versión simplificada
         await JSRuntime.InvokeVoidAsync("eval", 
