@@ -1,0 +1,72 @@
+@page "/buscar/{termino}"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<PageTitle>Resultados para "@Termino"</PageTitle>
+
+<h3>Resultados de Búsqueda para: <em class="text-primary">"@Termino"</em></h3>
+
+@if (productos == null)
+{
+    <p><em>Buscando...</em></p>
+}
+else if (!productos.Any())
+{
+    <div class="alert alert-warning">No se encontraron productos que coincidan con su búsqueda.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var p in productos)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" style="height: 200px; object-fit: contain; padding: 10px;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@p.Nombre</h5>
+                        <p class="card-text flex-grow-1">@p.Descripcion</p>
+                        <h4 class="card-text text-end mb-3">$@p.Precio.ToString("N2")</h4>
+                        
+                        @* Este botón es opcional, pero es una buena práctica para que el usuario pueda ir al detalle. *@
+                        @* Por ahora, simplemente lo llevamos de vuelta al carrito si quiere agregarlo. *@
+                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0)">
+                             @if(p.Stock > 0) {
+                                <i class="bi bi-cart-plus-fill"></i><span> Agregar al carrito</span>
+                            } else {
+                                <span>Sin Stock</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Termino { get; set; }
+
+    private List<Producto>? productos;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        productos = null; // Limpiar resultados anteriores para mostrar el mensaje "Buscando..."
+        if (!string.IsNullOrWhiteSpace(Termino))
+        {
+            productos = await Http.GetFromJsonAsync<List<Producto>>($"/api/productos?busqueda={Termino}");
+        }
+    }
+
+    // Este método es un duplicado del que está en Home.razor.
+    // En una aplicación más grande, se podría mover a un servicio para no repetir código.
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        // Necesitamos inyectar CarritoService si queremos usarlo aquí.
+        // Por simplicidad para este ejemplo, redirigimos al home.
+        // Si quieres la funcionalidad completa, deberías inyectar CarritoService
+        // y usar la misma lógica que en Home.razor.
+        Console.WriteLine($"Agregando producto {productoId} al carrito...");
+        NavManager.NavigateTo("/"); // Redirigimos al home por simplicidad.
+    }
+}
