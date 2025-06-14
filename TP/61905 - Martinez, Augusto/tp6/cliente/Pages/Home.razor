@@ -6,10 +6,9 @@
 
 <PageTitle>Catalogo de productos</PageTitle>
 
-<!-- 🧭 Cabecera fija -->
 <header class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow p-3">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">🛍️ Mi Tienda</a>
+        <a class="navbar-brand" href="/">🛍️ Tienda Gamer</a>
 
         <input class="form-control me-2 w-50" type="search" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
 
@@ -22,45 +21,16 @@
     </div>
 </header>
 
-<div class="container">
+<div class="container mt-4">
     <h2>Catálogo de productos</h2>
 
     @if (cargando)
     {
-        <p>Cargando productos...</p>
+        <div class="alert alert-info">Cargando productos...</div>
     }
     else if (!string.IsNullOrEmpty(error))
     {
-        <p class="text-danger">Error: @error</p>
-    }
-    else
-    {
-        <div class="row">
-            @foreach (var p in productos)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">@p.Nombre</h5>
-                            <p class="card-text">@p.Descripcion</p>
-                            <p><strong>Precio:</strong> $@p.Precio</p>
-                            <p><strong>Stock:</strong> @p.Stock</p>
-                            <button class="btn btn-primary"
-                                    @onclick="@(() => AgregarAlCarrito(p))"
-                                    disabled="@(p.Stock == 0)">
-                                Agregar al carrito
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-</div>
-<div class="container mt-4">
-    @if (cargando)
-    {
-        <div class="alert alert-info">Cargando productos...</div>
+        <div class="alert alert-danger">Error: @error</div>
     }
     else if (productosFiltrados != null && productosFiltrados.Any())
     {
@@ -69,28 +39,25 @@
             {
                 <div class="col">
                     <div class="card h-100">
-                        
                         <div class="card-body">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text">@producto.Descripcion</p>
-                            <p><strong>Stock:</strong> @producto.Stock</p>
                             <p><strong>Precio:</strong> $@producto.Precio</p>
+                            <p><strong>Stock:</strong> @producto.Stock</p>
                         </div>
                         <div class="card-footer text-end">
-                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
+                                Agregar al carrito
+                            </button>
                         </div>
                     </div>
                 </div>
             }
         </div>
     }
-    else if (productos != null)
+    else
     {
         <div class="alert alert-warning">No se encontraron productos.</div>
-    }
-    else if (error != null)
-    {
-        <div class="alert alert-danger">Error: @error</div>
     }
 </div>
 
@@ -132,7 +99,7 @@
         if (producto.Stock > 0)
         {
             contadorCarrito++;
-            // Lógica real: agregar a servicio de carrito
+            // Aquí podrías agregar lógica para agregar al carrito real
             Navigation.NavigateTo("/carrito");
         }
         else
@@ -146,5 +113,3 @@
         Navigation.NavigateTo("/carrito");
     }
 }
-
-

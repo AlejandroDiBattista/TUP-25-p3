@@ -11,27 +11,23 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
+// Registrar ProductoService como singleton
 builder.Services.AddSingleton<ProductoService>();
+
 builder.Services.AddControllers();
+
 var app = builder.Build();
 
-
-
-// Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
-// Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
-// Ejemplo de endpoint de API
-app.MapGet("/api/productos", () => {
-    var servicio = new ProductoService();
+// Endpoint que usa la instancia inyectada de ProductoService
+app.MapGet("/api/productos", (ProductoService servicio) => {
     return Results.Ok(servicio.ObtenerProductos());
 });
 
