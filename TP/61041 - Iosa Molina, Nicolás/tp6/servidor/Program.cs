@@ -21,6 +21,8 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseCors("AllowClientApp");
+
 // Crear la base de datos y cargar datos de ejemplo
 using (var scope = app.Services.CreateScope())
 {
@@ -47,6 +49,8 @@ using (var scope = app.Services.CreateScope())
 
 // Variable global para múltiples carritos (uno por id)
 var carritos = new ConcurrentDictionary<string, List<ItemCarrito>>();
+
+app.MapGet("/", () => Results.Ok(new { Mensaje = "API de Tienda - Bienvenido!", Fecha = DateTime.Now }));
 
 app.MapGet("/productos", async (TiendaContext db) =>
 {
