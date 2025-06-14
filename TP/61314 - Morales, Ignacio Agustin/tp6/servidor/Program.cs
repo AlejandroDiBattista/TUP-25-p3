@@ -8,13 +8,17 @@ using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de servicios
-builder.Services.AddDbContext<TiendaDb>(opt => opt.UseSqlite("Data Source=tienda.db"));
+builder.Services.AddDbContext<TiendaDb>(opt =>
+    opt.UseSqlite("Data Source=tienda.db"));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("https://localhost:7295", "http://localhost:5184")
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp", policy =>
+    {
+        policy.WithOrigins("https://localhost:5284","http://localhost:5284", "https://localhost:5184", "http://localhost:5184")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -22,7 +26,15 @@ builder.Services.AddCors(options => {
 
 var app = builder.Build();
 
-// Servir archivos estáticos desde la carpeta "imagenes"
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseCors("AllowClientApp");
+
+// Configurar carpeta de imágenes
+var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "imagenes");
+if (!Directory.Exists(imagePath))
+    Directory.CreateDirectory(imagePath);
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
@@ -30,77 +42,58 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/imagenes"
 });
 
-// Inicializar la base de datos
+// Crear base de datos al iniciar
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaDb>();
+    db.Database.EnsureDeleted(); // Opcional para testing
     db.Database.EnsureCreated();
 }
 
-app.UseSwagger();
-app.UseSwaggerUI();
-
-//app.UseCors("AllowClientApp");
-
 // Endpoints
-
 app.MapGet("/productos", async (TiendaDb db) =>
-{
-    return await db.Productos
-        .Where(p => p.Stock > 0)
-        .ToListAsync();
-});
+    await db.Productos.Where(p => p.Stock > 0).ToListAsync());
 
-app.MapPost("/Carrito", async (TiendaDb db, Producto producto) =>
+app.MapPost("/carrito", async (TiendaDb db, Producto producto) =>
 {
     if (producto.Stock <= 0)
-    {
         return Results.BadRequest("Producto sin stock");
-    }
+
+    var carrito = new Carrito();
 
     var item = new ItemCarrito
     {
         ProductoId = producto.Id,
         Cantidad = 1,
-        PrecioUnitario = producto.Precio
+        PrecioUnitario = producto.Precio,
+        Carrito = carrito
     };
 
-    var carrito = new Carrito
-    {
-        Items = new List<ItemCarrito> { item }
-    };
-
+    carrito.Items.Add(item);
     db.Carritos.Add(carrito);
     await db.SaveChangesAsync();
 
     return Results.Ok(carrito);
 });
 
-app.MapGet("/Carrito/{CarritoID}", async (TiendaDb db, Guid CarritoID) =>
+app.MapGet("/carrito/{carritoId:guid}", async (TiendaDb db, Guid carritoId) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
         .ThenInclude(i => i.Producto)
-        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (carrito == null)
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(carrito);
+    return carrito is null ? Results.NotFound() : Results.Ok(carrito);
 });
 
-app.MapDelete("/Carrito/{CarritoID}", async (TiendaDb db, Guid CarritoID) =>
+app.MapDelete("/carrito/{carritoId:guid}", async (TiendaDb db, Guid carritoId) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
-        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (carrito == null)
-    {
+    if (carrito is null)
         return Results.NotFound();
-    }
 
     db.Carritos.Remove(carrito);
     await db.SaveChangesAsync();
@@ -108,59 +101,47 @@ app.MapDelete("/Carrito/{CarritoID}", async (TiendaDb db, Guid CarritoID) =>
     return Results.NoContent();
 });
 
-app.MapPut("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, Guid CarritoID, int ProductoID) =>
+app.MapPut("/carrito/{carritoId:guid}/{productoId:int}", async (TiendaDb db, Guid carritoId, int productoId) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
-        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (carrito == null)
-    {
+    if (carrito is null)
         return Results.NotFound();
-    }
 
-    var producto = await db.Productos.FindAsync(ProductoID);
-    if (producto == null || producto.Stock <= 0)
-    {
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto is null || producto.Stock <= 0)
         return Results.BadRequest("Producto no disponible");
-    }
 
-    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == ProductoID);
+    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
     if (item != null)
-    {
         item.Cantidad++;
-    }
     else
-    {
         carrito.Items.Add(new ItemCarrito
         {
-            ProductoId = ProductoID,
+            ProductoId = productoId,
             Cantidad = 1,
-            PrecioUnitario = producto.Precio
+            PrecioUnitario = producto.Precio,
+            CarritoId = carritoId
         });
-    }
 
     await db.SaveChangesAsync();
-
     return Results.Ok(carrito);
 });
 
-app.MapDelete("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, Guid CarritoID, int ProductoID) =>
+app.MapDelete("/carrito/{carritoId:guid}/{productoId:int}", async (TiendaDb db, Guid carritoId, int productoId) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
-        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (carrito == null)
-    {
+    if (carrito is null)
         return Results.NotFound();
-    }
 
-    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == ProductoID);
-    if (item == null)
-    {
-        return Results.BadRequest("El producto no está en el carrito");
-    }
+    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item is null)
+        return Results.BadRequest("Producto no está en el carrito");
 
     carrito.Items.Remove(item);
     await db.SaveChangesAsync();
@@ -168,21 +149,28 @@ app.MapDelete("/Carrito/{CarritoID}/{ProductoID}", async (TiendaDb db, Guid Carr
     return Results.NoContent();
 });
 
-app.MapPut("/Carrito/{CarritoID}/Confirmar", async (TiendaDb db, Guid CarritoID, CompraDto dto) =>
+app.MapPut("/carrito/{carritoId:guid}/confirmar", async (TiendaDb db, Guid carritoId, CompraDto dto) =>
 {
     var carrito = await db.Carritos
         .Include(c => c.Items)
-        .FirstOrDefaultAsync(c => c.Id == CarritoID);
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (carrito == null)
-    {
+    if (carrito is null)
         return Results.NotFound();
-    }
 
     var total = carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+
+    // Restar stock
+    foreach (var item in carrito.Items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto is not null)
+            producto.Stock -= item.Cantidad;
+    }
+
     var compra = new Compra
     {
-        Fecha = DateTime.Now,
+        Fecha = DateTime.UtcNow,
         Total = total,
         NombreCliente = dto.Nombre,
         ApellidoCliente = dto.Apellido,
@@ -194,122 +182,16 @@ app.MapPut("/Carrito/{CarritoID}/Confirmar", async (TiendaDb db, Guid CarritoID,
             PrecioUnitario = i.PrecioUnitario
         }).ToList()
     };
+
     db.Compras.Add(compra);
     db.Carritos.Remove(carrito);
     await db.SaveChangesAsync();
+
     return Results.Ok(compra);
 });
+app.MapGet("/", () => "API de Tienda Online funcionando correctamente.");
 
 app.Run();
-
-// --- CLASES Y MODELOS ---
-
-class TiendaDb : DbContext
-{
-    public TiendaDb(DbContextOptions<TiendaDb> options) : base(options) { }
-
-    public DbSet<Producto> Productos => Set<Producto>();
-    public DbSet<Carrito> Carritos => Set<Carrito>();
-    public DbSet<Compra> Compras => Set<Compra>();
-    public DbSet<ItemCarrito> ItemsCarrito => Set<ItemCarrito>();
-    public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Producto>().HasData(
-            new Producto
-            {
-                Id = 1,
-                Nombre = "Iphone 15",
-                Descripcion = "Celular con la mejor autonomia",
-                Stock = 10,
-                Precio = 780000,
-                ImagenUrl = "imagenes/iphone15.jpg"
-            },
-            new Producto
-            {
-                Id = 2,
-                Nombre = "Iphone 15 Plus",
-                Descripcion = "Celular con bateria resistente",
-                Stock = 5,
-                Precio = 820000,
-                ImagenUrl = "imagenes/iphone15plus.jpg"
-            },
-            new Producto
-            {
-                Id = 3,
-                Nombre = "Iphone 16",
-                Descripcion = "Celular de ultima generacion",
-                Stock = 13,
-                Precio = 980000,
-                ImagenUrl = "imagenes/iphone16.jpg"
-            },
-            new Producto
-            {
-                Id = 4,
-                Nombre = "Iphone 16 Pro MAX",
-                Descripcion = "Celular mas demandado del mercado",
-                Stock = 6,
-                Precio = 120000000,
-                ImagenUrl = "imagenes/iphone16promax.jpg"
-            },
-            new Producto
-            {
-                Id = 5,
-                Nombre = "AirPods Pro",
-                Descripcion = "Auriculares bluetooth",
-                Stock = 20,
-                Precio = 200000,
-                ImagenUrl = "imagenes/airpodspro.jpg"
-            },
-            new Producto
-            {
-                Id = 6,
-                Nombre = "MacBook Air",
-                Descripcion = "Notebook eficaz",
-                Stock = 12,
-                Precio = 220000000,
-                ImagenUrl = "imagenes/macbookair.jpg"
-            },
-            new Producto
-            {
-                Id = 7,
-                Nombre = "MacBook Pro",
-                Descripcion = "Notebook mas potente",
-                Stock = 8,
-                Precio = 390000000,
-                ImagenUrl = "imagenes/macbookpro.jpg"
-            },
-            new Producto
-            {
-                Id = 8,
-                Nombre = "Apple Watch",
-                Descripcion = "Reloj inteligente",
-                Stock = 15,
-                Precio = 340000,
-                ImagenUrl = "imagenes/applewatch.jpg"
-            },
-            new Producto
-            {
-                Id = 9,
-                Nombre = "Ipad Air",
-                Descripcion = "Pantalla inteligente",
-                Stock = 11,
-                Precio = 720000,
-                ImagenUrl = "imagenes/ipadair.jpg"
-            },
-            new Producto
-            {
-                Id = 10,
-                Nombre = "Ipad Pro",
-                Descripcion = "Ipad mas potente y avanzado",
-                Stock = 9,
-                Precio = 130000000,
-                ImagenUrl = "imagenes/ipadpro.jpg"
-            }
-        );
-    }
-}
 
 public class Producto
 {
@@ -327,6 +209,8 @@ public class ItemCarrito
     public int Id { get; set; }
     public int ProductoId { get; set; }
     public Producto Producto { get; set; }
+    public Guid CarritoId { get; set; }
+    public Carrito Carrito { get; set; }
     public int Cantidad { get; set; }
     public int PrecioUnitario { get; set; }
 }
@@ -352,7 +236,9 @@ public class ItemCompra
 {
     public int Id { get; set; }
     public int ProductoId { get; set; }
+    public Producto Producto { get; set; }
     public int CompraId { get; set; }
+    public Compra Compra { get; set; }
     public int Cantidad { get; set; }
     public int PrecioUnitario { get; set; }
 }
@@ -363,3 +249,5 @@ public class CompraDto
     [Required] public string Apellido { get; set; }
     [Required, EmailAddress] public string Email { get; set; }
 }
+
+

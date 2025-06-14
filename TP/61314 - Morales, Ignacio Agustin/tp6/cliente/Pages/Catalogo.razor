@@ -1,8 +1,19 @@
 @using cliente.Models
+@using cliente.shared
+@using cliente.Services
+
 @page "/catalogo"
 @inject ApiService Api
+@inject CarritoService Carrito
 
 <h1 class="titulo-catalogo">Catálogo de Productos Apple</h1>
+
+@if (!string.IsNullOrEmpty(mensajeAlerta))
+{
+    <div class="alerta-exito">
+        @mensajeAlerta
+    </div>
+}
 
 @if (productos == null)
 {
@@ -12,6 +23,7 @@ else if (productos.Count == 0)
 {   
     <p>No hay productos disponibles.</p>
 }
+
 else
 {
     <div class="grid-productos">
@@ -24,14 +36,14 @@ else
                 <p><strong>Precio:</strong> $@Producto.Precio</p>
                 <p><strong>Stock:</strong> @Producto.Stock unidades</p>
                 <p>
-                    
                 </p>
 
-                <button @onclick="() => AgregarAlCarrito(Producto)" 
+                <button @onclick="@(async () => await AgregarAlCarrito(Producto))" 
                         disabled="@(!PuedeAgregar(Producto))"
                         class="boton-agregar">
                     Agregar al carrito
                 </button>
+                <p class="mensaje-agregado" style="display:none;">Producto agregado al carrito</p>
             </div>
         }
     </div>
@@ -39,6 +51,7 @@ else
 
 @code {
     List<ProductoDto> productos;
+    string mensajeAlerta;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,15 +66,33 @@ else
             ImagenUrl = p.ImagenUrl
         }).ToList();
     }
-
-    void AgregarAlCarrito(ProductoDto producto)
+   async Task AgregarAlCarrito(ProductoDto dto)
+{
+    var producto = new Producto
     {
-        if (producto.Stock > 0)
-        {
-            // A futuro, llamá a tu API para agregarlo al carrito real
-            producto.Stock--;
-        }
+        Id = dto.Id,
+        Nombre = dto.Nombre,
+        Descripcion = dto.Descripcion,
+        Precio = dto.Precio,
+        Stock = dto.Stock,
+        ImagenUrl = dto.ImagenUrl
+    };
+
+    Carrito.AgregarProducto(producto);
+
+    var productoActual = productos.FirstOrDefault(p => p.Id == dto.Id);
+    if (productoActual != null && productoActual.Stock > 0)
+    {
+        productoActual.Stock--;
     }
+    mensajeAlerta = $"{producto.Nombre} agregado al carrito ✅";
+
+    StateHasChanged();
+
+    await Task.Delay(3000);
+    mensajeAlerta = null;
+    StateHasChanged();
+}
 
     bool PuedeAgregar(ProductoDto p) => p.Stock > 0;
 
@@ -75,3 +106,4 @@ else
         public string ImagenUrl { get; set; }
     }
 }
+

@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using cliente.Services
+@inherits LayoutComponentBase
+@inject CarritoService micarrito
 
 <div class="main-layout">
     <header class="header">
@@ -12,6 +14,7 @@
 
             <a href="/carrito" class="carrito-icono">
                 🛒 (@CantidadCarrito)
+                
             </a>
         </div>
     </header>
@@ -27,9 +30,7 @@
 
 @code {
     private string busqueda = string.Empty;
-
-    // Esto podría vincularse a un servicio real en el futuro
-    private int CantidadCarrito => 3; // Reemplazalo con tu estado real del carrito
+    private int CantidadCarrito => micarrito.Items.Count; 
 }
 
 

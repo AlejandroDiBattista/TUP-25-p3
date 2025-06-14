@@ -1,10 +1,12 @@
 @using cliente.Models
+@using cliente.Services
 @page "/carrito"
 @inject NavigationManager Navigation
+@inject CarritoService micarrito
 
 <h2 class="titulo-carrito">Carrito de Compras</h2>
 
-@if (carrito.Count == 0)
+@if (micarrito.Items.Count == 0)
 {
     <p>Tu carrito está vacío.</p>
 }
@@ -21,7 +23,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in carrito)
+            @foreach (var item in micarrito.Items)
             {
                 <tr>
                     <td>@item.Producto.Nombre</td>
@@ -40,7 +42,7 @@ else
         </tbody>
     </table>
 
-    <p class="total">Total: <strong>$@carrito.Sum(i => i.Producto.Precio * i.Cantidad)</strong></p>
+    <p class="total">Total: <strong>$@micarrito.CalcularTotal()</strong></p>
 
     <div class="acciones">
         <button @onclick="VaciarCarrito" class="boton-vaciar">Vaciar Carrito</button>
@@ -49,51 +51,23 @@ else
 }
 
 @code {
-    // Simulación local por ahora
-    public class ProductoDto
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string Descripcion { get; set; }
-        public decimal Precio { get; set; }
-        public int Stock { get; set; }
-        public string ImagenUrl { get; set; }
-    }
-
-    public class ItemCarrito
-    {
-        public ProductoDto Producto { get; set; }
-        public int Cantidad { get; set; }
-    }
-
-    List<ItemCarrito> carrito = new()
-    {
-        new ItemCarrito { Producto = new ProductoDto { Id = 1, Nombre = "iPhone 15", Precio = 780000 }, Cantidad = 1 },
-        new ItemCarrito { Producto = new ProductoDto { Id = 5, Nombre = "AirPods Pro", Precio = 200000 }, Cantidad = 2 }
-    };
-
     void CambiarCantidad(int productoId, int cambio)
     {
-        var item = carrito.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null)
-        {
-            item.Cantidad += cambio;
-            if (item.Cantidad <= 0)
-                carrito.Remove(item);
-        }
+        micarrito.CambiarCantidad(productoId, cambio);
     }
 
     void Remover(int productoId)
     {
-        var item = carrito.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null)
-        {
-            carrito.Remove(item);
-        }
+        micarrito.Remover(productoId);
     }
 
-    void VaciarCarrito() => carrito.Clear();
+    void VaciarCarrito()
+    {
+        micarrito.Vaciar();
+    }
 
-    void IrAConfirmacion() => Navigation.NavigateTo("/confirmacion");
+    void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
 }
-

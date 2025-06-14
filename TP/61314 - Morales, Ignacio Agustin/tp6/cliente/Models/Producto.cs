@@ -1,3 +1,4 @@
+
 namespace cliente.shared;
 
 public class Producto
