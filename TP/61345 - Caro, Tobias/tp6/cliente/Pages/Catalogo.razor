@@ -2,9 +2,13 @@
 @using cliente.Shared
 @using Microsoft.AspNetCore.Components
 @inject ApiService ApiService
+@inject NavigationManager NavigationManager
 
 <div class="container my-4">
-    <h2 class="mb-4">Catálogo de Productos</h2>
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0 me-3">Catálogo de Productos</h2>
+        <input class="form-control w-auto" style="max-width: 300px;" type="text" placeholder="Buscar producto..." @bind="busqueda" @bind:event="oninput" />
+    </div>
 
     @if (productos is null)
     {
@@ -16,8 +20,11 @@
     }
     else
     {
+        var productosFiltrados = string.IsNullOrWhiteSpace(busqueda)
+            ? productos
+            : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) || (p.Descripcion?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 row-cols-lg-5 g-4">
-            @foreach (var producto in productos)
+            @foreach (var producto in productosFiltrados)
             {
                 <div class="col">
                     <div class="card h-100 shadow-sm">
@@ -46,6 +53,7 @@
     [Parameter] public EventCallback OnProductoAgregado { get; set; }
     private List<Producto> productos;
     private string errorMsg;
+    private string busqueda = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,6 +74,7 @@
             await ApiService.AgregarAlCarrito(CarritoId, productoId, 1);
             if (OnProductoAgregado.HasDelegate)
                 await OnProductoAgregado.InvokeAsync();
+            NavigationManager.NavigateTo("/carrito");
         }
         catch (Exception ex)
         {

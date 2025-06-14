@@ -1,8 +1,11 @@
 @page "/carrito"
 @using cliente.Services
 @using cliente.Shared
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
 @inject ApiService ApiService
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <PageTitle>Carrito de Compras</PageTitle>
 
@@ -84,6 +87,43 @@
                 <h2 class="total-amount">$@items.Sum(i => i.PrecioUnitario * i.Cantidad)</h2>
             </div>
         }
+
+        @if (items != null && items.Count > 0)
+        {
+            <div class="checkout-section mt-4 p-4 bg-light rounded shadow-sm">
+                <h3>Confirmar compra</h3>
+                <div>
+                    <strong>Total ítems:</strong> @items.Sum(i => i.Cantidad)
+                    <br />
+                    <strong>Importe total:</strong> $@items.Sum(i => i.Cantidad * i.PrecioUnitario)
+                </div>
+                <EditForm Model="@checkoutData" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="mb-2">
+                        <label>Nombre:</label>
+                        <InputText class="form-control" @bind-Value="checkoutData.Nombre" />
+                        <ValidationMessage For="@(() => checkoutData.Nombre)" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Apellido:</label>
+                        <InputText class="form-control" @bind-Value="checkoutData.Apellido" />
+                        <ValidationMessage For="@(() => checkoutData.Apellido)" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Email:</label>
+                        <InputText class="form-control" @bind-Value="checkoutData.Email" />
+                        <ValidationMessage For="@(() => checkoutData.Email)" />
+                    </div>
+                    <button type="submit" class="btn btn-success mt-2">Confirmar compra</button>
+                </EditForm>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensajeExito))
+        {
+            <div class="alert alert-success text-center mt-4">@mensajeExito</div>
+        }
     </div>
 </div>
 
@@ -91,6 +131,19 @@
     private List<ItemCompra> items;
     private int carritoId;
     private string errorMsg;
+    private string mensajeExito = null;
+
+    private class CheckoutData
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string Email { get; set; }
+    }
+    private CheckoutData checkoutData = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -139,10 +192,20 @@
         await CargarItems();
     }
 
+    private async Task ConfirmarCompra()
+    {
+        await ApiService.ConfirmarCompraAsync(carritoId, checkoutData);
+        await ApiService.VaciarCarritoAsync(carritoId);
+        await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+        mensajeExito = "¡Compra confirmada con éxito! Serás redirigido al catálogo.";
+        StateHasChanged();
+        await Task.Delay(1800);
+        NavigationManager.NavigateTo("/");
+    }
+
     private void RegresarAlMenu()
     {
         // Redirige a la página principal (Home)
         NavigationManager.NavigateTo("/");
     }
-    [Inject] private NavigationManager NavigationManager { get; set; }
 }

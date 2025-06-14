@@ -89,6 +89,18 @@ public class ApiService {
         return 0;
     }
 
+    public async Task ConfirmarCompraAsync(int carritoId, object datosCliente)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"carritos/{carritoId}/confirmar", datosCliente);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task VaciarCarritoAsync(int carritoId)
+    {
+        var response = await _httpClient.DeleteAsync($"carritos/{carritoId}");
+        response.EnsureSuccessStatusCode();
+    }
+
     public class CompraCarritoRespuesta
     {
         public int Id { get; set; }

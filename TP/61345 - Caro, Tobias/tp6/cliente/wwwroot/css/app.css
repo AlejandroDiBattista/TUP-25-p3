@@ -181,6 +181,14 @@ a, .btn-link {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.btn-card:active {
+    background-color: #28a745 !important; /* verde Bootstrap */
+    color: #fff !important;
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(40,167,69,0.15);
+    transition: background-color 0.1s, color 0.1s, transform 0.1s;
+}
+
 .btn-outline-primary.ms-3 {
     color: rgb(255, 190, 92);
     background-color: transparent;
@@ -208,13 +216,18 @@ a, .btn-link {
     text-align: start;
 }
 
-/* CSS específico para el carrito - Integrado con el diseño existente */
+
 .cart-container {
-    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
     background: linear-gradient(180deg, blanchedalmond 0%, #f8f4e6 100%);
     min-height: 100vh;
+    min-width: 350px;
+}
+
+.mb-4:hover{
+    color: black;
+    cursor: pointer;
 }
 
 .cart-header {
@@ -226,7 +239,11 @@ a, .btn-link {
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     border-bottom: 2px solid #be9b7b;
     position: relative;
-    cursor: default;  
+    cursor: default;
+    min-width: auto;
+    max-width: 100vw;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .cart-header:hover {
@@ -281,6 +298,7 @@ a, .btn-link {
     margin-bottom: 1rem;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
 }
 
 .cart-item:hover {
@@ -315,6 +333,11 @@ a, .btn-link {
     margin-bottom: 0.5rem;
     line-height: 1.3;
     font-family: 'Poppins', sans-serif;
+    min-width: 120px;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .product-price {
@@ -492,6 +515,11 @@ a, .btn-link {
     border: 2px solid rgba(220, 53, 69, 0.3);
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
     font-weight: 500;
+}
+
+.container {
+    min-height: 0 !important;
+    padding-bottom: 2rem !important;
 }
 
 @media (max-width: 768px) {
