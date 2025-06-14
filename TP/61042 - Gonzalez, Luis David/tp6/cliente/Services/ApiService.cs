@@ -1,28 +1,29 @@
+#nullable enable
 using System.Net.Http.Json;
 
 namespace cliente.Services {
     public class Producto {
         public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string Descripcion { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
         public decimal Precio { get; set; }
         public int Stock { get; set; }
-        public string ImagenUrl { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
     }
 
     public class CarritoItemDto {
         public int Id { get; set; }
         public int ProductoId { get; set; }
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
         public decimal Precio { get; set; }
-        public string ImagenUrl { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
         public int Cantidad { get; set; }
     }
 
     public class ConfirmacionDto {
-        public string Nombre { get; set; }
-        public string Apellido { get; set; }
-        public string Email { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 
     public class ApiService {
@@ -76,7 +77,7 @@ namespace cliente.Services {
     }
 
     public class DatosRespuesta {
-        public string Mensaje { get; set; }
+        public string Mensaje { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
     }
 }

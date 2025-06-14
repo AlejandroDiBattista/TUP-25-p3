@@ -38,45 +38,86 @@
     }
 </div>
 
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (true) // Bloque de depuración SIEMPRE visible
+{
+    <div style="background:#eee; color:#333; font-size:12px; padding:8px; margin-top:20px; border:1px solid #ccc;">
+        <b>DEBUG:</b><br />
+        carritoId: @carritoId<br />
+        productos: @(productos == null ? "null" : $"{productos.Count} items")<br />
+        cantidadCarrito: @cantidadCarrito<br />
+        error: @error
+    </div>
+}
+
 @code {
     string busqueda = "";
     List<Producto> productos;
     int cantidadCarrito = 0;
     Guid carritoId;
+    string error = null;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarCarritoId();
-        await Buscar();
-        await ActualizarCantidadCarrito();
+        try {
+            await CargarCarritoId();
+            await Buscar();
+            await ActualizarCantidadCarrito();
+        } catch (Exception ex) {
+            error = ex.Message;
+        }
     }
 
     async Task Buscar()
     {
-        productos = await Api.ObtenerProductosAsync(busqueda);
+        try {
+            productos = await Api.ObtenerProductosAsync(busqueda);
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al cargar productos: " + ex.Message;
+        }
     }
 
     async Task AgregarAlCarrito(int productoId)
     {
-        await Api.AgregarProductoAsync(carritoId, productoId, 1);
-        await ActualizarCantidadCarrito();
+        try {
+            await Api.AgregarProductoAsync(carritoId, productoId, 1);
+            await ActualizarCantidadCarrito();
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al agregar al carrito: " + ex.Message;
+        }
     }
 
     async Task CargarCarritoId()
     {
-        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
-        if (!Guid.TryParse(idStr, out carritoId))
-        {
-            carritoId = await Api.CrearCarritoAsync();
-            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+        try {
+            var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+            if (!Guid.TryParse(idStr, out carritoId))
+            {
+                carritoId = await Api.CrearCarritoAsync();
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+            }
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al obtener carrito: " + ex.Message;
         }
     }
 
     async Task ActualizarCantidadCarrito()
     {
-        var items = await Api.ObtenerCarritoAsync(carritoId);
-        cantidadCarrito = items.Sum(i => i.Cantidad);
-        StateHasChanged();
+        try {
+            var items = await Api.ObtenerCarritoAsync(carritoId);
+            cantidadCarrito = items.Sum(i => i.Cantidad);
+            StateHasChanged();
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al cargar el carrito: " + ex.Message;
+        }
     }
 
     void IrAlCarrito() => Nav.NavigateTo("/carrito");
