@@ -1,15 +1,13 @@
 /* Fuente general y fondo */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fefefe;
+    background-color: #f7f7f7; /* rojo oscuro fuerte */
     margin: 0;
-    padding: 0;
-    color: #333;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 /* Header */
 header {
-    background-color: #f05c00; /* naranja*/
+    background-color: #352e2e; 
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
@@ -24,7 +22,7 @@ header h1 {
 
 /* Footer */
 footer {
-    background-color: #4254ed; /* verde pastel */
+    background-color: #003cff; /* verde pastel */
     padding: 1rem;
     text-align: center;
     font-size: 0.9rem;
@@ -57,13 +55,13 @@ button, .btn {
     background-color: #eeb6bc;
     border: none;
     border-radius: 6px;
-    color: white;
+    color: rgb(255, 0, 0);
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
 }
 
 button:hover, .btn:hover {
-    background-color: #d99ca5;
+    background-color: #eeb6bc;
 }
 
 /* Tarjetas de productos */
@@ -137,18 +135,14 @@ products-container {
 
 
 .product-card {
-    width: 250px;
-    border: 1px solid #ddd;
+    background-color: #ffffff;
     border-radius: 12px;
     padding: 1rem;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 220px;
     text-align: center;
+    transition: transform 0.2s;
 }
-
 
 .product-card img {
     width: 100%;
@@ -159,7 +153,7 @@ products-container {
 
 
 .product-card .btn {
-    background-color: #f49cab;
+    background-color: #ff6f61;
     border: none;
     color: white;
     border-radius: 6px;
@@ -168,7 +162,7 @@ products-container {
 }
 
 .product-card .btn:hover {
-    background-color: #d77f8e;
+    background-color: #f7022b;
 }
 
 
@@ -184,21 +178,166 @@ products-container {
 }
 
 .btn-agregar {
-    background-color: #f8bfc5; /* rosa pastel */
-    color: white;
+    background-color: #00ff15;   
+    color: white;               
+    font-weight: bold;
     border: none;
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.1s;
     width: 100%;
-    text-align: center;
-    margin-top: 0.5rem;
+    transition: background-color 0.2s ease-in-out, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
 }
 
 .btn-agregar:hover {
-    background-color: #e799a4;
-    transform: scale(1.03); }
+    background-color: #19d800;  /* tono más fuerte al pasar mouse */
+    transform: scale(1.03);
+}
 
-    
+
+    .top-bar {
+    background-color: #b71c1c; /* fondo fuerte */
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: white; /* Asegura que el texto por defecto sea blanco */
+}
+
+.logo {
+    color: #ffffff; /* ✅ TEXTO BLANCO para que se vea */
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1rem;
+}
+.products-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.product-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    width: 220px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: scale(1.03);
+}
+
+.product-card img {
+    max-height: 160px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+}
+
+.product-card h5 {
+    font-weight: 600;
+    margin: 0.5rem 0 0.2rem 0;
+    font-size: 1.05rem;
+}
+
+.product-card p {
+    font-size: 0.9rem;
+    margin: 0.2rem 0;
+}
+
+.btn-agregar {
+    margin-top: 0.7rem;
+    background-color: #06f125;
+    border: none;
+    color: #333;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.btn-agregar:hover {
+    background-color: #34bb0b;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.2);
+}
+
+.btn-confirmar, .btn-cancelar {
+    padding: 0.5rem 1rem;
+    margin: 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-confirmar {
+    background: #c2f9c9;
+}
+
+.btn-cancelar {
+    background: #f9c2c2;
+}
+.top-bar {
+    background-color: #ff6600;
+    padding: 1rem 2rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1rem;
+}
+
+.main-content {
+    padding-top: 1rem;
+}

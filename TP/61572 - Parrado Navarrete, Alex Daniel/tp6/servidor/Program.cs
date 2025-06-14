@@ -3,15 +3,24 @@ using TiendaOnline.Servidor.Data;
 using TiendaOnline.Servidor.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Servicios
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
-    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+}); // ✅ BLOQUE cerrado correctamente
+
+// ✅ AHORA ESTÁ FUERA del bloque AddCors
 var app = builder.Build();
-using(var scope = app.Services.CreateScope())
+
+using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
@@ -61,6 +70,7 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, i
 {
     var producto = await db.Productos.FindAsync(productoId);
     if (producto == null || producto.Stock <= 0) return Results.BadRequest("Sin stock");
+
     var item = await db.ItemsCompra.FirstOrDefaultAsync(i => i.CompraId == carritoId && i.ProductoId == productoId);
     if (item == null)
     {
@@ -72,6 +82,7 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, i
         if (producto.Stock < item.Cantidad + 1) return Results.BadRequest("Sin stock");
         item.Cantidad++;
     }
+
     producto.Stock--;
     await db.SaveChangesAsync();
     return Results.Ok(item);
@@ -81,8 +92,10 @@ app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId
 {
     var item = await db.ItemsCompra.FirstOrDefaultAsync(i => i.CompraId == carritoId && i.ProductoId == productoId);
     if (item == null) return Results.NotFound();
+
     var producto = await db.Productos.FindAsync(productoId);
     producto.Stock += item.Cantidad;
+
     db.ItemsCompra.Remove(item);
     await db.SaveChangesAsync();
     return Results.NoContent();
@@ -92,13 +105,16 @@ app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, Compra c
 {
     var compra = await db.Compras.FindAsync(carritoId);
     if (compra == null) return Results.NotFound();
+
     var items = await db.ItemsCompra.Where(i => i.CompraId == carritoId).ToListAsync();
     compra.NombreCliente = clienteData.NombreCliente;
     compra.ApellidoCliente = clienteData.ApellidoCliente;
     compra.EmailCliente = clienteData.EmailCliente;
     compra.Total = items.Sum(i => i.Cantidad * i.PrecioUnitario);
+
     db.ItemsCompra.RemoveRange(items);
     await db.SaveChangesAsync();
+
     return Results.NoContent();
 });
 
