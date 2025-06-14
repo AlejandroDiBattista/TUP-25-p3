@@ -68,6 +68,6 @@ else
         isProcessing = true;
         await CartService.ConfirmPurchaseAsync(cliente);
         isProcessing = false;
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/compra-exitosa"); 
     }
 }

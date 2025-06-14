@@ -1,3 +1,6 @@
+body {
+    background-color: #26b3a0; /* Un gris claro de Bootstrap, puedes usar otro color */
+}
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -25,7 +28,7 @@ a, .btn-link {
 }
 
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid #d6dfd9;
 }
 
 .invalid {
