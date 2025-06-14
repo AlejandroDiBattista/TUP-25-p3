@@ -1,3 +1,5 @@
+// Habilitar contexto de anotaciones nullable para evitar advertencias
+#nullable enable
 using System.Net.Http.Json;
 
 namespace Cliente.Services;

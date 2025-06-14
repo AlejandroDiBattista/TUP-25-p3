@@ -7,9 +7,9 @@
 <PageTitle>Inicio</PageTitle>
 
 
-<div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
+<div style="max-width:1500px; margin:0 auto; padding:0 1.5rem;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
-        <h1 style="margin:0; font-size:2rem; color:#00796b; flex:1 1 300px;">Tienda Online</h1>
+        <h1 style="margin:0; font-size:2rem; color:#00796b; flex:1 1 300px;">ElectroShop</h1>
         <div style="position:relative; flex:0 0 auto;">
             <a href="/carrito" style="text-decoration:none; color:inherit;">
                 <span style="font-size:1.5rem; cursor:pointer;">
@@ -19,10 +19,7 @@
             </a>
         </div>
     </div>
-<div style="background: var(--color-secundario,#ffebee); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-    <h2 style="color: var(--color-principal,#b71c1c); margin:0;">¡Bienvenido a la Tienda Online!</h2>
-    <p style="margin:0.5rem 0 0 0; color:#b71c1c;">Este frontend Blazor está funcionando correctamente.</p>
-</div>
+
     <div style="margin-bottom:1.5rem; display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
         <input type="text" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." style="padding:0.5rem; width:250px; border-radius:4px; border:1px solid #ccc;" />
         <button @onclick="Buscar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#00796b; color:#fff; border:none;">Buscar</button>
@@ -81,7 +78,6 @@
 
     private DatosRespuesta datos;
     private string error;
-    private bool cargando = false;
     List<Cliente.Services.ProductoDto>? productos;
     string busqueda = string.Empty;
     string mensaje = string.Empty;
@@ -91,14 +87,11 @@
 
     private async Task ObtenerDatosDelServidor() {
         try {
-            cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
         } catch (Exception ex) {
             error = ex.Message;
             datos = null;
-        } finally {
-            cargando = false;
         }
     }
 
@@ -129,6 +122,7 @@
     }
 
     async Task Limpiar()
+
     {
         busqueda = string.Empty;
         productos = await ProductoService.GetProductosAsync();

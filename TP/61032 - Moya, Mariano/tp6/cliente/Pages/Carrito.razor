@@ -13,39 +13,29 @@ else if (items.Count == 0)
 }
 else
 {
-    <div style="max-width: 900px; margin: 0 auto;">
-        <table style="width:100%; border-collapse:collapse; margin-bottom:1.2rem; font-size:1.04rem;">
-            <thead style="background:#e0f7fa;">
-                <tr>
-                    <th style="padding:8px 6px; text-align:left;">Producto</th>
-                    <th style="padding:8px 6px; text-align:right;">Precio</th>
-                    <th style="padding:8px 6px; text-align:center;">Cantidad</th>
-                    <th style="padding:8px 6px; text-align:right;">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in items)
-                {
-                    <tr style="border-bottom:1px solid #eee;">
-                        <td style="padding:8px 6px;">
-                            <img src="@item.ImagenUrl" alt="@item.Nombre" style="height:38px;vertical-align:middle;margin-right:8px;" />
-                            @item.Nombre
-                        </td>
-                        <td style="padding:8px 6px; text-align:right;">$@item.Precio</td>
-                        <td style="padding:8px 6px; text-align:center;">
-                            <button @onclick="() => CambiarCantidad(item, -1)" style="background:#bdbdbd; border:none; border-radius:4px; width:28px; height:28px; font-size:1.13rem;">-</button>
-                            <span style="margin:0 8px;">@item.Cantidad</span>
-                            <button @onclick="() => CambiarCantidad(item, 1)" style="background:#388e3c; color:white; border:none; border-radius:4px; width:28px; height:28px; font-size:1.13rem;">+</button>
-                        </td>
-                        <td style="padding:8px 6px; text-align:right;">$@(item.Precio * item.Cantidad)</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <div style="text-align:right; font-size:1.13rem; font-weight:bold; color:#00796b; margin-bottom:1.2rem;">Total: $@items.Sum(x => x.Precio * x.Cantidad)</div>
-        <div style="display:flex; justify-content:flex-end; gap:1.2rem; margin-bottom:1.5rem;">
-            <button @onclick="VaciarCarrito" style="background:#e57373; color:white; border:none; border-radius:6px; padding:0.8rem 2.1rem; font-size:1.08rem; font-weight:500; letter-spacing:0.01em;">Vaciar carrito</button>
-            <button @onclick="() => mostrarFormulario = !mostrarFormulario" style="background:#388e3c; color:white; border:none; border-radius:6px; padding:0.8rem 2.1rem; font-size:1.08rem; font-weight:500; letter-spacing:0.01em;">Confirmar compra</button>
+    <div style="max-width:1200px; margin:0 auto;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(370px, 1fr)); gap:2rem; margin-bottom:2rem;">
+            @foreach (var item in items)
+            {
+                <div style="background:linear-gradient(120deg,#f8fafc 80%,#e3f2fd 100%); border-radius:18px; box-shadow:0 4px 18px rgba(0,0,0,0.08); padding:1.5rem 2rem; display:flex; align-items:center; gap:1.5rem; min-height:120px;">
+                    <img src="@item.ImagenUrl" alt="@item.Nombre" style="height:70px; width:70px; object-fit:contain; border-radius:12px; background:#fff; box-shadow:0 2px 8px #e0e0e0;" />
+                    <div style="flex:1;">
+                        <div style="font-size:1.18rem; font-weight:600; color:#00796b;">@item.Nombre</div>
+                        <div style="color:#444; font-size:1.05rem; margin-bottom:0.3rem;">Precio: <b>$@item.Precio</b></div>
+                        <div style="color:#888; font-size:0.98rem;">Subtotal: <b>$@(item.Precio * item.Cantidad)</b></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <button @onclick="() => CambiarCantidad(item, -1)" style="background:#e0e0e0; border:none; border-radius:50%; width:36px; height:36px; font-size:1.3rem; color:#b71c1c; font-weight:bold; box-shadow:0 1px 4px #eee; transition:background 0.2s;">-</button>
+                        <span style="font-size:1.15rem; font-weight:500; min-width:32px; text-align:center;">@item.Cantidad</span>
+                        <button @onclick="() => CambiarCantidad(item, 1)" style="background:#388e3c; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:1.3rem; font-weight:bold; box-shadow:0 1px 4px #b2dfdb; transition:background 0.2s;">+</button>
+                    </div>
+                </div>
+            }
+        </div>
+        <div style="text-align:right; font-size:1.25rem; font-weight:bold; color:#00796b; margin-bottom:2rem;">Total: $@items.Sum(x => x.Precio * x.Cantidad)</div>
+        <div style="display:flex; justify-content:flex-end; gap:1.5rem; margin-bottom:2.5rem;">
+            <button @onclick="VaciarCarrito" style="background:linear-gradient(90deg,#ff8a80 0%,#e57373 100%); color:white; border:none; border-radius:8px; padding:1rem 2.5rem; font-size:1.13rem; font-weight:600; letter-spacing:0.01em; box-shadow:0 2px 8px #ffcdd2; transition:background 0.2s;">Vaciar carrito</button>
+            <button @onclick="() => mostrarFormulario = !mostrarFormulario" style="background:linear-gradient(90deg,#43e97b 0%,#38f9d7 100%); color:#155724; border:none; border-radius:8px; padding:1rem 2.5rem; font-size:1.13rem; font-weight:600; letter-spacing:0.01em; box-shadow:0 2px 8px #b2dfdb; transition:background 0.2s;">Confirmar compra</button>
         </div>
     </div>
 }
@@ -81,15 +71,23 @@ else
     </div>
 }
 
-@if (!string.IsNullOrEmpty(mensaje))
+
+@if (mostrarPopup)
 {
-    <div style="margin-top:1rem; color:green; font-weight:bold;">@mensaje</div>
+    <div style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:1000; display:flex; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:12px; box-shadow:0 6px 32px rgba(0,0,0,0.18); padding:2.5rem 2.5rem 2rem 2.5rem; min-width:320px; text-align:center;">
+            <div style="font-size:1.35rem; color:#388e3c; font-weight:bold; margin-bottom:1.2rem;">¡Compra confirmada!</div>
+            <div style="font-size:1.08rem; color:#444; margin-bottom:2rem;">Tu compra fue realizada con éxito.</div>
+            <button @onclick="CerrarPopup" style="background:#388e3c; color:white; border:none; border-radius:6px; padding:0.7rem 2.2rem; font-size:1.08rem; font-weight:600;">Aceptar</button>
+        </div>
+    </div>
 }
 
 @code {
     List<Cliente.Services.CarritoService.ItemCarritoDto> items = new();
     bool cargando = true;
     string mensaje = string.Empty;
+    bool mostrarPopup = false;
     bool mostrarFormulario = false;
     Cliente.Services.CarritoService.DatosClienteDto datosCliente = new();
     string nombreError = string.Empty;
@@ -159,13 +157,18 @@ else
         var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
         if (ok)
         {
-            mensaje = "¡Compra confirmada!";
             mostrarFormulario = false;
+            mostrarPopup = true;
             await CargarCarrito();
         }
         else
         {
             mensaje = "No se pudo confirmar la compra.";
         }
+    }
+
+    void CerrarPopup()
+    {
+        mostrarPopup = false;
     }
 }
