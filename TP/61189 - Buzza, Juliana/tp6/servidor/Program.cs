@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using servidor.Data;
-using servidor.Models; 
+using servidor.Models;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization; 
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,24 +15,28 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.WithOrigins("http://localhost:5177", "https://localhost:7221", "http://localhost:5000", "https://localhost:5001")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
-
-builder.Services.AddControllers();
 
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
+    var services = scope.ServiceProvider; 
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
@@ -43,6 +49,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -54,9 +61,15 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowClientApp");
 
+app.UseRouting();
+app.UseAuthorization();
+app.MapControllers();
+
 
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
+
 app.MapGet("/productos", async (string? query, AppDbContext db) =>
 {
     IQueryable<Producto> productos = db.Productos;
@@ -78,9 +91,9 @@ app.MapPost("/carritos", async (AppDbContext db) =>
 app.MapGet("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
 {
     var cart = await db.Compras
-                        .Include(c => c.Items)
-                        .ThenInclude(ic => ic.Producto)
-                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                       .Include(c => c.Items)
+                       .ThenInclude(ic => ic.Producto)
+                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
 
     if (cart == null)
     {
@@ -95,11 +108,10 @@ app.MapGet("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
         item.Cantidad,
         item.PrecioUnitario,
         ProductoImagenUrl = item.Producto?.ImagenUrl,
-        ProductoStock = item.Producto?.Stock
+        ProductoStock = item.Producto?.Stock 
     }));
 });
 
-// PUT /carritos/{carritoId}/{productoId} -> Agrega un producto al carrito (o actualiza cantidad)
 app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int productoId, [FromBody] int cantidad, AppDbContext db) =>
 {
     if (cantidad <= 0)
@@ -135,7 +147,7 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int produ
             Cantidad = cantidad,
             PrecioUnitario = producto.Precio
         });
-        producto.Stock -= cantidad;
+        producto.Stock -= cantidad; 
     }
     else
     {
@@ -147,20 +159,30 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int produ
             return Results.BadRequest($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}");
         }
         cartItem.Cantidad = cantidad;
-        producto.Stock -= quantityDifference;
-        cartItem.PrecioUnitario = producto.Precio;
+        producto.Stock -= quantityDifference; 
+        cartItem.PrecioUnitario = producto.Precio; 
     }
 
     cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
     await db.SaveChangesAsync();
-    return Results.Ok(cart.Items);
+    
+    return Results.Ok(cart.Items.Select(item => new
+    {
+        item.Id,
+        item.ProductoId,
+        ProductoNombre = item.Producto?.Nombre,
+        item.Cantidad,
+        item.PrecioUnitario,
+        ProductoImagenUrl = item.Producto?.ImagenUrl,
+        ProductoStock = item.Producto?.Stock
+    }));
 });
 
 app.MapDelete("/carritos/{carritoId}/{productoId}", async (int carritoId, int productoId, AppDbContext db) =>
 {
     var cart = await db.Compras
-                        .Include(c => c.Items)
-                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                       .Include(c => c.Items)
+                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
     if (cart == null)
     {
         return Results.NotFound("Carrito no encontrado o ya confirmado.");
@@ -175,7 +197,7 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", async (int carritoId, int pr
     var producto = await db.Productos.FindAsync(productoId);
     if (producto != null)
     {
-        producto.Stock += cartItem.Cantidad;
+        producto.Stock += cartItem.Cantidad; 
     }
 
     cart.Items.Remove(cartItem);
@@ -187,8 +209,8 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", async (int carritoId, int pr
 app.MapDelete("/carritos/{carritoId}/vaciar", async (int carritoId, AppDbContext db) =>
 {
     var cart = await db.Compras
-                        .Include(c => c.Items)
-                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                       .Include(c => c.Items)
+                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
     if (cart == null)
     {
         return Results.NotFound("Carrito no encontrado o ya confirmado.");
@@ -212,8 +234,8 @@ app.MapDelete("/carritos/{carritoId}/vaciar", async (int carritoId, AppDbContext
 app.MapPut("/carritos/{carritoId}/confirmar", async (int carritoId, CompraConfirmationDto confirmationData, AppDbContext db) =>
 {
     var cart = await db.Compras
-                        .Include(c => c.Items)
-                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                       .Include(c => c.Items)
+                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
     if (cart == null)
     {
         return Results.NotFound("Carrito no encontrado o ya confirmado.");
@@ -228,10 +250,22 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (int carritoId, CompraConfir
     cart.ApellidoCliente = confirmationData.ApellidoCliente;
     cart.EmailCliente = confirmationData.EmailCliente;
     cart.Status = "Confirmed";
-    cart.Fecha = DateTime.Now;
-    cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
+    cart.Fecha = DateTime.Now; 
+    cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario); 
 
     await db.SaveChangesAsync();
-    return Results.Ok(cart);
+    return Results.Ok(new
+    {
+        cart.Id,
+        cart.Fecha,
+        cart.Total,
+        cart.NombreCliente,
+        cart.ApellidoCliente,
+        cart.EmailCliente,
+        cart.Status,
+        ItemsCount = cart.Items.Count 
+    });
 });
+
+
 app.Run();

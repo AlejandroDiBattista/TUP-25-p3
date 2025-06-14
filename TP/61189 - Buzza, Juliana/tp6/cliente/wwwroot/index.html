@@ -1,58 +1,62 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>CalzadoEstilo</title>
-    <base href="/" />
-    <link href="css/app.css" rel="stylesheet" />
-    <link href="cliente.styles.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --color-beige: #F5EFE6;
-            --color-brown: #A38466;
-            --color-darkbrown: #7A5B42;
-            --color-accent: #D36C2F;
-            --color-brown-light: #C2A88D; 
-        }
-    </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        beige: 'var(--color-beige)',
-                        brown: {
-                            light: 'var(--color-brown-light)',
-                            DEFAULT: 'var(--color-brown)',
-                            dark: 'var(--color-darkbrown)',
-                        },
-                        accent: 'var(--color-accent)',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+        <!-- Cliente/wwwroot/index.html -->
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <title>CalzadoEstilo</title>
+            <base href="/" />
+            <link href="css/app.css" rel="stylesheet" />
+            <link href="Cliente.styles.css" rel="stylesheet" />
+            <link rel="icon" type="image/png" href="favicon.png" />
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+            <!-- Tailwind CSS CDN -->
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+                /* Configuración de Tailwind para usar colores personalizados */
+                :root {
+                    --color-beige: #F5EFE6;
+                    --color-brown: #A38466;
+                    --color-darkbrown: #7A5B42;
+                    --color-accent: #D36C2F;
+                    --color-brown-light: #C2A88D; /* Para anillos de enfoque */
                 }
-            }
-        }
-    </script>
-</head>
-<body class="bg-beige font-sans antialiased">
-    <div id="app">
-        <div class="loading-container">
-            <img src="/Imagenes/logo.jpg" alt="Cargando..." class="loading-logo rounded-full shadow-lg animate-pulse" />
-            <div class="loading-text text-brown text-lg font-semibold mt-4">Cargando tienda...</div>
-        </div>
-    </div>
+            </style>
+            <script>
+                tailwind.config = {
+                    theme: {
+                        extend: {
+                            colors: {
+                                beige: 'var(--color-beige)',
+                                brown: {
+                                    light: 'var(--color-brown-light)',
+                                    DEFAULT: 'var(--color-brown)',
+                                    dark: 'var(--color-darkbrown)',
+                                },
+                                accent: 'var(--color-accent)',
+                            },
+                            fontFamily: {
+                                sans: ['Inter', 'sans-serif'],
+                            },
+                        }
+                    }
+                }
+            </script>
+        </head>
+        <body class="bg-beige font-sans antialiased">
+            <div id="app">
+                <div class="loading-container">
+                    <img src="/Imagenes/logo.png" alt="Cargando..." class="loading-logo rounded-full shadow-lg animate-pulse" />
+                    <div class="loading-text text-brown text-lg font-semibold mt-4">Cargando tienda...</div>
+                </div>
+            </div>
 
-    <div id="blazor-error-ui">
-        Un error no controlado ha ocurrido.
-        <a href="" class="reload">Recargar</a>
-        <a class="dismiss">x</a>
-    </div>
-    <script src="_framework/blazor.webassembly.js"></script>
-</body>
-</html>
+            <div id="blazor-error-ui">
+                An unhandled error has occurred.
+                <a href="" class="reload">Reload</a>
+                <a class="dismiss">x</a>
+            </div>
+            <script src="_framework/blazor.webassembly.js"></script>
+        </body>
+        </html>
+        
