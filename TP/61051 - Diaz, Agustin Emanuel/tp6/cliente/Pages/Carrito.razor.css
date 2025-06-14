@@ -1,4 +1,4 @@
-   .carrito-container {
+.carrito-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 2rem;
@@ -97,11 +97,25 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
 
-    .item-imagen img {
-        width: 100%;
+    .item-imagen {
+        width: 120px;
         height: 80px;
-        object-fit: cover;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+        overflow: hidden;
+    }
+
+    .item-imagen img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px;
     }
 
     .item-info {
@@ -358,6 +372,12 @@
             grid-template-columns: 1fr;
             gap: 1rem;
             text-align: center;
+        }
+
+        .item-imagen {
+            width: 100px;
+            height: 70px;
+            margin: 0 auto;
         }
 
         .item-controles {
