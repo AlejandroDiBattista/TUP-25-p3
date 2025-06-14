@@ -7,10 +7,14 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configurar el HttpClient para apuntar al servidor API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+// --- INICIA CORRECCIÓN ---
+// HttpClient y ApiService ahora se registran como Singleton 
+// para que el CartService (que también es Singleton) pueda usarlos.
+builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+builder.Services.AddSingleton<ApiService>();
+// --- FIN CORRECCIÓN ---
 
-// Registrar el servicio API
-builder.Services.AddScoped<ApiService>();
+// CartService se mantiene como Singleton, lo cual es correcto.
+builder.Services.AddSingleton<CartService>();
 
 await builder.Build().RunAsync();

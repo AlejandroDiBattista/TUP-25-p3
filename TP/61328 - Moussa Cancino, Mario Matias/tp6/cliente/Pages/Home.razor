@@ -1,59 +1,65 @@
 ﻿@page "/"
+@using cliente.Modelos
 @using cliente.Services
 @inject ApiService ApiService
+@inject CartService CartService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Catálogo de Productos</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
+<h1>Nuestros Productos</h1>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
+@if (error != null)
+{
+    <div class="alert alert-danger">Error al cargar productos: @error</div>
+}
+else if (productos == null)
+{
+    <p><em>Cargando productos...</em></p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var producto in productos)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
                     <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
+                        <p class="card-text"><small class="text-muted">Stock disponible: @producto.Stock</small></p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary w-100" 
+                                disabled="@(producto.Stock == 0)" 
+                                @onclick="() => AddToCart(producto)">
+                            @(producto.Stock == 0 ? "Sin Stock" : "Agregar al carrito")
+                        </button>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> productos;
     private string error;
-    private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
+    protected override async Task OnInitializedAsync()
+    {
         try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+            productos = await ApiService.GetProductosAsync();
         }
+        catch (Exception ex) {
+            error = ex.Message;
+        }
+    }
+
+    // <<< MÉTODO NUEVO >>>
+    private async Task AddToCart(Producto producto)
+    {
+        await CartService.AddToCartAsync(producto);
     }
 }
