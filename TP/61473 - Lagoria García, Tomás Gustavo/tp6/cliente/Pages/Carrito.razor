@@ -68,3 +68,8 @@ else
         Nav.NavigateTo($"/confirmacion");
         
     }
+    private async Task CargarCarrito()
+    {
+        ItemsCarrito = await CarritoService.ObtenerCarritoAsync(carritoId);
+        CalcularTotal();
+    }
