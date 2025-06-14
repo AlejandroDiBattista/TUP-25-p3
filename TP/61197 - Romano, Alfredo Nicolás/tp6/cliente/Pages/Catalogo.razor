@@ -2,13 +2,13 @@
 @using cliente.Services
 @inject HttpClient Http
 
-<div class="header">
+<header>
     <h1 class="logo" style="cursor:pointer" @onclick="MostrarCatalogo">LUCARBA</h1>
     <input class="buscador" value="@busqueda" @oninput="OnBusquedaChanged" placeholder="Buscar productos..." />
     <div class="carrito-icono" style="float:right;cursor:pointer" @onclick="MostrarCarrito">
         🛒 <span class="carrito-contador">@TotalCarrito</span>
     </div>
-</div>
+</header>
 
 @if (vista == "catalogo")
 {

@@ -5,33 +5,28 @@ body {
 }
 
 header { 
-    background: #e00; 
+    background: #920000; 
     color: #fff; 
-    padding: 1rem; 
+    padding: 1em 2em; 
     display: flex; 
     align-items: center; 
-    gap: 1rem; 
-    position: sticky; top: 0; 
+    justify-content: space-between; 
+    position: sticky; 
+    top: 0; 
 }
 
 .logo { 
-    font-size: 2rem;
-    font-weight: bold;
-    margin-right: 2rem;
+    font-weight: bold; 
+    font-size: 1.5em; 
 }
 
 .buscador { 
-    flex: 1;
-    padding: 0.5rem;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    margin-left: 2em; 
 }
 
 .carrito-icono 
 { cursor: pointer; 
     position: relative; 
-    font-size: 1.5rem;
-    margin-left: 1rem;
 }
 
 .carrito-contador { 
@@ -46,8 +41,8 @@ header {
 }
 
 .contenedor { 
-    margin: 2rem auto;
-    max-width: 900px;
+    max-width: 900px; 
+    margin: 2em auto; 
     background: #fff; 
     border-radius: 8px; 
     box-shadow: 0 2px 8px #ccc; 
@@ -57,68 +52,66 @@ header {
 .productos { 
     display: flex; 
     flex-wrap: wrap; 
-    gap: 2rem; 
-    justify-content: center;
+    gap: 2em; 
 }
 
 .producto { 
-    background: #fff;
+    width: 200px; 
     border: 1px solid #eee; 
-    border-radius: 10px; 
-    box-shadow: 0 2px 8px #0001;
-    padding: 1rem; 
-    width: 220px; 
+    border-radius: 8px; 
+    padding: 1em; 
     text-align: center; 
+    background: #fafafa; 
 }
-.producto-img {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    margin-bottom: 0.5rem;
-}
-
-.producto-desc {
-    font-size: 0.95rem;
-    color: #444;
-    min-height: 40px;
+.producto img { 
+    width: 100px; 
+    height: 100px; 
+    object-fit: contain; 
 }
 
-.precio { 
-    color: #e00;
-    font-weight: bold;
-    margin: 0.5rem 0;
+.producto h3 {
+    margin: 0.5em 0 0.2em 0; 
 }
 
-.stock { 
-    font-size: 0.9rem; 
-    color: #090; 
+.producto .precio { 
+    color: #008b8b; 
+    font-weight: bold; 
 }
 
-.btn-agregar, .btn-confirmar, .btn-vaciar, .btn-cantidad, .btn-eliminar {
-    margin: 0.2rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 5px;
-    border: none;
-    background: #e00;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1rem;
+.producto .stock { 
+    font-size: 0.9em; 
+    color: #555; 
 }
 
-.btn-agregar:disabled 
-{ background: #aaa; 
+.producto button { 
+    margin-top: 0.5em; 
+    background: #b92f28; 
+    color: #fff; 
+    border: none; 
+    border-radius: 4px; 
+    padding: 0.5em 1em; 
+    cursor: pointer; 
+}
+
+.producto button:disabled 
+{ background: #ccc; 
     cursor: not-allowed; 
 }
 
-.tabla-carrito {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
+.carrito, .confirmacion { 
+    max-width: 600px; 
+    margin: 2em auto; 
 }
 
-.tabla-carrito th, .tabla-carrito td { 
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-bottom: 1em; 
+}
+
+th, td { 
     border: 1px solid #ddd; 
-    padding: 0.5rem; 
+    padding: 0.5em; 
     text-align: center; 
 }
 
@@ -126,23 +119,15 @@ header {
     margin: 0 0.2em; 
 }
 
-.formulario { 
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    max-width: 300px;
-    margin: 1rem auto;
-}
-
 .formulario label { 
     display: block; 
     margin-top: 1em; 
 }
 
-.input-form {
-    padding: 0.4rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+.formulario input { 
+    width: 100%; 
+    padding: 0.5em; 
+    margin-top: 0.2em; 
 }
 
 .formulario button { 
@@ -156,13 +141,12 @@ header {
 }
 
 .resumen { 
-    margin: 1rem 0;
-    font-size: 1.2rem;
+    margin-bottom: 1em; 
 }
 
 .volver { 
     margin-top: 1em; 
     display: inline-block; 
-    color: #0071c1;
+    color: #008b8b; 
     cursor: pointer; 
 }
