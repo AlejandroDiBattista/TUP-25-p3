@@ -65,6 +65,7 @@ a:hover, .btn-link:hover {
 .badge {
     font-size: 0.9rem;
     padding: 0.4em 0.7em;
+  
 }
 
 /* Catálogo */
@@ -387,4 +388,11 @@ position: absolute;
     background: #258cfb;
     color: #fff;
     transform: scale(1.08);
+}
+.mb-3 strong {
+    color: #222 !important;
+}
+
+.mb-3 {
+    color: #222 !important;
 }
