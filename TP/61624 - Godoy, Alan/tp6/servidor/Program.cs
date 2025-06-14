@@ -22,8 +22,44 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
+// Endpoints para Compras
+app.MapGet("/compras", async (AppDbContext db) =>
+{
+    return await db.Compras.Include(c => c.Items).ToListAsync();
+});
 
-// Endpoints para Productos
+app.MapGet("/compras/{id}", async (int id, AppDbContext db) =>
+{
+    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
+    return compra is not null ? Results.Ok(compra) : Results.NotFound();
+});
+
+app.MapPost("/compras", async (Compra compra, AppDbContext db) =>
+{
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Created($"/compras/{compra.Id}", compra);
+});
+
+// Endpoints para ItemsCompra
+app.MapGet("/itemscompra", async (AppDbContext db) =>
+{
+    return await db.ItemsCompra.ToListAsync();
+});
+
+app.MapGet("/itemscompra/{id}", async (int id, AppDbContext db) =>
+{
+    var item = await db.ItemsCompra.FindAsync(id);
+    return item is not null ? Results.Ok(item) : Results.NotFound();
+});
+
+app.MapPost("/itemscompra", async (ItemCompra item, AppDbContext db) =>
+{
+    db.ItemsCompra.Add(item);
+    await db.SaveChangesAsync();
+    return Results.Created($"/itemscompra/{item.Id}", item);
+});
+
 
 // Obtener todas las compras
 app.MapGet("/compras", async (AppDbContext db) =>
