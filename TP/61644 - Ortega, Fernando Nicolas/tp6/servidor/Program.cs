@@ -42,6 +42,21 @@ app.MapGet("/productos", async (TiendaDbContext db, string? q) =>
         productos = productos.Where(p => p.Nombre.Contains(q) || p.Descripcion.Contains(q));
     return await productos.ToListAsync();
 });
+app.MapPost("/carritos", async (TiendaDbContext db) =>
+{
+    var compra = new servidor.Models.Compra
+    {
+        Fecha = DateTime.Now,
+        Total = 0,
+        NombreCliente = "",
+        ApellidoCliente = "",
+        EmailCliente = "",
+        Articulos = new List<servidor.Models.ArticuloCompra>()
+    };
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Ok(new { carritoId = compra.Id });
+});
 
 using (var scope = app.Services.CreateScope())
 {
