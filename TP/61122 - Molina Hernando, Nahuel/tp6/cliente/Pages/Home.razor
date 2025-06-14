@@ -4,34 +4,43 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h3>Catálogo de Productos</h3>
+<h2 class="fw-bold text-center text-dark mb-4">Catálogo de Iphones</h2>
 
 @if (productos is null)
 {
-    <p>Cargando productos...</p>
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div class="mt-2">Cargando productos...</div>
+    </div>
 }
 else if (productos.Count == 0)
 {
-    <p>No hay productos para mostrar.</p>
+    <div class="alert alert-info text-center">No hay productos para mostrar.</div>
 }
 else
 {
-    <div class="row">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
         @foreach (var producto in productos)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
                     @if (!string.IsNullOrEmpty(producto.ImagenUrl))
                     {
-                        <img src="@producto.ImagenUrl" class="card-img-top img-fluid" alt="@producto.Nombre" style="max-height: 150px; object-fit: contain;" />
+                        <img src="@producto.ImagenUrl" class="card-img-top p-3" alt="@producto.Nombre" style="max-height: 180px; object-fit: contain; border-radius: 1rem;" />
                     }
                     <div class="card-body">
-                        <h5 class="card-title">@producto.Nombre</h5>
-                        <p class="card-text">@producto.Descripcion</p>
-                        <p>Precio: $@producto.Precio</p>
-                        <p>Stock: @producto.Stock</p>
-                        <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto.Id, producto.Stock)" disabled="@((producto.Stock == 0))">
-                            Agregar al carrito
+                        <h5 class="card-title fw-bold text-dark">@producto.Nombre</h5>
+                        <p class="card-text text-muted">@producto.Descripcion</p>
+                    </div>
+                    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold text-success fs-5">$@producto.Precio</span>
+                            <span class="text-secondary small ms-2">Stock: @producto.Stock</span>
+                        </div>
+                        <button class="btn btn-outline-primary rounded-pill d-flex align-items-center"
+                                @onclick="() => AgregarAlCarrito(producto.Id, producto.Stock)"
+                                disabled="@((producto.Stock == 0))">
+                            <i class="bi bi-cart-plus me-2"></i> Agregar
                         </button>
                     </div>
                 </div>
@@ -42,7 +51,7 @@ else
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <div class="alert alert-success mt-3">@mensaje</div>
+    <div class="alert alert-success mt-3 text-center">@mensaje</div>
 }
 
 @code {
@@ -76,6 +85,7 @@ else
         if (stock > 0)
         {
             await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, 1);
+            mensaje = "Producto agregado al carrito.";
             Navigation.NavigateTo("/carrito"); 
         }
         else
