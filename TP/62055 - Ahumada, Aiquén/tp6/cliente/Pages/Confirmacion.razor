@@ -40,9 +40,10 @@
 </div>
 
 <h3>Confirmación de compra</h3>
-
 @if (!compraConfirmada)
 {
+   
+
     <div class="mb-3">
         <strong>Total ítems:</strong> @CarritoService.TotalItems() <br />
         <strong>Importe total:</strong> $@CarritoService.Total()
@@ -64,7 +65,10 @@
         </div>
         <button class="btn btn-success" type="submit">Confirmar compra</button>
     </EditForm>
+   
+    
 }
+
 else
 {
     <div class="confirmacion-centro">

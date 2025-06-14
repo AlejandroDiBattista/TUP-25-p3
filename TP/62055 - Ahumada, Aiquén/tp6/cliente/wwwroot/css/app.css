@@ -8,7 +8,12 @@ body, html {
     padding-bottom: 80px;
 }
 
-
+.form-control,
+label,
+strong,
+h3 {
+    color: #222 !important;
+}
 
 
     .main-layout header {
@@ -25,6 +30,9 @@ body, html {
         min-height: 80vh;
         
     }
+    .alert-success {
+    color: #222 !important;
+}
 
 
 a, .btn-link {
