@@ -1,0 +1,107 @@
+﻿@page "/carrito"
+@using Cliente.Modelo
+@using Cliente.Services
+@using System.ComponentModel.DataAnnotations
+@inject CartService CartService
+@inject NavigationManager Navigation
+
+<h3>Carrito de compras</h3>
+
+@if (items is null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Precio</td>
+                    <td>$@item.Importe</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><b>Total: $@items.Sum(i => i.Importe)</b></p>
+
+    <EditForm Model="compra" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-2">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="compra.NombreCliente" />
+        </div>
+        <div class="mb-2">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="compra.ApellidoCliente" />
+        </div>
+        <div class="mb-2">
+            <label>Email:</label>
+            <InputText class="form-control" @bind-Value="compra.EmailCliente" />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info mt-2">@mensaje</div>
+    }
+}
+
+@code {
+    List<ItemCarritoDto>? items;
+    CompraDto compra = new();
+    string? mensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await CartService.ObtenerItems();
+    }
+
+    async Task ConfirmarCompra()
+    {
+        var ok = await CartService.ConfirmarCompra(compra);
+        if (ok)
+        {
+            mensaje = "¡Compra confirmada! Redirigiendo...";
+            await CartService.VaciarCarrito();
+            items = new List<ItemCarritoDto>();
+            compra = new CompraDto();
+            StateHasChanged();
+            
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            mensaje = "Ocurrió un error al confirmar la compra.";
+        }
+    }
+
+    public class CompraDto
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string NombreCliente { get; set; } = "";
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string ApellidoCliente { get; set; } = "";
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string EmailCliente { get; set; } = "";
+    }
+}
