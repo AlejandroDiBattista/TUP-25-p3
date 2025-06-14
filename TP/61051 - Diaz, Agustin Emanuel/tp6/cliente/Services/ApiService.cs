@@ -151,7 +151,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.PostAsync($"/carritos/vaciar?id={carritoId}", null);
+        var response = await _httpClient.PostAsync($"/carrito/vaciar?id={carritoId}", null);
 
         if (response.IsSuccessStatusCode)
         {
@@ -171,7 +171,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.DeleteAsync($"/carritos?id={carritoId}");
+        var response = await _httpClient.DeleteAsync($"/carrito?id={carritoId}");
 
         if (response.IsSuccessStatusCode)
         {
