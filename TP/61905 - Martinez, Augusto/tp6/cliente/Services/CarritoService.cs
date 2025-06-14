@@ -2,67 +2,69 @@ using Cliente.Models;
 using System.Collections.Generic;
 using System.Linq;
 
-public class CarritoService
+namespace Cliente.Services
 {
-    public List<CarritoItem> Items { get; private set; } = new();
-
-    public decimal Total => Items.Sum(i => i.Importe);
-
-    public void Agregar(CarritoItem nuevoItem)
+    public class CarritoService
     {
-        var existente = Items.FirstOrDefault(i => i.ProductoId == nuevoItem.ProductoId);
-        if (existente != null)
-        {
-            existente.Cantidad += nuevoItem.Cantidad;
-        }
-        else
-        {
-            Items.Add(nuevoItem);
-        }
-    }
+        public List<CarritoItem> Items { get; private set; } = new();
 
-    public void ModificarCantidad(int productoId, int cambio)
-    {
-        var item = Items.FirstOrDefault(i => i.ProductoId == productoId);
-        if (item == null) return;
+        public decimal Total => Items.Sum(i => i.Importe);
 
-        item.Cantidad += cambio;
-        if (item.Cantidad <= 0)
+        public void Agregar(CarritoItem nuevoItem)
         {
-            Items.Remove(item);
-        }
-    }
-
-    public void Vaciar()
-    {
-        Items.Clear();
-    }
-
-    // ✅ Método nuevo: para usar desde Home.razor
-    public void AgregarProducto(Producto producto)
-    {
-        var existente = Items.FirstOrDefault(i => i.ProductoId == producto.Id);
-        if (existente != null)
-        {
-            existente.Cantidad++;
-        }
-        else
-        {
-            Items.Add(new CarritoItem
+            var existente = Items.FirstOrDefault(i => i.ProductoId == nuevoItem.ProductoId);
+            if (existente != null)
             {
-                ProductoId = producto.Id,
-                Nombre = producto.Nombre,
-                PrecioUnitario = producto.Precio,
-                Cantidad = 1
-            });
+                existente.Cantidad += nuevoItem.Cantidad;
+            }
+            else
+            {
+                Items.Add(nuevoItem);
+            }
         }
 
-        producto.Stock--; // Opcional: si querés actualizar stock en UI
-    }
+        public void ModificarCantidad(int productoId, int cambio)
+        {
+            var item = Items.FirstOrDefault(i => i.ProductoId == productoId);
+            if (item == null) return;
 
-    // ✅ Método nuevo: devuelve cantidad total de productos
-    public int ContadorProductos()
-    {
-        return Items.Sum(i => i.Cantidad);
+            item.Cantidad += cambio;
+            if (item.Cantidad <= 0)
+            {
+                Items.Remove(item);
+            }
+        }
+
+        public void Vaciar()
+        {
+            Items.Clear();
+        }
+
+        public void AgregarProducto(Producto producto)
+        {
+            var existente = Items.FirstOrDefault(i => i.ProductoId == producto.Id);
+            if (existente != null)
+            {
+                existente.Cantidad++;
+            }
+            else
+            {
+                Items.Add(new CarritoItem
+                {
+                    ProductoId = producto.Id,
+                    Nombre = producto.Nombre,
+                    PrecioUnitario = producto.Precio,
+                    Cantidad = 1
+                });
+            }
+
+            producto.Stock--; // Opcional
+        }
+
+        public int ContadorProductos()
+        {
+            return Items.Sum(i => i.Cantidad);
+        }
     }
 }
+

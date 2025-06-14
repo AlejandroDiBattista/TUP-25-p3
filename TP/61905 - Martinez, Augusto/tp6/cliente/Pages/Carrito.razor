@@ -1,5 +1,6 @@
 @page "/carrito"
 @using Cliente.Models
+@using Cliente.Services
 @inject CarritoService CarritoService
 @inject NavigationManager Navigation
 
@@ -37,7 +38,7 @@
     <h5>Total: @CarritoService.Total.ToString("C")</h5>
 
     <button class="btn btn-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
-    <button class="btn btn-primary" @onclick="ConfirmarCompra">Confirmar Compra</button>
+    <button class="btn btn-success me-2" @onclick="IrAConfirmar">Finalizar compra</button>
 
     <!-- Botón para volver al catálogo -->
     <button class="btn btn-secondary mt-3" @onclick="VolverAlCatalogo">🔙 Volver al catálogo</button>
@@ -61,11 +62,9 @@ else
         CarritoService.Vaciar();
     }
 
-    void ConfirmarCompra()
+     private void IrAConfirmar()
     {
-        // Redirigir a página de confirmación (puedes inyectar NavigationManager)
-        // Navigation.NavigateTo("/confirmacion");
-        Console.WriteLine("Compra confirmada");
+        Navigation.NavigateTo("/confirmar");
     }
 
     void VolverAlCatalogo()

@@ -1,5 +1,5 @@
 using cliente;
-using cliente.Services;
+using Cliente.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

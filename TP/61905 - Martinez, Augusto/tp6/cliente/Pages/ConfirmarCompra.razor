@@ -1,0 +1,70 @@
+@page "/confirmar"
+@using Cliente.Models
+@using Cliente.Services
+@using System.ComponentModel.DataAnnotations
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<h2>Confirmar Compra</h2>
+
+@if (CarritoService.Items.Any())
+{
+    <div class="mb-4">
+        <h4>Resumen del Carrito</h4>
+        <ul>
+            @foreach (var item in CarritoService.Items)
+            {
+                <li>@item.Cantidad × @item.Nombre - $@(item.Cantidad * item.PrecioUnitario)</li>
+            }
+        </ul>
+        <p><strong>Total:</strong> $@CarritoService.Total</p>
+    </div>
+
+    <EditForm Model="@formulario" OnValidSubmit="ProcesarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="formulario.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="formulario.Apellido" />
+        </div>
+        <div class="mb-3">
+            <label>Email:</label>
+            <InputText type="email" class="form-control" @bind-Value="formulario.Email" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Confirmar Compra</button>
+    </EditForm>
+}
+else
+{
+    <div class="alert alert-info">No hay productos en el carrito.</div>
+}
+
+@code {
+    private FormularioCompra formulario = new();
+
+    private void ProcesarCompra()
+    {
+        // Aquí podrías guardar la compra en base de datos o generar una orden
+        CarritoService.Vaciar();
+        Navigation.NavigateTo("/");
+    }
+
+    public class FormularioCompra
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string Email { get; set; }
+    }
+}
