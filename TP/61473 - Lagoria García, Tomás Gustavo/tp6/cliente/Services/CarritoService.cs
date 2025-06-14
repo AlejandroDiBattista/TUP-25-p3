@@ -21,7 +21,7 @@ public class CarritoService
     public async Task<List<ItemCarrito>> ObtenerCarritoAsync(Guid carritoId)
     {
         var response = await _httpClient.GetFromJsonAsync<CarritoResponse>($"carritos/{carritoId}");
-    var items= response.Carrito;
+    var items= response?.Carrito ?? new List<ItemCarrito>();
     var total = response.Total;
         return items;
     }
@@ -135,7 +135,7 @@ public async Task GuardarCarritoIdAsync(Guid carritoId)
 
 public class CarritoResponse
 {
-    public List<ItemCarrito> Carrito { get; set; }
+    public List<ItemCarrito> Carrito { get; set; }= new List<ItemCarrito>();
     public decimal Total { get; set; }
 }
 

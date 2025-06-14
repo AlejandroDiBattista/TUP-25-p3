@@ -4,9 +4,10 @@
 @inject CarritoService CarritoService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-         <button class="btn btn-link m-0 p-0 text-decoration-none" style="font-size:2rem;" @onclick="OnInitializedAsync">
+        <button class="btn btn-link m-0 p-0 text-decoration-none" style="font-size:2rem;" @onclick="CargarProductosAsync">
             Tienda Online
         </button>
 
@@ -41,14 +42,25 @@
             @foreach (var producto in Productos)
             {
                 <div class="col">
-                    <div class="card h-100">
-                        <img class="card-img-top" src="@producto.ImagenUrl" alt="@producto.Nombre" style="object-fit: cover; height: 200px;" />
+                    <div class="card h-100 shadow-sm">
+                        <!-- Contenedor de imagen con ajuste -->
+                        <div style="height: 200px; display: flex; align-items: center; justify-content: center; background-color: #fff;">
+                            <img 
+                                class="card-img-top"
+                                src="@producto.ImagenUrl"
+                                alt="@producto.Nombre"
+                                style="max-height: 100%; max-width: 100%; object-fit: contain; padding: 10px;" />
+                        </div>
+
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text text-truncate">@producto.Descripcion</p>
                             <p class="mt-auto mb-2"><strong>@producto.Precio.ToString("C")</strong></p>
-                            <p>Stock: <span class="badge @(producto.Stock > 0 ? "bg-success" : "bg-danger")">
-                                @producto.Stock > 0 ? producto.Stock.ToString() : "Agotado"</span>
+                            <p>
+                                Stock:
+                                <span class="badge @(producto.Stock > 0 ? "bg-success" : "bg-danger")">
+                                    @(producto.Stock > 0 ? producto.Stock.ToString() : "Agotado")
+                                </span>
                             </p>
                             <button class="btn btn-primary"
                                     disabled="@(producto.Stock <= 0)"
@@ -62,30 +74,44 @@
         </div>
     }
 </div>
-
 @code {
     private List<Producto>? Productos;
     // Variable para almacenar el texto de búsqueda
     private Guid? _carritoId;
     private int _cartCount;
+    private List<ItemCarrito>? Carrito;
     private string Busqueda = string.Empty;
+     private bool _productosCargados = false;
     // ID del carrito simulado, en una aplicación real esto podría ser dinámico o provenir de un servicio de usuario
   //  private readonly Guid carritoId = Guid.Parse("11111111-1111-1111-1111-111111111111");
  // Se puede inyectar o pasar como parámetro
     //[Parameter]
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CargarProductosAsync();
+        }
+    }
+  
+     private async Task CargarProductosAsync()
+    {
+          Busqueda = string.Empty;      
+        Productos = await ProductoService.ObtenerProductosAsync(Busqueda);
+        _carritoId ??= await CarritoService.ObtenerCarritoIdAsync();
+        Carrito = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);  
+        _cartCount = Carrito.Sum(i => i.Cantidad);
+        _productosCargados = true;
+        StateHasChanged();
+    }
+ /*
     protected override async Task OnInitializedAsync()
     {
+    
         Productos = await ProductoService.ObtenerProductosAsync();
-        
-        _carritoId = await CarritoService.ObtenerCarritoIdAsync();
-        Console.WriteLine($"Carrito ID: {_carritoId}");
-    /*    if (_carritoId != null)
-        {
-            var items = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);
-            _cartCount = items.Sum(i => i.Cantidad);
-        }
-        */
-    }
+    } 
+    
+*/
 private void NavegarCarrito()
     {
         if (_carritoId.HasValue)

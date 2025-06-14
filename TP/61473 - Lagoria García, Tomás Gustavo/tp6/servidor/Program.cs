@@ -209,15 +209,20 @@ app.MapDelete("/carritos/{carritoId}", async (Guid carritoId, TiendaDbContext db
         return Results.NotFound("Carrito no encontrado");
 
     var carrito = carritos[carritoId];
-    foreach (var item in carrito)
+    var itemsACancelar = carrito.ToList();
+
+    foreach (var item in itemsACancelar)
     {
         var producto = await db.Productos.FindAsync(item.ProductoId);
         if (producto != null)
+        {
             producto.Stock += item.Cantidad;
+            carrito.Remove(item);
+        }
+
     }
 
     await db.SaveChangesAsync();
-    carritos.Remove(carritoId);
 
     return Results.NoContent();
 });
@@ -375,16 +380,16 @@ public class TiendaDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Producto>().HasData(
-            new Producto { Id = 1, Nombre = "Celular Samsung A14", Descripcion = "Pantalla 6.6”, 128GB", Precio = 450, Stock = 20, ImagenURL = "https://images.samsung.com/is/image/samsung/p6pim/ar/sm-a145mzsearo/gallery/ar-galaxy-a14-sm-a145-sm-a145mzsearo-535983519?$684_547_PNG$" },
-            new Producto { Id = 2, Nombre = "Auriculares Bluetooth", Descripcion = "Cancelación de ruido", Precio = 60, Stock = 50, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 3, Nombre = "Smart TV 43” LG", Descripcion = "Full HD, WebOS", Precio = 310, Stock = 10, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 4, Nombre = "Gaseosa Cola 2L", Descripcion = "Pack de 6 unidades", Precio = 9, Stock = 100, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 5, Nombre = "Notebook Lenovo i5", Descripcion = "8GB RAM, 512GB SSD", Precio = 700, Stock = 15, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 6, Nombre = "Mouse Gamer RGB", Descripcion = "7 botones programables", Precio = 25, Stock = 40, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 7, Nombre = "Parlante Bluetooth", Descripcion = "5W, portátil", Precio = 20, Stock = 30, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 8, Nombre = "Powerbank 10.000mAh", Descripcion = "Carga rápida USB-C", Precio = 35, Stock = 35, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 9, Nombre = "Tablet 10”", Descripcion = "Android 13, 64GB", Precio = 220, Stock = 12, ImagenURL = "https://via.placeholder.com/200" },
-            new Producto { Id = 10, Nombre = "Teclado Inalámbrico", Descripcion = "Compacto, multimedia", Precio = 18, Stock = 25, ImagenURL = "https://via.placeholder.com/200" }
+            new Producto { Id = 1, Nombre = "Celular Samsung A14", Descripcion = "Pantalla 6.6”, 128GB", Precio = 450, Stock = 20, ImagenURL = "IMG-PRODUCS/GALAXY A14 G5.png" },
+            new Producto { Id = 2, Nombre = "Auriculares Bluetooth", Descripcion = "Cancelación de ruido", Precio = 60, Stock = 50, ImagenURL = "IMG-PRODUCS/auricular con buetooth.png" },
+            new Producto { Id = 3, Nombre = "Smart TV 43” LG", Descripcion = "Full HD, WebOS", Precio = 310, Stock = 10, ImagenURL = "IMG-PRODUCS/SmartTV.png" },
+            new Producto { Id = 4, Nombre = "iPhone 16 ", Descripcion = "Ultramarino", Precio = 790, Stock = 100, ImagenURL = "IMG-PRODUCS/iPhone16.png" },
+            new Producto { Id = 5, Nombre = "Notebook Lenovo i5", Descripcion = "8GB RAM, 512GB SSD", Precio = 700, Stock = 15, ImagenURL = "IMG-PRODUCS/NotebookLenovo.png" },
+            new Producto { Id = 6, Nombre = "Mouse Gamer RGB", Descripcion = "7 botones programables", Precio = 25, Stock = 40, ImagenURL = "IMG-PRODUCS/MouseGamerRGB.png" },
+            new Producto { Id = 7, Nombre = "Parlante Bluetooth", Descripcion = "5W, portátil", Precio = 20, Stock = 30, ImagenURL = "IMG-PRODUCS/ParlanteBluetooth.png" },
+            new Producto { Id = 8, Nombre = "Powerbank 10.000mAh", Descripcion = "Carga rápida USB-C", Precio = 35, Stock = 35, ImagenURL = "IMG-PRODUCS/Powerbank10.000mAh.png" },
+            new Producto { Id = 9, Nombre = "Tablet 10”", Descripcion = "Android 13, 64GB", Precio = 220, Stock = 12, ImagenURL = "IMG-PRODUCS/Tablet10.png" },
+            new Producto { Id = 10, Nombre = "Teclado Inalámbrico", Descripcion = "Compacto, multimedia", Precio = 18, Stock = 25, ImagenURL = "IMG-PRODUCS/tecladoinalambrico.png" }
         
         );
     }

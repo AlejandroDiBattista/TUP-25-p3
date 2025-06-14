@@ -1,60 +1,72 @@
 @page "/confirmacion"
 @using cliente.Services
 @inject CarritoService CarritoService
-@inject NavigationManager Navigation
+@inject NavigationManager Nav
 
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Confirmación de Compra</h2>
+        <button class="btn btn-outline-primary" @onclick="NavegarRegreso">
+            <i class="bi bi-arrow-left"></i> Seguir comprando
+        </button>
+    </div>
 
-<h3>Confirmación de Compra</h3>
-
-@if (carrito.Count == 0)
-{
-    <p>No hay productos en el carrito.</p>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio Unitario</th>
-                    <th>Cantidad</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in carrito)
-                {
+    @if (carrito.Count == 0)
+    {
+        <div class="alert alert-info">No hay productos en el carrito.</div>
+    }
+    else
+    {
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
                     <tr>
-                        <td>@item.Nombre</td>
-                        <td>$@item.PrecioUnitario</td>
-                        <td>@item.Cantidad</td>
-                        <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                        <th>Producto</th>
+                        <th>Precio Unitario</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <h5>Total: $@carrito.Sum(i => i.PrecioUnitario * i.Cantidad)</h5>
-
-    <div class="mt-4">
-        <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input class="form-control" @bind="Nombre" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Apellido</label>
-            <input class="form-control" @bind="Apellido" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control" @bind="Email" type="email" />
+                </thead>
+                <tbody>
+                    @foreach (var item in carrito)
+                    {
+                        <tr>
+                            <td>@item.Nombre</td>
+                            <td>@item.PrecioUnitario.ToString("C")</td>
+                            <td>@item.Cantidad</td>
+                            <td>@(item.PrecioUnitario * item.Cantidad).ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
 
-        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar Compra</button>
-    </div>
-}
+        <h4 class="text-end">Total: <span class="text-success fw-bold">@carrito.Sum(i => i.PrecioUnitario * i.Cantidad).ToString("C")</span></h4>
+
+        <div class="card mt-5 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Datos del Cliente</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input class="form-control" @bind="Nombre" placeholder="Ej: Juan" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Apellido</label>
+                    <input class="form-control" @bind="Apellido" placeholder="Ej: Pérez" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" @bind="Email" type="email" placeholder="Ej: correo@ejemplo.com" />
+                </div>
+
+                <button class="btn btn-success w-100" @onclick="ConfirmarCompra">
+                    <i class="bi bi-check-circle"></i> Confirmar Compra
+                </button>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     private List<ItemCarrito> carrito = new();
@@ -87,6 +99,11 @@ else
         // Vaciar estado local
         
 
-        Navigation.NavigateTo($"/comprobante/{CompraId}");
+        Nav.NavigateTo($"/comprobante/{CompraId}");
+    }
+    
+private void NavegarRegreso()
+    {
+     Nav.NavigateTo($"/catalogo");
     }
 }
