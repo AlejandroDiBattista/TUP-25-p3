@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@inject cliente.Services.ApiService.CartStateService CartStateService
+@inject cliente.Services.ApiService.CartStateService CartStateService 
 @inject NavigationManager Navigation
 
 <div class="main-layout-container">
@@ -43,19 +43,19 @@
 </div>
 
 @code {
-    private string SearchQuery { get; set; } = string.Empty; 
+    private string SearchQuery { get; set; } = string.Empty;
 
     protected override void OnInitialized()
     {
         CartStateService.OnCartItemCountChanged += StateHasChanged;
-        CartStateService.OnCartIdChanged += StateHasChanged;
+        CartStateService.OnCartIdChanged += StateHasChanged; 
     }
 
     private void HandleSearch(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            Navigation.NavigateTo($"/?SearchTerm={SearchQuery}"); 
+            Navigation.NavigateTo($"/?query={SearchQuery}"); 
         }
     }
 

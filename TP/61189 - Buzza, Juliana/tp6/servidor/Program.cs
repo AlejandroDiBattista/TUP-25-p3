@@ -36,7 +36,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider; 
+    var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
@@ -58,24 +58,20 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowClientApp");
-
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();
-
-
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
-
 
 app.MapGet("/productos", async (string? query, AppDbContext db) =>
 {
     IQueryable<Producto> productos = db.Productos;
     if (!string.IsNullOrEmpty(query))
     {
-        productos = productos.Where(p => p.Nombre.Contains(query) || p.Descripcion.Contains(query));
+        string lowerQuery = query.ToLower();
+        productos = productos.Where(p => p.Nombre.ToLower().Contains(lowerQuery) || p.Descripcion.ToLower().Contains(lowerQuery));
     }
     return Results.Ok(await productos.ToListAsync());
 });
@@ -165,12 +161,11 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int produ
 
     cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
     await db.SaveChangesAsync();
-    
     return Results.Ok(cart.Items.Select(item => new
     {
         item.Id,
         item.ProductoId,
-        ProductoNombre = item.Producto?.Nombre,
+        ProductoNombre = item.Producto?.Nombre, 
         item.Cantidad,
         item.PrecioUnitario,
         ProductoImagenUrl = item.Producto?.ImagenUrl,

@@ -1,5 +1,4 @@
 ﻿@page "/"
-@page "/{SearchTerm?}" 
 @inject cliente.Services.ApiService ApiService
 @inject cliente.Services.ApiService.CartStateService CartStateService
 @inject NavigationManager Navigation
@@ -63,10 +62,10 @@ else
 }
 
 @code {
-    [Parameter]
+    [SupplyParameterFromQuery(Name = "query")]
     public string? SearchTerm { get; set; }
 
-    private List<cliente.Models.Producto> Productos = new();
+    private List<cliente.Models.Producto> Productos = new List<cliente.Models.Producto>();
     private bool Loading = true;
     private int? CartId;
     private string? Message;
@@ -77,7 +76,7 @@ else
     {
         CartStateService.OnCartIdChanged += HandleCartIdChanged;
         CartId = CartStateService.CartId;
-        await LoadProducts();
+
     }
 
     private void HandleCartIdChanged()
@@ -101,7 +100,7 @@ else
         catch (HttpRequestException ex)
         {
             ShowNotification($"Error al cargar productos: {ex.Message}", true);
-            Productos = new();
+            Productos = new List<cliente.Models.Producto>();
         }
         finally
         {
