@@ -1,26 +1,9 @@
-using System.Net.Http.Json;
-
 namespace cliente.Services;
 
+// Por ahora dejaremos este servicio vacío.
+// En una aplicación más grande, podría contener lógica de API
+// que no esté directamente relacionada con el carrito, como la autenticación.
 public class ApiService {
-    private readonly HttpClient _httpClient;
-
-    public ApiService(HttpClient httpClient) {
-        _httpClient = httpClient;
+    public ApiService() {
     }
-
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
-        }
-    }
-}
-
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
 }
