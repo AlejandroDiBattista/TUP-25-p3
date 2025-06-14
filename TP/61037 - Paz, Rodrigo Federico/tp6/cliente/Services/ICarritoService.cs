@@ -10,7 +10,10 @@ public interface ICarritoService
 
     Task ActualizarCantidadAsync(int productoId, int nuevaCantidad);
 
-     Task EliminarProductoAsync(int productoId);     // 👈 Agregado
-    Task VaciarCarritoAsync();                      // 👈 Agregado
+    Task EliminarProductoAsync(int productoId);     
+    Task VaciarCarritoAsync();                      
+    
+    Task ConfirmarCompraAsync(string nombre, string apellido, string email);
+
 
 }

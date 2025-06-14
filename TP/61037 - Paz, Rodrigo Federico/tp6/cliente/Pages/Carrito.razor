@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject ICarritoService CarritoService
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <h3>Carrito</h3>
 
@@ -33,45 +34,19 @@ else
 
     <p class="mt-3 fw-bold">Total: $@items.Sum(i => i.Subtotal).ToString("N2")</p>
 
-    <button class="btn btn-danger me-2" @onclick="VaciarCarrito">🗑️ Vaciar carrito</button>
+ 
+ <div class="mt-3">
+        <button class="btn btn-danger" @onclick="VaciarCarrito">🗑️ Vaciar carrito</button>
+        <button class="btn btn-success ms-2" @onclick='() => NavigationManager.NavigateTo("/confirmar")'>Finalizar compra</button>
+    </div>
+
 }
-
-@if (mostrarFormulario)
-{
-    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <input class="form-control mb-2" @bind="datosCliente.Nombre" placeholder="Nombre" />
-        <input class="form-control mb-2" @bind="datosCliente.Apellido" placeholder="Apellido" />
-        <input class="form-control mb-2" @bind="datosCliente.Email" placeholder="Email" />
-
-        <button class="btn btn-primary" type="submit">Confirmar compra</button>
-    </EditForm>
-}
-else if (items?.Any() == true)
-{
-    <button class="btn btn-success mt-2" @onclick="MostrarFormulario">Finalizar compra</button>
-}
-
 @code {
-    private bool mostrarFormulario = false;
-    private DatosCliente datosCliente = new();
     private List<ItemCarritoResponse>? items;
 
     protected override async Task OnInitializedAsync()
     {
         items = await CarritoService.ObtenerItemsCarritoAsync();
-    }
-
-    private void MostrarFormulario() => mostrarFormulario = true;
-
-    private async Task ConfirmarCompra()
-    {
-        await VaciarCarrito();
-        await JS.InvokeVoidAsync("alert", $"¡Gracias por tu compra, {datosCliente.Nombre}!");
-        mostrarFormulario = false;
-        datosCliente = new();
     }
 
     private async Task CambiarCantidad(int productoId, int nuevaCantidad)
@@ -94,13 +69,6 @@ else if (items?.Any() == true)
     {
         await CarritoService.VaciarCarritoAsync();
         items = await CarritoService.ObtenerItemsCarritoAsync();
-    }
-
-    public class DatosCliente
-    {
-        [Required] public string Nombre { get; set; } = "";
-        [Required] public string Apellido { get; set; } = "";
-        [Required, EmailAddress] public string Email { get; set; } = "";
     }
 }
 

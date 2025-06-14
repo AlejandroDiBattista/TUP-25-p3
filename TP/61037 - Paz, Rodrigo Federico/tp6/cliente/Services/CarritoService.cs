@@ -22,8 +22,8 @@ public class CarritoService : ICarritoService
     /// 
     public event Action? CarritoActualizado;
     private void NotificarCambio() => CarritoActualizado?.Invoke();
-/// 
-     
+    /// 
+
 
     private async Task<Guid> ObtenerOCrearCarritoIdAsync()
     {
@@ -67,41 +67,41 @@ public class CarritoService : ICarritoService
     }
 
     public async Task AgregarAlCarritoAsync(int productoId)
-{
-    var carritoId = await ObtenerOCrearCarritoIdAsync();
+    {
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
 
-    // Obtener el carrito actual
-    var items = await ObtenerItemsCarritoAsync();
-    var itemExistente = items.FirstOrDefault(i => i.ProductoId == productoId);
-    var nuevaCantidad = (itemExistente?.Cantidad ?? 0) + 1;
+        // Obtener el carrito actual
+        var items = await ObtenerItemsCarritoAsync();
+        var itemExistente = items.FirstOrDefault(i => i.ProductoId == productoId);
+        var nuevaCantidad = (itemExistente?.Cantidad ?? 0) + 1;
 
-    var response = await _httpClient.PutAsJsonAsync(
-        $"/carritos/{carritoId}/{productoId}",
-        new { Cantidad = nuevaCantidad }
-    );
+        var response = await _httpClient.PutAsJsonAsync(
+            $"/carritos/{carritoId}/{productoId}",
+            new { Cantidad = nuevaCantidad }
+        );
 
-    response.EnsureSuccessStatusCode();
-    NotificarCambio(); // 🔔
-}
+        response.EnsureSuccessStatusCode();
+        NotificarCambio(); // 🔔
+    }
 
-public async Task ActualizarCantidadAsync(int productoId, int nuevaCantidad)
-{
-    var carritoId = await ObtenerOCrearCarritoIdAsync();
-    var response = await _httpClient.PutAsJsonAsync(
-        $"/carritos/{carritoId}/{productoId}",
-        new { Cantidad = nuevaCantidad }
-    );
-    response.EnsureSuccessStatusCode();
-    NotificarCambio(); // 🔔
-}
+    public async Task ActualizarCantidadAsync(int productoId, int nuevaCantidad)
+    {
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
+        var response = await _httpClient.PutAsJsonAsync(
+            $"/carritos/{carritoId}/{productoId}",
+            new { Cantidad = nuevaCantidad }
+        );
+        response.EnsureSuccessStatusCode();
+        NotificarCambio(); // 🔔
+    }
 
-public async Task EliminarProductoAsync(int productoId)
-{
-    var carritoId = await ObtenerOCrearCarritoIdAsync();
-    var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
-    response.EnsureSuccessStatusCode();
-    NotificarCambio(); // 🔔
-}
+    public async Task EliminarProductoAsync(int productoId)
+    {
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
+        var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+        response.EnsureSuccessStatusCode();
+        NotificarCambio(); // 🔔
+    }
 
     public async Task VaciarCarritoAsync()
     {
@@ -110,5 +110,31 @@ public async Task EliminarProductoAsync(int productoId)
         response.EnsureSuccessStatusCode();
         NotificarCambio(); // 🔔
     }
+    
+    public async Task ConfirmarCompraAsync(string nombre, string apellido, string email)
+{
+    var carritoId = await ObtenerOCrearCarritoIdAsync();
+
+    var items = await ObtenerItemsCarritoAsync();
+
+    var compra = new CompraRequest
+    {
+        Nombre = nombre,
+        Apellido = apellido,
+        Email = email,
+        Items = items.Select(item => new ItemCompraRequest
+        {
+            ProductoId = item.ProductoId,
+            Cantidad = item.Cantidad
+        }).ToList()
+    };
+
+    var response = await _httpClient.PostAsJsonAsync("compras", compra);
+    response.EnsureSuccessStatusCode();
+
+    await VaciarCarritoAsync();
+}
+
  }
 
+    
