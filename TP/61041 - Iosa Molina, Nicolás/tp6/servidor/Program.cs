@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
-    db.Database.EnsureCreated(); // <-- Aquí se crea la base de datos si no existe
+    db.Database.EnsureCreated();
 
     if (!db.Productos.Any())
     {
@@ -44,19 +45,138 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
-    app.UseDeveloperExceptionPage();
-}
+// Variable global para múltiples carritos (uno por id)
+var carritos = new ConcurrentDictionary<string, List<ItemCarrito>>();
 
-// Usar CORS con la política definida
-app.UseCors("AllowClientApp");
+app.MapGet("/productos", async (TiendaContext db) =>
+{
+    return await db.Productos.ToListAsync();
+});
 
-// Mapear rutas básicas
-app.MapGet("/", () => "Servidor API está en funcionamiento");
+app.MapGet("/productos/buscar/{texto}", async (TiendaContext db, string texto) =>
+{
+    var query = db.Productos.AsQueryable();
+    if (!string.IsNullOrWhiteSpace(texto))
+    {
+        query = query.Where(p => p.Nombre.Contains(texto) || p.Descripcion.Contains(texto));
+    }
+    return await query.ToListAsync();
+});
 
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+// ENDPOINTS PARA CARRITOS
+
+// POST /carritos - Inicializa un carrito y devuelve el id
+app.MapPost("/carritos", () =>
+{
+    var id = Guid.NewGuid().ToString();
+    carritos[id] = new List<ItemCarrito>();
+    return Results.Ok(new { carrito = id });
+});
+
+// GET /carritos/{carrito} - Trae los ítems del carrito
+app.MapGet("/carritos/{carrito}", (string carrito) =>
+{
+    if (!carritos.TryGetValue(carrito, out var items))
+        return Results.NotFound("Carrito no encontrado");
+    return Results.Ok(items);
+});
+
+// DELETE /carritos/{carrito} - Vacía el carrito
+app.MapDelete("/carritos/{carrito}", (string carrito) =>
+{
+    if (!carritos.ContainsKey(carrito))
+        return Results.NotFound("Carrito no encontrado");
+    carritos[carrito] = new List<ItemCarrito>();
+    return Results.Ok();
+});
+
+// PUT /carritos/{carrito}/confirmar - Confirma la compra
+app.MapPut("/carritos/{carrito}/confirmar", async (
+    string carrito,
+    TiendaContext db,
+    Dictionary<string, string> datos
+) =>
+{
+    if (!carritos.TryGetValue(carrito, out var items) || items.Count == 0)
+        return Results.BadRequest("Carrito vacío o no encontrado");
+
+    foreach (var item in items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            return Results.BadRequest($"Stock insuficiente para producto {item.ProductoId}");
+    }
+
+    double total = 0;
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        NombreCliente = datos.ContainsKey("nombre") ? datos["nombre"] : "",
+        ApellidoCliente = datos.ContainsKey("apellido") ? datos["apellido"] : "",
+        EmailCliente = datos.ContainsKey("email") ? datos["email"] : "",
+        Items = new List<ItemCarrito>()
+    };
+
+    foreach (var item in items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        producto.Stock -= item.Cantidad;
+        total += producto.Precio * item.Cantidad;
+        compra.Items.Add(new ItemCarrito
+        {
+            ProductoId = producto.Id,
+            Cantidad = item.Cantidad,
+            PrecioUnitario = producto.Precio
+        });
+    }
+    compra.Total = total;
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+
+    carritos[carrito] = new List<ItemCarrito>();
+    return Results.Ok(new { compra.Id, compra.Total });
+});
+
+// PUT /carritos/{carrito}/{producto} - Agrega o actualiza cantidad de un producto en el carrito
+app.MapPut("/carritos/{carrito}/{producto}", async (string carrito, int producto, int cantidad, TiendaContext db) =>
+{
+    if (cantidad <= 0)
+        return Results.BadRequest("Cantidad debe ser mayor a cero");
+
+    var prod = await db.Productos.FindAsync(producto);
+    if (prod == null)
+        return Results.NotFound("Producto no encontrado");
+
+    if (prod.Stock < cantidad)
+        return Results.BadRequest("Stock insuficiente");
+
+    var items = carritos.GetOrAdd(carrito, _ => new List<ItemCarrito>());
+    var item = items.FirstOrDefault(i => i.ProductoId == producto);
+    if (item == null)
+        items.Add(new ItemCarrito { ProductoId = producto, Cantidad = cantidad, PrecioUnitario = prod.Precio });
+    else
+        item.Cantidad = cantidad;
+
+    return Results.Ok(items);
+});
+
+// DELETE /carritos/{carrito}/{producto} - Elimina o reduce cantidad de un producto en el carrito
+app.MapDelete("/carritos/{carrito}/{producto}", (string carrito, int producto, int cantidad = 0) =>
+{
+    if (!carritos.TryGetValue(carrito, out var items))
+        return Results.NotFound("Carrito no encontrado");
+
+    var item = items.FirstOrDefault(i => i.ProductoId == producto);
+    if (item == null)
+        return Results.NotFound("Producto no está en el carrito");
+
+    if (cantidad <= 0 || cantidad >= item.Cantidad)
+        items.Remove(item);
+    else
+        item.Cantidad -= cantidad;
+
+    return Results.Ok(items);
+});
 
 app.Run();
 
@@ -68,7 +188,6 @@ public class Producto
     public double Precio { get; set; }
     public int Stock { get; set; }
     public string ImagenUrl { get; set; }
-    public List<ItemCompra> ItemsCompra { get; set; }
 }
 
 public class Compra
@@ -79,16 +198,14 @@ public class Compra
     public string NombreCliente { get; set; }
     public string ApellidoCliente { get; set; }
     public string EmailCliente { get; set; }
-    public List<ItemCompra> ItemsCompra { get; set; }
+    public List<ItemCarrito> Items { get; set; }
 }
 
-public class ItemCompra
+public class ItemCarrito
 {
     public int Id { get; set; }
     public int ProductoId { get; set; }
-    public Producto Producto { get; set; }
     public int CompraId { get; set; }
-    public Compra Compra { get; set; }
     public int Cantidad { get; set; }
     public double PrecioUnitario { get; set; }
 }
@@ -96,8 +213,7 @@ public class ItemCompra
 public class TiendaContext : DbContext
 {
     public TiendaContext(DbContextOptions<TiendaContext> options) : base(options) { }
-
     public DbSet<Producto> Productos { get; set; }
     public DbSet<Compra> Compras { get; set; }
-    public DbSet<ItemCompra> ItemsCompra { get; set; }
+    public DbSet<ItemCarrito> ItemsCarrito { get; set; }
 }
