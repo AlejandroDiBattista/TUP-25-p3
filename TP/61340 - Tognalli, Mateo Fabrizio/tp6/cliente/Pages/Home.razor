@@ -1,59 +1,185 @@
 ﻿@page "/"
-@using cliente.Services
 @inject ApiService ApiService
+@inject CarritoEstado CarritoEstado
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<PageTitle>Inicio</PageTitle>
+<!-- TechStore - Catálogo -->
 
-<div class="container">
+<div class="container mt-4">
+    <!-- Título de la página -->
     <div class="row mb-4">
         <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+            <h2 class="text-center">
+                @if (!string.IsNullOrEmpty(busqueda))
+                {
+                    <span>Resultados para: "@busqueda"</span>
+                }
+                else
+                {
+                    <span>Catálogo de Productos</span>
+                }
+            </h2>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
+    <!-- Estado de carga -->
+    @if (cargando)
+    {
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="spinner-border text-orange" role="status">
+                    <span class="visually-hidden">Cargando...</span>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
+                <p class="mt-2">Cargando productos...</p>
+            </div>
+        </div>
+    }
+    else if (!productos.Any())
+    {
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <h4>No se encontraron productos</h4>
+                    @if (!string.IsNullOrEmpty(busqueda))
+                    {
+                        <p>No hay productos que coincidan con tu búsqueda.</p>
+                        <button class="btn btn-primary" @onclick="LimpiarBusqueda">Ver todos los productos</button>
+                    }
+                    else
+                    {
+                        <p>No hay productos disponibles en este momento.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Grid de productos -->
+        <div class="row">
+            @foreach (var producto in productos)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Imagen del producto -->
+                        <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                            <img src="@producto.ImagenUrl" 
+                                 class="card-img-top" 
+                                 alt="@producto.Nombre"
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 @onerror="@((e) => ManejarErrorImagen(e, producto.Id))">
+                        </div>
+                        
+                        <!-- Cuerpo de la tarjeta -->
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text text-muted small">@producto.Descripcion</p>
+                            
+                            <!-- Precio y stock -->
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="h5 mb-0 text-orange">$@producto.Precio.ToString("N2")</span>
+                                    <small class="text-muted">Stock: @producto.Stock</small>
+                                </div>
+                                @if (producto.Stock <= 0)
+                                {
+                                    <button class="btn btn-primary w-100 disabled">
+                                        <span>Sin Stock</span>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-primary w-100"
+                                            @onclick="@(async () => await AgregarAlCarrito(producto))"
+                                            disabled="@(agregandoProducto == producto.Id)">
+                                        @if (agregandoProducto == producto.Id)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                            <span>Agregando...</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-cart-plus me-2"></i>
+                                            <span>Agregar al Carrito</span>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
-    </div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string busqueda { get; set; } = "";    private List<ProductoDto> productos = new();
+    private bool cargando = true;
+    private int? agregandoProducto = null;    protected override async Task OnInitializedAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "document.title = 'TechStore - Catálogo'");
+        await CargarProductos();
+    }
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        cargando = true;
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync(busqueda);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar productos: {ex.Message}");
+            productos = new List<ProductoDto>();
+        }
+        finally
+        {
             cargando = false;
         }
+    }private async Task AgregarAlCarrito(ProductoDto producto)
+    {
+        agregandoProducto = producto.Id;
+        try
+        {
+            var exito = await CarritoEstado.AgregarProductoAsync(producto.Id);
+            if (exito)
+            {
+                producto.Stock--;
+                // Redirigir automáticamente al carrito después de agregar el producto
+                Navigation.NavigateTo("/carrito");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "No se pudo agregar el producto al carrito. Verifica el stock disponible.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al agregar producto: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al agregar el producto.");
+        }
+        finally
+        {
+            agregandoProducto = null;
+        }    }
+
+    private void LimpiarBusqueda()
+    {
+        Navigation.NavigateTo("/");
+    }    private async Task ManejarErrorImagen(ErrorEventArgs e, int productoId)
+    {
+        // Cambiar a imagen por defecto si falla la carga - versión simplificada
+        await JSRuntime.InvokeVoidAsync("eval", 
+            $"document.querySelectorAll('img').forEach(img => {{ if(img.alt && img.alt.length > 0 && !img.src.includes('placeholder')) {{ img.src = 'https://via.placeholder.com/300x200?text=Imagen+No+Disponible'; }} }})");
     }
 }
