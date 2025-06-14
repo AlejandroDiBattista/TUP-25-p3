@@ -91,3 +91,11 @@ private async Task Disminuir(ItemCarrito item)
     await CarritoService.DisminuirItemAsync(carritoId, item.ProductoId);
     await CargarCarrito();
 }
+
+
+    private async Task EliminarItem(ItemCarrito item)
+    {
+        await CarritoService.EliminarItemAsync(carritoId, item.ProductoId);
+        await CargarCarrito();
+    }
+
