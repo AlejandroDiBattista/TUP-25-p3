@@ -154,7 +154,16 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async ([FromServices] T
 
     await db.SaveChangesAsync();
 
-    return Results.Ok(new { carritoId }); // Retornamos el carritoId, puede ser nuevo o el mismo recibido
+    return Results.Ok(new { carritoId });
+});
+
+app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async ([FromServices] TiendaDb db, int carritoId, int productoId) =>
+{
+    var item = await db.ItemsCompra.FirstOrDefaultAsync(i => i.CompraId == carritoId && i.ProductoId == productoId);
+    if (item == null) return Results.NotFound();
+    db.ItemsCompra.Remove(item);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
 });
 
 // Configurar el pipeline de solicitudes HTTP
