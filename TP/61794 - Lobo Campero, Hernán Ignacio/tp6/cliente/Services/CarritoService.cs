@@ -1,136 +1,238 @@
 #nullable enable
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
+using Cliente.Constants;
 
 namespace Cliente.Services;
 
 public class CarritoService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<CarritoService> _logger;
     private int _carritoId = 0;
 
-    public CarritoService(HttpClient httpClient)
+    public CarritoService(HttpClient httpClient, ILogger<CarritoService> logger)
     {
         _httpClient = httpClient;
-    }
-
-    public async Task<int> ObtenerCarritoIdAsync()
+        _logger = logger;
+    }    public async Task<int> ObtenerCarritoIdAsync()
     {
         if (_carritoId == 0)
         {
-            var response = await _httpClient.PostAsync("/carritos", null);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                _carritoId = await response.Content.ReadFromJsonAsync<int>();
+                var response = await _httpClient.PostAsync("/carritos", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    _carritoId = await response.Content.ReadFromJsonAsync<int>();
+                    _logger.LogInformation("Nuevo carrito creado con ID: {CarritoId}", _carritoId);
+                }
+                else
+                {
+                    _logger.LogError("Error al crear carrito. Status: {StatusCode}", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener carrito ID");
+                throw;
             }
         }
         return _carritoId;
+    }
+
+    private async Task<HttpResponseMessage> ExecuteWithCarritoRetryAsync(
+        Func<int, Task<HttpResponseMessage>> operation)
+    {
+        try
+        {
+            var carritoId = await ObtenerCarritoIdAsync();
+            var response = await operation(carritoId);
+            
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning("Carrito {CarritoId} no encontrado, creando nuevo carrito", carritoId);
+                _carritoId = 0; // Reset para forzar la creación de un nuevo carrito
+                carritoId = await ObtenerCarritoIdAsync();
+                response = await operation(carritoId);
+            }
+            
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en operación de carrito");
+            throw;
+        }
     }    public async Task<Models.Compra?> ObtenerCarritoAsync()
     {
-        var carritoId = await ObtenerCarritoIdAsync();
-        var response = await _httpClient.GetAsync($"/carritos/{carritoId}");
-        
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return await response.Content.ReadFromJsonAsync<Models.Compra>();
-        }
-        
-        // Si el carrito no existe (404), crear uno nuevo
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            _carritoId = 0; // Reset para forzar la creación de un nuevo carrito
-            carritoId = await ObtenerCarritoIdAsync();
-            response = await _httpClient.GetAsync($"/carritos/{carritoId}");
+            var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
+                await _httpClient.GetAsync($"/carritos/{carritoId}"));
             
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<Models.Compra>();
             }
+            
+            _logger.LogWarning("No se pudo obtener el carrito. Status: {StatusCode}", response.StatusCode);
+            return null;
         }
-        
-        return null;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener carrito");
+            return null;
+        }
     }    public async Task<bool> AgregarProductoAsync(int productoId, int cantidad = 1)
     {
-        var carritoId = await ObtenerCarritoIdAsync();
-        var response = await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
-        
-        // Si el carrito no existe, crear uno nuevo e intentar de nuevo
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        try
         {
-            _carritoId = 0; // Reset para forzar la creación de un nuevo carrito
-            carritoId = await ObtenerCarritoIdAsync();
-            response = await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+            var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
+                await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null));
+            
+            var success = response.IsSuccessStatusCode;
+            if (success)
+            {
+                _logger.LogInformation("Producto {ProductoId} agregado al carrito (cantidad: {Cantidad})", productoId, cantidad);
+            }
+            else
+            {
+                _logger.LogWarning("Error al agregar producto {ProductoId}. Status: {StatusCode}", productoId, response.StatusCode);
+            }
+            
+            return success;
         }
-        
-        return response.IsSuccessStatusCode;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al agregar producto {ProductoId} al carrito", productoId);
+            return false;
+        }
     }
 
     public async Task<bool> ModificarCantidadAsync(int productoId, int cantidad)
     {
-        var carritoId = await ObtenerCarritoIdAsync();
-        var response = await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
-        
-        // Si el carrito no existe, crear uno nuevo e intentar de nuevo
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        try
         {
-            _carritoId = 0; // Reset para forzar la creación de un nuevo carrito
-            carritoId = await ObtenerCarritoIdAsync();
-            response = await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+            var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
+                await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null));
+            
+            var success = response.IsSuccessStatusCode;
+            if (success)
+            {
+                _logger.LogInformation("Cantidad modificada para producto {ProductoId}: {Cantidad}", productoId, cantidad);
+            }
+            else
+            {
+                _logger.LogWarning("Error al modificar cantidad para producto {ProductoId}. Status: {StatusCode}", productoId, response.StatusCode);
+            }
+            
+            return success;
         }
-        
-        return response.IsSuccessStatusCode;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al modificar cantidad para producto {ProductoId}", productoId);
+            return false;
+        }
     }    public async Task<bool> EliminarProductoAsync(int productoId)
     {
-        var carritoId = await ObtenerCarritoIdAsync();
-        var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
-        
-        // Si el carrito no existe, no hay nada que eliminar, devolvemos true
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        try
         {
-            return true; // No hay error si no existe el carrito o producto
+            var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
+                await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}"));
+            
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _logger.LogInformation("Producto {ProductoId} no encontrado en carrito (puede estar ya eliminado)", productoId);
+                return true;
+            }
+            
+            var success = response.IsSuccessStatusCode;
+            if (success)
+            {
+                _logger.LogInformation("Producto {ProductoId} eliminado del carrito", productoId);
+            }
+            
+            return success;
         }
-        
-        return response.IsSuccessStatusCode;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar producto {ProductoId} del carrito", productoId);
+            return false;
+        }
     }    public async Task<bool> VaciarCarritoAsync()
     {
-        var carritoId = await ObtenerCarritoIdAsync();
-        var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}");
-        
-        // Si el carrito no existe, consideramos que ya está vacío
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        try
         {
-            return true; // Ya está vacío, no hay error
+            var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
+                await _httpClient.DeleteAsync($"/carritos/{carritoId}"));
+            
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _logger.LogInformation("Carrito ya vacío o no existente");
+                return true;
+            }
+            
+            var success = response.IsSuccessStatusCode;
+            if (success)
+            {
+                _logger.LogInformation("Carrito vaciado exitosamente");
+            }
+            
+            return success;
         }
-        
-        return response.IsSuccessStatusCode;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al vaciar carrito");
+            return false;
+        }
     }
 
     public async Task<bool> ConfirmarCompraAsync(string nombre, string apellido, string email)
     {
-        var carritoId = await ObtenerCarritoIdAsync();
-        var datos = new Models.Compra 
-        { 
-            NombreCliente = nombre, 
-            ApellidoCliente = apellido, 
-            EmailCliente = email 
-        };
-        
-        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datos);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            _carritoId = 0; // Resetear para crear nuevo carrito
-            return true;
+            var datos = new Models.Compra 
+            { 
+                NombreCliente = nombre, 
+                ApellidoCliente = apellido, 
+                EmailCliente = email 
+            };
+            
+            var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
+                await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datos));
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _carritoId = 0; // Resetear para crear nuevo carrito
+                _logger.LogInformation("Compra confirmada para cliente: {Nombre} {Apellido} ({Email})", 
+                    nombre, apellido, email);
+                return true;
+            }
+            
+            _logger.LogWarning("Error al confirmar compra. Status: {StatusCode}", response.StatusCode);
+            return false;
         }
-        return false;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al confirmar compra para cliente: {Nombre} {Apellido}", nombre, apellido);
+            return false;
+        }
     }    public async Task<int> ObtenerCantidadItemsAsync()
     {
         try
         {
             var carrito = await ObtenerCarritoAsync();
-            return carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
+            var cantidad = carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
+            _logger.LogDebug("Cantidad de items en carrito: {Cantidad}", cantidad);
+            return cantidad;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al obtener cantidad de items: {ex.Message}");
+            _logger.LogError(ex, "Error al obtener cantidad de items del carrito");
             return 0;
         }
     }
@@ -138,5 +240,6 @@ public class CarritoService
     public void ResetearCarrito()
     {
         _carritoId = 0; // Esto forzará la creación de un nuevo carrito
+        _logger.LogInformation("Carrito reseteado");
     }
 }

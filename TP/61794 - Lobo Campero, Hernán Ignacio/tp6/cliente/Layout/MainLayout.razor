@@ -33,7 +33,7 @@
         catch (HttpRequestException httpEx)
         {
             Console.WriteLine($"Error de conexión al actualizar contador: {httpEx.Message}");
-            // No mostrar error al usuario si es problema de conexión al inicio
+
         }
         catch (Exception ex)
         {
@@ -41,7 +41,7 @@
         }
     }    private Task RealizarBusqueda(string? query)
     {
-        // La búsqueda ahora se maneja mediante parámetros URL en el Navbar
+
         return Task.CompletedTask;
     }
 }

@@ -3,8 +3,10 @@
 @inject Cliente.Services.ApiService ApiService
 @inject Cliente.Services.CarritoService CarritoService
 @inject Cliente.Services.ToastService ToastService
+@inject Cliente.Services.DebounceService DebounceService
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject Microsoft.Extensions.Options.IOptions<Cliente.Constants.AppSettings> AppSettings
 @implements IDisposable
 
 @code {    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
@@ -14,12 +16,12 @@
     private HashSet<int> productosAgregadosConExito = new();
     private string? busquedaActual = "";
     
-    // Variables de paginación
+
     private int paginaActual = 1;
-    private int productosPorPagina = 6;
-    private int totalPaginas = 0;    protected override async Task OnInitializedAsync()
+    private int productosPorPagina => AppSettings.Value.ProductosPorPagina;
+    private int totalPaginas = 0;protected override async Task OnInitializedAsync()
     {
-        // Obtener parámetro de búsqueda de la URL
+
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
         
@@ -30,7 +32,7 @@
         
         await Buscar(busquedaActual);
         
-        // Suscribirse a cambios de navegación para detectar búsquedas
+
         Navigation.LocationChanged += OnLocationChanged;
     }
       private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
@@ -119,27 +121,26 @@
             productosAgregando.Add(productoId);
             StateHasChanged();            var exito = await CarritoService.AgregarProductoAsync(productoId, 1);            if (exito)
             {
-                // Actualizar contador usando el CarritoService
+
                 var nuevaCantidad = await CarritoService.ObtenerCantidadItemsAsync();
                 ActualizarCarrito?.Invoke(nuevaCantidad);
                 
-                // Mostrar toast de éxito
+
                 ToastService.ShowSuccess("Producto agregado al carrito exitosamente");
                 
-                // Mostrar estado de éxito
+
                 productosAgregadosConExito.Add(productoId);
                 StateHasChanged();
-                
-                // Remover el estado de éxito después de 2 segundos
+
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(2000);
+                    await Task.Delay(Cliente.Constants.AppConstants.SUCCESS_ANIMATION_DURATION);
                     productosAgregadosConExito.Remove(productoId);
                     await InvokeAsync(StateHasChanged);
                 });
             }            else
             {
-                // Mostrar toast de error
+
                 ToastService.ShowError("Error al agregar producto. Posibles causas: Stock insuficiente o problema de conexión.");
             }
         }        catch (Exception ex)

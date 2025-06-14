@@ -127,7 +127,6 @@
     private decimal total = 0;
     private bool cargando = true;
     private bool mostrarModalConfirmacion = false;
-    private int carritoId = 1; // Por ahora usamos ID fijo, en una app real vendría de sesión
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,18 +150,12 @@
         {
             cargando = false;
         }
-    }
-
-    private async Task InicializarCarrito()
+    }    private async Task InicializarCarrito()
     {
-        var response = await ApiService.HttpClient.PostAsync("/carritos", null);
-        if (response.IsSuccessStatusCode)
-        {
-            carritoId = await response.Content.ReadFromJsonAsync<int>();
-            items = new List<Cliente.Models.ItemCompra>();
-            total = 0;
-        }
-    }    private async Task ModificarCantidad(int productoId, int nuevaCantidad)
+
+        items = new List<Cliente.Models.ItemCompra>();
+        total = 0;
+    }private async Task ModificarCantidad(int productoId, int nuevaCantidad)
     {
         if (nuevaCantidad <= 0)
         {
@@ -265,7 +258,7 @@
             return Task.CompletedTask;
         }
 
-        // Redirigir a página de confirmación
+
         Navigation.NavigateTo("/confirmacion");
         return Task.CompletedTask;
     }

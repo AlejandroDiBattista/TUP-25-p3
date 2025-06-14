@@ -1,29 +1,38 @@
 #nullable enable
+using Microsoft.Extensions.Options;
+using Cliente.Constants;
 
 namespace Cliente.Services
 {
     public class ToastService
     {
+        private readonly ToastDurationSettings _durations;
+        
         public event Action<string, ToastType, int>? OnToastRequested;
-        
-        public void ShowSuccess(string message, int duration = 4000)
+
+        public ToastService(IOptions<AppSettings> appSettings)
         {
-            OnToastRequested?.Invoke(message, ToastType.Success, duration);
+            _durations = appSettings.Value.ToastDuration;
         }
         
-        public void ShowError(string message, int duration = 5000)
+        public void ShowSuccess(string message, int? duration = null)
         {
-            OnToastRequested?.Invoke(message, ToastType.Error, duration);
+            OnToastRequested?.Invoke(message, ToastType.Success, duration ?? _durations.Success);
         }
         
-        public void ShowWarning(string message, int duration = 4000)
+        public void ShowError(string message, int? duration = null)
         {
-            OnToastRequested?.Invoke(message, ToastType.Warning, duration);
+            OnToastRequested?.Invoke(message, ToastType.Error, duration ?? _durations.Error);
         }
         
-        public void ShowInfo(string message, int duration = 3000)
+        public void ShowWarning(string message, int? duration = null)
         {
-            OnToastRequested?.Invoke(message, ToastType.Info, duration);
+            OnToastRequested?.Invoke(message, ToastType.Warning, duration ?? _durations.Warning);
+        }
+        
+        public void ShowInfo(string message, int? duration = null)
+        {
+            OnToastRequested?.Invoke(message, ToastType.Info, duration ?? _durations.Info);
         }
     }
     

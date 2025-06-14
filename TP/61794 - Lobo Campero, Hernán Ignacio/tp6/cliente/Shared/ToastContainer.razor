@@ -57,7 +57,7 @@
             toasts.Add(toast);
             await InvokeAsync(StateHasChanged);
             
-            // Mostrar el toast usando Bootstrap JS
+
             try
             {
                 await JSRuntime.InvokeVoidAsync("showToast", toast.Id);
@@ -67,7 +67,7 @@
                 Console.WriteLine($"Error al mostrar toast: {ex.Message}");
             }
             
-            // Auto-remover después del tiempo especificado
+
             _ = Task.Run(async () =>
             {
                 try

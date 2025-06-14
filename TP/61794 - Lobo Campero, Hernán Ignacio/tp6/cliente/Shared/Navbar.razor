@@ -33,7 +33,7 @@
 
     protected override void OnParametersSet()
     {
-        // Detectar si se agregó un producto al carrito
+
         if (CarritoCantidad > cantidadAnterior)
         {
             _ = Task.Run(async () => await MostrarGlowCarrito());
@@ -48,7 +48,7 @@
             mostrarGlowCarrito = true;
             await InvokeAsync(StateHasChanged);
             
-            // Duración de la animación (2 segundos como está definido en CSS)
+
             await Task.Delay(2000);
             
             mostrarGlowCarrito = false;
@@ -60,7 +60,7 @@
         }
     }    private Task Buscar()
     {
-        // Siempre navegar directamente (no usar OnBuscar)
+
         var encodedQuery = string.IsNullOrWhiteSpace(busqueda) ? "" : Uri.EscapeDataString(busqueda);
         var targetUrl = string.IsNullOrWhiteSpace(busqueda) ? "/" : $"/?q={encodedQuery}";
         Navigation.NavigateTo(targetUrl);
