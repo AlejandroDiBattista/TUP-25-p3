@@ -84,29 +84,79 @@ app.MapDelete("/carritos/{carritoId:int}", async ([FromServices] TiendaDb db, in
 
 app.MapPut("/carritos/{carritoId:int}/confirmar", async ([FromServices] TiendaDb db, int carritoId, [FromBody] ConfirmarCompra confirmacion) =>
 {
-    // Validación de datos obligatorios (aunque también se realiza en el cliente)
     if (string.IsNullOrWhiteSpace(confirmacion.NombreCliente) ||
         string.IsNullOrWhiteSpace(confirmacion.ApellidoCliente) ||
         string.IsNullOrWhiteSpace(confirmacion.EmailCliente))
     {
         return Results.BadRequest("Debe completar nombre, apellido y email.");
     }
-    
+
     var compra = await db.Compras.FindAsync(carritoId);
     if (compra == null)
     {
         return Results.NotFound("Carrito no encontrado.");
     }
-    
+
     compra.NombreCliente = confirmacion.NombreCliente;
     compra.ApellidoCliente = confirmacion.ApellidoCliente;
     compra.EmailCliente = confirmacion.EmailCliente;
     compra.Fecha = DateTime.Now;
     compra.Total = await db.ItemsCompra.Where(i => i.CompraId == carritoId).SumAsync(i => i.Cantidad * i.PrecioUnitario);
     await db.SaveChangesAsync();
-    
+
     return Results.Ok();
 });
+app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async ([FromServices] TiendaDb db, int carritoId, int productoId, [FromBody] int cantidad) =>
+{
+    Console.WriteLine($"PUT /carritos/{carritoId}/{productoId} - cantidad: {cantidad}");
+
+    var compra = await db.Compras.FindAsync(carritoId);
+    if (compra == null)
+    {
+        compra = new Compra { Fecha = DateTime.Now, Total = 0 };
+        db.Compras.Add(compra);
+        await db.SaveChangesAsync();
+
+        Console.WriteLine($"Carrito no encontrado. Se creó uno nuevo con Id={compra.Id}");
+
+        carritoId = compra.Id;
+    }
+
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+    {
+        Console.WriteLine("Producto no encontrado");
+        return Results.BadRequest("Producto no encontrado");
+    }
+    if (cantidad < 1)
+    {
+        Console.WriteLine("Cantidad inválida");
+        return Results.BadRequest("Cantidad inválida");
+    }
+    if (producto.Stock < cantidad)
+    {
+        Console.WriteLine("Stock insuficiente");
+        return Results.BadRequest("Stock insuficiente");
+    }
+
+    var item = await db.ItemsCompra.FirstOrDefaultAsync(i => i.CompraId == carritoId && i.ProductoId == productoId);
+    if (item == null)
+    {
+        item = new Compras { CompraId = carritoId, ProductoId = productoId, Cantidad = cantidad, PrecioUnitario = producto.Precio };
+        db.ItemsCompra.Add(item);
+        Console.WriteLine("Producto agregado nuevo al carrito");
+    }
+    else
+    {
+        item.Cantidad = cantidad;
+        Console.WriteLine("Cantidad actualizada");
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new { carritoId }); // Retornamos el carritoId, puede ser nuevo o el mismo recibido
+});
+
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment())
 {
