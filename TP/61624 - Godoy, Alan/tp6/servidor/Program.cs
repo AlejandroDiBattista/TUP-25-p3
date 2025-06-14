@@ -8,9 +8,64 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
+app.UseCors("AllowAll");
+
+
 // Endpoints para Productos
+
+// Obtener todas las compras
+app.MapGet("/compras", async (AppDbContext db) =>
+{
+    return await db.Compras.Include(c => c.ItemsCompra).ToListAsync();
+});
+
+// Obtener compra por Id
+app.MapGet("/compras/{id}", async (int id, AppDbContext db) =>
+{
+    var compra = await db.Compras.Include(c => c.ItemsCompra).FirstOrDefaultAsync(c => c.Id == id);
+    return compra is not null ? Results.Ok(compra) : Results.NotFound();
+});
+
+// Crear compra con items
+app.MapPost("/compras", async (Compra compra, AppDbContext db) =>
+{
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Created($"/compras/{compra.Id}", compra);
+});
+
+app.MapPut("/compras/{id}", async (int id, Compra inputCompra, AppDbContext db) =>
+{
+    var compra = await db.Compras.FindAsync(id);
+    if (compra is null) return Results.NotFound();
+
+    compra.Fecha = inputCompra.Fecha;
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.MapDelete("/compras/{id}", async (int id, AppDbContext db) =>
+{
+    var compra = await db.Compras.FindAsync(id);
+    if (compra is null) return Results.NotFound();
+
+    db.Compras.Remove(compra);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 
 app.MapGet("/productos", async (AppDbContext db) =>
 {
@@ -53,7 +108,7 @@ app.MapDelete("/productos/{id}", async (int id, AppDbContext db) =>
     return Results.NoContent();
 });
 
-// Endpoints similares para Usuarios
+// Endpoints para Usuarios
 
 app.MapGet("/usuarios", async (AppDbContext db) =>
 {
