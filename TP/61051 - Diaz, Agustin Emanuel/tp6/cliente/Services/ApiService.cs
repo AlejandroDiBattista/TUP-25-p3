@@ -111,7 +111,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.PutAsJsonAsync($"/carrito/{carritoId}/{productoId}", cantidad);
+        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/{productoId}", cantidad);
 
         if (response.IsSuccessStatusCode)
         {
@@ -131,7 +131,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.DeleteAsync($"/carrito/{carritoId}/{productoId}");
+        var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -151,7 +151,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.PostAsync($"/carrito/vaciar?id={carritoId}", null);
+        var response = await _httpClient.PostAsync($"/carritos/vaciar?id={carritoId}", null);
 
         if (response.IsSuccessStatusCode)
         {
@@ -171,7 +171,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.DeleteAsync($"/carrito?id={carritoId}");
+        var response = await _httpClient.DeleteAsync($"/carritos?id={carritoId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -202,7 +202,7 @@ namespace cliente.Services
       try
       {
         var carritoId = await ObtenerOCrearCarritoIdAsync();
-        var response = await _httpClient.PutAsJsonAsync($"/carrito/{carritoId}/confirmar", datosCompra);
+        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datosCompra);
 
         if (response.IsSuccessStatusCode)
         {
