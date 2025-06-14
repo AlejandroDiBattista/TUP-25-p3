@@ -147,18 +147,19 @@ using (var scope = app.Services.CreateScope())
     if (!dbContext.Productos.Any())
     {
         var productos = new List<Producto>
-        {
-            new Producto { Nombre = "iPhone 15 Pro", Descripcion = "Titanio. Tan robusto. Tan ligero. Tan Pro.", Precio = 1999.99m, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "Samsung Galaxy S24 Ultra", Descripcion = "El poder de la IA en tus manos.", Precio = 1899.99m, Stock = 15, ImagenUrl = "" },
-            new Producto { Nombre = "Google Pixel 8", Descripcion = "La magia de Google en un teléfono.", Precio = 1500.00m, Stock = 20, ImagenUrl = "" },
-            new Producto { Nombre = "Cargador USB-C 20W", Descripcion = "Carga rápida y eficiente.", Precio = 29.99m, Stock = 50, ImagenUrl = "" },
-            new Producto { Nombre = "Funda de Silicona", Descripcion = "Protección suave y con estilo.", Precio = 39.99m, Stock = 40, ImagenUrl = "" },
-            new Producto { Nombre = "Auriculares Inalámbricos", Descripcion = "Sonido inmersivo, sin cables.", Precio = 149.99m, Stock = 30, ImagenUrl = "" },
-            new Producto { Nombre = "Smartwatch Pro", Descripcion = "Tu vida conectada en tu muñeca.", Precio = 299.99m, Stock = 25, ImagenUrl = "" },
-            new Producto { Nombre = "Tablet Advance 11\"", Descripcion = "Potencia y portabilidad.", Precio = 799.99m, Stock = 12, ImagenUrl = "" },
-            new Producto { Nombre = "Protector de Pantalla", Descripcion = "Resistencia contra golpes y arañazos.", Precio = 19.99m, Stock = 100, ImagenUrl = "" },
-            new Producto { Nombre = "Batería Externa 10000mAh", Descripcion = "Energía extra para tus dispositivos.", Precio = 49.99m, Stock = 35, ImagenUrl = "" }
-        };
+{
+    new Producto { Nombre = "iPhone 16 Pro", Descripcion = " Tan robusto. Tan ligero. Tan Pro.", Precio = 1200.99, Stock = 10, ImagenUrl = "https://www.forbes.com.au/wp-content/uploads/2024/09/Apple-iPhone-16-Pro-finish-lineup-240909.jpg?w=1024" },
+    new Producto { Nombre = "Samsung Galaxy S24 Ultra", Descripcion = "El poder de la IA en tus manos.", Precio = 900.99, Stock = 15, ImagenUrl = "https://www.cordobadigital.net/wp-content/uploads/2024/08/S24-Ultra-black.webp" },
+    new Producto { Nombre = "Google Pixel 8", Descripcion = "La magia de Google en un teléfono.", Precio = 500.00, Stock = 20, ImagenUrl = "https://images.tcdn.com.br/img/img_prod/625110/google_pixel_8_pro_512gb_porcelain_desbloqueado_5859_1_246782dbd96a858c180ca4edfc527fde.jpg" },
+    new Producto { Nombre = "Cargador USB-C 20W", Descripcion = "Carga rápida y eficiente.", Precio = 29.99, Stock = 50, ImagenUrl = "https://m.media-amazon.com/images/I/51qIsW21sHL._SL1500_.jpg" },
+    new Producto { Nombre = "Funda de Silicona", Descripcion = "Protección suave y con estilo.", Precio = 20.99, Stock = 40, ImagenUrl = "https://acdn-us.mitiendanube.com/stores/001/643/020/products/silicone-case-con-logo-iphone-16-pro-roja-22f5de7476a561e7de17260731914622-1024-1024.png" },
+    new Producto { Nombre = "Auriculares Inalámbricos", Descripcion = "Sonido inmersivo, sin cables.", Precio = 149.99, Stock = 30, ImagenUrl = "https://kanji.com.ar/wp-content/uploads/2024/03/KJ-AUBT001-negro.jpg" },
+    new Producto { Nombre = "Smartwatch Pro", Descripcion = "Tu vida conectada en tu muñeca.", Precio = 299.99, Stock = 25, ImagenUrl = "https://acdn-us.mitiendanube.com/stores/001/145/546/products/i8-pro-max-final-f8c3a4279b5cd327ce17010981120048-1024-1024.jpg" },
+    new Producto { Nombre = "Ipad pro 11\"", Descripcion = "Potencia y portabilidad.", Precio = 799.99, Stock = 12, ImagenUrl = "https://www.apple.com/v/ipad-air/s/images/overview/design/colors__bmip5mc8xueu_large.jpg" },
+    new Producto { Nombre = "Apple TV 4K", Descripcion = "Mejor definicion y rapidez.", Precio = 300.99, Stock = 100, ImagenUrl = "https://www.apple.com/v/apple-tv-4k/ak/images/meta/apple-tv-4k__efpszaiqoh2e_og.png" },
+    new Producto { Nombre = "Batería Externa 10000mAh", Descripcion = "Energía extra para tus dispositivos.", Precio = 49.99, Stock = 35, ImagenUrl = "https://ipoint.pe/wp-content/uploads/2024/09/10-2.jpg" }
+};
+
         dbContext.Productos.AddRange(productos);
         dbContext.SaveChanges();
     }
