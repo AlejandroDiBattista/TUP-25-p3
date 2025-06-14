@@ -1,4 +1,4 @@
-namespace TiendaOnline.Models;
+namespace TiendaOnline.client.Models;
 public class Producto
 {
     public int Id { get; set; }
