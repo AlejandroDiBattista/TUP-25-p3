@@ -327,7 +327,7 @@ position: absolute;
 }
 .home-minimal {
     min-height: 100vh;
-    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+    background: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -335,9 +335,9 @@ position: absolute;
 }
 
 .descripcion-minimal {
-    background: rgba(255,255,255,0.95);
+    background: #fff;
     border-radius: 2rem;
-    box-shadow: 0 8px 32px rgba(27, 110, 194, 0.10);
+    box-shadow: 20px 66px 63px rgba(27, 110, 194, 0.10);
     padding: 3rem 2.5rem 2.5rem 2.5rem;
     text-align: center;
     max-width: 480px;
@@ -345,12 +345,7 @@ position: absolute;
     margin: 0 auto;
 }
 
-.logo-minimal {
-    width: 110px;
-    height: 60px;
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(27, 110, 194, 0.10);
-}
+
 
 .descripcion-minimal h1 {
     font-size: 2rem;
