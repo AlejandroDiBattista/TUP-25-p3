@@ -1,0 +1,80 @@
+/* Título del carrito */
+.carrito-titulo {
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #2d3a4a;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 8px rgba(67,198,172,0.07);
+}
+
+/* Centrado de botones en la página de carrito */
+.carrito-botones {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.2rem;
+    margin-top: 2rem;
+}
+
+/* Botones con colores suaves */
+.carrito-botones .btn-secondary {
+    background: linear-gradient(90deg, #b6c6e0 0%, #a8edea 100%);
+    color: #2d3a4a;
+    border: none;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.carrito-botones .btn-secondary:hover {
+    background: linear-gradient(90deg, #a8edea 0%, #b6c6e0 100%);
+}
+.carrito-botones .btn-success {
+    background: linear-gradient(90deg, #a8edea 0%, #7ed6df 100%);
+    color: #2d3a4a;
+    border: none;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.carrito-botones .btn-success:hover {
+    background: linear-gradient(90deg, #7ed6df 0%, #a8edea 100%);
+}
+
+/* Centrado y estilo del formulario de confirmación */
+.carrito-formulario {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.carrito-formulario input.form-control {
+    max-width: 350px;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.carrito-formulario label {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    text-align: left;
+    width: 100%;
+    max-width: 350px;
+}
+
+.carrito-formulario .alert-danger {
+    max-width: 350px;
+    margin: 0 auto 0.5rem auto;
+}
+
+.carrito-formulario button {
+    width: 100%;
+    max-width: 350px;
+}
+
+/* Fondo más suave para la página */
+body, .container-fluid {
+    background: linear-gradient(135deg, #f8fbff 0%, #e0f7fa 100%) !important;
+}

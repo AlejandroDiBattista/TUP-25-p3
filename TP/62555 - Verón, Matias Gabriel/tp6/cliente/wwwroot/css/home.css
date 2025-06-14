@@ -1,0 +1,115 @@
+/* Estilos exclusivos para la grilla de productos en la página principal */
+.productos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 2rem;
+    z-index: 0;
+}
+
+.productos-grid .producto-card {
+    width: 320px;
+    min-height: 420px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(67,198,172,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.15s;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
+}
+
+.productos-grid .producto-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(67,198,172,0.18);
+}
+
+.productos-grid .producto-card .card-body {
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.productos-grid .producto-card .btn-agregar {
+    align-self: stretch;
+    margin-top: 1rem;
+}
+
+/* Contenedor para el efecto hover de la imagen */
+.img-hover-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 220px;
+    overflow: visible;
+}
+
+.img-hover-container .card-img-top {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 18px 18px 0 0;
+    transition: box-shadow 0.2s, z-index 0.2s, transform 0.2s;
+    cursor: pointer;
+    z-index: 2;
+    position: relative;
+}
+
+.img-hover-container:hover .card-img-top {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.5);
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(67,198,172,0.25);
+    border-radius: 18px;
+    background: #fff;
+    pointer-events: none;
+}
+
+@media (max-width: 900px) {
+    .img-hover-container:hover .card-img-top {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+h1 {
+    text-align: center;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #3366cc;
+    background: none;
+    margin: 1.5rem 0 1.5rem 0;
+    letter-spacing: 1px;
+    box-shadow: none;
+}
+
+.buscador-productos {
+    margin-bottom: 1.5rem;
+}
+.buscador-productos .form-control {
+    border-radius: 24px !important;
+    font-size: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    min-width: 180px;
+    max-width: 300px;
+    box-shadow: 0 2px 8px rgba(67,198,172,0.07);
+}
+.buscador-productos .input-group-text {
+    background: #fff;
+    border-radius: 24px 0 0 24px !important;
+    border: 1px solid #ced4da;
+    border-right: none;
+    color: #3366cc;
+    font-size: 1.2rem;
+}

@@ -1,0 +1,21 @@
+@inject cliente.Services.CarritoService CarritoService
+
+@page "/confirmacion/{nombreCliente}/{apellidoCliente}/{emailCliente}"
+<link href="css/confirmacion.css" rel="stylesheet" />
+
+<div class="confirmacion-container">
+    <div class="alert alert-success confirmacion-alert">
+        <h2>¡Compra realizada con éxito!</h2>
+        <p>
+            Gracias por tu compra,<br />
+            <strong>@nombreCliente @apellidoCliente</strong><br />
+            <span>@emailCliente</span>
+        </p>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string nombreCliente { get; set; } = "";
+    [Parameter] public string apellidoCliente { get; set; } = "";
+    [Parameter] public string emailCliente { get; set; } = "";
+}
