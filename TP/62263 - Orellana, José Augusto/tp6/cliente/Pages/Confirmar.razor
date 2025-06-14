@@ -1,0 +1,98 @@
+@page "/confirmar"
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject NavigationManager Nav
+
+<h3>Confirmar compra</h3>
+
+@if (CarritoService.CarritoId == null)
+{
+    <p class="mensaje-centrado mensaje-vacio">No hay un carrito activo.</p>
+}
+else
+{
+    <div class="contenedor-confirmacion">
+        <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="confirmar-formulario">
+                <label for="">Nombre:</label>
+                <InputText @bind-Value="cliente.Nombre" class="input-form" />
+                
+                <label>Apellido:</label>
+                <InputText @bind-Value="cliente.Apellido" class="input-form" />
+                
+                <label>Email:</label>
+                <InputText @bind-Value="cliente.Email" class="input-form" />
+                
+                <button class="boton-confirmar" type="submit">Confirmar compra</button>
+            </div>
+        </EditForm>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <p class="mensaje-exito">@mensaje</p>
+    }
+}
+
+@code
+{
+    ClienteDTO cliente = new();
+    string mensaje = "";
+
+    CancellationTokenSource? cts;
+
+    async Task ConfirmarCompra()
+    {
+        if (CarritoService.CarritoId == null) return;
+
+        // Se cancela cualquier mensaje anterior
+        cts?.Cancel();
+        mensaje = "";
+        StateHasChanged(); // Para forzar el borrado
+        await Task.Delay(50);
+
+        cts = new CancellationTokenSource();
+
+        var respuesta = await Http.PutAsJsonAsync(
+            $"http://localhost:5184/carritos/{CarritoService.CarritoId}/confirmar", cliente);
+
+        if (respuesta.IsSuccessStatusCode)
+        {
+            mensaje = "Compra confirmada exitosamente";
+            StateHasChanged();
+            await Task.Delay(2000, cts.Token);
+
+            // Se limpia y se fuerza la eliminación del carrito
+            CarritoService.Vaciar();
+            CarritoService.ResetearCarrito();
+
+            Nav.NavigateTo("/");
+        }
+        else
+        {
+            mensaje = await respuesta.Content.ReadAsStringAsync();
+            StateHasChanged();
+
+            try
+            {
+                await Task.Delay(2000, cts.Token);
+                mensaje = "";
+                StateHasChanged();
+            }
+            catch (TaskCanceledException)
+            {
+                // Se ignora
+            }
+        }
+    }
+
+    public class ClienteDTO
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+}

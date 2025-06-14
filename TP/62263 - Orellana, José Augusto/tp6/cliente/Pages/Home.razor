@@ -1,59 +1,65 @@
 ﻿@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager Nav
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+<div class="contenedor-home">
+    <h1 class="titulo-home">Bienvenido a la Tienda Online</h1>
+
+    <p class="descripcion-home">
+        Aquí podés explorar productos, agregarlos a tu carrito y confirmar la compra.
+    </p>
+
+    <div class="botones-home">
+        <button class="boton-home" @onclick="IrAlCatalogo">🛍️ Ir al Catálogo</button>
+        <button class="boton-home" @onclick="IrAlCarrito">🛒 Ir al Carrito</button>
+        <button class="boton-home secundario" @onclick="ObtenerDatosDelServidor">🔄 Ver estado del servidor</button>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
+    @if (cargando)
+    {
+        <div class="mensaje-info">Cargando datos...</div>
+    }
+    else if (datos != null)
+    {
+        <div class="card-servidor">
+            <h4>📡 Estado del servidor</h4>
+            <p><strong>@datos.Mensaje</strong></p>
+            <p>Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
         </div>
-    </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="mensaje-error">❌ Error: @error</div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
+    private DatosRespuesta? datos;
+    private string? error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }
+
+    void IrAlCatalogo() => Nav.NavigateTo("/catalogo");
+    void IrAlCarrito() => Nav.NavigateTo("/carrito");
 }
