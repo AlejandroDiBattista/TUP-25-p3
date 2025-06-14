@@ -6,6 +6,8 @@ namespace TiendaOnline.Data
 {
     public class AppDbContext : DbContext
     {
+
+        public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<ItemCompra> ItemsCompra { get; set; }
