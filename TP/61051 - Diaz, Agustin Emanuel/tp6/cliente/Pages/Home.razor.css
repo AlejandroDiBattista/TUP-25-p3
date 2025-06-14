@@ -42,7 +42,7 @@
         margin-bottom: 1rem;
     }
 
-    @@keyframes spin {
+    @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
@@ -188,7 +188,7 @@
         animation: spin 1s linear infinite;
     }
 
-    @@media (max-width: 768px) {
+    @media (max-width: 768px) {
         .catalogo-container {
             padding: 1rem;
         }
