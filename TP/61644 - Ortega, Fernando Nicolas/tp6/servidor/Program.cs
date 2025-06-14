@@ -68,6 +68,19 @@ app.MapGet("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext db
 
     return Results.Ok(compra);
 });
+app.MapDelete("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Articulos)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (compra == null) return Results.NotFound();
+
+    db.ArticulosCompra.RemoveRange(compra.Articulos);
+    await db.SaveChangesAsync();
+
+    return Results.Ok();
+});
 
 using (var scope = app.Services.CreateScope())
 {
