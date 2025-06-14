@@ -3,6 +3,7 @@
 @inject NavigationManager Navigation
 @inject cliente.Services.ApiService ApiService
 @using System.ComponentModel.DataAnnotations
+@using cliente.Models
 
 <div class="contenido-con-margen">
 <div class="inicio">
@@ -76,7 +77,7 @@ else if(compraConfirmada)
             <hr />
             <h4>Detalle de la compra:</h4>
             <ul class="list-group mb-3">
-                @foreach (var item in itemsCompra)
+                @foreach (var item in itemsCarrito)
                 {
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         @item.Producto.Nombre
@@ -92,13 +93,13 @@ else if(compraConfirmada)
 @code {
     private bool compraConfirmada = false;
     private CompraForm form = new(); // Usa tu modelo real aquí
-    private List<ItemCarrito> itemsCompra = new();
+     private List<ItemCompra> itemsComprados = new();
 
    
     private async Task ConfirmarCompra()
     {
        
-        itemsComprados = CarritoService.Items.Select(i => new ItemCarrito
+        itemsComprados = CarritoService.Items.Select(i => new ItemCompra
         {
             Producto = i.Producto,
             Cantidad = i.Cantidad
@@ -108,9 +109,9 @@ else if(compraConfirmada)
         CarritoService.Vaciar();
     }
 
-    private decimal ImporteTotal()
+   private decimal ImporteTotal()
     {
-        return itemsCompra.Sum(i => i.Producto.Precio * i.Cantidad);
+        return itemsComprados.Sum(i => i.Producto.Precio * i.Cantidad);
     }
 }
 
