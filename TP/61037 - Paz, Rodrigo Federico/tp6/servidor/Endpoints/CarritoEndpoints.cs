@@ -17,7 +17,7 @@ public static class CarritoEndpoints
       db.Carritos.Add(carrito);
       await db.SaveChangesAsync();
 
-      return Results.Ok(new { carrito.Id });
+      return Results.Ok(new { CarritoId = carrito.Id });
     });
 
     app.MapGet("/carritos/{carritoId}", async (Guid carritoId, TiendaContext db) =>
@@ -59,7 +59,7 @@ public static class CarritoEndpoints
 
     if (item != null)
     {
-      item.Cantidad += datos.Cantidad;
+       item.Cantidad = datos.Cantidad; 
     }
     else
     {

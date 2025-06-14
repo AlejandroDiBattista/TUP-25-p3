@@ -27,8 +27,22 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// =====================================================================
+// CÓDIGO AÑADIDO PARA ASEGURAR LA CREACIÓN DE LA BASE DE DATOS
+// Esto se ejecutará al iniciar y creará la BD y las tablas si no existen.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TiendaContext>();
+    dbContext.Database.EnsureCreated();
+}
+// =====================================================================
+
+
+app.UseStaticFiles();
+
 // Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
 }
 
@@ -104,6 +118,7 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (Guid carritoId, CompraReque
         })
     });
 });
+
 
 app.MapCarritoEndpoints();
 app.MapCompraEndpoints();
