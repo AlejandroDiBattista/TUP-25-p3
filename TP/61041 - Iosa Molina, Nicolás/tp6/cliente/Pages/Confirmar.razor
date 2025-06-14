@@ -1,0 +1,138 @@
+@page "/confirmar"
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<div class="container">
+    <h2>Confirmar Compra</h2>
+    @if (items == null)
+    {
+        <div class="alert alert-info">Cargando carrito...</div>
+    }
+    else if (items.Count == 0)
+    {
+        <div class="alert alert-warning">
+            El carrito está vacío. Debes agregar productos antes de confirmar la compra.
+            <div class="mt-3">
+                <a href="/" class="btn btn-primary">Ir al catálogo</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (errorMensaje != null)
+        {
+            <div class="alert alert-danger">@errorMensaje</div>
+        }
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@item.NombreProducto</td>
+                        <td>@item.Cantidad</td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="mb-3">
+            <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
+        </div>
+        
+        <form @onsubmit:preventDefault @onsubmit="ConfirmarCompra">
+            <div class="mb-2">
+                <label>Nombre</label>
+                <input class="form-control" @bind="cliente.Nombre" required />
+            </div>
+            <div class="mb-2">
+                <label>Apellido</label>
+                <input class="form-control" @bind="cliente.Apellido" required />
+            </div>
+            <div class="mb-2">
+                <label>Email</label>
+                <input type="email" class="form-control" @bind="cliente.Email" required />
+            </div>
+            <button class="btn btn-success" type="submit" disabled="@procesando">
+                @if (procesando)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Procesando...</span>
+                }
+                else
+                {
+                    <span>Confirmar</span>
+                }
+            </button>
+        </form>
+    }
+</div>
+
+@code {
+    private List<ItemCarritoDto> items;
+    private ClienteDto cliente = new();
+    private string errorMensaje;
+    private bool procesando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try 
+        {
+            items = await ApiService.ObtenerCarritoAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar el carrito: {ex.Message}";
+        }
+    }
+    
+    private async Task ConfirmarCompra()
+    {
+        try
+        {
+            procesando = true;
+            errorMensaje = null;
+            
+            if (string.IsNullOrWhiteSpace(cliente.Nombre) || 
+                string.IsNullOrWhiteSpace(cliente.Apellido) || 
+                string.IsNullOrWhiteSpace(cliente.Email))
+            {
+                errorMensaje = "Por favor complete todos los campos del formulario.";
+                return;
+            }
+            
+            if (!cliente.Email.Contains("@") || !cliente.Email.Contains("."))
+            {
+                errorMensaje = "Por favor ingrese un email válido.";
+                return;
+            }
+            
+            items = await ApiService.ObtenerCarritoAsync();
+            if (items == null || items.Count == 0)
+            {
+                errorMensaje = "El carrito está vacío. Por favor agregue productos antes de confirmar.";
+                return;
+            }
+            
+            await ApiService.ConfirmarCompraAsync(cliente);
+            NavigationManager.NavigateTo("/compra-confirmada");
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al procesar la compra: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+}
