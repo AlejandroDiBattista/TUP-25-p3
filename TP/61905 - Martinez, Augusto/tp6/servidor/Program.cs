@@ -1,3 +1,5 @@
+using TuApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -10,9 +12,11 @@ builder.Services.AddCors(options => {
 });
 
 // Agregar controladores si es necesario
+builder.Services.AddSingleton<ProductoService>();
 builder.Services.AddControllers();
-
 var app = builder.Build();
+
+
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
@@ -26,6 +30,9 @@ app.UseCors("AllowClientApp");
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+app.MapGet("/api/productos", () => {
+    var servicio = new ProductoService();
+    return Results.Ok(servicio.ObtenerProductos());
+});
 
 app.Run();

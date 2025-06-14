@@ -22,6 +22,41 @@
     </div>
 </header>
 
+<div class="container">
+    <h2>Catálogo de productos</h2>
+
+    @if (cargando)
+    {
+        <p>Cargando productos...</p>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <p class="text-danger">Error: @error</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var p in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <p class="card-text">@p.Descripcion</p>
+                            <p><strong>Precio:</strong> $@p.Precio</p>
+                            <p><strong>Stock:</strong> @p.Stock</p>
+                            <button class="btn btn-primary"
+                                    @onclick="@(() => AgregarAlCarrito(p))"
+                                    disabled="@(p.Stock == 0)">
+                                Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 <div class="container mt-4">
     @if (cargando)
     {
@@ -34,7 +69,7 @@
             {
                 <div class="col">
                     <div class="card h-100">
-                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="object-fit: cover; height: 200px;" />
+                        
                         <div class="card-body">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text">@producto.Descripcion</p>
@@ -111,4 +146,5 @@
         Navigation.NavigateTo("/carrito");
     }
 }
+
 

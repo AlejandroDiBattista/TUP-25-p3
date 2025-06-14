@@ -7,8 +7,8 @@ public class Producto
     public string Descripcion { get; set; } = string.Empty;
     public decimal Precio { get; set; }
     public int Stock { get; set; }
-    public string ImagenUrl { get; set; } = string.Empty;
 }
+
 
 public class ProductoService
 {
@@ -23,7 +23,6 @@ public class ProductoService
                 Descripcion = "Ultrabook de 13” con procesador Intel i7, 16GB RAM y 512GB SSD.",
                 Precio = 1299.99m,
                 Stock = 15,
-                ImagenUrl = "https://via.placeholder.com/150?text=Laptop"
             },
             new Producto
             {
@@ -32,7 +31,6 @@ public class ProductoService
                 Descripcion = "Smartphone Apple con pantalla OLED, 128GB y cámara de 48MP.",
                 Precio = 999.00m,
                 Stock = 10,
-                ImagenUrl = "https://via.placeholder.com/150?text=iPhone"
             },
             new Producto
             {
@@ -41,7 +39,6 @@ public class ProductoService
                 Descripcion = "Cancelación activa de ruido, conexión Bluetooth y carga rápida.",
                 Precio = 349.99m,
                 Stock = 25,
-                ImagenUrl = "https://via.placeholder.com/150?text=Audifonos"
             },
             new Producto
             {
@@ -50,7 +47,6 @@ public class ProductoService
                 Descripcion = "Monitor de salud, llamadas y GPS integrado.",
                 Precio = 279.00m,
                 Stock = 18,
-                ImagenUrl = "https://via.placeholder.com/150?text=Smartwatch"
             },
             new Producto
             {
@@ -59,7 +55,6 @@ public class ProductoService
                 Descripcion = "Ergonómico, inalámbrico, recargable y con múltiples botones.",
                 Precio = 99.99m,
                 Stock = 30,
-                ImagenUrl = "https://via.placeholder.com/150?text=Mouse"
             },
             new Producto
             {
@@ -68,7 +63,6 @@ public class ProductoService
                 Descripcion = "Resolución QHD, 75Hz, ideal para productividad y diseño.",
                 Precio = 449.00m,
                 Stock = 12,
-                ImagenUrl = "https://via.placeholder.com/150?text=Monitor"
             },
             new Producto
             {
@@ -77,7 +71,6 @@ public class ProductoService
                 Descripcion = "Retroiluminado, hot-swappable, Bluetooth y cable USB-C.",
                 Precio = 89.00m,
                 Stock = 20,
-                ImagenUrl = "https://via.placeholder.com/150?text=Teclado"
             },
             new Producto
             {
@@ -86,7 +79,6 @@ public class ProductoService
                 Descripcion = "Mirrorless de 24MP, video 4K y enfoque automático rápido.",
                 Precio = 1099.00m,
                 Stock = 8,
-                ImagenUrl = "https://via.placeholder.com/150?text=Camara"
             },
             new Producto
             {
@@ -95,7 +87,6 @@ public class ProductoService
                 Descripcion = "Multifuncional, impresión económica y conectividad Wi-Fi.",
                 Precio = 249.00m,
                 Stock = 10,
-                ImagenUrl = "https://via.placeholder.com/150?text=Impresora"
             },
             new Producto
             {
@@ -104,7 +95,6 @@ public class ProductoService
                 Descripcion = "Portátil, resistente al agua, batería de larga duración.",
                 Precio = 149.00m,
                 Stock = 22,
-                ImagenUrl = "https://via.placeholder.com/150?text=Bocina"
             }
         };
     }

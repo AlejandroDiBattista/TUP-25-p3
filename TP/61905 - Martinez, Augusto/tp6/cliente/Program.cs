@@ -1,16 +1,17 @@
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
 using cliente.Services;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configurar el HttpClient para apuntar al servidor API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+// 👇 Acá tenés que poner la URL real de tu backend, incluyendo el puerto correcto
+builder.Services.AddScoped(sp => new HttpClient {
+    BaseAddress = new Uri("http://localhost:5184") // Reemplazá con tu puerto real
+});
 
-// Registrar el servicio API
-builder.Services.AddScoped<ApiService>();
+builder.Services.AddScoped<ApiService>(); // Registrar tu ApiService
 
 await builder.Build().RunAsync();
