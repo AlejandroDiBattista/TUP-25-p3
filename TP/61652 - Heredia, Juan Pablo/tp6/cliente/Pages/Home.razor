@@ -51,31 +51,21 @@
     {
         try
         {
-            var storage = new cliente.Services.ApiService.CarritoStorage(JS);
-            int carritoId = await ObtenerOCrearCarrito(storage);
+            int carritoId = await ApiService.ObtenerOCrearCarrito();
 
-            // 1. Agregar o actualizar producto
             await ApiService.AgregarOActualizarProducto(carritoId, productoId, 1);
 
-            // 2. Obtener el carrito actualizado
+
             var items = await ApiService.GetCarrito(carritoId);
 
-            // 3. Actualizar el contador
+
             await ApiService.ActualizarContadorCarrito(carritoId);
         }
         catch (Exception ex)
         {
-            // Opcional: mostrar el error en pantalla o consola
-            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+
+            Console.WriteLine($"error al agregar al carrito: {ex.Message}");
         }
     }
 
-    async Task<int> ObtenerOCrearCarrito(cliente.Services.ApiService.CarritoStorage storage)
-    {
-        var id = await storage.ObtenerCarritoId();
-        if (id.HasValue) return id.Value;
-        var nuevoId = await ApiService.CrearCarrito();
-        await storage.GuardarCarritoId(nuevoId);
-        return nuevoId;
-    }
 }

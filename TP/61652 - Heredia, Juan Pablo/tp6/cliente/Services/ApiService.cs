@@ -7,6 +7,7 @@ namespace cliente.Services
     public class ApiService
     {
         private readonly HttpClient _http;
+        private readonly CarritoStorage _storage;
         public event Action? CarritoActualizado;
         private int _contadorCarrito;
         public int ContadorCarrito
@@ -25,8 +26,24 @@ namespace cliente.Services
         {
             ContadorCarrito = nuevoValor;
         }
-        public ApiService(HttpClient http) => _http = http;
+        public ApiService(HttpClient http, IJSRuntime js)
+        {
+            _http = http;
+            _storage = new CarritoStorage(js);
+        }
+            public async Task<int> ObtenerOCrearCarrito()
+        {
+            var id = await _storage.ObtenerCarritoId();
+            if (id.HasValue) return id.Value;
 
+            var nuevoId = await CrearCarrito();
+            await _storage.GuardarCarritoId(nuevoId);
+            return nuevoId;
+        }
+        public async Task LimpiarCarritoId()
+        {
+            await _storage.LimpiarCarritoId();
+        }
         public async Task<List<Producto>> GetProductos(string? busqueda = null)
         {
             var url = "/productos" + (string.IsNullOrWhiteSpace(busqueda) ? "" : $"?busqueda={busqueda}");
@@ -82,7 +99,7 @@ namespace cliente.Services
             ContadorCarrito = items.Sum(i => i.Cantidad);
         }
 
-        public class CarritoStorage
+        private class CarritoStorage
         {
             private readonly IJSRuntime js;
             public CarritoStorage(IJSRuntime js) => this.js = js;

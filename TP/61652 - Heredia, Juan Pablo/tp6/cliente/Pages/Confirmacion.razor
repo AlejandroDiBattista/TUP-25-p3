@@ -45,13 +45,14 @@
     }
 </div>
 @code{
+    #nullable enable
     List<Compras>? items;
     ConfirmarCompra confirmacion = new();
     int carritoId = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        carritoId = await ObtenerOCrearCarrito();
+        carritoId = await ApiService.ObtenerOCrearCarrito();
         items = await ApiService.GetCarrito(carritoId);
     }
     async Task ConfirmarCompra()
@@ -59,21 +60,12 @@
         try
         {
             await ApiService.ConfirmarCompra(carritoId, confirmacion);
-            await (new cliente.Services.ApiService.CarritoStorage(JS)).LimpiarCarritoId();
+            await ApiService.LimpiarCarritoId();
             Nav.NavigateTo("/");
         }
         catch (Exception ex)
         {
             await JS.InvokeVoidAsync("alert", ex.Message);
         }
-    }
-    async Task<int> ObtenerOCrearCarrito()
-    {
-        var storage = new cliente.Services.ApiService.CarritoStorage(JS);
-        var id = await storage.ObtenerCarritoId();
-        if (id.HasValue) return id.Value;
-        var nuevoId = await ApiService.CrearCarrito();
-        await storage.GuardarCarritoId(nuevoId);
-        return nuevoId;
     }
 }

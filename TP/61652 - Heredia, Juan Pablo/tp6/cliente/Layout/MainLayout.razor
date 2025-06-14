@@ -38,12 +38,8 @@
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         busqueda = query["busqueda"] ?? "";
 
-        var storage = new cliente.Services.ApiService.CarritoStorage(JS);
-        var carritoId = await storage.ObtenerCarritoId();
-        if (carritoId.HasValue)
-        {
-            await ApiService.ActualizarContadorCarrito(carritoId.Value);
-        }
+        var carritoId = await ApiService.ObtenerOCrearCarrito();
+        await ApiService.ActualizarContadorCarrito(carritoId);
     }
 
     void Buscar() => Nav.NavigateTo($"/?busqueda={busqueda}");

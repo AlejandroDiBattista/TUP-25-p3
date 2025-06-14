@@ -4,13 +4,13 @@ html, body {
 
 .productos-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Dos columnas */
+    grid-template-columns: repeat(2, 1fr); 
     gap: 2rem;
     max-width: 800px;
     width: 100%;
     margin: 0 auto;
     padding: 1rem;
-    justify-items: center; /* Centra el contenido dentro de cada columna */
+    justify-items: center; 
 }
 
 .producto-card {

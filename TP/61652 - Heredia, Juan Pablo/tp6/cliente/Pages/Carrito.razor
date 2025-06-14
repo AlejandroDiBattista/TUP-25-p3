@@ -51,8 +51,7 @@
     {
         try
         {
-            var storage = new cliente.Services.ApiService.CarritoStorage(JS);
-            carritoId = await ObtenerOCrearCarrito(storage);
+            carritoId = await ApiService.ObtenerOCrearCarrito();
             await CargarCarrito();
         }
         catch (Exception ex)
@@ -78,8 +77,15 @@
     async Task CambiarCantidad(Compras item, int nuevaCantidad)
     {
         if (nuevaCantidad < 1) return;
-        await ApiService.AgregarOActualizarProducto(carritoId, item.ProductoId, nuevaCantidad);
-        await CargarCarrito();
+
+        try
+        {
+            await ApiService.AgregarOActualizarProducto(carritoId, item.ProductoId, nuevaCantidad);
+            await CargarCarrito();
+        }
+        catch 
+        {
+        }
     }
 
     async Task Eliminar(Compras item)
@@ -97,14 +103,5 @@
     void Confirmar()
     {
         Nav.NavigateTo("/confirmacion");
-    }
-
-    async Task<int> ObtenerOCrearCarrito(cliente.Services.ApiService.CarritoStorage storage)
-    {
-        var id = await storage.ObtenerCarritoId();
-        if (id.HasValue) return id.Value;
-        var nuevoId = await ApiService.CrearCarrito();
-        await storage.GuardarCarritoId(nuevoId);
-        return nuevoId;
     }
 }
