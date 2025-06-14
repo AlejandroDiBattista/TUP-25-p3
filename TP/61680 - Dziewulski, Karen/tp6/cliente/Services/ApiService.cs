@@ -25,13 +25,13 @@ public class ApiService
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
     }
-    
 
-    public async Task<List<Producto>> ObtenerProductosAsync()
+    public async Task<List<Producto>> ObtenerProductosAsync(string? q = null)
     {
         try
         {
-            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
+            var url = string.IsNullOrWhiteSpace(q) ? "/productos" : $"/productos?q={Uri.EscapeDataString(q)}";
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
             return productos ?? new List<Producto>();
         }
         catch (Exception ex)
@@ -41,7 +41,6 @@ public class ApiService
         }
     }
 }
-
 
 public class DatosRespuesta {
     public string Mensaje { get; set; }
