@@ -1,4 +1,57 @@
 ﻿@inherits LayoutComponentBase
+@inject CarritoStateService CarritoState
+@inject NavigationManager Navigation
+@implements IDisposable
+
 <div class="page">
-    @Body
+    <header class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shop me-2"></i> Tienda Online
+            </a>
+
+            <div class="d-flex flex-grow-1 mx-3" role="search">
+                <input class="form-control" type="search" placeholder="Buscar productos..." @bind="terminoBusqueda" @onkeyup="HandleSearch" />
+            </div>
+
+            <button class="btn btn-outline-primary position-relative" @onclick='() => Navigation.NavigateTo("/carrito")'>
+                <i class="bi bi-cart"></i>
+                @if (CarritoState.NumeroDeItems > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @CarritoState.NumeroDeItems
+                        <span class="visually-hidden">items en el carrito</span>
+                    </span>
+                }
+            </button>
+        </div>
+    </header>
+
+    <main class="container mt-5 pt-5">
+         <div class="px-lg-4">
+            @Body
+        </div>
+    </main>
 </div>
+
+@code {
+    private string terminoBusqueda = "";
+
+    protected override void OnInitialized()
+    {
+        CarritoState.OnChange += StateHasChanged;
+    }
+
+    private void HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Navigation.NavigateTo($"/search/{terminoBusqueda}");
+        }
+    }
+
+    public void Dispose()
+    {
+        CarritoState.OnChange -= StateHasChanged;
+    }
+}
