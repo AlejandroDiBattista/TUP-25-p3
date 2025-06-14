@@ -7,8 +7,8 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-  <div class="container">
+
+  <div class="container-fluid">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">NextGen</a>
@@ -26,21 +26,23 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
+              <a class="nav-link active mt-1" aria-current="page" href="#">Home</a>
             </li>
           </ul>
-          <form class="d-flex" role="search" @onsubmit="OnBuscarSubmit">
+          <form class="d-flex flex-grow-1 justify-content-center" role="search" @onsubmit="OnBuscarSubmit">
             <input
-              class="form-control me-2"
+              class="form-control me-2 tsearch"
               type="search"
               placeholder="Buscar"
               aria-label="Search"
               @bind-value="busqueda"
-              @bind-value:event="oninput"
+              @oninput="OnInputBuscar"
             />
-            <button class="btn btn-outline-primary" type="submit">Buscar</button>
-            <a class="btn btn-outline-primary ms-5 position-relative" href="/carrito">
-              Carrito
+            <button class="btn btn-outline-dark" type="submit"><i class="bi bi-search"></i></button>
+          </form>
+          <div class="d-flex align-items-center ms-auto">
+            <a class="nav-link mx-2 position-relative" href="/carrito">
+              <i class="bi bi-cart-check-fill fs-2"></i>
               @if (CarritoService.CantidadTotal > 0)
               {
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -48,11 +50,13 @@
                 </span>
               }
             </a>
-          </form>
+            <a class="nav-link mx-3" href="/confirmacion"><i class="bi bi-bag-fill fs-3 "></i></a>
+          </div>
         </div>
       </div>
     </nav>
-
+    
+    <div class="container">
     <div class="row my-4 row-gap-4">
       @if (productos.Count == 0 && !cargando)
       {
@@ -68,7 +72,7 @@
               <p class="card-text">@producto.Descripcion</p>
               <p class="card-text"><strong>Precio: </strong>$@producto.Precio</p>
               <p class="card-text"><strong>Stock: </strong>@producto.Stock</p>
-              <a href="#" class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</a>
+              <a class="btn btn-primary" style="cursor:pointer;" @onclick="(e => AgregarAlCarrito(producto))">Agregar al carrito</a>
             </div>
           </div>
         </div>
@@ -96,21 +100,25 @@
       </div>
     </div>
   </div>
-</div>
+    </div>
+
 
 @code {
   private List<Producto> productos = new();
   private string error;
   private bool cargando = false;
   private string busqueda = string.Empty;
+  private bool productosCargados = false;
 
   private async Task ObtenerProductos()
   {
+    if (productosCargados) return;
     try
     {
       cargando = true;
       error = null;
       productos = await ApiService.ObtenerProductosAsync();
+      productosCargados = true;
     }
     catch (Exception ex)
     {
@@ -121,6 +129,7 @@
     {
       cargando = false;
     }
+    StateHasChanged();
   }
 
   private async Task BuscarProductos()
@@ -136,7 +145,9 @@
       }
       else
       {
-        productos = todos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+       
+        string busquedaNormalizada = RemoverAcentos(busqueda).ToLower();
+        productos = todos.Where(p => RemoverAcentos(p.Nombre).ToLower().Contains(busquedaNormalizada)).ToList();
       }
     }
     catch (Exception ex)
@@ -156,6 +167,20 @@
     await BuscarProductos();
   }
 
+  private async Task OnInputBuscar(ChangeEventArgs e)
+  {
+    busqueda = e.Value?.ToString() ?? string.Empty;
+    if (string.IsNullOrWhiteSpace(busqueda))
+    {
+        
+        await ObtenerProductos();
+    }
+    else
+    {
+        await BuscarProductos();
+    }
+  }
+
   private async Task AgregarAlCarrito(Producto producto)
   {
     var exitoServidor = await ApiService.AgregarProductoAlCarritoAsync(producto);
@@ -164,7 +189,7 @@
         bool agregadoLocal = CarritoService.AgregarProducto(producto);
         if (agregadoLocal)
         {
-            producto.Stock--;
+            
             StateHasChanged();
             await JS.InvokeVoidAsync("alert", "¡Producto agregado al carrito!");
         }
@@ -177,5 +202,19 @@
     {
         error = "No se pudo agregar al carrito. Sin stock en servidor.";
     }
+  }
+
+ 
+  private static string RemoverAcentos(string texto)
+  {
+      if (string.IsNullOrEmpty(texto)) return texto;
+      var normalized = texto.Normalize(System.Text.NormalizationForm.FormD);
+      var sb = new System.Text.StringBuilder();
+      foreach (var c in normalized)
+      {
+          if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+              sb.Append(c);
+      }
+      return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
   }
 }

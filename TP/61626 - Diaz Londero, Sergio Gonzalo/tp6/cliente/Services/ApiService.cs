@@ -99,7 +99,7 @@ namespace cliente.Services
                 }
             }
             catch { }
-            // Si no es JSON válido, muestra mensaje genérico
+           
             return (response.IsSuccessStatusCode, response.IsSuccessStatusCode ? "Compra confirmada correctamente" : "Error al confirmar la compra");
         }
 

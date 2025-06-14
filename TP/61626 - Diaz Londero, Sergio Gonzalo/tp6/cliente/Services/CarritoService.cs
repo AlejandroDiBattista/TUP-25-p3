@@ -9,11 +9,11 @@ namespace cliente.Services
 
         public bool AgregarProducto(Producto producto)
         {
-            // Validar stock antes de agregar
+           
             int stockDisponible = producto.Stock - CantidadEnCarrito(producto.Id);
 
             if (stockDisponible <= 0)
-                return false; // No hay stock para agregar
+                return false;
 
             var existente = Items.FirstOrDefault(p => p.Producto.Id == producto.Id);
             if (existente != null)

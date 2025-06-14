@@ -35,7 +35,8 @@
             <InputText class="form-control" @bind-Value="cliente.Email" />
         </div>
         <button class="btn btn-success" type="submit">Confirmar compra</button>
-        <a class="btn btn-outline-primary ms-5" href="/carrito">Volver</a>
+        <a class="btn btn-primary ms-3" href="/carrito">Carrito</a>
+         <a class="btn btn-primary ms-3" href="/">Seguir comprando</a>
     </EditForm>
     @if (!string.IsNullOrEmpty(mensaje))
     {
@@ -96,14 +97,14 @@
 </div>
 @if (compraExitosa)
 {
-    <div class="alert alert-success mt-4">
+    <div class="alert alert-success mt-4 h-100" >
         <h4>¡Compra registrada!</h4>
         <p><strong>Nombre:</strong> @cliente.Nombre</p>
         <p><strong>Apellido:</strong> @cliente.Apellido</p>
         <p><strong>Email:</strong> @cliente.Email</p>
         <p><strong>Total:</strong> $@totalCompra</p>
         <h5>Productos comprados:</h5>
-        <ul>
+        <ul class="mb-0">
             @foreach (var p in productosComprados)
             {
                 <li>@p.Nombre x @p.Cantidad = $@(p.Precio * p.Cantidad)</li>
