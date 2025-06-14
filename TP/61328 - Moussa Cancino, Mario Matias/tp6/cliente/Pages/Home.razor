@@ -23,7 +23,7 @@ else
         {
             <div class="col">
                 <div class="card h-100">
-                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: contain;">
                     <div class="card-body">
                         <h5 class="card-title">@producto.Nombre</h5>
                         <p class="card-text">@producto.Descripcion</p>
@@ -47,17 +47,30 @@ else
     private List<Producto> productos;
     private string error;
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string q { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        await LoadProducts();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
         try {
-            productos = await ApiService.GetProductosAsync();
+            productos = await ApiService.GetProductosAsync(q);
         }
         catch (Exception ex) {
             error = ex.Message;
         }
     }
 
-    // <<< MÉTODO NUEVO >>>
     private async Task AddToCart(Producto producto)
     {
         await CartService.AddToCartAsync(producto);

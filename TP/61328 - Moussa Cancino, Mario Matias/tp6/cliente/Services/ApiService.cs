@@ -35,11 +35,17 @@ namespace cliente.Services
             response.EnsureSuccessStatusCode();
         }
 
+        // <<< MÉTODO NUEVO >>>
+        public async Task RemoveProductFromCartAsync(Guid cartId, int productId) {
+            var response = await _httpClient.DeleteAsync($"http://localhost:5184/api/carritos/{cartId}/productos/{productId}");
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task EmptyCartAsync(Guid cartId) {
             var response = await _httpClient.DeleteAsync($"http://localhost:5184/api/carritos/{cartId}");
             response.EnsureSuccessStatusCode();
         }
-
+        
         public async Task ConfirmPurchaseAsync(Guid cartId, DatosCliente datosCliente) {
             var response = await _httpClient.PutAsJsonAsync($"http://localhost:5184/api/carritos/{cartId}/confirmar", datosCliente);
             response.EnsureSuccessStatusCode();
