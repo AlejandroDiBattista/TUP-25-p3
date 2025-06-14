@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject CarritoService CarritoService
 
 <PageTitle>Catálogo</PageTitle>
 
@@ -35,7 +37,7 @@
                             <p class="card-text">@producto.Descripcion</p>
                             <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
                             <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-                            <button class="btn btn-success" disabled="@(!PuedeAgregar(producto))">Agregar al carrito</button>
+                            <button class="btn btn-success" disabled="@(!PuedeAgregar(producto))" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
                         </div>
                     </div>
                 </div>
@@ -69,4 +71,10 @@
     }
 
     private bool PuedeAgregar(Producto producto) => producto.Stock > 0;
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        CarritoService.Agregar(producto, 1);
+        Navigation.NavigateTo("/carrito");
+    }
 }

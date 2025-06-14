@@ -1,0 +1,35 @@
+@inject cliente.Services.CarritoService CarritoService
+@using cliente.Services
+@inherits LayoutComponentBase
+<div class="top-row px-4 bg-light shadow-sm">
+    <a href="/" class="navbar-brand">
+        <img src="logo.png" alt="Logo" style="height:40px;" />
+        Tienda Online
+    </a>
+    <div class="ms-auto">
+        <a href="/carrito" class="btn btn-outline-primary position-relative">
+            <span class="bi bi-cart"></span> Carrito
+            @if (CarritoService.Articulos.Count > 0)
+            {
+                <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle">
+                    @CarritoService.Articulos.Count
+                </span>
+            }
+        </a>
+    </div>
+</div>
+
+<main>
+    @Body
+</main>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}
