@@ -40,9 +40,7 @@ namespace cliente.Shared
     }
 
 
-    // --- **NUEVOS DTOs (Data Transfer Objects)** ---
-    // Estos son los formatos "planos" y seguros que el servidor envía.
-    // Los añadimos aquí para que el cliente pueda entender las respuestas de la API.
+    
     public class ProductoResumenDto
     {
         public int Id { get; set; }

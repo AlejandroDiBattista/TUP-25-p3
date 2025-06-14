@@ -74,7 +74,7 @@ else
         currentProductId = productoId;
         await InvokeAsync(StateHasChanged);
 
-        // La lógica compleja ahora está en el servicio. ¡Más limpio!
+        
         var success = await CarritoService.AgregarProductoAlCarrito(productoId);
 
         if (success)
