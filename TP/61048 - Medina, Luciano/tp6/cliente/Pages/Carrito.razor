@@ -1,0 +1,101 @@
+@page "/carrito"
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject NavigationManager NavManager
+
+<PageTitle>Carrito de Compras</PageTitle>
+
+<h3><i class="bi bi-cart-check-fill"></i> Mi Carrito</h3>
+
+@if (compra == null)
+{
+    <p><em>Cargando carrito...</em></p>
+}
+else if (!compra.Items.Any())
+{
+    <div class="alert alert-info">Tu carrito está vacío. <a href="/">¡Mira nuestros perfumes!</a></div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-end">Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in compra.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.PrecioUnitario.ToString("N2")</td>
+                    <td class="text-center">
+                        <input type="number" class="form-control text-center" style="width: 80px; display: inline-block;"
+                               value="@item.Cantidad" @onchange="(e) => ActualizarCantidad(item.ProductoId, int.Parse(e.Value.ToString()))"
+                               min="1" max="@item.Producto.Stock" />
+                    </td>
+                    <td class="text-end">$@((item.Cantidad * item.PrecioUnitario).ToString("N2"))</td>
+                    <td class="text-center">
+                        <button class="btn btn-danger btn-sm" @onclick="() => RemoverItem(item.ProductoId)">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end"><strong>Total</strong></td>
+                <td class="text-end"><strong>$@compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("N2")</strong></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="d-flex justify-content-end mt-4">
+        <button class="btn btn-secondary me-2" @onclick='() => NavManager.NavigateTo("/")'>Seguir Comprando</button>
+        <button class="btn btn-primary" @onclick='() => NavManager.NavigateTo("/confirmacion")'>Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    private Compra? compra;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        if (CarritoService.CarritoId.HasValue)
+        {
+            compra = await Http.GetFromJsonAsync<Compra>($"/api/carritos/{CarritoService.CarritoId}");
+            await CarritoService.ActualizarCantidad();
+        }
+    }
+    
+    private async Task ActualizarCantidad(int productoId, int cantidad)
+    {
+        if (cantidad > 0)
+        {
+            var response = await Http.PutAsync($"/api/carritos/{CarritoService.CarritoId}/agregar/{productoId}?cantidad={cantidad}", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                // En una app real, aquí mostrarías el error al usuario
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+            await CargarCarrito();
+        }
+    }
+
+    private async Task RemoverItem(int productoId)
+    {
+        await Http.DeleteAsync($"/api/carritos/{CarritoService.CarritoId}/remover/{productoId}");
+        await CargarCarrito();
+    }
+}

@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using servidor.Data;
 using servidor.Models;
+using System.Text.Json.Serialization; // <-- ASEGÚRATE DE TENER ESTE USING
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. CONFIGURACIÓN DE SERVICIOS ---
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// Agregar servicios CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -14,6 +15,14 @@ builder.Services.AddCors(options => {
               .AllowAnyMethod();
     });
 });
+
+// --- ** CORRECCIÓN AQUÍ ** ---
+// Configurar el serializador JSON para ignorar ciclos.
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 
 // Registrar el DbContext para Entity Framework Core
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -166,5 +175,4 @@ app.MapPut("/api/carritos/{carritoId:int}/confirmar", async (ApplicationDbContex
 app.Run();
 
 // --- DEFINICIÓN DE TIPOS (DTOs) ---
-// Se mueve la declaración del record aquí, al final del archivo, para solucionar el error CS8803.
 public record ClienteDto(string Nombre, string Apellido, string Email);
