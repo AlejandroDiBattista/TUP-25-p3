@@ -1,59 +1,93 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject NavigationManager NavManager
+@using cliente.Shared
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>PerfumeShop - Catálogo</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (productos == null)
+{
+    <p class="text-center"><em>Cargando perfumes...</em></p>
+}
+else
+{
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+        @foreach (var p in productos)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" style="height: 200px; object-fit: contain; padding: 10px;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@p.Nombre</h5>
+                        <p class="card-text flex-grow-1">@p.Descripcion</p>
+                        <p class="card-text"><strong>Stock:</strong> @p.Stock</p>
+                        <h4 class="card-text text-end mb-3">$@p.Precio.ToString("N2")</h4>
+                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0 || (isAddingToCart && currentProductId == p.Id))">
+                            @if(isAddingToCart && currentProductId == p.Id)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span> Agregando...</span>
+                            }
+                            else if(p.Stock > 0)
+                            {
+                                <i class="bi bi-cart-plus-fill"></i><span> Agregar al carrito</span>
+                            } else {
+                                <span>Sin Stock</span>
+                            }
+                        </button>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private List<Producto>? productos;
+    private bool isAddingToCart = false;
+    private int currentProductId = 0;
+    private string? errorMessage;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            errorMessage = null;
+            productos = await Http.GetFromJsonAsync<List<Producto>>("/api/productos");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ocurrió un error al cargar los productos: {ex.Message}";
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        if (isAddingToCart) return;
+
+        isAddingToCart = true;
+        currentProductId = productoId;
+        await InvokeAsync(StateHasChanged);
+
+        
+        var success = await CarritoService.AgregarProductoAlCarrito(productoId);
+
+        if (success)
+        {
+            NavManager.NavigateTo("/carrito");
+        }
+        else
+        {
+            // Opcional: mostrar un mensaje de error
+            Console.WriteLine("Error al agregar el producto.");
+            isAddingToCart = false;
+            currentProductId = 0;
+            await InvokeAsync(StateHasChanged);
         }
     }
 }
