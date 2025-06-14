@@ -189,6 +189,55 @@ app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId
 
     return Results.Ok(articulosDto);
 });
+app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, ClienteDto cliente, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Articulos)
+        .ThenInclude(a => a.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (compra == null) return Results.NotFound();
+
+    if (string.IsNullOrWhiteSpace(cliente.Nombre) ||
+        string.IsNullOrWhiteSpace(cliente.Apellido) ||
+        string.IsNullOrWhiteSpace(cliente.Email))
+    {
+        return Results.BadRequest("Todos los datos del cliente son obligatorios.");
+    }
+
+    compra.NombreCliente = cliente.Nombre;
+    compra.ApellidoCliente = cliente.Apellido;
+    compra.EmailCliente = cliente.Email;
+    compra.Total = compra.Articulos.Sum(a => a.Cantidad * a.PrecioUnitario);
+
+    // Validar y actualizar stock
+    foreach (var articulo in compra.Articulos)
+    {
+        if (articulo.Producto.Stock < articulo.Cantidad)
+            return Results.BadRequest($"No hay stock suficiente para {articulo.Producto.Nombre}");
+
+        articulo.Producto.Stock -= articulo.Cantidad;
+    }
+
+    await db.SaveChangesAsync();
+
+    // Devuelve un resumen de la compra
+    var resumen = new
+    {
+        compra.Id,
+        compra.Total,
+        compra.NombreCliente,
+        compra.ApellidoCliente,
+        compra.EmailCliente,
+        Articulos = compra.Articulos.Select(a => new {
+            a.ProductoId,
+            a.Cantidad,
+            a.PrecioUnitario
+        })
+    };
+
+    return Results.Ok(resumen);
+});
 
 using (var scope = app.Services.CreateScope())
 {
@@ -197,3 +246,4 @@ using (var scope = app.Services.CreateScope())
 }
 app.Run();
 public record CantidadDto(int Cantidad);
+public record ClienteDto(string Nombre, string Apellido, string Email);
