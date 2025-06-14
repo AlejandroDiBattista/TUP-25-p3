@@ -1,4 +1,44 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
-</div>
+@inject NavigationManager Navigation
+
+
+    <nav class="navbar navbar-dark bg-dark sticky-top mb-4">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="https://logo.com/image-cdn/images/kts928pd/production/9fa92ac5a9498502d2707ced798d763fe7490ecc-1600x1026.png?w=1920&q=72" alt="Logo" style="height:32px; margin-right:8px;" /> 
+                <span>Apple Store</span>
+            </a>
+            <form class="d-flex" style="max-width: 400px;" @onsubmit="Buscar">
+                <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
+                <button class="btn btn-outline-success" type="submit">Buscar</button>
+            </form>
+            <button class="btn btn-outline-light position-relative" @onclick="IrAlCarrito">
+                <i class="bi bi-cart"></i>
+                Carrito
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @contadorCarrito
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        @Body
+    </main>
+
+
+@code {
+    string busqueda = "";
+    int contadorCarrito = 0;
+
+    async Task Buscar()
+    {
+        Navigation.NavigateTo($"/?buscar={busqueda}");
+        await Task.CompletedTask;
+    }
+
+    void IrAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+}
