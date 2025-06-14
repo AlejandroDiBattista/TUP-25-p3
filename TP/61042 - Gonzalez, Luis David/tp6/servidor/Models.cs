@@ -34,11 +34,26 @@ namespace servidor.Models
         public decimal PrecioUnitario { get; set; }
     }
 
-    public class TiendaContext : DbContext
+    public class Carrito
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public List<CarritoItem> Items { get; set; } = new();
+    }
+
+    public class CarritoItem
+    {
+        public int Id { get; set; }
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    public partial class TiendaContext : DbContext
     {
         public TiendaContext(DbContextOptions<TiendaContext> options) : base(options) { }
         public DbSet<Producto> Productos => Set<Producto>();
         public DbSet<Compra> Compras => Set<Compra>();
         public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+        public DbSet<Carrito> Carritos => Set<Carrito>();
+        public DbSet<CarritoItem> CarritoItems => Set<CarritoItem>();
     }
 }
