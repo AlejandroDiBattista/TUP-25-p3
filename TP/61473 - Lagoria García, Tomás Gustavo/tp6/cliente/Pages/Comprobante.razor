@@ -1,0 +1,75 @@
+@page "/comprobante/{CompraId:int}"
+@using cliente.Services
+@using CompraModel = cliente.Services.ComprobanteService
+
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject ComprobanteService ComprobanteService
+@inject NavigationManager Nav
+<h3>Comprobante de Compra</h3>
+
+@if (compra == null)
+{
+    <p>Cargando comprobante...</p>
+}
+else
+{
+    <div class="comprobante">
+        <p><strong>Fecha:</strong> @compra.Fecha</p>
+        <p><strong>Cliente:</strong> @compra.NombreCliente @compra.ApellidoCliente</p>
+        <p><strong>Email:</strong> @compra.EmailCliente</p>
+        <p><strong>Total:</strong> $@compra.Total</p>
+
+        <h4>Detalle de Productos:</h4>
+        <ul>
+            @foreach (var item in compra.Items)
+            {
+                <li>@item.ProductoNombre - Cantidad: @item.Cantidad - Precio: $@item.PrecioUnitario</li>
+            }
+        </ul>
+        <button class="btn btn-secondary" @onclick="NavegarRegreso">Regresar al catálogo</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int CompraId { get; set; }
+
+    private CompraModel.Compra compra;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        compra = await ComprobanteService.ObtenerComprobantesAsync(CompraId);
+    }
+private void NavegarRegreso()
+    {
+     Nav.NavigateTo($"/catalogo");
+    }
+ 
+    public class Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public string NombreCliente { get; set; } = "";
+    public string ApellidoCliente { get; set; } = "";
+    public string EmailCliente { get; set; } = "";
+
+    public List<ItemCompra> Items { get; set; } = new();
+}
+
+public class ItemCompra
+{
+    public int Id { get; set; }
+    public int ProductoId { get; set; }
+    public Producto? Producto { get; set; }
+    public int CompraId { get; set; }
+    public Compra? Compra { get; set; }
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+    public string ProductoNombre => Producto?.Nombre ?? "Producto no encontrado";
+
+}
+
+}

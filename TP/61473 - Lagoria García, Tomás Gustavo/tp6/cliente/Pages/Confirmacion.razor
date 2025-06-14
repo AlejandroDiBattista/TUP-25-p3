@@ -61,7 +61,8 @@ else
     private string Nombre = string.Empty;
     private string Apellido = string.Empty;
     private string Email = string.Empty;
-
+    private Guid carritoId;
+    public int CompraId { get; set; } = 0;
     protected override async Task OnInitializedAsync()
     {
         carritoId = await CarritoService.ObtenerCarritoIdAsync();
@@ -74,12 +75,18 @@ else
         {
             return;
         }
+        var cliente = new ConfirmacionRequest
+        {
+            Nombre = Nombre,
+            Apellido = Apellido,
+            Email = Email
+        };
 
-        await CarritoService.ConfirmarCompraAsync(CarritoState.CarritoId, Nombre, Apellido, Email);
+       CompraId = await CarritoService.ConfirmarCompraAsync(carritoId,cliente);
 
         // Vaciar estado local
-        CarritoState.UpdateCantidad(0);
+        
 
-        Navigation.NavigateTo("/catalogo");
+        Navigation.NavigateTo($"/comprobante/{CompraId}");
     }
 }

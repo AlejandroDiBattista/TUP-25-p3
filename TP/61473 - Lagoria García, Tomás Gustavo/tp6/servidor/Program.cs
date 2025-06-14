@@ -252,10 +252,65 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (Guid carritoId, Confirmacio
 
     carritos.Remove(carritoId);
 
-    return Results.Ok(new { compra.Id, compra.Total, compra.Fecha });
+    return Results.Ok(new { Id=compra.Id});
 });
 
+app.MapGet("/compras", async (TiendaDbContext db) =>
+{
+    var comprasList = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .ToListAsync();
 
+    var compras = comprasList.Select(c => new
+    {
+        c.Id,
+        c.Fecha,
+        c.Total,
+        c.NombreCliente,
+        c.ApellidoCliente,
+        c.EmailCliente,
+        Items = c.Items.Select(i => new
+        {
+            i.ProductoId,
+            i.Cantidad,
+            i.PrecioUnitario,
+            ProductoNombre = i.Producto != null ? i.Producto.Nombre : "Desconocido"
+        }).ToList()
+    }).ToList();
+
+    return Results.Ok(compras);
+});
+app.MapGet("/compras/{id}", async (int id, TiendaDbContext db) =>
+{
+    
+    var compra = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == id);
+
+    if (compra == null)
+        return Results.NotFound("Compra no encontrada");
+
+    var result = new
+    {
+        compra.Id,
+        compra.Fecha,
+        compra.Total,
+        compra.NombreCliente,
+        compra.ApellidoCliente,
+        compra.EmailCliente,
+        Items = compra.Items.Select(i => new
+        {
+            i.ProductoId,
+            i.Cantidad,
+            i.PrecioUnitario,
+            ProductoNombre = i.Producto != null ? i.Producto.Nombre : "Desconocido"
+        }).ToList()
+    };
+
+    return Results.Ok(result);
+});
 
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
