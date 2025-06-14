@@ -52,6 +52,40 @@
             </div>
           }
         </div>
+        @if (EsModoConfirmar)
+        {
+          <div class="rounded-lg mt-8 border border-gray-200 bg-white p-4 shadow-sm md:p-6">
+            <h3 class="text-xl font-semibold text-gray-900">Datos del comprador</h3>
+            <p class="text-sm mt-3 text-gray-900 font-semibold italic">Los campos marcados con <span class="text-red-600">*</span> son obligatorios.</p>
+            <EditForm Model="clienteDto" OnValidSubmit="OnSubmitCompra" class="mt-2">
+              <DataAnnotationsValidator />
+
+              <div class="mb-4">
+                <label class="mb-2 block text-sm font-medium text-gray-900" for="nombre">Nombre <span class="text-red-600">*</span></label>
+                <InputText id="nombre" class="block w-full rounded-lg border border-violet-300 bg-violet-50 p-2.5 text-sm text-gray-900 focus:border-violet-500 focus:ring-violet-500" @bind-Value="clienteDto.Nombre" />
+                <ValidationMessage For="@(() => clienteDto.Nombre)" class="mt-2 text-sm text-red-600 font-medium" />
+              </div>
+              <div class="mb-4">
+                <label class="mb-2 block text-sm font-medium text-gray-900" for="apellido">Apellido <span class="text-red-600">*</span></label>
+                <InputText id="apellido" class="block w-full rounded-lg border border-violet-300 bg-violet-50 p-2.5 text-sm text-gray-900 focus:border-violet-500 focus:ring-violet-500" @bind-Value="clienteDto.Apellido" />
+                <ValidationMessage For="@(() => clienteDto.Apellido)" class="mt-2 text-sm text-red-600 font-medium" />
+              </div>
+              <div class="mb-4">
+                <label class="mb-2 block text-sm font-medium text-gray-900" for="email">Email <span class="text-red-600">*</span></label>
+                <InputText id="email" type="email" class="block w-full rounded-lg border border-violet-300 bg-violet-50 p-2.5 text-sm text-gray-900 focus:border-violet-500 focus:ring-violet-500" @bind-Value="clienteDto.Email" />
+                <ValidationMessage For="@(() => clienteDto.Email)" class="mt-2 text-sm text-red-600 font-medium" />
+              </div>
+              <button type="submit" class="w-full rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 @(CantidadItems == 0 ? "opacity-50 pointer-events-none" : "")"
+                tabindex="@(CantidadItems == 0 ? "-1" : "0")"
+                aria-disabled="@(CantidadItems == 0 ? "true" : "false")"
+                disabled="@(CantidadItems == 0)">
+                Finalizar Compra
+              </button>
+            </EditForm>
+          </div>
+        }
+        else
+        {
         <!-- Bloque de recomendados  -->
         <div class="hidden xl:mt-8 xl:block">
           <h3 class="text-xl font-semibold text-gray-900">Apúrate y llevate estos también</h3>
@@ -87,6 +121,7 @@
             }
           </div>
         </div>
+        }
       </div>
 
       <!-- Resumen del pedido -->
@@ -106,22 +141,33 @@
               </dl>
             </div>
           </div>
-            <a href="/checkout"
-             class="flex w-full items-center justify-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 @(CantidadItems == 0 ? "opacity-50 pointer-events-none" : "")"
-             tabindex="@(CantidadItems == 0 ? "-1" : "0")"
-             aria-disabled="@(CantidadItems == 0 ? "true" : "false")">
-            Confirmar Compra
-            </a>
-
-          <div class="flex items-center justify-center gap-2">
-            <span class="text-sm font-normal text-gray-500"> o </span>
-            <a href="/" title="" class="inline-flex items-center gap-2 text-sm font-medium text-violet-700 underline hover:no-underline">
-              Continuar comprando
-              <svg class="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
-              </svg>
-            </a>
-          </div>
+            @if (EsModoConfirmar)
+            {
+              <button
+                class="flex w-full items-center justify-center rounded-lg text-violet-700 border border-violet-700 px-5 py-2.5 text-sm font-medium hover:bg-violet-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-violet-300" @onclick="CambiarACarrito">
+                Continuar comprando
+              </button>
+            }
+            else
+            {
+            <button
+              class="flex w-full items-center justify-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 @(CantidadItems == 0 ? "opacity-50 pointer-events-none" : "")"
+              tabindex="@(CantidadItems == 0 ? "-1" : "0")"
+              aria-disabled="@(CantidadItems == 0 ? "true" : "false")"
+              @onclick="CambiarAModoConfirmar"
+              disabled="@(CantidadItems == 0)">
+              Confirmar Compra
+            </button>
+            <div class="flex items-center justify-center gap-2">
+              <span class="text-sm font-normal text-gray-500"> o </span>
+              <a href="/" title="" class="inline-flex items-center gap-2 text-sm font-medium text-violet-700 underline hover:no-underline">
+                Continuar comprando
+                <svg class="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
+                </svg>
+              </a>
+            </div>
+            }
         </div>
       </div>
     </div>
@@ -132,6 +178,8 @@
     private Carrito Carrito => CarritoService.Carrito;
     private List<Producto> Productos;
     private List<Producto> ConPocoStock;
+    private bool EsModoConfirmar = false;
+    private ClienteDto clienteDto = new ClienteDto();
 
     protected override async Task OnInitializedAsync()
     {
@@ -150,6 +198,32 @@
             .Take(3)
             .ToList();
         }
+    }
+
+    private void CambiarAModoConfirmar()
+    {
+        if (Carrito == null || CantidadItems < 1) return;
+        EsModoConfirmar = true;
+    }
+
+    private void CambiarACarrito()
+    {
+        EsModoConfirmar = false;
+    }
+
+    private async Task OnSubmitCompra()
+    {
+      var compra = new CompraDto
+      {
+        Cliente = clienteDto,
+      };
+
+      await CarritoService.ConfirmarCompraAsync(compra);
+      if (Carrito == null) // La compra fue exitosa
+      {
+          EsModoConfirmar = false;
+          Router.NavigateTo("/");
+      }
     }
 
     public void Dispose()

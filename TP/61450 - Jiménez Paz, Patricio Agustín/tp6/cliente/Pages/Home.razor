@@ -26,7 +26,7 @@
                         </a>
                     </div>
                     <div class="pt-6 flex flex-col items-center justify-between">
-                        @if (producto.Stock < 3) {
+                        @if (producto.Stock <= 3) {
                             <div class="mb-4 flex items-center justify-between gap-4">
                                 @if (producto.Stock == 0) {
                                     <span class="me-2 rounded bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"> Sin stock </span>

@@ -1,5 +1,6 @@
 namespace cliente.Models;
 
+using System.ComponentModel.DataAnnotations;
 using cliente.Models;
 
 public class Compra
@@ -32,7 +33,13 @@ public class CompraDto
 
 public class ClienteDto
 {
+    [Required(ErrorMessage = "El nombre es obligatorio")]
     public string Nombre { get; set; }
+
+    [Required(ErrorMessage = "El apellido es obligatorio")]
     public string Apellido { get; set; }
+
+    [Required(ErrorMessage = "El email es obligatorio")]
+    [EmailAddress(ErrorMessage = "Email inválido")]
     public string Email { get; set; }
 }

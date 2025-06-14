@@ -209,7 +209,7 @@ public class CarritoService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(
+            var response = await _httpClient.PutAsJsonAsync(
                 $"/carritos/{Carrito.Id}/confirmar",
                 compraDto,
                 _jsonOptions
