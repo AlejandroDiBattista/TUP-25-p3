@@ -85,7 +85,7 @@ else
     {
         if (CarritoState.CarritoId == null)
         {
-            Navigation.NavigateTo("/"); // Si no hay carrito, volver al inicio
+            Navigation.NavigateTo("/"); 
             return;
         }
         resumenItems = await Api.GetCarritoAsync(CarritoState.CarritoId.Value);
@@ -108,7 +108,7 @@ else
         Navigation.NavigateTo("/compra-exitosa");
     }
 
-    // Clase interna para el formulario con validaciones
+  
     public class ClienteForm
     {
         [Required(ErrorMessage = "El nombre es obligatorio.")]

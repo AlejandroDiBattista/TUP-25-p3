@@ -12,7 +12,7 @@ public class ApiService
         _httpClient = httpClient;
     }
 
-    // Productos
+    
     public async Task<List<Producto>> GetProductosAsync(string? search = null)
     {
         var url = "/productos";
@@ -23,7 +23,7 @@ public class ApiService
         return await _httpClient.GetFromJsonAsync<List<Producto>>(url);
     }
 
-    // Carrito
+  
     public async Task<int> CrearCarritoAsync()
     {
         var response = await _httpClient.PostAsync("/carritos", null);
@@ -51,7 +51,7 @@ public class ApiService
         await _httpClient.DeleteAsync($"/carritos/{carritoId}");
     }
 
-    // Compra
+   
     public async Task ConfirmarCompraAsync(int carritoId, Compra cliente)
     {
         await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", cliente);
