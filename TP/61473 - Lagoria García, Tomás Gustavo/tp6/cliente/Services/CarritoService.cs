@@ -54,10 +54,16 @@ public class CarritoService
     }
 /*
     public async Task<Guid?> ObtenerCarritoIdAsync()
+    {
+        var carritoIdStr = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
         if (Guid.TryParse(carritoIdStr, out var carritoId))
         {
+            return carritoId;
         }
 
+        return null;
+    }
+    */
 public async Task GuardarCarritoIdAsync(Guid carritoId)
 {
     await _js.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
