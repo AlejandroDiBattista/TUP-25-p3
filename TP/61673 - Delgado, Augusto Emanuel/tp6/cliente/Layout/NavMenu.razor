@@ -1,0 +1,72 @@
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation // Inyectar NavigationManager
+@implements IDisposable // Importante para la desuscripción
+
+<div class="sidebar-wrapper @NavMenuCssClass" @onclick="ToggleNavMenu">
+    <div class="sidebar-header">
+        <a class="sidebar-title" href="/">Mi Tienda</a>
+        <p class="sidebar-subtitle">Tu tecnología, a un clic.</p>
+    </div>
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="@NavLinkMatch.All">
+                <span class="bi bi-box-seam-fill" aria-hidden="true"></span> Productos
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="carrito">
+                <span class="bi bi-cart-fill" aria-hidden="true"></span> Carrito
+                @if (isCarritoReady && CarritoService.TotalItemsEnCarrito > 0)
+                {
+                    <span class="badge bg-danger rounded-pill ms-2">@CarritoService.TotalItemsEnCarrito</span>
+                }
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="checkout">
+                <span class="bi bi-credit-card-fill" aria-hidden="true"></span> Checkout
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    #nullable enable
+
+    private bool collapseNavMenu = true;
+    private bool isCarritoReady = false;
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("--> DEBUG: NavMenu.razor OnInitialized ejecutado.");
+        CarritoService.OnChange += OnCarritoChange;
+        Console.WriteLine("--> DEBUG: NavMenu.razor suscrito a CarritoService.OnChange");
+        
+        Task.Run(async () => {
+            await Task.Delay(100); 
+            isCarritoReady = true;
+            await InvokeAsync(StateHasChanged); 
+            Console.WriteLine($"--> DEBUG: NavMenu.razor: Carrito ready. Total items: {CarritoService.TotalItemsEnCarrito}");
+        });
+    }
+
+    private void OnCarritoChange()
+    {
+        isCarritoReady = true; 
+        InvokeAsync(StateHasChanged);
+        Console.WriteLine($"--> DEBUG: NavMenu.razor: Carrito ha cambiado. Total items: {CarritoService.TotalItemsEnCarrito}");
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= OnCarritoChange;
+        Console.WriteLine("--> DEBUG: NavMenu.razor desuscrito de CarritoService.OnChange");
+    }
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

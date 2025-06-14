@@ -1,59 +1,130 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using modelos_compartidos
+@inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Nuestros Productos</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+<div class="container mt-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3>Productos Disponibles</h3>
         </div>
-    </div>
     
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+    @if (productos == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando productos...</span>
+            </div>
+            <p>Cargando productos...</p>
+        </div>
+    }
+    else if (!productos.Any()) 
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-box-seam display-1 text-muted"></i>
+            <p class="lead mt-3">No se encontraron productos.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var producto in productos)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-dark">@producto.Nombre</h5>
+                            <p class="card-text text-muted flex-grow-1">@producto.Descripcion</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fs-4 fw-bold text-success">$@producto.Precio</span>
+                                @if (producto.Stock > 0)
+                                {
+                                    <span class="badge bg-info text-dark">Stock: @producto.Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Sin Stock</span>
+                                }
+                            </div>
+                            <button class="btn btn-primary mt-auto"
+                                    @onclick="() => AgregarAlCarrito(producto)"
+                                    disabled="@(producto.Stock == 0)">
+                                @if (producto.Stock == 0)
+                                {
+                                    <span>Producto Agotado</span>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-cart-plus"></i> Añadir al Carrito</span>
+                                }
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    #nullable enable
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    private List<Producto>? productos;
+ 
+    @inject cliente.Services.ApiService ApiService
+    @inject cliente.Services.CarritoService CarritoService
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductosAsync();
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+
+    private async Task CargarProductosAsync()
+    {
+        productos = null;
+        Console.WriteLine("--> DEBUG: Cargando productos desde la API...");
+        var fetchedProducts = await ApiService.GetProductos();
+        if (fetchedProducts != null)
+        {
+            productos = fetchedProducts;
+            Console.WriteLine($"--> DEBUG: {productos.Count} productos cargados.");
+        }
+        else
+        {
+            productos = new List<Producto>();
+            Console.WriteLine("--> ERROR: No se pudieron cargar los productos de la API.");
         }
     }
+
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        Console.WriteLine($"--> DEBUG: Intentando añadir {producto.Nombre} al carrito.");
+        var itemEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
+        int cantidadActualEnCarrito = itemEnCarrito?.Cantidad ?? 0;
+
+        if (producto.Stock > cantidadActualEnCarrito) 
+        {
+            CarritoService.AgregarAlCarrito(producto);
+            Console.WriteLine($"--> DEBUG: {producto.Nombre} añadido al carrito. Cantidad en carrito: {cantidadActualEnCarrito + 1}. Stock restante: {producto.Stock - (cantidadActualEnCarrito + 1)}");
+        }
+        else
+        {
+            Console.WriteLine($"--> ADVERTENCIA: No hay suficiente stock para añadir {producto.Nombre}. Stock disponible: {producto.Stock}. En carrito: {cantidadActualEnCarrito}");
+        }
+
+        StateHasChanged();
+    }
+
 }
