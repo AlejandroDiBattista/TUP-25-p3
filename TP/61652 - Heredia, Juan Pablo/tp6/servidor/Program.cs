@@ -59,6 +59,28 @@ app.MapGet("/productos", async ([FromServices] TiendaDb db, [FromQuery] string? 
 
     return await query.ToListAsync();
 });
+app.MapPost("/carritos", async ([FromServices] TiendaDb db) =>
+{
+    var compra = new Compra { Fecha = DateTime.Now, Total = 0 };
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+    return Results.Ok(compra.Id);
+});
+app.MapGet("/carritos/{carritoId:int}", async ([FromServices] TiendaDb db, int carritoId) =>
+{
+    var items = await db.ItemsCompra
+        .Include(i => i.Producto)
+        .Where(i => i.CompraId == carritoId)
+        .ToListAsync();
+    return Results.Ok(items);
+});
+app.MapDelete("/carritos/{carritoId:int}", async ([FromServices] TiendaDb db, int carritoId) =>
+{
+    var items = db.ItemsCompra.Where(i => i.CompraId == carritoId);
+    db.ItemsCompra.RemoveRange(items);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment())
