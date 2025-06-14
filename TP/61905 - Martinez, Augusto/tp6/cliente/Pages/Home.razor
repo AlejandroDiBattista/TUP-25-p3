@@ -73,6 +73,7 @@
     protected override async Task OnInitializedAsync()
     {
         await CargarProductos();
+        contadorCarrito = CarritoService.ContadorProductos(); // Inicializa contador
     }
 
     private async Task CargarProductos()
@@ -100,9 +101,11 @@
     {
         if (producto.Stock > 0)
         {
-            contadorCarrito++;
-            // Aquí podrías agregar lógica para agregar al carrito real
-            Navigation.NavigateTo("/carrito");
+            CarritoService.AgregarProducto(producto);      // Agrega el producto y actualiza stock
+            contadorCarrito = CarritoService.ContadorProductos();  // Actualiza contador con total real
+            StateHasChanged();                             // Refresca la UI para mostrar stock actualizado
+
+            // Navigation.NavigateTo("/carrito"); // Descomenta si querés navegar
         }
         else
         {
@@ -115,3 +118,4 @@
         Navigation.NavigateTo("/carrito");
     }
 }
+

@@ -1,7 +1,6 @@
+using Cliente.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Cliente.Models;
-
 
 public class CarritoService
 {
@@ -11,14 +10,22 @@ public class CarritoService
 
     public void AgregarProducto(Producto producto)
     {
+        if (producto.Stock <= 0)
+            return; // No hay stock disponible
+
         var item = items.FirstOrDefault(i => i.Producto.Id == producto.Id);
         if (item != null)
         {
-            item.Cantidad++;
+            if (producto.Stock > 0)
+            {
+                item.Cantidad++;
+                producto.Stock--;
+            }
         }
         else
         {
             items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
+            producto.Stock--;
         }
     }
 
@@ -27,6 +34,7 @@ public class CarritoService
         var item = items.FirstOrDefault(i => i.Producto.Id == producto.Id);
         if (item != null)
         {
+            producto.Stock += item.Cantidad; // Devolvemos el stock
             items.Remove(item);
         }
     }
@@ -34,6 +42,11 @@ public class CarritoService
     public decimal CalcularTotal()
     {
         return items.Sum(i => i.Producto.Precio * i.Cantidad);
+    }
+
+    public int ContadorProductos()
+    {
+        return items.Sum(i => i.Cantidad);
     }
 }
 
