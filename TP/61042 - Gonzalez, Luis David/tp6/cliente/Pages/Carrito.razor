@@ -48,6 +48,9 @@ else
         <h5>Total: @TotalCarrito.ToString("C")</h5>
         <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
     </div>
+    <div class="mt-3">
+        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(error))

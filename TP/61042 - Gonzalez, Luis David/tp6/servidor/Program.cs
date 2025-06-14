@@ -59,7 +59,14 @@ app.MapGet("/api/carritos/{carritoId}", async (TiendaContext db, Guid carritoId)
     if (carrito == null) return Results.NotFound();
     var items = from item in carrito.Items
                 join prod in db.Productos on item.ProductoId equals prod.Id
-                select new { prod.Id, prod.Nombre, prod.Precio, prod.ImagenUrl, item.Cantidad };
+                select new {
+                    Id = item.Id,
+                    ProductoId = prod.Id,
+                    Nombre = prod.Nombre,
+                    Precio = prod.Precio,
+                    ImagenUrl = prod.ImagenUrl,
+                    Cantidad = item.Cantidad
+                };
     return Results.Ok(items);
 });
 
