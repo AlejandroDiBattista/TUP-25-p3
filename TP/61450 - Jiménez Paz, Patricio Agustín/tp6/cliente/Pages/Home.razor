@@ -5,6 +5,7 @@
 @inject CarritoService CarritoService
 @inject NotificationService NotificationService
 @inject NavigationManager Router
+@implements IDisposable
 
 <PageTitle>Tienda Online | Blazor</PageTitle>
 
@@ -63,8 +64,11 @@
     private List<Producto> datos;
     private string error;
     private bool cargando = true;
+    private string terminoBusqueda;
 
     protected override async Task OnInitializedAsync() {
+        Router.LocationChanged += OnLocationChanged;
+        terminoBusqueda = ObtenerBusquedaDeUrl();
         await ObtenerDatosDelServidor();
         if (CarritoService.Carrito == null)
         {
@@ -72,11 +76,31 @@
         }
     }
 
+    private string ObtenerBusquedaDeUrl()
+    {
+        var uri = new Uri(Router.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        return query["search"];
+    }
+
+    private async void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        terminoBusqueda = ObtenerBusquedaDeUrl();
+        StateHasChanged();
+        await ObtenerDatosDelServidor();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Router.LocationChanged -= OnLocationChanged;
+    }
+
     private async Task ObtenerDatosDelServidor() {
         try {
             cargando = true;
             error = null;
-            datos = await ApiService.ObtenerDatosAsync();
+            datos = await ApiService.ObtenerDatosAsync(terminoBusqueda);
         } catch (Exception ex) {
             error = ex.Message;
             datos = null;

@@ -17,11 +17,14 @@ public class ApiService
         return _httpClient.BaseAddress?.ToString();
     }
 
-    public async Task<List<Producto>> ObtenerDatosAsync()
+    public async Task<List<Producto>> ObtenerDatosAsync(string? search = null)
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
+            string url = "/productos";
+            if (!string.IsNullOrWhiteSpace(search))
+                url += $"?search={Uri.EscapeDataString(search)}";
+            var response = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
             return response ?? new List<Producto>();
         }
         catch (Exception ex)

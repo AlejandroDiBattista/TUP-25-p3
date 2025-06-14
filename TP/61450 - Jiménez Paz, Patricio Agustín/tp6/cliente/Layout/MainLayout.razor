@@ -14,11 +14,11 @@
                         <img src="favicon.png" alt="Logo" class="w-8 h-8" />
                         <h1 class="font-bold text-2xl">Tienda Online</h1>
                     </a>
-                    @if (Router.Uri.EndsWith("/"))
+                    @if (!Router.Uri.EndsWith("/carrito"))
                     {
                         <div class="relative hidden lg:block w-full">
-                            <input type="text" placeholder="Buscar productos..." class="p-2.5 border rounded-lg block w-full border-violet-400 bg-violet-50 text-gray-900 focus:border-violet-500" />
-                            <button class="rounded-e-lg absolute top-0 right-0 h-[46px] bg-violet-700 p-2.5 font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 whitespace-nowrap">
+                            <input type="text" @bind="terminoBusqueda" @bind:event="oninput" @onkeydown="OnInputKeyDown" placeholder="Buscar productos..." class="p-2.5 border rounded-lg block w-full border-violet-400 bg-violet-50 text-gray-900 focus:border-violet-500" />
+                            <button class="rounded-e-lg absolute top-0 right-0 h-[46px] bg-violet-700 p-2.5 font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 whitespace-nowrap" @onclick="Buscar">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
@@ -41,6 +41,7 @@
 
 @code {
     private int CantidadItems => CarritoService.CantidadItems;
+    private string terminoBusqueda = "";
 
     protected override void OnInitialized()
     {
@@ -57,4 +58,20 @@
     {
         Router.NavigateTo("/carrito");
     }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+            Router.NavigateTo($"/?search={Uri.EscapeDataString(terminoBusqueda)}");
+        else
+            Router.NavigateTo("/");
+    }
+
+    private void OnInputKeyDown(KeyboardEventArgs e)
+{
+    if (e.Key == "Enter")
+    {
+        Buscar();
+    }
+}
 }
