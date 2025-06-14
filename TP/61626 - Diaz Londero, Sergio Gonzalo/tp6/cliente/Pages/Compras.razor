@@ -1,0 +1,45 @@
+@page "/compras"
+@using cliente.Dtos
+@using cliente.Services
+@inject ApiService ApiService
+
+<h3>Historial de Compras</h3>
+
+@if (compras == null)
+{
+    <p>Cargando compras...</p>
+}
+else if (compras.Count == 0)
+{
+    <p>No hay compras registradas.</p>
+}
+else
+{
+    @foreach (var compra in compras)
+    {
+        <div class="card my-3">
+            <div class="card-body">
+                <h5 class="card-title">Compra #{compra.Id} - @compra.Fecha.ToString("g")</h5>
+                <p><strong>Cliente:</strong> @compra.NombreCliente @compra.ApellidoCliente</p>
+                <p><strong>Email:</strong> @compra.EmailCliente</p>
+                <p><strong>Total:</strong> $@compra.Total</p>
+                <h6>Productos:</h6>
+                <ul>
+                    @foreach (var item in compra.Items)
+                    {
+                        <li>@item.Producto.Nombre x @item.Cantidad - $@(item.PrecioUnitario * item.Cantidad)</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<CompraDto>? compras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        compras = await ApiService.ObtenerComprasAsync();
+    }
+}

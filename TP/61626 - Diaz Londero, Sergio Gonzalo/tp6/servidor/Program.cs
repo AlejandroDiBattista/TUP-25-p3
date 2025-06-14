@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Servidor.Dtos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,16 +32,16 @@ using (var scope = app.Services.CreateScope())
     if (!db.Productos.Any())
     {
         db.Productos.AddRange(
-            new Producto { Nombre = "Botín de Fútbol", Descripcion = "Botín profesional con tapones de goma", Precio = 199999m, Stock = 15, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/botin2.jpg" },
+            new Producto { Nombre = "Botin de Futbol", Descripcion = "Botín profesional con tapones de goma", Precio = 199999m, Stock = 15, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/botin2.jpg" },
             new Producto { Nombre = "Buzo Deportivo", Descripcion = "Buzo de algodón con capucha", Precio = 80000m, Stock = 25, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/buzo.jpg" },
             new Producto { Nombre = "Campera de Abrigo", Descripcion = "Campera impermeable con interior polar", Precio = 130000m, Stock = 18, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catMujer/campera.jpg" },
-            new Producto { Nombre = "Pantalón Jogger", Descripcion = "Pantalón cómodo estilo urbano", Precio = 60000m, Stock = 30, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/pantalon.jpg" },
+            new Producto { Nombre = "Pantalon Jogger", Descripcion = "Pantalón cómodo estilo urbano", Precio = 60000m, Stock = 30, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/pantalon.jpg" },
             new Producto { Nombre = "Remera Estampada", Descripcion = "Remera de algodón con diseño gráfico", Precio = 35000m, Stock = 40, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/remera2.jpg" },
-            new Producto { Nombre = "Remera Básica", Descripcion = "Remera lisa color blanco", Precio = 30000m, Stock = 50, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catMujer/remera.jpg" },
+            new Producto { Nombre = "Remera Basica", Descripcion = "Remera lisa color blanco", Precio = 30000m, Stock = 50, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catMujer/remera.jpg" },
             new Producto { Nombre = "Short Deportivo", Descripcion = "Short de secado rápido para entrenamiento", Precio = 30000m, Stock = 35, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catMujer/short.jpg" },
             new Producto { Nombre = "Zapatilla Urbana", Descripcion = "Zapatilla moderna y cómoda para el día a día", Precio = 180000m, Stock = 20, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/zapatilla2.jpg" },
             new Producto { Nombre = "Zapatilla Running", Descripcion = "Zapatilla ideal para correr largas distancias", Precio = 190000m, Stock = 22, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catMujer/zapatilla.jpg" },
-            new Producto { Nombre = "Zapatilla Clásica", Descripcion = "Zapatilla estilo retro de lona", Precio = 70000m, Stock = 28, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/zapatilla.jpg" }
+            new Producto { Nombre = "Zapatilla Clasica", Descripcion = "Zapatilla estilo retro de lona", Precio = 70000m, Stock = 28, ImagenUrl = "https://nextgen-grupo2.netlify.app/img/catHombre/zapatilla.jpg" }
         );
         db.SaveChanges();
     }
@@ -169,7 +170,8 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (int carritoId, ClienteDto c
     compra.EmailCliente = cliente.Email;
     compra.Total = items.Sum(i => i.Cantidad * i.PrecioUnitario);
     await db.SaveChangesAsync();
-    return Results.Ok(compra);
+    // Devuelve solo un mensaje simple para evitar ciclos de serialización
+    return Results.Ok(new { mensaje = "Compra confirmada correctamente" });
 });
 
 // GET /compras/{id}
@@ -183,6 +185,39 @@ app.MapGet("/compras/{id}", async (int id, AppDbContext db) =>
     if (compra == null) return Results.NotFound();
 
     return Results.Ok(compra);
+});
+
+// GET /compras
+app.MapGet("/compras", async (AppDbContext db) =>
+{
+    var compras = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .OrderByDescending(c => c.Fecha)
+        .ToListAsync();
+
+    var comprasDto = compras.Select(c => new CompraDto
+    {
+        Id = c.Id,
+        Fecha = c.Fecha,
+        NombreCliente = c.NombreCliente,
+        ApellidoCliente = c.ApellidoCliente,
+        EmailCliente = c.EmailCliente,
+        Total = c.Total,
+        Items = c.Items.Select(i => new ItemCompraDto
+        {
+            Id = i.Id,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario,
+            Producto = new ProductoDto
+            {
+                Id = i.Producto.Id,
+                Nombre = i.Producto.Nombre
+            }
+        }).ToList()
+    }).ToList();
+
+    return Results.Ok(comprasDto);
 });
 
 app.Run();

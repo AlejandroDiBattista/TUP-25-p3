@@ -51,6 +51,8 @@ namespace cliente.Services
             var item = Items.FirstOrDefault(p => p.Producto.Id == productoId);
             return item?.Cantidad ?? 0;
         }
+
+        public int CantidadTotal => Items.Sum(i => i.Cantidad);
     }
 
     public class ItemCarrito

@@ -3,6 +3,7 @@
 @inject ApiService ApiService
 @inject CarritoService CarritoService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
 <PageTitle>Inicio</PageTitle>
 
@@ -28,13 +29,14 @@
               <a class="nav-link active" aria-current="page" href="#">Home</a>
             </li>
           </ul>
-          <form class="d-flex" role="search" @onsubmit="BuscarProductos">
+          <form class="d-flex" role="search" @onsubmit="OnBuscarSubmit">
             <input
               class="form-control me-2"
               type="search"
               placeholder="Buscar"
               aria-label="Search"
-              @bind="busqueda"
+              @bind-value="busqueda"
+              @bind-value:event="oninput"
             />
             <button class="btn btn-outline-primary" type="submit">Buscar</button>
             <a class="btn btn-outline-primary ms-5 position-relative" href="/carrito">
@@ -127,7 +129,15 @@
     error = null;
     try
     {
-      productos = await ApiService.ObtenerProductosAsync(busqueda);
+      var todos = await ApiService.ObtenerProductosAsync();
+      if (string.IsNullOrWhiteSpace(busqueda))
+      {
+        productos = todos;
+      }
+      else
+      {
+        productos = todos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+      }
     }
     catch (Exception ex)
     {
@@ -138,6 +148,12 @@
     {
       cargando = false;
     }
+    StateHasChanged();
+  }
+
+  private async Task OnBuscarSubmit()
+  {
+    await BuscarProductos();
   }
 
   private async Task AgregarAlCarrito(Producto producto)
@@ -150,7 +166,7 @@
         {
             producto.Stock--;
             StateHasChanged();
-            NavigationManager.NavigateTo("/carrito"); // Redirige al carrito
+            await JS.InvokeVoidAsync("alert", "¡Producto agregado al carrito!");
         }
         else
         {
