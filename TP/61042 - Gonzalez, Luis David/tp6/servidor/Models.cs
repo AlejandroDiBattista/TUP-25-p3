@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace servidor.Modelos
+namespace servidor.Models
 {
     public class Producto
     {
