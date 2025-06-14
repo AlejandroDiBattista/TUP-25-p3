@@ -73,3 +73,9 @@ else
         ItemsCarrito = await CarritoService.ObtenerCarritoAsync(carritoId);
         CalcularTotal();
     }
+
+    private void CalcularTotal()
+    {
+        Total = ItemsCarrito.Sum(i => i.PrecioUnitario * i.Cantidad);
+    }
+
