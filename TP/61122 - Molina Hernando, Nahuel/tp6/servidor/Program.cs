@@ -159,16 +159,16 @@ using (var scope = app.Services.CreateScope())
     {
         db.Productos.AddRange(new List<Producto>
         {
-            new Producto { Nombre = "iPhone 11", Descripcion = "Color: Negro, 64GB, Cámara: 12MP", Precio = 300000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 11 Pro", Descripcion = "Color: Verde, 256GB, Cámara: 12MP triple", Precio = 350000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 12", Descripcion = "Color: Blanco, 128GB, Cámara: 12MP dual", Precio = 400000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 12 Pro", Descripcion = "Color: Azul, 256GB, Cámara: 12MP triple", Precio = 450000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 13", Descripcion = "Color: Rosa, 128GB, Cámara: 12MP dual", Precio = 500000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 13 Pro", Descripcion = "Color: Grafito, 256GB, Cámara: 12MP triple", Precio = 550000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 14", Descripcion = "Color: Morado, 128GB, Cámara: 12MP dual", Precio = 600000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 14 Pro", Descripcion = "Color: Plata, 256GB, Cámara: 48MP triple", Precio = 650000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 15", Descripcion = "Color: Amarillo, 256GB, Cámara: 48MP dual", Precio = 700000, Stock = 10, ImagenUrl = "" },
-            new Producto { Nombre = "iPhone 16 Pro Max", Descripcion = "Color: Titanio, 512GB, Cámara: 48MP triple", Precio = 800000, Stock = 10, ImagenUrl = "" }
+            new Producto { Nombre = "iPhone 11 Negro", Descripcion = "Color: Negro, 64GB, Cámara: 12MP", Precio = 300000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 11 Pro Verde", Descripcion = "Color: Verde, 256GB, Cámara: 12MP triple", Precio = 350000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 12 Blanco", Descripcion = "Color: Blanco, 128GB, Cámara: 12MP dual", Precio = 400000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 12 Pro Azul", Descripcion = "Color: Azul, 256GB, Cámara: 12MP triple", Precio = 450000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 13 Rosa", Descripcion = "Color: Rosa, 128GB, Cámara: 12MP dual", Precio = 500000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 13 Pro Grafito", Descripcion = "Color: Grafito, 256GB, Cámara: 12MP triple", Precio = 550000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 14 Morado", Descripcion = "Color: Morado, 128GB, Cámara: 12MP dual", Precio = 600000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 14 Pro Plata", Descripcion = "Color: Plata, 256GB, Cámara: 48MP triple", Precio = 650000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 15 Amarillo", Descripcion = "Color: Amarillo, 256GB, Cámara: 48MP dual", Precio = 700000, Stock = 10, ImagenUrl = "" },
+            new Producto { Nombre = "iPhone 16 Pro Max Titanio", Descripcion = "Color: Titanio, 512GB, Cámara: 48MP triple", Precio = 800000, Stock = 10, ImagenUrl = "" }
         });
         db.SaveChanges();
     }
