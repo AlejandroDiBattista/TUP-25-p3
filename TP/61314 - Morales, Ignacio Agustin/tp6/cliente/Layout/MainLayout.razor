@@ -11,7 +11,6 @@
                 <span class="store-name">Apple Store</span>
             </a>
 
-            <input @bind="busqueda" @bind:event="oninput" type="text" placeholder="Buscar productos..." class="search-box" />
         <a class="btn btn-dark btn-lg mt-2" href="/catalogo">📱 Ver Catálogo</a>
             <a href="/carrito" class="carrito-icono">
                 🛒 (@CantidadCarrito)
@@ -24,8 +23,8 @@
          @if (IsHomePage)
         {
             <div class="home-content">
-                <h1>Bienvenido a la Apple Store Tucumán</h1>
-                <p>Descubre los últimos productos de Apple y disfruta de una experiencia única de compra.</p>
+                <h3> Apple Store Tucumán</h3>
+                <h4>Descubre los últimos productos de Apple y disfruta de una experiencia única de compra.</h4>
             </div>
         }
         @if (IsHomePage)

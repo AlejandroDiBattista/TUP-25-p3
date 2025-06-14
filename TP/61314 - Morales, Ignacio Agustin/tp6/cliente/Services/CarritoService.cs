@@ -26,7 +26,7 @@ namespace cliente.Services
                 });
             }
         }
-         public void CambiarCantidad(int productoId, int cambio)
+        public void CambiarCantidad(int productoId, int cambio)
         {
             var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
             if (item != null)
@@ -47,6 +47,18 @@ namespace cliente.Services
         public void Vaciar() => _items.Clear();
 
         public decimal CalcularTotal() => _items.Sum(i => i.Producto.Precio * i.Cantidad);
+
+        public event Action<int>? CarritoActualizado;
+
+        public void EliminarProducto(int productoId)
+        {
+            var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+            if (item != null)
+            {
+                _items.Remove(item);
+                CarritoActualizado?.Invoke(productoId);
+            }
+        }
     }
 
     public class ItemCarrito

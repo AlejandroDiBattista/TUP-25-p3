@@ -1,7 +1,5 @@
 using System.Net.Http.Json;
-using System.Net.Http;
 using cliente.Models;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
 using cliente.shared;
 
 namespace cliente.Models;
@@ -14,6 +12,11 @@ public class ApiService
     public ApiService(HttpClient http)
     {
         _http = http;
+
+        if (_http.BaseAddress == null)
+        {
+            _http.BaseAddress = new Uri("https://localhost:5184/"); 
+        }
     }
 
     public async Task<List<Producto>> ObtenerProductos()
@@ -48,6 +51,13 @@ public class ApiService
         await _http.PutAsJsonAsync($"carrito/{CarritoId}/confirmar", compras);
     }
 
+    public async Task<bool> RestarStockProducto(int productoId)
+    {
+        var response = await _http.PutAsync($"productos/{productoId}/restar-stock", null);
+        return response.IsSuccessStatusCode;
+    }
+    
+
     public class CarritoResponse
     {
         public Guid Id { get; set; }
@@ -56,6 +66,6 @@ public class ApiService
 
     public async Task<DatosRespuesta> ObtenerDatosAsync()
     {
-        return await _http.GetFromJsonAsync<DatosRespuesta>("api/datos");
+        return await _http.GetFromJsonAsync<DatosRespuesta>("datos");
     }
 }

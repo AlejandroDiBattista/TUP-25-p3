@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.OpenApi.Models;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 
@@ -30,7 +31,6 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowClientApp");
 
-// Configurar carpeta de imágenes
 var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "imagenes");
 if (!Directory.Exists(imagePath))
     Directory.CreateDirectory(imagePath);
@@ -42,15 +42,15 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/imagenes"
 });
 
-// Crear base de datos al iniciar
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TiendaDb>();
-    db.Database.EnsureDeleted(); // Opcional para testing
+    db.Database.EnsureDeleted(); 
     db.Database.EnsureCreated();
 }
 
-// Endpoints
+
 app.MapGet("/productos", async (TiendaDb db) =>
     await db.Productos.Where(p => p.Stock > 0).ToListAsync());
 
@@ -160,7 +160,6 @@ app.MapPut("/carrito/{carritoId:guid}/confirmar", async (TiendaDb db, Guid carri
 
     var total = carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
 
-    // Restar stock
     foreach (var item in carrito.Items)
     {
         var producto = await db.Productos.FindAsync(item.ProductoId);
@@ -189,6 +188,21 @@ app.MapPut("/carrito/{carritoId:guid}/confirmar", async (TiendaDb db, Guid carri
 
     return Results.Ok(compra);
 });
+app.MapPut("/productos/{id:int}/restar-stock", async (TiendaDb db, int id) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto is null)
+        return Results.NotFound("Producto no encontrado");
+
+    if (producto.Stock <= 0)
+        return Results.BadRequest("Sin stock disponible");
+
+    producto.Stock--;
+    await db.SaveChangesAsync();
+
+    return Results.Ok(producto.Stock);
+});
+
 app.MapGet("/", () => "API de Tienda Online funcionando correctamente.");
 
 app.Run();
