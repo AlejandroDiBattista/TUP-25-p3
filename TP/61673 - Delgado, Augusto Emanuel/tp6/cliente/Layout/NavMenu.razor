@@ -1,27 +1,22 @@
 @inject cliente.Services.CarritoService CarritoService
-@inject NavigationManager Navigation
-@implements IDisposable
+@inject NavigationManager Navigation // Inyectar NavigationManager
+@implements IDisposable // Importante para la desuscripción
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">Tienda en Línea</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+<div class="sidebar-wrapper @NavMenuCssClass" @onclick="ToggleNavMenu">
+    <div class="sidebar-header">
+        <a class="sidebar-title" href="/">Mi Tienda</a>
+        <p class="sidebar-subtitle">Tu tecnología, a un clic.</p>
     </div>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-fill" aria-hidden="true"></span> Productos
+            <NavLink class="nav-link" href="" Match="@NavLinkMatch.All">
+                <span class="bi bi-box-seam-fill" aria-hidden="true"></span> Productos
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="carrito">
                 <span class="bi bi-cart-fill" aria-hidden="true"></span> Carrito
-                @if (isCarritoReady && CarritoService.TotalItemsEnCarrito > 0) @* Nueva condición *@
+                @if (isCarritoReady && CarritoService.TotalItemsEnCarrito > 0)
                 {
                     <span class="badge bg-danger rounded-pill ms-2">@CarritoService.TotalItemsEnCarrito</span>
                 }
@@ -39,37 +34,32 @@
     #nullable enable
 
     private bool collapseNavMenu = true;
-    private bool isCarritoReady = false; // Nuevo flag para controlar la visualización
+    private bool isCarritoReady = false;
 
     protected override void OnInitialized()
     {
         Console.WriteLine("--> DEBUG: NavMenu.razor OnInitialized ejecutado.");
-        CarritoService.OnChange += OnCarritoChange; // Cambiamos a un método específico
+        CarritoService.OnChange += OnCarritoChange;
         Console.WriteLine("--> DEBUG: NavMenu.razor suscrito a CarritoService.OnChange");
         
-        // Llamar a StateHasChanged una vez que el carrito esté cargado
-        // Esto asume que CarritoService.CargarCarritoDesdeLocalStorage() ya notifica OnChange
-        // Si no lo hace, CarritoService debería notificar OnChange al finalizar la carga inicial.
-        // O podemos forzar una actualización inicial aquí con un pequeño delay
         Task.Run(async () => {
-            await Task.Delay(100); // Pequeño retraso para dar tiempo a la carga inicial
+            await Task.Delay(100); 
             isCarritoReady = true;
-            await InvokeAsync(StateHasChanged); // Forzar re-renderizado en el hilo de UI
+            await InvokeAsync(StateHasChanged); 
             Console.WriteLine($"--> DEBUG: NavMenu.razor: Carrito ready. Total items: {CarritoService.TotalItemsEnCarrito}");
         });
     }
 
-    // Método que se llama cuando el carrito cambia
     private void OnCarritoChange()
     {
-        isCarritoReady = true; // El carrito está listo y actualizado
-        InvokeAsync(StateHasChanged); // Asegurar que el UI se actualice en el hilo de UI
+        isCarritoReady = true; 
+        InvokeAsync(StateHasChanged);
         Console.WriteLine($"--> DEBUG: NavMenu.razor: Carrito ha cambiado. Total items: {CarritoService.TotalItemsEnCarrito}");
     }
 
     public void Dispose()
     {
-        CarritoService.OnChange -= OnCarritoChange; // Desuscribirse del método específico
+        CarritoService.OnChange -= OnCarritoChange;
         Console.WriteLine("--> DEBUG: NavMenu.razor desuscrito de CarritoService.OnChange");
     }
 

@@ -1,17 +1,47 @@
 ﻿@inherits LayoutComponentBase
+@inject cliente.Services.CarritoService CarritoService
+@implements IDisposable
 
 <div class="page">
-    <div class="sidebar">
+    <div class="sidebar"> 
         <NavMenu />
     </div>
 
-    <main>
-        <div class="top-row px-4">
+    <main class="main-content"> 
+        <div class="top-row px-4 d-flex justify-content-between align-items-center">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+
+            <a href="/carrito" class="btn btn-outline-primary position-relative">
+                🛒 Carrito
+                @if (CarritoService.TotalItemsEnCarrito > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @CarritoService.TotalItemsEnCarrito
+                        <span class="visually-hidden">productos en carrito</span>
+                    </span>
+                }
+            </a>
         </div>
+
+        <header class="app-header">
+            <h1>Mi Tienda Online</h1>
+            <p>Tu destino para productos electrónicos de calidad.</p>
+        </header>
 
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}
