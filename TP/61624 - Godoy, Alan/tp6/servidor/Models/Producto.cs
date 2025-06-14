@@ -7,4 +7,6 @@ public class Producto
     public decimal Precio { get; set; }
     public int Stock { get; set; }
     public string ImagenUrl { get; set; }
+
+    
 }

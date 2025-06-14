@@ -11,8 +11,8 @@ using TiendaOnline.Data;
 namespace servidor.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250614201923_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250614221320_ResetCreate")]
+    partial class ResetCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -189,6 +189,23 @@ namespace servidor.Migrations
                             Precio = 800m,
                             Stock = 30
                         });
+                });
+
+            modelBuilder.Entity("TiendaOnline.Models.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nombre")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Usuarios");
                 });
 
             modelBuilder.Entity("TiendaOnline.Models.ItemCompra", b =>

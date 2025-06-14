@@ -6,7 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Agregar DbContext con SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite("Data Source=Data/tiendaonline.db")); 
+
+
 
 builder.Services.AddCors(options =>
 {
@@ -21,25 +23,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-
-// Endpoints para Compras
-app.MapGet("/compras", async (AppDbContext db) =>
-{
-    return await db.Compras.Include(c => c.Items).ToListAsync();
-});
-
-app.MapGet("/compras/{id}", async (int id, AppDbContext db) =>
-{
-    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
-    return compra is not null ? Results.Ok(compra) : Results.NotFound();
-});
-
-app.MapPost("/compras", async (Compra compra, AppDbContext db) =>
-{
-    db.Compras.Add(compra);
-    await db.SaveChangesAsync();
-    return Results.Created($"/compras/{compra.Id}", compra);
-});
 
 // Endpoints para ItemsCompra
 app.MapGet("/itemscompra", async (AppDbContext db) =>
