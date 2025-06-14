@@ -21,7 +21,7 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th style="width:140px;">Imagen</th>
+                <!-- Columna de imagen eliminada -->
                 <th>Producto</th>
                 <th>Precio</th>
                 <th>Cantidad</th>
@@ -33,16 +33,14 @@ else
             @foreach (var item in carrito)
             {
                 <tr>
-                    <td class="align-middle text-center">
-                        <img src="@(string.IsNullOrWhiteSpace(item.ImagenUrl) ? "/images/placeholder.png" : item.ImagenUrl)" alt="@item.Nombre" style="width:120px; height:120px; object-fit:contain; background:#f8f9fa; border-radius:12px; box-shadow:0 2px 8px #0001;" />
+                    <!-- Celda de imagen eliminada -->
+                    <td>@item.Nombre</td>
+                    <td>@item.Precio.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</td>
+                    <td>
+                        <input type="number" min="1" value="@item.Cantidad" @onchange="e => CambiarCantidad(item, e)" style="width:60px" />
                     </td>
-                    <td class="align-middle">@item.Nombre</td>
-                    <td class="align-middle">@item.Precio.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</td>
-                    <td class="align-middle">
-                        <input type="number" min="1" value="@item.Cantidad" @onchange="e => CambiarCantidad(item, e)" style="width:70px; font-size:1.2rem;" />
-                    </td>
-                    <td class="align-middle">@string.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", item.Precio * item.Cantidad)</td>
-                    <td class="align-middle">
+                    <td>@string.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", item.Precio * item.Cantidad)</td>
+                    <td>
                         <button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item)">Eliminar</button>
                     </td>
                 </tr>
