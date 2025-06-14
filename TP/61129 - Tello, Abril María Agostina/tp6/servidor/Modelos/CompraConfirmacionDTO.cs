@@ -1,3 +1,5 @@
+using Servidor.Modelos;
+
 public class CompraConfirmacionDTO
 {
     public List<CarritoItemDTO> Items { get; set; }
