@@ -155,6 +155,40 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, i
     });
     return Results.Ok(articulosDto);
 });
+app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Articulos)
+        .ThenInclude(a => a.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (compra == null) return Results.NotFound();
+
+    var articulo = compra.Articulos.FirstOrDefault(a => a.ProductoId == productoId);
+
+    if (articulo == null) return Results.NotFound();
+
+    compra.Articulos.Remove(articulo);
+    db.ArticulosCompra.Remove(articulo);
+
+    await db.SaveChangesAsync();
+
+    // Devuelve solo los artículos restantes como DTO
+    var articulosDto = compra.Articulos.Select(a => new {
+        a.Id,
+        a.ProductoId,
+        Producto = new {
+            a.Producto.Id,
+            a.Producto.Nombre,
+            a.Producto.Precio,
+            a.Producto.ImagenUrl
+        },
+        a.Cantidad,
+        a.PrecioUnitario
+    });
+
+    return Results.Ok(articulosDto);
+});
 
 using (var scope = app.Services.CreateScope())
 {
