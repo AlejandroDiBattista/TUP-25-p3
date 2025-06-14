@@ -213,7 +213,7 @@ button[type="submit"].btn-success:hover {
 
     .loading-progress circle {
         fill: none;
-        stroke: #e0e0e0;
+        stroke: #1f1616;
         stroke-width: 0.6rem;
         transform-origin: 50% 50%;
         transform: rotate(-90deg);
@@ -275,7 +275,7 @@ position: absolute;
     box-shadow: 0 8px 32px rgba(27, 110, 194, 0.18);
     padding: 2.5rem 2rem 2rem 2rem;
     text-align: center;
-    color: #fff;
+    color: #181313;
     max-width: 600px;
     width: 100%;   
 }
@@ -288,7 +288,7 @@ position: absolute;
 }
 
 .descripcion p {
-    color: #eaf6ff;
+    color: #020202;
     font-size: 1.2rem;
     margin-bottom: 2rem;
 }
@@ -378,5 +378,5 @@ position: absolute;
 .btn-minimal:hover {
     background: #258cfb;
     color: #fff;
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
