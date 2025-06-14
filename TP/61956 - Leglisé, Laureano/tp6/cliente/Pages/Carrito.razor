@@ -5,7 +5,14 @@
 
 <h3>🛒 Tu Carrito</h3>
 
-@if (!CarritoService.ObtenerItems().Any())
+@if (compraConfirmada)
+{
+    <div class="alert alert-success">
+        ✅ ¡Gracias por tu compra, @Nombre! Te enviamos un correo de confirmación.
+    </div>
+    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+}
+else if (!CarritoService.ObtenerItems().Any())
 {
     <p>No hay productos en el carrito.</p>
 }
@@ -47,23 +54,20 @@ else
     <h5>Total: <strong>@CarritoService.TotalImporte.ToString("C")</strong></h5>
 
     <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
-}
 
-@if (CarritoService.ObtenerItems().Any())
-{
     <div class="mt-4">
         <h5>🧾 Tus datos:</h5>
         <div class="mb-2">
             <label>Nombre:</label>
-            <input class="form-control" @bind="nombre" />
+            <input class="form-control" @bind="Nombre" />
         </div>
         <div class="mb-2">
             <label>Apellido:</label>
-            <input class="form-control" @bind="apellido" />
+            <input class="form-control" @bind="Apellido" />
         </div>
         <div class="mb-2">
             <label>Email:</label>
-            <input class="form-control" @bind="email" type="email" />
+            <input class="form-control" @bind="Email" type="Email" />
         </div>
 
         <button class="btn btn-success mt-2" @onclick="Confirmar">Confirmar compra ✅</button>
@@ -71,9 +75,10 @@ else
 }
 
 @code {
-    private string nombre = "";
-    private string apellido = "";
-    private string email = "";
+    private string Nombre = "";
+    private string Apellido = "";
+    private string Email = "";
+    private bool compraConfirmada = false;
 
     protected override void OnInitialized()
     {
@@ -92,12 +97,18 @@ else
 
     private async Task Confirmar()
     {
-        await CarritoService.ConfirmarCompraAsync(nombre, apellido, email);
-        NavManager.NavigateTo("/");
+        await CarritoService.ConfirmarCompraAsync(Nombre, Apellido, Email);
+        compraConfirmada = true;
+        Nombre = Apellido = Email = "";
     }
 
     private async Task ModificarCantidad(int productoId, int nuevaCantidad)
     {
         await CarritoService.ModificarCantidadAsync(productoId, nuevaCantidad);
+    }
+
+    private void VolverAlCatalogo()
+    {
+        NavManager.NavigateTo("/");
     }
 }

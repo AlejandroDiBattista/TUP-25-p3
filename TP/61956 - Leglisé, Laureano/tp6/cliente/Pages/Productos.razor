@@ -1,12 +1,10 @@
 @page "/productos"
 @using cliente.Models
 @using cliente.Services
-@inject ServicioProductos Services
-@inject ServicioCarrito Carritoo
 
 <h3>Productos</h3>
 
-<p>En el carrito: @Carritoo.Items.Count</p>
+<p>En carrito: @Carrito?.Items?.Count ?? 0</p>
 
 @if (productos == null)
 {
@@ -27,15 +25,16 @@ else
 
 @code {
     List<Producto> productos;
+    [Inject] ProductoService Services { get; set; }
+    [Inject] CarritoService Carrito { get; set; } // Cambiar a CarritoService
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Services.ObtenerProductosAsync();
+        productos = await Services.ObtenerProductos();
     }
 
-    void AgregarAlCarrito(Producto producto)
+    async Task AgregarAlCarrito(Producto producto)
     {
-        Console.WriteLine("Agregando: " + producto.Nombre);
-        Carritoo.AgregarAlCarrito(producto);
+        await Carrito.AgregarAlCarrito(producto); // Llamar al método del servicio
     }
 }

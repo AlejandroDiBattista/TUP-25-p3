@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using System.Web;
 using cliente.Models;
 
 namespace cliente.Services;
@@ -14,35 +13,17 @@ public class CarritoService
     public CarritoService(HttpClient http)
     {
         _http = http;
-        // Asegúrate de que la base URL esté configurada
         if (_http.BaseAddress == null)
         {
-            _http.BaseAddress = new Uri("http://localhost:5184/"); // Ajusta según tu configuración
+            _http.BaseAddress = new Uri("http://localhost:5184/");
         }
     }
 
-    public async Task InitCarritoAsync()
-    {
-        try
-        {
-            var resp = await _http.PostAsJsonAsync("carritos", new { }); // Envía objeto vacío en lugar de string
-            resp.EnsureSuccessStatusCode(); // Lanza excepción si hay error HTTP
-            
-            var obj = await resp.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+    public List<(Producto Producto, int Cantidad)> Items => carrito.Values.ToList();
 
-            if (obj.TryGetProperty("carritoId", out var id))
-                CarritoId = id.GetString() ?? Guid.NewGuid().ToString();
-            else
-                throw new Exception("Respuesta inválida del servidor al inicializar carrito.");
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new Exception($"Error de conectividad: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Error al inicializar carrito: {ex.Message}");
-        }
+    public async Task AgregarAlCarrito(Producto producto)
+    {
+        await AgregarProductoAsync(producto, 1); // Agrega 1 unidad por defecto
     }
 
     public async Task AgregarProductoAsync(Producto producto, int cantidad)
@@ -57,10 +38,9 @@ public class CarritoService
             else
                 carrito[producto.Id] = (producto, cantidad);
 
-            // Usar interpolación de string más limpia
             var url = $"carritos/{CarritoId}/{producto.Id}?cantidad={cantidad}";
             var response = await _http.PutAsync(url, null);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -71,11 +51,34 @@ public class CarritoService
         }
         catch (Exception ex)
         {
-            // Log del error y re-lanzar
             Console.WriteLine($"Error agregando producto: {ex.Message}");
             throw;
         }
     }
+
+    public async Task InitCarritoAsync()
+    {
+        try
+        {
+            var resp = await _http.PostAsJsonAsync("carritos", new { });
+            resp.EnsureSuccessStatusCode();
+
+            var obj = await resp.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+
+            if (obj.TryGetProperty("carritoId", out var id))
+                CarritoId = id.GetString() ?? Guid.NewGuid().ToString();
+            else
+                throw new Exception("Respuesta inválida del servidor al inicializar carrito.");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error al inicializar carrito: {ex.Message}");
+        }
+    }
+
+    public int TotalItems => carrito.Values.Sum(i => i.Cantidad);
+
+    public decimal TotalImporte => carrito.Values.Sum(i => i.Producto.Precio * i.Cantidad);
 
     public async Task ModificarCantidadAsync(int productoId, int nuevaCantidad)
     {
@@ -156,9 +159,9 @@ public class CarritoService
 
             var data = new
             {
-                NombreCliente = nombre,
-                ApellidoCliente = apellido,
-                EmailCliente = email
+                Nombre = nombre,
+                Apellido = apellido,
+                Email = email
             };
 
             var resp = await _http.PutAsJsonAsync($"carritos/{CarritoId}/confirmar", data);
@@ -202,12 +205,8 @@ public class CarritoService
     }
 
     public List<(Producto, int)> ObtenerItems() => carrito.Values.ToList();
-
-    public int TotalItems => carrito.Values.Sum(i => i.Item2);
-
-    public decimal TotalImporte => carrito.Values.Sum(i => i.Item1.Precio * i.Item2);
 }
-    
+
 public class ItemCarritoDTO
 {
     public Producto Producto { get; set; } = default!;
