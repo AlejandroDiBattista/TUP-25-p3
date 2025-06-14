@@ -1,11 +1,16 @@
-namespace servidor.Models;
+using System.ComponentModel.DataAnnotations;
 
-public class Producto
+namespace servidor.Models
 {
-    public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Descripcion { get; set; }
-    public decimal Precio { get; set; }
-    public int Stock { get; set; }
-    public string ImagenUrl { get; set; }
+    public class Producto
+    {
+        [Key]
+        public int Id { get; set; }
+
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
 }

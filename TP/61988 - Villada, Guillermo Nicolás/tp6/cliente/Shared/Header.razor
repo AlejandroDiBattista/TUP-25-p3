@@ -1,30 +1,39 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Nav
+@using cliente.Services
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-    <a class="navbar-brand" href="" @onclick="IrHome" style="cursor:pointer;">
-        <img src="LogoNickzP.png" alt="Logo" style="height:100px;" /> Store Online
-    </a>
+<nav class="navbar navbar-expand-lg urban-navbar shadow-sm mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center urban-brand" href="" @onclick="IrHome" style="cursor:pointer;">
+            <img src="logo nickz sticker.png" alt="Logo" style="height:60px; margin-right:12px; border-radius:12px; box-shadow:0 2px 12px #fff1;" />
+            <span class="urban-logo-title">Nickz Store</span>
+        </a>
 
-    <div class="navbar-nav">
-        <a class="nav-item nav-link" href="" @onclick="IrHome">Inicio</a>
-        <a class="nav-item nav-link" href="/productos">Productos</a>
-        <a class="nav-item nav-link" href="/carrito">Carrito</a>
-        <a class="nav-item nav-link" href="/confirmar">Confirmar compra</a>
-        <a class="nav-item nav-link" href="/historial">Historial de compras</a>
-    </div>
-
-    <form class="form-inline my-2 my-lg-0" @onsubmit="Buscar">
-        <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Buscar" @bind="busqueda" />
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
-    </form>
-    <div class="ml-auto">
-        <button class="btn btn-outline-primary" @onclick="IrCarrito">
-            <span class="oi oi-cart"></span>
-            Carrito
-            <span class="badge badge-pill badge-danger">@contador</span>
+        <button class="navbar-toggler urban-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon urban-toggler-icon"></span>
         </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <div class="navbar-nav urban-nav mx-auto">
+                <button class="urban-menu-btn" @onclick="IrHome">Inicio</button>
+                <button class="urban-menu-btn" @onclick="IrProductos">Productos</button>
+                <button class="urban-menu-btn" @onclick="IrCarrito">Carrito</button>
+                <button class="urban-menu-btn" @onclick="IrConfirmar">Confirmar compra</button>
+                <button class="urban-menu-btn" @onclick="IrHistorial">Historial</button>
+            </div>
+
+            <form class="d-flex urban-search" @onsubmit="Buscar">
+                <input class="form-control urban-search-input" type="search" placeholder="Buscar producto..." aria-label="Buscar" @bind="busqueda" />
+                <button class="btn urban-btn-search" type="submit"><span class="oi oi-magnifying-glass"></span></button>
+            </form>
+
+            <button class="btn urban-cart-btn ms-3" @onclick="IrCarrito">
+                <span class="oi oi-cart me-1"></span>
+                <span>Carrito</span>
+                <span class="urban-badge badge">@contador</span>
+            </button>
+        </div>
     </div>
 </nav>
 
@@ -43,7 +52,6 @@
 
         if (!Guid.TryParse(carritoIdStr, out var carritoId) || carritoId == Guid.Empty)
         {
-            // Crear uno nuevo si el existente es inválido
             carritoId = await ApiService.CrearCarritoAsync();
             await LocalStorage.SetItemAsync("carritoId", carritoId.ToString());
         }
@@ -61,15 +69,11 @@
         StateHasChanged();
     }
 
-    private void IrCarrito()
-    {
-        Nav.NavigateTo("/carrito");
-    }
-
-    private void IrHome()
-    {
-        Nav.NavigateTo("/");
-    }
+    private void IrCarrito() => Nav.NavigateTo("/carrito");
+    private void IrHome() => Nav.NavigateTo("/");
+    private void IrProductos() => Nav.NavigateTo("/productos");
+    private void IrConfirmar() => Nav.NavigateTo("/confirmar");
+    private void IrHistorial() => Nav.NavigateTo("/historial");
 
     private void Buscar()
     {

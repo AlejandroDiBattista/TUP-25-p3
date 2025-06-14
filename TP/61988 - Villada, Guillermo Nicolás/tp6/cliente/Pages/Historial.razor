@@ -1,6 +1,7 @@
 @page "/historial"
 @inject cliente.Services.ApiService ApiService
 
+@using cliente.Shared
 <h3>Historial de Compras</h3>
 
 @if (compras is null)
@@ -17,7 +18,7 @@ else
         <thead>
             <tr>
                 <th>Nombre</th>
-                <th>Teléfono</th>
+                <th>Correo</th>
                 <th>Fecha</th>
                 <th>Cantidad de productos</th>
             </tr>

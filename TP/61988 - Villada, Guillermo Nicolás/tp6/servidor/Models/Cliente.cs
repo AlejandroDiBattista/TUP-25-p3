@@ -1,8 +1,14 @@
-namespace servidor.Models;
+using System.ComponentModel.DataAnnotations;
 
-public class Cliente
+namespace servidor.Models
 {
-    public string Nombre { get; set; }
-    public string Apellido { get; set; }
-    public string Telefono { get; set; }
+    public class Cliente
+    {
+        [Key]
+        public int ClienteId { get; set; }
+
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Telefono { get; set; }
+    }
 }

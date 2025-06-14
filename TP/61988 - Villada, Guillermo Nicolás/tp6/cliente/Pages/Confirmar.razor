@@ -3,9 +3,16 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject NavigationManager Nav
 
+@using cliente.Models
+@using cliente.Shared
+
 <h3>Confirmar compra</h3>
 
-@if (items is null)
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger">@mensajeError</div>
+}
+else if (items is null)
 {
     <p>Cargando resumen...</p>
 }
@@ -70,28 +77,37 @@ else
 }
 
 @code {
-    List<cliente.Models.ItemCarrito>? items;
-    cliente.Models.Cliente cliente = new();
-    string mensaje = "";
+    List<ItemCarrito>? items;
+    Cliente cliente = new();
+    string mensajeError = "";
     bool compraExitosa = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
-        if (carritoId != null && carritoId != Guid.Empty)
-            items = await ApiService.ObtenerCarritoAsync(carritoId.Value);
-        else
-            items = new();
+        (Guid carritoId, List<ItemCarrito> itemsList, bool recreated) =
+            await CarritoHelper.ObtenerOCrearCarritoValidoAsync(LocalStorage, ApiService);
+        items = itemsList;
+        if (recreated)
+            mensajeError = "Tu carrito anterior expiró o fue eliminado. Se creó uno nuevo. Agregá productos antes de confirmar la compra.";
+        else if (items == null || !items.Any())
+            mensajeError = "El carrito está vacío. Agregá productos antes de confirmar la compra.";
     }
 
     private async Task ConfirmarCompraAsync()
     {
         var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
-        var compra = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
-        compraExitosa = true;
-        await LocalStorage.RemoveItemAsync("carritoId");
-        StateHasChanged();
-        await Task.Delay(7000); // 7 segundos antes de redirigir (creo)
-        Nav.NavigateTo("/");
+        try
+        {
+            var compra = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
+            compraExitosa = true;
+            await LocalStorage.RemoveItemAsync("carritoId");
+            StateHasChanged();
+            await Task.Delay(7000); // 7 segundos antes de redirigir
+            Nav.NavigateTo("/");
+        }
+        catch (Exception)
+        {
+            mensajeError = "No se pudo confirmar la compra. El carrito puede haber expirado o estar vacío.";
+        }
     }
 }
