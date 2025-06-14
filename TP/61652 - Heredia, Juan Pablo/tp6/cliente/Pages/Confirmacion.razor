@@ -54,7 +54,6 @@
         carritoId = await ObtenerOCrearCarrito();
         items = await ApiService.GetCarrito(carritoId);
     }
-
     async Task ConfirmarCompra()
     {
         try
@@ -67,5 +66,14 @@
         {
             await JS.InvokeVoidAsync("alert", ex.Message);
         }
+    }
+    async Task<int> ObtenerOCrearCarrito()
+    {
+        var storage = new cliente.Services.ApiService.CarritoStorage(JS);
+        var id = await storage.ObtenerCarritoId();
+        if (id.HasValue) return id.Value;
+        var nuevoId = await ApiService.CrearCarrito();
+        await storage.GuardarCarritoId(nuevoId);
+        return nuevoId;
     }
 }

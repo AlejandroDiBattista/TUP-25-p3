@@ -98,6 +98,6 @@ namespace cliente.Services
 
             public async Task LimpiarCarritoId() =>
                 await js.InvokeVoidAsync("localStorage.removeItem", "carritoId");
-        }
+        }  
     }
 }
