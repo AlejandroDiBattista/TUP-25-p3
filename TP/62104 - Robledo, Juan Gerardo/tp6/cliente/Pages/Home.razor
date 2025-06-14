@@ -43,6 +43,35 @@
         [EmailAddress(ErrorMessage = "Formato de email inválido")]
         public string EmailCliente { get; set; } = string.Empty;
     }
+
+       public enum Vista
+    {
+        Catalogo,
+        Carrito,
+        Confirmacion,
+        CompraConfirmada
+    }
+
+    // Variables de estado
+    private Vista vistaActual = Vista.Catalogo;
+    private List<Producto> productos = new();
+    private List<CarritoItem> carrito = new();
+    private ConfirmarCompraRequest datosCliente = new();
+    private string terminoBusqueda = string.Empty;
+    private string carritoId = string.Empty;
+    private string mensajeAlerta = string.Empty;
+    private bool cargando = true;
+    private bool procesandoCompra = false;
+    private int ultimaCompraId = 0;
+
+    // Propiedades calculadas
+    private int itemsCarrito => carrito?.Sum(c => c.Cantidad) ?? 0;
+    private decimal totalCarrito => carrito?.Sum(c => c.Subtotal) ?? 0;
+
+
+
+
+
 }
 
 
