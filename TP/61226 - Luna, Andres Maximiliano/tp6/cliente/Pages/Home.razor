@@ -17,18 +17,21 @@
     </div>
 }
 
-@if (productos == null)
+<input class="form-control mb-3" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+
+@if (cargando)
 {
     <p>Cargando productos...</p>
 }
-else if (productos.Count == 0)
+else if (productosFiltrados.Count == 0)
 {
-    <p>No hay productos disponibles.</p>
+    <p>No se encontraron productos.</p>
 }
-
+else
+{
     <div class="row">
-    @foreach (var producto in productos)
-    {        
+        @foreach (var producto in productosFiltrados)
+        {
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
@@ -40,16 +43,20 @@ else if (productos.Count == 0)
                         <button class="btn btn-primary" @onclick="() => AgregarProducto(producto)">Agregar al carrito</button>
                     </div>
                 </div>
-            </div>        
-    }
-</div>
+            </div>
+        }
+    </div>
+}
+
+
 
 
 
 @code {
     
-
     private List<Producto> productos = new(); 
+    private List<Producto> productosFiltrados = new();
+    private string busqueda = string.Empty;
         private DatosRespuesta datos;
         private string error;
         private bool cargando = false;
@@ -59,9 +66,8 @@ else if (productos.Count == 0)
         try
         {
             cargando = true;
-            Console.WriteLine("Inicio de OnInitializedAsync");
             productos = await ApiService.ObtenerProductosAsync();
-            Console.WriteLine($"Cantidad de productos: {productos.Count}");
+            productosFiltrados = productos;
         }
         catch (Exception ex)
         {
@@ -76,5 +82,17 @@ else if (productos.Count == 0)
     void AgregarProducto(Producto producto)
     {
         CarritoService.AgregarAlCarrito(producto);
+    }
+
+    private string Busqueda
+    {
+        get => busqueda;
+        set
+        {
+            busqueda = value;
+            productosFiltrados = productos
+                .Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
     }
 }
