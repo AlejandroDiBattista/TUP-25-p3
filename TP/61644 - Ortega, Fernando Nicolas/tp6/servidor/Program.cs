@@ -66,7 +66,29 @@ app.MapGet("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext db
 
     if (compra == null) return Results.NotFound();
 
-    return Results.Ok(compra);
+    var dto = new
+    {
+        compra.Id,
+        compra.Fecha,
+        compra.Total,
+        compra.NombreCliente,
+        compra.ApellidoCliente,
+        compra.EmailCliente,
+        Articulos = compra.Articulos.Select(a => new {
+            a.Id,
+            a.ProductoId,
+            Producto = new {
+                a.Producto.Id,
+                a.Producto.Nombre,
+                a.Producto.Precio,
+                a.Producto.ImagenUrl
+            },
+            a.Cantidad,
+            a.PrecioUnitario
+        })
+    };
+
+    return Results.Ok(dto);
 });
 app.MapDelete("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext db) =>
 {
@@ -81,6 +103,58 @@ app.MapDelete("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext
 
     return Results.Ok();
 });
+app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, CantidadDto cantidadDto, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Articulos)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    var producto = await db.Productos.FindAsync(productoId);
+
+    if (compra == null || producto == null)
+        return Results.NotFound();
+
+    if (cantidadDto.Cantidad < 1)
+        return Results.BadRequest("Cantidad inválida");
+
+    var articulo = compra.Articulos.FirstOrDefault(a => a.ProductoId == productoId);
+
+    if (articulo == null)
+    {
+        if (producto.Stock < cantidadDto.Cantidad)
+            return Results.BadRequest("No hay stock suficiente");
+
+        articulo = new servidor.Models.ArticuloCompra
+        {
+            ProductoId = productoId,
+            Cantidad = cantidadDto.Cantidad,
+            PrecioUnitario = producto.Precio
+        };
+        compra.Articulos.Add(articulo);
+    }
+    else
+    {
+        if (producto.Stock + articulo.Cantidad < cantidadDto.Cantidad)
+            return Results.BadRequest("No hay stock suficiente");
+
+        articulo.Cantidad = cantidadDto.Cantidad;
+    }
+
+    await db.SaveChangesAsync();
+    var articulosDto = compra.Articulos.Select(a => new {
+        a.Id,
+        a.ProductoId,
+        Producto = new {
+            a.Producto.Id,
+            a.Producto.Nombre,
+            a.Producto.Precio,
+            a.Producto.ImagenUrl
+        },
+        a.Cantidad,
+        a.PrecioUnitario
+    });
+    return Results.Ok(articulosDto);
+});
 
 using (var scope = app.Services.CreateScope())
 {
@@ -88,3 +162,4 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 app.Run();
+public record CantidadDto(int Cantidad);
