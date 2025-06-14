@@ -1,0 +1,124 @@
+@page "/confirmacion/{carritoId:guid}"
+@using cliente.Services
+@using cliente.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Confirmar compra</h2>
+        </div>
+    </div>
+    @if (carrito == null || carrito.Items.Count == 0)
+    {
+        <div class="alert alert-info">El carrito está vacío.</div>
+    }
+    else if (compraRealizada)
+    {
+        <div class="alert alert-success">
+            ¡Compra realizada con éxito!<br />
+            <b>Total:</b> $@compra?.Total
+        </div>
+        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+    }
+    else
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <b>Total a pagar:</b> $@TotalCarrito
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Importe</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in carrito.Items)
+                {
+                    var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                    <tr>
+                        <td>
+                            <img src="@producto?.ImagenUrl" alt="@producto?.Nombre" class="img-carrito me-2" />
+                            @producto?.Nombre
+                        </td>
+                        <td>@item.Cantidad</td>
+                        <td>$@producto?.Precio</td>
+                        <td>$@(producto != null ? producto.Precio * item.Cantidad : 0)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <EditForm Model="form" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-3">
+                <label>Nombre</label>
+                <InputText class="form-control" @bind-Value="form.NombreCliente" />
+            </div>
+            <div class="mb-3">
+                <label>Apellido</label>
+                <InputText class="form-control" @bind-Value="form.ApellidoCliente" />
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText class="form-control" @bind-Value="form.EmailCliente" />
+            </div>
+            <button class="btn btn-success" type="submit">Confirmar compra</button>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid carritoId { get; set; }
+    private CarritoDto carrito;
+    private List<ProductoDto> productos = new();
+    private CompraDto form = new();
+    private CompraDto compra;
+    private bool compraRealizada = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+        await CargarProductos();
+    }
+
+    private async Task CargarCarrito()
+    {
+        carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+    }
+    private async Task CargarProductos()
+    {
+        productos = await ApiService.ObtenerProductosAsync();
+    }
+    private decimal TotalCarrito =>
+        carrito?.Items?.Sum(i =>
+        {
+            var p = productos.FirstOrDefault(x => x.Id == i.ProductoId);
+            return (p?.Precio ?? 0) * i.Cantidad;
+        }) ?? 0;
+
+    private async Task ConfirmarCompra()
+    {
+        form.Items = carrito.Items.Select(i => new ItemCompraDto {
+            ProductoId = i.ProductoId,
+            Cantidad = i.Cantidad
+        }).ToList();
+        var resultado = await ApiService.ConfirmarCompraAsync(carritoId, form);
+        if (resultado != null)
+        {
+            compra = resultado;
+            compraRealizada = true;
+        }
+    }
+    private void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
