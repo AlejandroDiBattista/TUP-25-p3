@@ -1,0 +1,124 @@
+@page "/"
+@using System.Collections.Generic
+@using cliente.Models
+@using cliente.Services
+@inject ProductoService ProductoService
+@inject NavigationManager Navigation
+@inject CarritoService CarritoService
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" alt="Logo" width="32" height="32" class="me-2" />
+            <span class="fw-bold">Mi Tienda</span>
+        </a>
+        <div class="ms-auto">
+            <a href="/carrito" class="btn btn-light position-relative">
+                <i class="bi bi-cart3" style="font-size: 1.5rem; color: #0d6efd;"></i>
+                @if (carritoCantidad > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @carritoCantidad
+                    </span>
+                }
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div style="height: 70px;"></div> <!-- Espacio para la navbar fija -->
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4 text-primary"><i class="bi bi-shop"></i> Catálogo de productos</h2>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <input class="form-control border-primary" placeholder="Buscar producto..." @bind="searchTerm" @bind:event="oninput" />
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100" @onclick="BuscarProductos">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+        </div>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @if (productos != null && productos.Count > 0)
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow border-primary border-2">
+                        <img src="@producto.ImagenUrl" class="card-img-top p-3 bg-light" style="height:180px;object-fit:contain;" alt="@producto.Nombre" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-primary">@producto.Nombre</h5>
+                            <p class="card-text text-muted mb-1">@producto.Descripcion</p>
+                            <div class="mb-2">
+                                <span class="badge bg-info text-dark">Stock: @producto.Stock</span>
+                            </div>
+                            <h6 class="fw-bold text-success mb-3">$@producto.Precio.ToString("N2", new System.Globalization.CultureInfo("es-AR"))</h6>
+                            <button class="btn btn-success mt-auto" @onclick="() => AgregarAlCarrito(producto.Id)">
+                                <i class="bi bi-cart-plus"></i> Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col">
+                <div class="alert alert-warning text-center">
+                    No se encontraron productos.
+                </div>
+            </div>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info mt-4">@mensaje</div>
+    }
+</div>
+
+@code {
+    private List<Producto> productos = new();
+    private string searchTerm = "";
+    private string mensaje = "";
+    private int carritoCantidad = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarritoService.InitializeCarrito();
+        await CargarProductos();
+        await ActualizarContadorCarrito();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await ProductoService.GetProductosAsync() ?? new();
+    }
+
+    private async Task BuscarProductos()
+    {
+        productos = await ProductoService.GetProductosAsync(searchTerm) ?? new();
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        try
+        {
+            await CarritoService.AgregarProducto(productoId, 1);
+            mensaje = "Producto agregado al carrito.";
+            await ActualizarContadorCarrito();
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task ActualizarContadorCarrito()
+    {
+        var carrito = await CarritoService.GetCarritoAsync();
+        carritoCantidad = carrito.Items?.Sum(i => i.Cantidad) ?? 0;
+        StateHasChanged();
+    }
+}
