@@ -1,0 +1,53 @@
+@page "/carrito/{carritoId:guid}"
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+<h3>Carrito de Compra</h3>
+
+@if (ItemsCarrito is null)
+{
+    <p>Cargando...</p>
+}
+else if (!ItemsCarrito.Any())
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ItemsCarrito)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>
+                        <button @onclick="() => Disminuir(item)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => Aumentar(item)">+</button>
+                    </td>
+                    <td>@item.PrecioUnitario.ToString("C")</td>
+                    <td>@(item.PrecioUnitario * item.Cantidad).ToString("C")</td>
+                    <td>
+                        <button @onclick="() => EliminarItem(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p><strong>Total:</strong> @Total.ToString("C")</p>
+
+    <button @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button @onclick="()=>NavegarCompra()">Confirmar compra</button>
+}
+
