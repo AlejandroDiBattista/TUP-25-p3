@@ -1,0 +1,204 @@
+@page "/confirmacion"
+@inject Cliente.Services.CarritoService CarritoService
+@inject Cliente.Services.ToastService ToastService
+@inject NavigationManager Navigation
+
+<div class="container py-4 fade-in-up">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-orange">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>Confirmación de Compra
+                    </h4>
+                </div>
+                <div class="card-body">                    @if (cargando)
+                    {
+                        <div class="loader-container">
+                            <span class="loader loader-lg"></span>
+                            <p class="loading-text">Cargando resumen de compra...</p>
+                        </div>
+                    }
+                    else if (carrito == null || !carrito.Items.Any())
+                    {
+                        <div class="alert alert-warning shadow-orange">
+                            <h5>No hay productos en el carrito</h5>
+                            <p>Agrega algunos productos antes de proceder con la compra.</p>
+                            <a href="/" class="btn btn-primary">Ir al catálogo</a>
+                        </div>
+                    }
+                    else
+                    {                        <!-- Resumen de compra -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="text-gradient"><i class="bi bi-list-check me-2"></i>Resumen de tu compra</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cant.</th>
+                                                <th>Precio</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in carrito.Items)
+                                            {
+                                                <tr>
+                                                    <td class="fw-semibold">@item.Producto?.Nombre</td>
+                                                    <td><span class="badge bg-primary">@item.Cantidad</span></td>
+                                                    <td>$@item.PrecioUnitario</td>
+                                                    <td class="fw-bold text-gradient">$@(item.Cantidad * item.PrecioUnitario)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="fw-bold border-top border-orange-2">
+                                                <td colspan="3" class="fs-5">Total:</td>
+                                                <td class="fs-5"><span class="price-tag">$@total</span></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="cart-total text-center">
+                                    <div><strong>@totalItems</strong> producto(s)</div>
+                                    <div class="fs-6">Total: <strong>$@total</strong></div>
+                                </div>
+                            </div>
+                              <!-- Formulario de datos del cliente -->
+                            <div class="col-md-6">
+                                <h5 class="text-gradient"><i class="bi bi-person-fill me-2"></i>Datos del comprador</h5>
+                                <EditForm Model="@formulario" OnValidSubmit="@ConfirmarCompra">
+                                    <DataAnnotationsValidator />
+                                    
+                                    <div class="mb-3">
+                                        <label for="nombre" class="form-label">Nombre *</label>
+                                        <InputText id="nombre" class="form-control" @bind-Value="formulario.Nombre" placeholder="Ingresa tu nombre" />
+                                        <ValidationMessage For="@(() => formulario.Nombre)" class="validation-message" />
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="apellido" class="form-label">Apellido *</label>
+                                        <InputText id="apellido" class="form-control" @bind-Value="formulario.Apellido" placeholder="Ingresa tu apellido" />
+                                        <ValidationMessage For="@(() => formulario.Apellido)" class="validation-message" />
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <InputText id="email" type="email" class="form-control" @bind-Value="formulario.Email" placeholder="ejemplo@correo.com" />
+                                        <ValidationMessage For="@(() => formulario.Email)" class="validation-message" />
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary" disabled="@procesando">                                            @if (procesando)
+                                            {
+                                                <span class="loader loader-sm me-2"></span>
+                                                <span>Procesando...</span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-check-lg me-2"></i>
+                                                <span>Confirmar Compra</span>
+                                            }
+                                        </button>
+                                        <a href="/carrito" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-left me-2"></i>Volver al carrito
+                                        </a>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
+    
+    private Cliente.Models.Compra? carrito;
+    private decimal total = 0;
+    private int totalItems = 0;
+    private bool cargando = true;
+    private bool procesando = false;
+    private FormularioCompra formulario = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarResumenCompra();
+    }
+
+    private async Task CargarResumenCompra()
+    {
+        try
+        {
+            cargando = true;
+            carrito = await CarritoService.ObtenerCarritoAsync();
+            
+            if (carrito?.Items?.Any() == true)
+            {
+                total = carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+                totalItems = carrito.Items.Sum(i => i.Cantidad);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar resumen: {ex.Message}");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        try
+        {
+            procesando = true;
+            
+            var exito = await CarritoService.ConfirmarCompraAsync(
+                formulario.Nombre, 
+                formulario.Apellido, 
+                formulario.Email
+            );            if (exito)
+            {
+
+                ActualizarCarrito?.Invoke(0);
+
+                ToastService.ShowSuccess($"¡Compra confirmada exitosamente!", 6000);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ToastService.ShowError("Error al confirmar la compra. Inténtalo nuevamente.");
+            }
+        }        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar compra: {ex.Message}");
+            ToastService.ShowError("Error al procesar la compra. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    public class FormularioCompra
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [StringLength(50, ErrorMessage = "El nombre no puede exceder 50 caracteres")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        [StringLength(50, ErrorMessage = "El apellido no puede exceder 50 caracteres")]
+        public string Apellido { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Formato de email inválido")]
+        public string Email { get; set; } = string.Empty;
+    }
+}
