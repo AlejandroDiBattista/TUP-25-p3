@@ -133,6 +133,10 @@ public class ConfirmacionRequest
     public string Apellido { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
 }
+public class ConfirmacionResponse
+{
+    public int Id { get; set; }
+}
 
 public class Carrito
 {
