@@ -9,6 +9,8 @@ namespace Cliente.Services
         public IReadOnlyList<ItemCarrito> Items => items;
 
         public int TotalItems => items.Sum(i => i.Cantidad);
+        
+        public Guid CarritoId { get; set; } = Guid.Empty;
 
         public void Agregar(ItemCarrito item)
         {
