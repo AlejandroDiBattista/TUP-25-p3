@@ -1,0 +1,159 @@
+@page "/carrito"
+@using cliente.Services
+@using cliente.Models
+@inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject NotificationService NotificationService
+@inject NavigationManager Router
+@implements IDisposable
+
+<PageTitle>Carrito | Blazor</PageTitle>
+
+<h2 class="text-xl font-bold text-gray-900 sm:text-2xl">Carrito</h2>
+
+    <div class="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
+      <div class="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
+        <!-- Productos en el carrito -->
+        <div class="space-y-6">
+          @if (CantidadItems == 0)
+          {
+            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6">
+              <p class="text-center text-gray-800">Todavía no hay productos en el carrito. Prueba agregando algunos.</p>
+            </div>
+          }
+          @foreach (var itemCarrito in Carrito.Items)
+          {
+            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6">
+              <div class="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
+              <a href="#" class="shrink-0 md:order-1">
+                <img class="h-20 w-20" src="@($"{ApiService.GetApiBaseUrl()}/{itemCarrito.Producto.ImagenUrl}")" alt="@itemCarrito.Producto.Nombre" />
+              </a>
+
+              <label for="counter-input" class="sr-only">Cantidad:</label>
+              <div class="flex items-center justify-between md:order-3 md:justify-end">
+                <div class="flex items-center">
+                  <button type="button" id="decrement-button" @onclick="() => CarritoService.EliminarItemDeCarritoAsync(itemCarrito.Producto.Id)" class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-white bg-violet-700 hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-700">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <input type="text" id="counter-input" class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0" placeholder="" value="@itemCarrito.Cantidad"/>
+                  <button type="button" id="increment-button" @onclick="() => CarritoService.AgregarItemACarritoAsync(itemCarrito.Producto.Id)" class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-white bg-violet-700 hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-700">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+                <div class="text-end md:order-4 md:w-32">
+                  <p class="text-base font-bold text-gray-900">@($"${itemCarrito.Cantidad * itemCarrito.Producto.Precio:N2}")</p>
+                </div>
+              </div>
+
+              <div class="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
+                <a href="#" class="text-base font-medium text-gray-900 hover:underline">@itemCarrito.Producto.Nombre</a>
+              </div>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Bloque de recomendados  -->
+        <div class="hidden xl:mt-8 xl:block">
+          <h3 class="text-xl font-semibold text-gray-900">Apúrate y llevate estos también</h3>
+          <div class="mt-6 grid grid-cols-3 gap-4 sm:mt-8">
+            @foreach (var producto in ConPocoStock) {
+                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-between">
+                    <div class="h-56 w-full">
+                        <a href="#">
+                            <img class="mx-auto h-full" src="@($"{ApiService.GetApiBaseUrl()}/{producto.ImagenUrl}")" alt="@producto.Nombre" />
+                        </a>
+                    </div>
+                    <div class="pt-6 flex flex-col items-center justify-between">
+                        @if (producto.Stock < 3) {
+                            <div class="mb-4 flex items-center justify-between gap-4">
+                                @if (producto.Stock == 0) {
+                                    <span class="me-2 rounded bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800"> Sin stock </span>
+                                } else {
+                                    <span class="me-2 rounded bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">@(producto.Stock == 1 ? "Último disponible" : $"Quedan {producto.Stock} unidades")! </span>
+                                }
+                            </div>
+                        }
+                        <a href="#" class="text-lg font-semibold leading-tight text-gray-900 hover:underline">@producto.Nombre</a>
+                        <div class="mt-4 flex flex-col items-center justify-between gap-4">
+                            <p class="font-bold leading-tight text-gray-900">@($"${producto.Precio:N2}")</p>
+
+                            <button class="inline-flex items-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4  focus:ring-violet-300 whitespace-nowrap" @onclick="() => CarritoService.AgregarItemACarritoAsync(producto.Id)">
+                                <i class="fas fa-cart-plus"></i>
+                                Añadir al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen del pedido -->
+      <div class="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full">
+        <div class="space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+          <p class="text-xl font-semibold text-gray-900">Resumen</p>
+
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <dl class="flex items-center justify-between gap-4">
+                <dt class="text-base font-normal text-gray-500">Cantidad de productos</dt>
+                <dd class="text-base font-medium text-gray-900">@CantidadItems</dd>
+              </dl>
+              <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
+                <dt class="text-base font-bold text-gray-900">Total</dt>
+                <dd class="text-base font-bold text-gray-900">@($"${TotalCarrito:N2}")</dd>
+              </dl>
+            </div>
+          </div>
+            <a href="/checkout"
+             class="flex w-full items-center justify-center rounded-lg bg-violet-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300 @(CantidadItems == 0 ? "opacity-50 pointer-events-none" : "")"
+             tabindex="@(CantidadItems == 0 ? "-1" : "0")"
+             aria-disabled="@(CantidadItems == 0 ? "true" : "false")">
+            Confirmar Compra
+            </a>
+
+          <div class="flex items-center justify-center gap-2">
+            <span class="text-sm font-normal text-gray-500"> o </span>
+            <a href="/" title="" class="inline-flex items-center gap-2 text-sm font-medium text-violet-700 underline hover:no-underline">
+              Continuar comprando
+              <svg class="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+@code {
+    private int CantidadItems => CarritoService.CantidadItems;
+    private decimal TotalCarrito => CarritoService.TotalCarrito;
+    private Carrito Carrito => CarritoService.Carrito;
+    private List<Producto> Productos;
+    private List<Producto> ConPocoStock;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cada vez que el servicio llame a OnChange, se ejecutará StateHasChanged()
+        CarritoService.OnChange += StateHasChanged;
+        await CarritoService.ObtenerCarritoAsync();
+        if (Carrito == null)
+        {
+            await CarritoService.InicializarCarritoAsync();
+        }
+        Productos = await ApiService.ObtenerDatosAsync();
+        if (Productos != null) {
+          ConPocoStock = Productos
+            .Where(p => p.Stock > 0)
+            .OrderBy(p => p.Stock)
+            .Take(3)
+            .ToList();
+        }
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}

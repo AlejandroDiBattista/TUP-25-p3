@@ -2,6 +2,7 @@
 @using cliente.Components;
 @inherits LayoutComponentBase
 @inject CarritoService CarritoService
+@inject NavigationManager Router
 @implements IDisposable
 
 <div class="h-screen flex flex-col">
@@ -9,11 +10,11 @@
         <div class="max-w-screen-xl mx-auto px-4">
             <div class="flex gap-4 items-center">
                 <div class="flex items-center justify-between grow w-full gap-2 md:gap-16">
-                    <div class="flex items-center gap-2">
+                    <a class="flex items-center gap-2" href="/">
                         <img src="favicon.png" alt="Logo" class="w-8 h-8" />
                         <h1 class="font-bold text-2xl">Tienda Online</h1>
-                    </div>
-                    <button class="inline-flex items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors" @onclick="() => CarritoService.ObtenerCarritoAsync()">
+                    </a>
+                    <button class="inline-flex items-center px-4 py-2 rounded hover:bg-violet-300 transition-colors" @onclick="() => IrACarrito()">
                         <i class="fas fa-shopping-cart mr-2"></i>
                         Ver Carrito (@CantidadItems)
                     </button>
@@ -41,5 +42,10 @@
     public void Dispose()
     {
         CarritoService.OnChange -= StateHasChanged;
+    }
+
+    private void IrACarrito()
+    {
+        Router.NavigateTo("/carrito");
     }
 }

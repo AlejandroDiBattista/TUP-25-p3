@@ -10,7 +10,7 @@ public class CarritoService
 {
     private readonly HttpClient _httpClient;
     private readonly NotificationService _notificationService;
-    private Carrito _carrito;
+    public Carrito Carrito { get; private set; }
 
     public event Action OnChange;
 
@@ -30,16 +30,27 @@ public class CarritoService
     {
         get
         {
-            if (_carrito == null)
+            if (Carrito == null)
                 return 0;
 
-            return _carrito.Items?.Count ?? 0;
+            return Carrito.Items.Sum(item => item.Cantidad);
+        }
+    }
+
+    public decimal TotalCarrito
+    {
+        get
+        {
+            if (Carrito == null || Carrito.Items == null)
+                return 0m;
+
+            return Carrito.Items.Sum(item => item.Cantidad * item.Producto.Precio);
         }
     }
 
     public async Task InicializarCarritoAsync()
     {
-        if (_carrito != null)
+        if (Carrito != null)
             return;
 
         try
@@ -50,7 +61,7 @@ public class CarritoService
                 _jsonOptions
             );
             response.EnsureSuccessStatusCode();
-            _carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
+            Carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
             NotificarCambio();
         }
         catch (Exception ex)
@@ -63,7 +74,7 @@ public class CarritoService
     {
         try
         {
-            var response = await _httpClient.GetAsync($"/carritos/{_carrito.Id}");
+            var response = await _httpClient.GetAsync($"/carritos/{Carrito.Id}");
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 var errorJson = await response.Content.ReadAsStringAsync();
@@ -83,12 +94,13 @@ public class CarritoService
                 {
                     _notificationService.ShowError("Carrito no encontrado.");
                 }
-                _carrito = null;
+                Carrito = null;
                 return;
             }
             response.EnsureSuccessStatusCode();
-            _carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
+            Carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
             NotificarCambio();
+            Console.WriteLine(Carrito.Items);
         }
         catch (Exception ex)
         {
@@ -101,13 +113,13 @@ public class CarritoService
         try
         {
             var response = await _httpClient.PutAsJsonAsync<Carrito>(
-                $"/carritos/{_carrito.Id}/{productoId}",
+                $"/carritos/{Carrito.Id}/{productoId}",
                 null
             );
             if (response.IsSuccessStatusCode)
             {
-                _carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
-                ItemCarrito itemAgreado = _carrito.Items.FirstOrDefault(i =>
+                Carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
+                ItemCarrito itemAgreado = Carrito.Items.FirstOrDefault(i =>
                     i.ProductoId == productoId
                 );
                 _notificationService.ShowSuccess(
@@ -155,10 +167,10 @@ public class CarritoService
     {
         try
         {
-            ItemCarrito itemAEliminar = _carrito.Items.FirstOrDefault(i =>
+            ItemCarrito itemAEliminar = Carrito.Items.FirstOrDefault(i =>
                 i.ProductoId == productoId
             );
-            var response = await _httpClient.DeleteAsync($"/carritos/{_carrito.Id}/{productoId}");
+            var response = await _httpClient.DeleteAsync($"/carritos/{Carrito.Id}/{productoId}");
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 var errorJson = await response.Content.ReadAsStringAsync();
@@ -181,7 +193,7 @@ public class CarritoService
                 return;
             }
             response.EnsureSuccessStatusCode();
-            _carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
+            Carrito = await response.Content.ReadFromJsonAsync<Carrito>(_jsonOptions);
             _notificationService.ShowInfo(
                 $"{itemAEliminar.Producto.Nombre} eliminado del carrito."
             );
@@ -198,7 +210,7 @@ public class CarritoService
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                $"/carritos/{_carrito.Id}/confirmar",
+                $"/carritos/{Carrito.Id}/confirmar",
                 compraDto,
                 _jsonOptions
             );
@@ -227,7 +239,7 @@ public class CarritoService
                 return;
             }
             response.EnsureSuccessStatusCode();
-            _carrito = null; // Limpiar el carrito después de confirmar la compra
+            Carrito = null; // Limpiar el carrito después de confirmar la compra
             _notificationService.ShowSuccess("Compra confirmada exitosamente.");
             NotificarCambio();
         }
@@ -241,7 +253,7 @@ public class CarritoService
     {
         try
         {
-            var response = await _httpClient.DeleteAsync($"/carritos/{_carrito.Id}");
+            var response = await _httpClient.DeleteAsync($"/carritos/{Carrito.Id}");
             if (
                 response.StatusCode == System.Net.HttpStatusCode.NotFound
                 || response.StatusCode == System.Net.HttpStatusCode.BadRequest
@@ -268,7 +280,7 @@ public class CarritoService
             }
             response.EnsureSuccessStatusCode();
             _notificationService.ShowInfo("Carrito vaciado exitosamente.");
-            _carrito.Items = new List<ItemCarrito>(); // Limpiar los items del carrito
+            Carrito.Items = new List<ItemCarrito>(); // Limpiar los items del carrito
             NotificarCambio();
         }
         catch (Exception ex)
