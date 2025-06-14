@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using cliente.Models; 
+using cliente.Services; 
 
 namespace cliente.Services 
 {
@@ -33,7 +34,7 @@ namespace cliente.Services
             if (newCart != null)
             {
                 _currentCartId = newCart.Id;
-                _cartStateService.SetCartId(newCart.Id); 
+                _cartStateService.SetCartId(newCart.Id);
                 return newCart.Id;
             }
             throw new Exception("No se pudo inicializar el carrito.");
@@ -71,70 +72,6 @@ namespace cliente.Services
             response.EnsureSuccessStatusCode();
             _cartStateService.SetCartId(null); 
             return await response.Content.ReadFromJsonAsync<Compra>() ?? throw new Exception("Error al confirmar la compra.");
-        }
-
-        public class CartStateService
-        {
-            private readonly HttpClient _httpClient; 
-
-            public event Action? OnCartItemCountChanged;
-            public event Action? OnCartIdChanged;
-
-            private int _itemCount = 0;
-            private int? _cartId = null;
-
-            public CartStateService(HttpClient httpClient) 
-            {
-                _httpClient = httpClient;
-            }
-
-            public int ItemCount
-            {
-                get => _itemCount;
-                private set
-                {
-                    if (_itemCount != value)
-                    {
-                        _itemCount = value;
-                        OnCartItemCountChanged?.Invoke();
-                    }
-                }
-            }
-
-            public int? CartId
-            {
-                get => _cartId;
-                private set
-                {
-                    if (_cartId != value)
-                    {
-                        _cartId = value;
-                        OnCartIdChanged?.Invoke();
-                    }
-                }
-            }
-
-            public void SetCartId(int? id)
-            {
-                CartId = id;
-                if (id == null)
-                {
-                    ItemCount = 0; 
-                }
-            }
-
-            public async Task UpdateCartItemCount(int cartId)
-            {
-                try
-                {
-                    var response = await _httpClient.GetFromJsonAsync<List<CarritoItemDto>>($"http://localhost:5184/carritos/{cartId}");
-                    ItemCount = response?.Sum(item => item.Cantidad) ?? 0;
-                }
-                catch (Exception)
-                {
-                    ItemCount = 0; 
-                }
-            }
         }
     }
 }

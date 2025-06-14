@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization; 
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -49,7 +48,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -58,12 +56,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseCors("AllowClientApp");
+
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();
+
+
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
 
 app.MapGet("/productos", async (string? query, AppDbContext db) =>
 {
@@ -83,13 +86,12 @@ app.MapPost("/carritos", async (AppDbContext db) =>
     await db.SaveChangesAsync();
     return Results.Created($"/carritos/{newCart.Id}", newCart);
 });
-
 app.MapGet("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
 {
     var cart = await db.Compras
-                       .Include(c => c.Items)
-                       .ThenInclude(ic => ic.Producto)
-                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                        .Include(c => c.Items)
+                        .ThenInclude(ic => ic.Producto) // Asegurar que Producto se carga
+                        .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
 
     if (cart == null)
     {
@@ -108,76 +110,149 @@ app.MapGet("/carritos/{carritoId}", async (int carritoId, AppDbContext db) =>
     }));
 });
 
+app.MapGet("/carritos/{carritoId}/productos/{productoId}", async (int carritoId, int productoId, AppDbContext db) =>
+{
+    try
+    {
+        var cart = await db.Compras
+                            .Include(c => c.Items)
+                            .ThenInclude(ic => ic.Producto)
+                            .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+
+        if (cart == null)
+        {
+            return Results.NotFound("Carrito no encontrado o ya confirmado.");
+        }
+
+        var item = cart.Items.FirstOrDefault(i => i.ProductoId == productoId);
+
+        if (item == null)
+        {
+            return Results.NotFound($"Producto con ID {productoId} no encontrado en el carrito {carritoId}.");
+        }
+
+        return Results.Ok(new
+        {
+            item.Id,
+            item.ProductoId,
+            ProductoNombre = item.Producto?.Nombre,
+            item.Cantidad,
+            item.PrecioUnitario,
+            ProductoImagenUrl = item.Producto?.ImagenUrl,
+            ProductoStock = item.Producto?.Stock
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"--- ERROR EN GET /carritos/{carritoId}/productos/{productoId} ---");
+        Console.WriteLine($"Mensaje: {ex.Message}");
+        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+            Console.WriteLine($"Inner Exception Stack Trace: {ex.InnerException.StackTrace}");
+        }
+        Console.WriteLine("-------------------------------------------------");
+        return Results.StatusCode(500); 
+    }
+});
+
+
 app.MapPut("/carritos/{carritoId}/{productoId}", async (int carritoId, int productoId, [FromBody] int cantidad, AppDbContext db) =>
 {
-    if (cantidad <= 0)
+    try
     {
-        return Results.BadRequest("La cantidad debe ser mayor que cero.");
-    }
-
-    var cart = await db.Compras
-                       .Include(c => c.Items)
-                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
-    if (cart == null)
-    {
-        return Results.NotFound("Carrito no encontrado o ya confirmado.");
-    }
-
-    var producto = await db.Productos.FindAsync(productoId);
-    if (producto == null)
-    {
-        return Results.NotFound("Producto no encontrado.");
-    }
-
-    var cartItem = cart.Items.FirstOrDefault(item => item.ProductoId == productoId);
-
-    if (cartItem == null)
-    {
-        if (producto.Stock < cantidad)
+        if (cantidad <= 0)
         {
-            return Results.BadRequest($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}");
+            return Results.BadRequest("La cantidad debe ser mayor que cero.");
         }
-        cart.Items.Add(new ItemCompra
-        {
-            ProductoId = productoId,
-            Cantidad = cantidad,
-            PrecioUnitario = producto.Precio
-        });
-        producto.Stock -= cantidad; 
-    }
-    else
-    {
-        int oldQuantity = cartItem.Cantidad;
-        int quantityDifference = cantidad - oldQuantity;
 
-        if (producto.Stock < quantityDifference)
+        var cart = await db.Compras
+                            .Include(c => c.Items)
+                            .ThenInclude(ic => ic.Producto) 
+                            .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+
+        if (cart == null)
         {
-            return Results.BadRequest($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}");
+            return Results.NotFound("Carrito no encontrado o ya confirmado.");
         }
-        cartItem.Cantidad = cantidad;
-        producto.Stock -= quantityDifference; 
-        cartItem.PrecioUnitario = producto.Precio; 
-    }
 
-    cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
-    await db.SaveChangesAsync();
-    return Results.Ok(cart.Items.Select(item => new
+        var producto = await db.Productos.FindAsync(productoId);
+        if (producto == null)
+        {
+            return Results.NotFound("Producto no encontrado.");
+        }
+
+        var cartItem = cart.Items.FirstOrDefault(item => item.ProductoId == productoId);
+
+        if (cartItem == null)
+        {
+            if (producto.Stock < cantidad)
+            {
+                return Results.BadRequest($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}");
+            }
+
+            var newItem = new ItemCompra
+            {
+                ProductoId = productoId,
+                Producto = producto, 
+                Cantidad = cantidad,
+                PrecioUnitario = producto.Precio
+            };
+            cart.Items.Add(newItem);
+            producto.Stock -= cantidad; 
+        }
+        else
+        {
+            int oldQuantity = cartItem.Cantidad;
+            int quantityDifference = cantidad - oldQuantity; 
+
+            if (producto.Stock < quantityDifference)
+            {
+                return Results.BadRequest($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}. Intentando añadir: {quantityDifference}");
+            }
+
+            cartItem.Cantidad = cantidad; 
+            producto.Stock -= quantityDifference; 
+            cartItem.PrecioUnitario = producto.Precio; 
+        }
+
+        cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(cart.Items.Select(item => new
+        {
+            item.Id,
+            item.ProductoId,
+            ProductoNombre = item.Producto?.Nombre, 
+            item.Cantidad,
+            item.PrecioUnitario,
+            ProductoImagenUrl = item.Producto?.ImagenUrl,
+            ProductoStock = item.Producto?.Stock
+        }));
+    }
+    catch (Exception ex)
     {
-        item.Id,
-        item.ProductoId,
-        ProductoNombre = item.Producto?.Nombre, 
-        item.Cantidad,
-        item.PrecioUnitario,
-        ProductoImagenUrl = item.Producto?.ImagenUrl,
-        ProductoStock = item.Producto?.Stock
-    }));
+        Console.WriteLine($"--- ERROR EN PUT /carritos/{carritoId}/{productoId} ---");
+        Console.WriteLine($"Mensaje: {ex.Message}");
+        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+            Console.WriteLine($"Inner Exception Stack Trace: {ex.InnerException.StackTrace}");
+        }
+        Console.WriteLine("-------------------------------------------------");
+        return Results.StatusCode(500); 
+    }
 });
 
 app.MapDelete("/carritos/{carritoId}/{productoId}", async (int carritoId, int productoId, AppDbContext db) =>
 {
     var cart = await db.Compras
-                       .Include(c => c.Items)
-                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                         .Include(c => c.Items)
+                         .ThenInclude(ic => ic.Producto) 
+                         .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
     if (cart == null)
     {
         return Results.NotFound("Carrito no encontrado o ya confirmado.");
@@ -198,14 +273,24 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", async (int carritoId, int pr
     cart.Items.Remove(cartItem);
     cart.Total = cart.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
     await db.SaveChangesAsync();
-    return Results.Ok(cart.Items);
+    return Results.Ok(cart.Items.Select(item => new
+    {
+        item.Id,
+        item.ProductoId,
+        ProductoNombre = item.Producto?.Nombre,
+        item.Cantidad,
+        item.PrecioUnitario,
+        ProductoImagenUrl = item.Producto?.ImagenUrl,
+        ProductoStock = item.Producto?.Stock
+    }));
 });
 
 app.MapDelete("/carritos/{carritoId}/vaciar", async (int carritoId, AppDbContext db) =>
 {
     var cart = await db.Compras
-                       .Include(c => c.Items)
-                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                         .Include(c => c.Items)
+                         .ThenInclude(ic => ic.Producto) 
+                         .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
     if (cart == null)
     {
         return Results.NotFound("Carrito no encontrado o ya confirmado.");
@@ -229,8 +314,8 @@ app.MapDelete("/carritos/{carritoId}/vaciar", async (int carritoId, AppDbContext
 app.MapPut("/carritos/{carritoId}/confirmar", async (int carritoId, CompraConfirmationDto confirmationData, AppDbContext db) =>
 {
     var cart = await db.Compras
-                       .Include(c => c.Items)
-                       .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
+                         .Include(c => c.Items)
+                         .FirstOrDefaultAsync(c => c.Id == carritoId && c.Status == "Pending");
     if (cart == null)
     {
         return Results.NotFound("Carrito no encontrado o ya confirmado.");

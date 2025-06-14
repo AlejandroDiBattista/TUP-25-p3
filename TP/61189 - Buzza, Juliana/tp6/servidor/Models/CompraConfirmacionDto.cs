@@ -1,20 +1,20 @@
-    // servidor/Models/CompraConfirmationDto.cs
-    using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-    namespace servidor.Models // Asegúrate de que el namespace sea 'servidor.Models'
+namespace servidor.Models 
+{
+    public class CompraConfirmationDto
     {
-        public class CompraConfirmationDto
-        {
-            [Required]
-            [MaxLength(100)]
-            public string NombreCliente { get; set; } = string.Empty;
-            [Required]
-            [MaxLength(100)]
-            public string ApellidoCliente { get; set; } = string.Empty;
-            [Required]
-            [MaxLength(100)]
-            [EmailAddress]
-            public string EmailCliente { get; set; } = string.Empty;
-        }
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El nombre no puede exceder los 100 caracteres.")]
+        public string NombreCliente { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El apellido no puede exceder los 100 caracteres.")]
+        public string ApellidoCliente { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El email es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Formato de email inválido.")]
+        [StringLength(100, ErrorMessage = "El email no puede exceder los 100 caracteres.")]
+        public string EmailCliente { get; set; } = string.Empty;
     }
-    
+}

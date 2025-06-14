@@ -17,7 +17,7 @@
 }
 
 .bg-beige {
-    background-color: #F5EFE6; 
+    background-color: #F5EFE6;
 }
 
 .bg-brown {
@@ -29,7 +29,7 @@
 }
 
 .hover\:text-darkbrown:hover {
-    color: #7A5B42; 
+    color: #7A5B42;
 }
 
 .bg-brown-dark {
@@ -40,24 +40,11 @@
     background-color: #D36C2F; 
 }
 
-@keyframes bounce {
-    0%, 100% {
-    transform: translateY(0);
-    }
-    50% {
-    transform: translateY(-3px);
-    }
-}
-
-.animate-bounce {
-    animation: bounce 0.8s infinite;
-}
-
 input[type="text"]::placeholder {
-    color: #B0A290; 
-    opacity: 0.8;
+  color: #B0A290; 
+  opacity: 0.8;
 }
 
 input[type="text"]:focus {
-    border-color: #D36C2F; 
+  border-color: #D36C2F; 
 }
