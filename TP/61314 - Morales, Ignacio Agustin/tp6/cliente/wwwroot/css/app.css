@@ -88,27 +88,269 @@ a, .btn-link {
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
+body {
+    background-color: #111;
+    color: #726d6d;
+    margin: 0;
+    padding: 0;
+}
 
-.loading-progress-text {
-    position: absolute;
+h1.titulo-catalogo {
     text-align: center;
+    color: #030303;
+    margin: 2rem 0;
+    font-size: 2rem;
+}
+
+
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.card-producto {
+    background-color: #0e0d0d;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.card-producto:hover {
+    transform: translateY(-5px);
+}
+
+
+.card-producto img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.card-producto h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.card-producto p {
+    margin: 0.3rem 0;
+    font-size: 0.95rem;
+    color: #ccc;
+}
+
+.boton-agregar {
+    background-color: #0071e3;
+    color: white;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
     font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    width: 100%;
+    transition: background-color 0.3s ease;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
-
-code {
-    color: #c02d76;
+.boton-agregar:hover {
+    background-color: #005bb5;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
+.boton-agregar:disabled {
+    background-color: #555;
+    cursor: not-allowed;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
+.alerta-exito {
+    background-color: #2e7d32;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+    margin: 1rem auto;
+    max-width: 400px;
+}
+
+
+.mensaje-agregado {
+    color: #4caf50;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.titulo-carrito {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 20px auto;  
+    text-align: center;
+    color: #1c1c1e;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.tabla-carrito {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #fcf5f5;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(46, 28, 28, 0.1);
+}
+
+.tabla-carrito th, .tabla-carrito td {
+    padding: 7px;
+    text-align: center;
+    border-bottom: 1px solid #131212;
+    font-size: 1rem;
+}
+
+.tabla-carrito th {
+    background-color: #070707;
+    color: #ffe7e7;
+}
+
+.tabla-carrito button {
+    background-color: #fcfcfc;
+    color: rgb(0, 0, 0);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.tabla-carrito button:hover {
+    background-color: #005fa3;
+}
+
+.total {
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-align: right;
+    margin-right: 5%;
+    color: #1c1c1c;
+}
+
+.acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 20px 5% 40px 0;
+}
+
+.boton-vaciar {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.boton-vaciar:hover {
+    background-color: #b02a37;
+}
+
+.boton-confirmar {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.boton-confirmar:hover {
+    background-color: #218838;
+}
+
+.titulo-confirmacion {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #020202;
+}
+
+.resumen-compra {
+    background-color: #1f1f1f;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #ddd;
+    font-size: 1.1rem;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    margin: auto;
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.formulario label {
+    color: #ccc;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.formulario input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+.boton-confirmar {
+    margin-top: 15px;
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.boton-confirmar:hover {
+    background-color: #218838;
+}
+
+.validation-message {
+    color: #ff4d4d;
+    font-size: 0.9rem;
+}
+.confirmacion-exitosa {
+    color: #28a745;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.input-busqueda {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    margin: 20px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
 }

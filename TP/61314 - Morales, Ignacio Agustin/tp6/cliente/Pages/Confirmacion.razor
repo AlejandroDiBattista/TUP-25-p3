@@ -1,0 +1,72 @@
+@using cliente.Models
+@using cliente.Services
+@using System.ComponentModel.DataAnnotations
+@page "/confirmacion"
+@inject NavigationManager Navigation
+@inject CarritoService micarrito
+
+<h2 class="titulo-confirmacion">Confirmación de Compra</h2>
+
+@if (!micarrito.Items.Any())
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <div class="resumen-compra">
+        <p><strong>Total de productos:</strong> @micarrito.Items.Sum(i => i.Cantidad)</p>
+        <p><strong>Importe total:</strong> $@micarrito.Items.Sum(i => i.Producto.Precio * i.Cantidad)</p>
+    </div>
+
+    <EditForm Model="formulario" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="formulario">
+            <label>Nombre:</label>
+            <InputText @bind-Value="formulario.Nombre" />
+            <ValidationMessage For="@(() => formulario.Nombre)" />
+
+            <label>Apellido:</label>
+            <InputText @bind-Value="formulario.Apellido" />
+            <ValidationMessage For="@(() => formulario.Apellido)" />
+
+            <label>Email:</label>
+            <InputText @bind-Value="formulario.Email" />
+            <ValidationMessage For="@(() => formulario.Email)" />
+        </div>
+
+        <button type="submit" class="boton-confirmar">Confirmar compra</button>
+    </EditForm>
+    @if (compraConfirmada)
+{
+    <p class="confirmacion-exitosa">¡Gracias por tu compra!</p>
+}
+}
+
+@code {
+    
+
+    public class FormularioCompra
+    {
+        [Required]
+        public string Nombre { get; set; }
+        [Required]
+        public string Apellido { get; set; }
+        [Required, EmailAddress]
+        public string Email { get; set; }
+    }
+    FormularioCompra formulario = new();
+
+    bool compraConfirmada = false;
+
+    void ConfirmarCompra()
+  {
+    micarrito.Vaciar();
+    compraConfirmada = true;
+    Navigation.NavigateTo("/home");
+  }
+
+
+}
+
