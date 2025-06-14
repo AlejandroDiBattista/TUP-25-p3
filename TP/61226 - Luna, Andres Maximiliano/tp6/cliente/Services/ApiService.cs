@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http;
 using cliente.Models;
 
 namespace cliente.Services;
@@ -10,6 +11,26 @@ public class ApiService
     public ApiService(HttpClient httpClient)
     {
         _httpClient = httpClient;
+    }
+
+
+    public async Task<List<Producto>> ObtenerProductosAsync()
+    {
+        Console.WriteLine("Llamando a /productos");
+
+        try
+        {
+            var response = await _httpClient.GetAsync("/productos");
+
+            response.EnsureSuccessStatusCode();
+            var productos = await response.Content.ReadFromJsonAsync<List<Producto>>();
+            return productos ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener productos: {ex.Message}");
+            return new List<Producto>();
+        }
     }
 
     public async Task<DatosRespuesta> ObtenerDatosAsync()
@@ -25,9 +46,6 @@ public class ApiService
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
     }
-    public async Task<List<Producto>> ObtenerProductosAsync()
-    {
-        var respuesta = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
-        return respuesta ?? new List<Producto>();
-    }
+
+    
 }

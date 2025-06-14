@@ -86,4 +86,6 @@ app.MapPost("/api/carrito", async (AppDbContext db, Carrito item) =>
     return Results.Created($"/api/carrito/{item.Id}", item);
 });
 
+
+
 app.Run();

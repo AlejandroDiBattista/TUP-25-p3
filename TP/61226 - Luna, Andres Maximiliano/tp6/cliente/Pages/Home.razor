@@ -3,15 +3,32 @@
 @using cliente.Models
 @inject ApiService ApiService
 @inject CarritoService CarritoService
+ 
 
 <PageTitle>Productos</PageTitle>
 
 
-<div class="row">
-    @if (productos != null && productos.Any())
-    {
-        @foreach (var producto in productos)
-        {
+<h2>Productos</h2>
+
+@if (!string.IsNullOrWhiteSpace(error))
+{
+    <div class="alert alert-danger">
+        Error : @error
+    </div>
+}
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <p>No hay productos disponibles.</p>
+}
+
+    <div class="row">
+    @foreach (var producto in productos)
+    {        
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
@@ -20,52 +37,44 @@
                         <p class="card-text">@producto.Descripcion</p>
                         <p class="card-text text-muted">Stock disponible: @producto.Stock</p>
                         <p class="card-text fw-bold">$@producto.Precio</p>
-                        <button class="btn btn-primary">Agregar al carrito</button>
+                        <button class="btn btn-primary" @onclick="() => AgregarProducto(producto)">Agregar al carrito</button>
                     </div>
                 </div>
-            </div>
-        }
-    }
-    else
-    {
-        <p>No hay productos disponibles.</p>
+            </div>        
     }
 </div>
-
-void AgregarProducto(Producto producto)
-{
-    CarritoService.AgregarAlCarrito(producto);
-}
 
 
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    private List<Producto> productos = new(); 
+        private DatosRespuesta datos;
+        private string error;
+        private bool cargando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
             cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+            Console.WriteLine("Inicio de OnInitializedAsync");
+            productos = await ApiService.ObtenerProductosAsync();
+            Console.WriteLine($"Cantidad de productos: {productos.Count}");
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
-            datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }
 
-    private List<Producto> productos = new();
-
-        protected override async Task OnInitializedAsync() {
-            productos = await ApiService.ObtenerProductosAsync();       
+    void AgregarProducto(Producto producto)
+    {
+        CarritoService.AgregarAlCarrito(producto);
     }
-
-void AgregarProducto(Producto producto)
-{
-    CarritoService.AgregarAlCarrito(producto);
-}
-
 }

@@ -10,3 +10,18 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+<ErrorBoundary>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>Lo sentimos, no se encontró la página.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</ErrorBoundary>
+
