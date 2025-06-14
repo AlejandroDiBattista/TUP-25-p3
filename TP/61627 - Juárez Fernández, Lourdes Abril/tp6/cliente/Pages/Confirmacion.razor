@@ -1,0 +1,122 @@
+@page "/confirmacion"
+@using cliente.Services
+@using cliente.Models
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:56px; height:56px;">
+            <i class="bi bi-bag-check" style="font-size:2rem;"></i>
+        </div>
+        <h2 class="fw-bold mb-1">¡Confirmación de Compra!</h2>
+        <div class="text-muted">Revisa y confirma tus datos antes de finalizar</div>
+    </div>
+
+    @if (carrito == null)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-success" role="status"></div>
+            <div class="mt-3">Cargando información...</div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3 text-success"><i class="bi bi-receipt"></i> Resumen de Compra</h4>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Total de productos:</span>
+                                <span class="fw-bold">@((carrito.Items != null ? carrito.Items.Sum(i => i.Cantidad) : 0))</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>Importación total:</span>
+                                <span class="fw-bold text-success fs-5">
+                                    $@(carrito.Total.ToString("N2", new System.Globalization.CultureInfo("es-AR")))
+                                </span>
+                            </li>
+                        </ul>
+                        <h5 class="fw-bold mb-2">Detalle de la Compra</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-end">Precio Unitario</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in carrito.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="fw-bold">@item.Producto.Nombre</span>
+                                                <div class="text-muted small">@item.Producto.Descripcion</div>
+                                            </td>
+                                            <td class="text-end">
+                                                $@item.PrecioUnitario.ToString("N2", new System.Globalization.CultureInfo("es-AR"))
+                                            </td>
+                                            <td class="text-end">
+                                                $@((item.Cantidad * item.PrecioUnitario).ToString("N2", new System.Globalization.CultureInfo("es-AR")))
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3 text-primary"><i class="bi bi-person-circle"></i> Datos del Cliente</h4>
+                        <EditForm Model="carrito" OnValidSubmit="ConfirmarCompra">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre:</label>
+                                <InputText id="nombre" @bind-Value="carrito.NombreCliente" class="form-control" />
+                                <ValidationMessage For="@(() => carrito.NombreCliente)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="apellido" class="form-label">Apellido:</label>
+                                <InputText id="apellido" @bind-Value="carrito.ApellidoCliente" class="form-control" />
+                                <ValidationMessage For="@(() => carrito.ApellidoCliente)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <InputText id="email" @bind-Value="carrito.EmailCliente" class="form-control" />
+                                <ValidationMessage For="@(() => carrito.EmailCliente)" />
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold">
+                                <i class="bi bi-check-circle"></i> Confirmar Compra
+                            </button>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private Compra carrito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarritoService.InitializeCarrito();
+        carrito = await CarritoService.GetCarritoAsync();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        await CarritoService.ConfirmarCompra(carrito);
+        Navigation.NavigateTo("/");
+    }
+}

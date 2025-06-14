@@ -112,3 +112,12 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.catalogo-card {
+    border-radius: 18px;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.catalogo-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+    transform: translateY(-4px) scale(1.02);
+}
