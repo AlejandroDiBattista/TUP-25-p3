@@ -57,6 +57,17 @@ app.MapPost("/carritos", async (TiendaDbContext db) =>
     await db.SaveChangesAsync();
     return Results.Ok(new { carritoId = compra.Id });
 });
+app.MapGet("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.Articulos)
+        .ThenInclude(a => a.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (compra == null) return Results.NotFound();
+
+    return Results.Ok(compra);
+});
 
 using (var scope = app.Services.CreateScope())
 {
