@@ -58,3 +58,7 @@ else
     private List<ItemCarrito>? ItemsCarrito;
     private decimal Total = 0;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
