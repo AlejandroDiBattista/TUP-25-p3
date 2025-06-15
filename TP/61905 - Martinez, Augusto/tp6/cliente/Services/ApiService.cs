@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-
-namespace cliente.Services;
+using Cliente.Models;
+namespace Cliente.Services;
 
 public class ApiService {
     private readonly HttpClient _httpClient;
@@ -9,18 +9,19 @@ public class ApiService {
         _httpClient = httpClient;
     }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
+public async Task<List<Producto>> ObtenerProductosAsync() {
         try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/api/productos");
+            return productos ?? new List<Producto>();
         } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
+            Console.WriteLine($"Error al obtener productos: {ex.Message}");
+            return new List<Producto>();
         }
-    }
-}
+}    
 
 public class DatosRespuesta {
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
+
+    }
 }
