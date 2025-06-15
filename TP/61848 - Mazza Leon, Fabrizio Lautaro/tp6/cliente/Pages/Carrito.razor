@@ -82,7 +82,6 @@
             StateHasChanged();
         }
     }
-
     private CompraFormulario formulario = new();
     public void VaciarCarrito()
     {
@@ -92,7 +91,7 @@
     public async Task ConfirmarCompra()
     {
 
-        formulario.CarritoId = 1;
+        formulario.CarritoId = CarritoService.CarritoId;
 
         var exito = await ApiService.ConfirmarCompraAsync(CarritoService.Items, formulario);
         
