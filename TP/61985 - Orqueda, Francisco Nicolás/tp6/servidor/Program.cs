@@ -132,9 +132,12 @@ app.MapPost("/algo", ([FromServices] TiendaContext db) => {
 });
 
 // Endpoint de ejemplo para productos (no necesario si ya tienes /api/productos)
-app.MapGet("/productos", ([FromServices] TiendaContext db) =>
+app.MapGet("/productos", async ([FromQuery] string? q, [FromServices] TiendaContext db) =>
 {
-    return db.Productos.ToList();
+    var productos = db.Productos.AsQueryable();
+    if (!string.IsNullOrWhiteSpace(q))
+        productos = productos.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
+    return await productos.ToListAsync();
 });
 
 // Diccionario en memoria para simular carritos (puedes mejorar esto con EF)
@@ -234,12 +237,32 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (Guid carritoId, [FromBody] 
         }).ToList()
     };
 
+    // RESTA STOCK AQUÍ:
+    foreach (var item in items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto != null)
+        {
+            producto.Stock -= item.Cantidad;
+            if (producto.Stock < 0) producto.Stock = 0;
+        }
+    }
+
     db.Compras.Add(compra);
     await db.SaveChangesAsync();
 
     items.Clear();
 
     return Results.Ok();
+});
+
+app.MapPut("/productos/{id}/sumar-stock", async (int id, [FromBody] int cantidad, [FromServices] TiendaContext db) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto == null) return Results.NotFound();
+    producto.Stock += cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
 });
 
 

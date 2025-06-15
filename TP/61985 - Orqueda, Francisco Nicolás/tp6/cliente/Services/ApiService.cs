@@ -187,6 +187,12 @@ namespace cliente.Services
             _carritoId = id ?? Guid.NewGuid();
             return _carritoId.Value;
         }
+
+        public async Task<bool> SumarStockProductoAsync(int productoId, int cantidad)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/productos/{productoId}/sumar-stock", cantidad);
+            return response.IsSuccessStatusCode;
+        }
     }
 
     public class DatosRespuesta

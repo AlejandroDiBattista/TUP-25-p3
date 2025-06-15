@@ -1,10 +1,12 @@
 ﻿@page "/"
+@using cliente.Models
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="bg-gradient-primary-to-secondary py-5">
+<div class="bg-gradient-primary-to-secondary py-5 mb-4">
     <div class="container text-center text-white">
         <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" alt="Logo" style="width:90px; margin-bottom: 1rem;" />
         <h1 class="display-3 fw-bold mb-3">¡Bienvenido a Tu Tienda Online!</h1>
@@ -12,69 +14,148 @@
             Descubre los mejores productos, agrégalos a tu carrito y realiza tu compra de forma fácil y segura.
         </p>
         <div class="mb-4">
-            <a href="/catalogo" class="btn btn-lg btn-warning mx-2 shadow">Ver Catálogo</a>
             <a href="/carrito" class="btn btn-lg btn-outline-light mx-2 shadow">Ir al Carrito</a>
+            <a href="/compras" class="btn btn-lg btn-outline-light mx-2 shadow">Mis Compras</a>
         </div>
-        <button class="btn btn-info btn-sm" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
     </div>
 </div>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            @if (cargando)
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <input class="form-control form-control-lg" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." />
+        </div>
+    </div>
+    @if (productos is null)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div>Cargando productos...</div>
+        </div>
+    }
+    else if (!productos.Any())
+    {
+        <div class="alert alert-warning text-center">No hay productos disponibles.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var prod in productos)
             {
-                <div class="alert alert-info">Cargando datos...</div>
-            }
-            else if (datos != null)
-            {
-                <div class="card border-success shadow">
-                    <div class="card-header bg-success text-white">
-                        Respuesta del servidor
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="@prod.ImagenUrl" class="card-img-top" style="height:220px;object-fit:cover;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@prod.Nombre</h5>
+                            <p class="card-text text-muted">@prod.Descripcion</p>
+                            <div class="mt-auto">
+                                <span class="badge bg-success mb-2">Stock: @prod.Stock</span>
+                                <h4 class="text-primary mb-3">$@prod.Precio</h4>
+                                <button class="btn btn-primary w-100 mb-2" @onclick="() => AgregarAlCarrito(prod.Id)" disabled="@(@prod.Stock == 0)">
+                                    <i class="bi bi-cart-plus"></i> Agregar al carrito
+                                </button>
+                                @if (esAdmin)
+                                {
+                                    <button class="btn btn-outline-success btn-sm w-100" @onclick="() => SumarStock(prod.Id, 5)">
+                                        <i class="bi bi-plus-circle"></i> +5 Stock
+                                    </button>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            }
-            else if (error != null)
-            {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
 </div>
+
+@if (!esAdmin)
+{
+    <div class="container mt-4">
+        <EditForm Model="loginModel" OnValidSubmit="LoginAdmin">
+            <div class="input-group w-auto mx-auto" style="max-width:300px;">
+                <InputText @bind-Value="loginModel.Password" type="password" placeholder="Contraseña admin" class="form-control" />
+                <button class="btn btn-warning" type="submit">Entrar como administrador</button>
+            </div>
+        </EditForm>
+    </div>
+}
+else
+{
+    <div class="container mt-4 text-center">
+        <div class="alert alert-success d-inline-block py-1 px-2 mb-2">Modo administrador activo</div>
+        <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="()=> esAdmin = false">Salir</button>
+    </div>
+}
 
 <style>
 .bg-gradient-primary-to-secondary {
     background: linear-gradient(90deg, #007bff 0%, #6f42c1 100%);
 }
+.card-title {
+    font-weight: 600;
+}
+.card {
+    transition: transform 0.15s;
+}
+.card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
 </style>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
-
-    private async Task ObtenerDatosDelServidor()
+    private string _busqueda = "";
+    string busqueda
     {
-        try
+        get => _busqueda;
+        set
         {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
+            if (_busqueda != value)
+            {
+                _busqueda = value;
+                _ = Buscar();
+            }
         }
-        catch (Exception ex)
+    }
+
+    List<Producto> productos = new();
+
+    bool esAdmin = false;
+
+    class LoginModel { public string Password { get; set; } = ""; }
+    LoginModel loginModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    async Task Buscar()
+    {
+        productos = await ApiService.ObtenerProductosAsync(busqueda);
+        StateHasChanged();
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        var carritoId = await ApiService.ObtenerOCrearCarritoIdAsync();
+        await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, 1);
+        NavigationManager.NavigateTo("/carrito");
+    }
+
+    async Task SumarStock(int productoId, int cantidad)
+    {
+        await ApiService.SumarStockProductoAsync(productoId, cantidad);
+        productos = await ApiService.ObtenerProductosAsync();
+    }
+
+    void LoginAdmin()
+    {
+        if (loginModel.Password == "admin123")
         {
-            error = ex.Message;
-            datos = null;
-        }
-        finally
-        {
-            cargando = false;
+            esAdmin = true;
+            loginModel.Password = "";
         }
     }
 }

@@ -50,6 +50,8 @@ else
     <button @onclick="ConfirmarCompra">Confirmar compra</button>
 }
 
+<button class="btn btn-secondary mb-3" @onclick="VolverAlCatalogo">Volver al Inicio</button>
+
 @code {
     List<CarritoItem>? items;
     Guid carritoId;
@@ -84,4 +86,6 @@ else
         // Redirige a la página de confirmación
         NavigationManager.NavigateTo($"/confirmar-compra/{carritoId}");
     }
+
+    void VolverAlCatalogo() => NavigationManager.NavigateTo("/");
 }

@@ -66,6 +66,8 @@ else
     <div class="alert alert-info mt-3">@mensaje</div>
 }
 
+<button class="btn btn-secondary" @onclick="VolverAlCatalogo">Volver al Inicio</button>
+
 @code {
     [Parameter]
     public Guid carritoId { get; set; }
@@ -93,4 +95,6 @@ else
             mensaje = "Ocurrió un error al confirmar la compra.";
         }
     }
+
+    void VolverAlCatalogo() => NavigationManager.NavigateTo("/");
 }
