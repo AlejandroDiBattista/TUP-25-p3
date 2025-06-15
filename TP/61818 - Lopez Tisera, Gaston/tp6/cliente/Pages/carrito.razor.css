@@ -1,0 +1,67 @@
+.carrito-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+}
+.carrito-card {
+    width: 100%;
+    max-width: 900px;
+    padding: 2.5rem 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 0 32px 0 rgba(0,0,0,0.10);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* <-- Esto centra horizontalmente el contenido */
+}
+.carrito-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+.carrito-table th, .carrito-table td {
+    font-size: 1.3rem;
+    padding: 1rem 0.75rem;
+}
+.carrito-table th {
+    background: #f1f3f6;
+}
+.carrito-total {
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+.carrito-btn {
+    font-size: 1.2rem;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+}
+.form-card {
+    background: #f7f9fb;
+    border-radius: 1rem;
+    padding: 2rem 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 12px 0 rgba(0,0,0,0.06);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.form-label {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.form-control-lg {
+    font-size: 1.3rem;
+    padding: 1rem 1.2rem;
+    border-radius: 0.7rem;
+}
+.form-group {
+    margin-bottom: 1.5rem;
+}
+.alert {
+    font-size: 1.2rem;
+}

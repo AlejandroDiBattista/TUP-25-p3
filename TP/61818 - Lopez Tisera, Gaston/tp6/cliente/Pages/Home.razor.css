@@ -1,0 +1,64 @@
+.home-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    padding-left: 3vw;
+    padding-right: 3vw;
+}
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 2.5rem;
+}
+.producto-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 0 24px 0 rgba(0,0,0,0.08);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: transform 0.15s;
+}
+.producto-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 0 32px 0 rgba(0,0,0,0.13);
+}
+.producto-nombre {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #0d6efd;
+}
+.producto-descripcion {
+    font-size: 1.15rem;
+    color: #555;
+    margin-bottom: 1.2rem;
+}
+.producto-precio {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #198754;
+    margin-bottom: 0.7rem;
+}
+.producto-stock {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 1.2rem;
+}
+.agregar-btn {
+    font-size: 1.15rem;
+    padding: 0.7rem 2.2rem;
+    border-radius: 0.8rem;
+    background: #0d6efd;
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+.agregar-btn:hover {
+    background: #0b5ed7;
+}

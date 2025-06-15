@@ -1,0 +1,181 @@
+@page "/carrito"
+@using Cliente.Services
+@using Cliente.Modelos
+@using System.ComponentModel.DataAnnotations
+@inject CarritoService CarritoService
+@inject HttpClient Http
+
+<div class="carrito-container">
+    <div class="carrito-card">
+        <h3 class="carrito-title text-primary"><i class="bi bi-cart4"></i> Carrito de compras</h3>
+
+        @if (items.Count == 0)
+        {
+            <div class="alert alert-info text-center">
+                <i class="bi bi-emoji-frown"></i> Tu carrito está vacío.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive mb-4">
+                <table class="table carrito-table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-box-seam me-2 text-secondary"></i>
+                                        <span style="font-size:1.2rem">@item.Producto.Nombre</span>
+                                    </div>
+                                </td>
+                                <td>$@item.Producto.Precio</td>
+                                <td>@item.Cantidad</td>
+                                <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="carrito-total">Total: <span class="text-success fw-bold">$@total</span></span>
+                <button class="btn btn-outline-danger carrito-btn" @onclick="Limpiar">
+                    <i class="bi bi-trash"></i> Vaciar carrito
+                </button>
+            </div>
+
+            <div class="form-card">
+                <h4 class="mb-4 text-secondary text-center"><i class="bi bi-credit-card"></i> Confirmar compra</h4>
+                <EditForm Model="@formulario" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label class="form-label">Nombre</label>
+                        <InputText @bind-Value="formulario.Nombre" class="form-control form-control-lg" />
+                        <ValidationMessage For="@(() => formulario.Nombre)" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Apellido</label>
+                        <InputText @bind-Value="formulario.Apellido" class="form-control form-control-lg" />
+                        <ValidationMessage For="@(() => formulario.Apellido)" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <InputText @bind-Value="formulario.Email" class="form-control form-control-lg" />
+                        <ValidationMessage For="@(() => formulario.Email)" />
+                    </div>
+                    <button class="btn btn-success carrito-btn w-100 mt-3" type="submit">
+                        <i class="bi bi-bag-check"></i> Confirmar compra
+                    </button>
+                </EditForm>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div class="alert alert-info mt-3 text-center">
+                @mensaje
+            </div>
+        }
+    </div>
+</div>
+@code {
+    private List<CarritoItem> items = new();
+    private decimal total;
+    private FormularioCompra formulario = new();
+    private string mensaje = "";
+    private string carritoId = "";
+
+   protected override async void OnInitialized()
+{
+    items = CarritoService.ObtenerItems();
+    total = CarritoService.CalcularTotal();
+
+    try
+    {
+        var response = await Http.PostAsync("carritos", null);
+        if (response.IsSuccessStatusCode)
+        {   
+            carritoId = await response.Content.ReadAsStringAsync();
+            carritoId = carritoId.Trim('"');
+                foreach (var item in items)
+                {
+                    var body = new { cantidad = item.Cantidad };
+
+                    await Http.PutAsJsonAsync(
+                        $"carritos/{carritoId}/{item.Producto.Id}", 
+                        body
+                    );
+                }
+            
+        }
+        else
+        {
+            mensaje = "No se pudo crear el carrito.";
+        }
+    }
+    catch (Exception ex)
+    {
+        mensaje = $"Error al inicializar el carrito: {ex.Message}";
+    }
+}
+    private bool EsValido()
+    {
+        return !string.IsNullOrWhiteSpace(formulario.Nombre)
+            && !string.IsNullOrWhiteSpace(formulario.Apellido)
+            && !string.IsNullOrWhiteSpace(formulario.Email);
+    }
+    public void Limpiar()
+    {
+        items.Clear();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(carritoId))
+        {
+            mensaje = "Carrito no inicializado.";
+            return;
+        }
+
+        var response = await Http.PutAsJsonAsync($"carritos/{carritoId}/confirmar", formulario);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = " Compra confirmada con éxito.";
+            items = CarritoService.ObtenerItems();
+            total = 0;
+            CarritoService.Limpiar();
+        }
+        else
+        {
+            mensaje = " Error al confirmar la compra.";
+        }
+    }
+    public class FormularioCompra
+    {
+        [Required]
+        public string Nombre { get; set; } = "";
+
+        [Required]
+        public string Apellido { get; set; } = "";
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+    }
+    public class DatosCompra
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+}

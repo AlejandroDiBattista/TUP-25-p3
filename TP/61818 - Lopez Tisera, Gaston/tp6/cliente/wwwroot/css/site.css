@@ -1,0 +1,30 @@
+.productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.producto {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 4px;
+    width: 250px;
+}
+.alert {
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+input.form-control {
+    width: 300px;
+}
