@@ -1,0 +1,127 @@
+#nullable enable
+@page "/productos"
+@using cliente.Modelos
+@inject cliente.Services.ProductoService ProductoService
+@inject cliente.Services.CarritoService CarritoService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<h1>Bienvenido a nuestra tienda</h1>
+<p>Explora nuestros productos y añade al carrito lo que desees comprar.</p>
+
+<h2>Productos disponibles</h2>
+
+<button class="btn btn-success mb-3" @onclick="MostrarFormularioAgregarProducto">
+    ➕ Agregar producto
+</button>
+
+@if (productos is null)
+{
+    <p style="color: red;">⚠️ Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <p>Tu tienda aún no tiene productos disponibles.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var producto in productos)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@($"/images/{producto.ImagenUrl}")" class="card-img-top" alt="@producto.Nombre"
+                         style="height: 180px; object-fit: contain;" />
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text text-muted">@producto.Descripcion</p>
+                        <p class="fw-bold mb-1">$@producto.Precio</p>
+                        <button class="btn btn-primary w-100" @onclick="() => AñadirAlCarrito(producto)">
+                            🛒 Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (mostrarFormularioAgregar)
+{
+    <h2>Agregar nuevo producto</h2>
+    <form @onsubmit="AgregarProducto">
+        <div class="mb-3">
+            <label>Nombre del producto</label>
+            <input type="text" class="form-control" @bind="nuevoProducto.Nombre" required />
+        </div>
+        <div class="mb-3">
+            <label>Descripción</label>
+            <input type="text" class="form-control" @bind="nuevoProducto.Descripcion" required />
+        </div>
+        <div class="mb-3">
+            <label>Precio</label>
+            <input type="number" class="form-control" @bind="nuevoProducto.Precio" required />
+        </div>
+        <div class="mb-3">
+            <label>Stock</label>
+            <input type="number" class="form-control" @bind="nuevoProducto.Stock" required />
+        </div>
+        <div class="mb-3">
+            <label>Imagen (nombre de archivo)</label>
+            <input type="text" class="form-control" @bind="nuevoProducto.ImagenUrl" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar producto</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelarAgregarProducto">Cancelar</button>
+    </form>
+}
+
+@code {
+    private List<Producto>? productos;
+    private List<Producto> carrito = new List<Producto>();
+    private bool mostrarFormularioAgregar = false;
+    private Producto nuevoProducto = new Producto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            productos = await ProductoService.ObtenerProductosAsync();
+            carrito = await LocalStorage.GetItemAsync<List<Producto>>("carrito") ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"🚨 Error al inicializar productos y carrito: {ex.Message}");
+        }
+    }
+
+    private async Task AñadirAlCarrito(Producto producto)
+    {
+        var existente = carrito.FirstOrDefault(p => p.Id == producto.Id);
+        if (existente != null)
+        {
+            existente.Cantidad++;
+        }
+        else
+        {
+            producto.Cantidad = 1;
+            carrito.Add(producto);
+        }
+        await LocalStorage.SetItemAsync("carrito", carrito);
+    }
+
+    private void MostrarFormularioAgregarProducto()
+    {
+        mostrarFormularioAgregar = true;
+    }
+
+    private void CancelarAgregarProducto()
+    {
+        mostrarFormularioAgregar = false;
+    }
+
+    private async Task AgregarProducto()
+    {
+        productos?.Add(nuevoProducto);
+        nuevoProducto = new Producto();
+        mostrarFormularioAgregar = false;
+    }
+}
