@@ -1,0 +1,74 @@
+@page "/crear-compra"
+@using TiendaOnline.Client.Models
+@inject CompraService CompraService
+@inject ProductoService ProductoService
+@inject NavigationManager Navigation
+
+<h3>Crear Nueva Compra</h3>
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else
+{
+    <EditForm Model="nuevaCompra" OnValidSubmit="GuardarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Fecha:</label>
+            <InputDate @bind-Value="nuevaCompra.Fecha" class="form-control" />
+        </div>
+
+        <h4>Productos</h4>
+        @foreach (var item in nuevaCompra.Items)
+        {
+            <div class="mb-2">
+                <label>Producto:</label>
+                <select @bind="item.ProductoId" class="form-select">
+                    <option value="">Seleccione un producto</option>
+                    @foreach (var producto in productos)
+                    {
+                        <option value="@producto.Id">@producto.Nombre</option>
+                    }
+                </select>
+
+                <label>Cantidad:</label>
+                <InputNumber @bind-Value="item.Cantidad" class="form-control" />
+            </div>
+        }
+
+        <button class="btn btn-primary" type="button" @onclick="AgregarItem">Agregar otro producto</button>
+        <br /><br />
+        <button type="submit" class="btn btn-success">Guardar Compra</button>
+    </EditForm>
+}
+
+@code {
+    List<Producto> productos = new();
+    Compra nuevaCompra = new()
+    {
+        Fecha = DateTime.Now,
+        Items = new List<ItemCompra>
+        {
+            new ItemCompra()
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.ObtenerProductos();
+    }
+
+    void AgregarItem()
+    {
+        nuevaCompra.Items.Add(new ItemCompra());
+    }
+
+    async Task GuardarCompra()
+    {
+        await CompraService.RealizarCompra(nuevaCompra);
+        Navigation.NavigateTo("/compras");
+    }
+}

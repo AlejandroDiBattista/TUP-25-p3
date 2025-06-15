@@ -1,39 +1,58 @@
 @page "/compras"
-@inject CompraService CompraService
+@inject HttpClient Http
 
-<h3>Compras realizadas</h3>
+<h2>Listado de Compras</h2>
 
 @if (compras == null)
 {
-    <p>Cargando compras...</p>
+    <p>Cargando...</p>
 }
-else if (compras.Count == 0)
+else if (!compras.Any())
 {
     <p>No hay compras registradas.</p>
 }
 else
 {
-    <ul>
-        @foreach (var compra in compras)
-        {
-            <li>
-                Compra @compra.Id - Fecha: @compra.Fecha.ToString("g")
-                <ul>
-                    @foreach (var item in compra.Items)
-                    {
-                        <li>Producto ID: @item.ProductoId - Cantidad: @item.Cantidad</li>
-                    }
-                </ul>
-            </li>
-        }
-    </ul>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Cantidad de Items</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var compra in compras)
+            {
+                <tr>
+                    <td>@compra.id</td>
+                    <td>@DateTime.Parse(compra.fecha).ToString("dd/MM/yyyy")</td>
+                    <td>@(compra.items?.Count ?? 0)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {
-    List<Compra>? compras;
+    List<CompraDto>? compras;
 
     protected override async Task OnInitializedAsync()
     {
-        compras = await CompraService.ObtenerCompras();
+        compras = await Http.GetFromJsonAsync<List<CompraDto>>("http://localhost:5157/compras");
+    }
+
+    class CompraDto
+    {
+        public int id { get; set; }
+        public string fecha { get; set; } = "";
+        public List<ItemCompraDto>? items { get; set; }
+    }
+
+    class ItemCompraDto
+    {
+        public int id { get; set; }
+        public int idProducto { get; set; }
+        public int cantidad { get; set; }
     }
 }

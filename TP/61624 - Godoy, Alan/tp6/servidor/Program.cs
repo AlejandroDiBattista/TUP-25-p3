@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 using TiendaOnline.Models;
 using TiendaOnline.Data;
 
@@ -19,6 +21,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+
 
 var app = builder.Build();
 
@@ -47,8 +50,12 @@ app.MapPost("/itemscompra", async (ItemCompra item, AppDbContext db) =>
 // Obtener todas las compras
 app.MapGet("/compras", async (AppDbContext db) =>
 {
-    return await db.Compras.Include(c => c.Items).ToListAsync();
+    return await db.Compras
+        .Include(c => c.Items)
+            .ThenInclude(i => i.Producto) // Incluye los datos del producto dentro de cada item
+        .ToListAsync();
 });
+
 
 // Obtener compra por Id
 app.MapGet("/compras/{id}", async (int id, AppDbContext db) =>

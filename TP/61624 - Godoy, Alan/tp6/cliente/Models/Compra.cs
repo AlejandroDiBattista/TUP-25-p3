@@ -1,3 +1,4 @@
+
 namespace TiendaOnline.Client.Models;
 
 public class Compra
