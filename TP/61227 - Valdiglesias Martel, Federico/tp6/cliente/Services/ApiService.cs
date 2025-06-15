@@ -1,12 +1,13 @@
 using System.Net.Http.Json;
+using cliente.modelos;
 
 namespace cliente.Services;
 
 public class ApiService {
-        private readonly HttpClient _http;
+    private readonly HttpClient _http;
     private readonly EstadoCarrito _estadoCarrito;
 
-    public ServicioApi(HttpClient http, EstadoCarrito estado) {
+    public ApiService(HttpClient http, EstadoCarrito estado) {
         _http = http;
         _estadoCarrito = estado;
     }
@@ -25,7 +26,7 @@ public class ApiService {
             } else return;
         }
         await _http.PutAsync($"api/compras/{_estadoCarrito.CarritoId}/productos/{productoId}", null);
-        await ActualizarConteoCarrito();
+        await ActualizarConteoCarritoAsync();
     }
 
     public async Task<CompraRespuestaDto?> GetCarritoAsync() {
@@ -36,7 +37,7 @@ public class ApiService {
     public async Task EliminarDelCarrito(int productoId) {
         if (_estadoCarrito.CarritoId == null) return;
         await _http.DeleteAsync($"api/compras/{_estadoCarrito.CarritoId}/productos/{productoId}");
-        await ActualizarConteoCarrito();
+        await ActualizarConteoCarritoAsync();
     }
 
     public async Task<CompraRespuestaDto?> ConfirmarCompraAsync(DatosClienteDto cliente) {
@@ -45,9 +46,8 @@ public class ApiService {
         return res.IsSuccessStatusCode ? await res.Content.ReadFromJsonAsync<CompraRespuestaDto>() : null;
     }
 
-    private async Task ActualizarConteoCarrito() {
+    private async Task ActualizarConteoCarritoAsync() {
         var carrito = await GetCarritoAsync();
         _estadoCarrito.SetItemsEnCarrito(carrito?.Items.Sum(i => i.Cantidad) ?? 0);
     }
 }
-
