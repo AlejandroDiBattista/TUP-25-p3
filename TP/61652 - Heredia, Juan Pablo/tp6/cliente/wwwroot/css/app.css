@@ -2,6 +2,29 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 2rem;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+    justify-items: center; 
+}
+
+.producto-card {
+    background: rgb(255, 255, 255);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #c4c4c4;
+    padding: 1rem;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
 h1:focus {
     outline: none;
 }
@@ -23,7 +46,31 @@ a, .btn-link {
 .content {
     padding-top: 1.1rem;
 }
-
+.boton {
+    color: rgb(216, 214, 214);
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+.boton-oscuro {
+    background-color: #2e2727;
+    color: rgb(216, 214, 214);
+}
+.boton-azul {
+    background-color: #2a0dad;
+    color: rgb(216, 214, 214);
+}
+.boton-rojo {
+    background-color: #ac1515;
+    color: rgb(216, 214, 214);
+}
+.boton-verde {
+    background-color: #17a10a;
+    color: rgb(216, 214, 214);
+}
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

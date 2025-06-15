@@ -1,0 +1,107 @@
+@page "/carrito"
+@using cliente.models
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <h2 style="color: rgb(216, 214, 214)">Carrito de Compras</h2>
+    @if (items is null)
+    {
+        <p>Cargando...</p>
+    }
+    else if (!items.Any())
+    {
+        <p style="color: rgb(216, 214, 214)">El carrito está vacío.</p>
+    }
+    else
+    {
+        <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center;">
+            @foreach (var item in items.Where(i => i.Producto != null))
+            {
+                <div style="background: rgb(175, 173, 173); border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 1rem; width: 260px; display: flex; flex-direction: column; align-items: center;">
+                    <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" width="100" />
+                    <h4>@item.Producto?.Nombre</h4>
+                    <p>@item.Producto?.Descripcion</p>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button @onclick="() => CambiarCantidad(item, item.Cantidad - 1)" class="boton-rojo">-</button>
+                        <span style="font-size: 1.2rem;">@item.Cantidad</span>
+                        <button @onclick="() => CambiarCantidad(item, item.Cantidad + 1)" class="boton-azul">+</button>
+                    </div>
+                    <p>Precio unitario: $@item.PrecioUnitario</p>
+                    <p>Subtotal: $@(item.Cantidad * item.PrecioUnitario)</p>
+                    <button @onclick="() => Eliminar(item)" class="boton-oscuro">Eliminar</button>
+                </div>
+            }
+        </div>
+        <p style="margin-top:2rem;"><b style="color: rgb(216, 214, 214)">Total: $@items.Sum(i => i.Cantidad * i.PrecioUnitario)</b></p>
+        <div style="display: flex; justify-content: space-between; margin-top: 2rem; width: 100%; max-width: 800px;">
+            <button @onclick="Vaciar" class="boton boton-rojo">Vaciar carrito</button>
+            <button @onclick="Confirmar" class="boton boton-verde">Confirmar compra</button>
+        </div>
+    }
+</div>
+
+@code {
+    #nullable enable
+    List<Compras>? items;
+    int carritoId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            carritoId = await ApiService.ObtenerOCrearCarrito();
+            await CargarCarrito();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar el carrito: {ex.Message}");
+        }
+    }
+
+    async Task CargarCarrito()
+    {
+        items = await ApiService.GetCarrito(carritoId);
+
+        Console.WriteLine($"🛒 Carrito ID: {carritoId}");
+        foreach (var item in items)
+        {
+            Console.WriteLine($"- ProductoId: {item.ProductoId}, Nombre: {item.Producto?.Nombre}, Cantidad: {item.Cantidad}");
+        }
+
+        await ApiService.ActualizarContadorCarrito(carritoId);
+        StateHasChanged();
+    }
+
+    async Task CambiarCantidad(Compras item, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1) return;
+
+        try
+        {
+            await ApiService.AgregarOActualizarProducto(carritoId, item.ProductoId, nuevaCantidad);
+            await CargarCarrito();
+        }
+        catch 
+        {
+        }
+    }
+
+    async Task Eliminar(Compras item)
+    {
+        await ApiService.EliminarProducto(carritoId, item.ProductoId);
+        await CargarCarrito();
+    }
+
+    async Task Vaciar()
+    {
+        await ApiService.VaciarCarrito(carritoId);
+        await CargarCarrito();
+    }
+
+    void Confirmar()
+    {
+        Nav.NavigateTo("/confirmacion");
+    }
+}
