@@ -4,12 +4,16 @@ namespace cliente.Models;
 
 public class CompraFormulario
 {
-    [Required]
+
+    public int CarritoId { get; set; }
+
+    [Required(ErrorMessage = "El campo Nombre es obligatorio.")]
     public string Nombre { get; set; }
     
-    [Required]
+    [Required(ErrorMessage = "El campo Apellido es obligatorio.")]
     public string Apellido { get; set; }
     
-    [Required, EmailAddress]
+    [Required(ErrorMessage = "El campo Email es obligatorio.")]
+    [EmailAddress(ErrorMessage = "El formato del Email es inválido.")]
     public string Email { get; set; }
 }
