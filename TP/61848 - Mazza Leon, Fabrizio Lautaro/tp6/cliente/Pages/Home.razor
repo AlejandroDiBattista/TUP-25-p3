@@ -37,9 +37,8 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text">@producto.Descripcion</p>
+                            <p><strong>Stock:</strong> @producto.Stock</p>
                             <p><strong>Precio:</strong> $@producto.Precio</p>
-                            <p><strong>Stock:</strong> @producto.Stock</p>
-                            <p><strong>Stock:</strong> @producto.Stock</p>
 
                             <label for="cantidad-@producto.Id" class="form-label">Cantidad</label>
                             <input id="cantidad-@producto.Id"
@@ -63,7 +62,6 @@
 @code {
 
     private Dictionary<int, int> cantidades = new();
-
     private List<Producto> productos;
     private string busqueda = "";
 
@@ -74,8 +72,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CarritoService.InicializarCarritoAsync(ApiService);
+
         productos = await ApiService.ObtenerProductosAsync();
+        await CarritoService.InicializarCarritoAsync(ApiService);
 
         foreach (var producto in productos)
         {
