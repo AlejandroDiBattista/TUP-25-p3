@@ -45,23 +45,25 @@ else
 
 @code {
     private CompraFormulario cliente = new();
+    private List<Producto> productos = new();
 
     private int TotalItems => CarritoService.Items.Sum(i => i.Cantidad);
     private decimal TotalImporte => CarritoService.CalcularTotal();
 
     private async Task ConfirmarCompra()
     {
-        // Llamar al backend para confirmar compra, pasando los items y datos cliente
+
+        cliente.CarritoId = CarritoService.CarritoId;
         var exito = await ApiService.ConfirmarCompraAsync(CarritoService.Items, cliente);
 
         if (exito)
         {
             CarritoService.Vaciar();
+            productos = await ApiService.ObtenerProductosAsync();
             Navigation.NavigateTo("/");
         }
         else
         {
-            // Mostrar error (a mejorar)
             Console.WriteLine("Error al confirmar la compra.");
         }
     }
