@@ -9,22 +9,21 @@ using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
-        policy.WithOrigins("https://localhost:7295") // este es el puerto de tu Blazor
+        policy.WithOrigins("https://localhost:7295") 
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Configuración de DbContext (antes del Build)
+
 builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
-// Agrego Swagger y JSON
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -41,7 +40,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Build
 var app = builder.Build();
 
-// Seeding de la base de datos
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TiendaContext>();
@@ -85,11 +84,11 @@ app.MapPost("/compras", async (CompraDto compraDto, TiendaContext db) =>
     return Results.Ok();
 });
 
-// Middlewares
+
 app.UseCors("AllowBlazorClient");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
 
-// Escuchar siempre en el puerto 5000
+
 app.Run("http://localhost:5000");

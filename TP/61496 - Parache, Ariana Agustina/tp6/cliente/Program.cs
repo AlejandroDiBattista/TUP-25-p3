@@ -9,7 +9,7 @@ using System.Net.Http;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 
-// Configuración de HttpClient inyectado para ApiService
+
 builder.Services.AddHttpClient<ApiService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:5000/");
