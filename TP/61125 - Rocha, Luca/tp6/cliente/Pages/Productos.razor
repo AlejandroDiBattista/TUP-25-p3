@@ -1,142 +1,127 @@
+#nullable enable
 @page "/productos"
 @using cliente.Modelos
+@inject cliente.Services.ProductoService ProductoService
+@inject cliente.Services.CarritoService CarritoService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
-@inject HttpClient http
+<h1>Bienvenido a nuestra tienda</h1>
+<p>Explora nuestros productos y añade al carrito lo que desees comprar.</p>
 
-<h3 class="text-center mt-3">Gestión de Productos</h3>
+<h2>Productos disponibles</h2>
 
-@if (productoEditando != null)
+<button class="btn btn-success mb-3" @onclick="MostrarFormularioAgregarProducto">
+    ➕ Agregar producto
+</button>
+
+@if (productos is null)
 {
-    <EditForm Model="@productoEditando" OnValidSubmit="GuardarProducto">
-        <DataAnnotationsValidator />
-
-        <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <InputText class="form-control" @bind-Value="productoEditando.Nombre" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <InputTextArea class="form-control" @bind-Value="productoEditando.Descripcion" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Precio</label>
-            <InputNumber class="form-control" @bind-Value="productoEditando.Precio" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Stock</label>
-            <InputNumber class="form-control" @bind-Value="productoEditando.Stock" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Imagen (URL)</label>
-            <InputText class="form-control" @bind-Value="productoEditando.ImagenUrl" />
-        </div>
-
-        @if (!string.IsNullOrWhiteSpace(productoEditando.ImagenUrl))
-        {
-            <p>URL guardada: @productoEditando.ImagenUrl</p> 
-            <img src="@productoEditando.ImagenUrl" alt="Vista previa" class="img-thumbnail mb-3" style="max-height: 120px;" />
-        }
-
-        <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-success me-2">Guardar</button>
-            <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
-        </div>
-    </EditForm>
+    <p style="color: red;">⚠️ Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <p>Tu tienda aún no tiene productos disponibles.</p>
 }
 else
 {
-    <button class="btn btn-primary mb-3" @onclick="NuevoProducto">Agregar nuevo producto</button>
-
-    <ul class="list-group">
-        @foreach (var p in productos)
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var producto in productos)
         {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <p>URL guardada: @p.ImagenUrl</p> 
-                    <img src="@p.ImagenUrl" alt="@p.Nombre" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;" />
-                    <div>
-                        <strong>@p.Nombre</strong> – $@p.Precio<br />
-                        <em>@p.Descripcion</em> – Stock: @p.Stock
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@($"/images/{producto.ImagenUrl}")" class="card-img-top" alt="@producto.Nombre"
+                         style="height: 180px; object-fit: contain;" />
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text text-muted">@producto.Descripcion</p>
+                        <p class="fw-bold mb-1">$@producto.Precio</p>
+                        <button class="btn btn-primary w-100" @onclick="() => AñadirAlCarrito(producto)">
+                            🛒 Agregar al carrito
+                        </button>
                     </div>
                 </div>
-                <div>
-                    <button class="btn btn-primary btn-sm me-1" @onclick="() => AgregarAlCarrito(p)">Añadir al carrito</button> 
-                    <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarProducto(p)">Editar</button>
-                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(p.Id)">Eliminar</button>
-                </div>
-            </li>
+            </div>
         }
-    </ul>
+    </div>
 }
 
-<div class="mt-4 text-center">
-    <a class="btn btn-outline-secondary" href="/">Volver al inicio</a>
-    <a class="btn btn-success" href="/carrito">Ver Carrito</a> 
-</div>
+@if (mostrarFormularioAgregar)
+{
+    <h2>Agregar nuevo producto</h2>
+    <form @onsubmit="AgregarProducto">
+        <div class="mb-3">
+            <label>Nombre del producto</label>
+            <input type="text" class="form-control" @bind="nuevoProducto.Nombre" required />
+        </div>
+        <div class="mb-3">
+            <label>Descripción</label>
+            <input type="text" class="form-control" @bind="nuevoProducto.Descripcion" required />
+        </div>
+        <div class="mb-3">
+            <label>Precio</label>
+            <input type="number" class="form-control" @bind="nuevoProducto.Precio" required />
+        </div>
+        <div class="mb-3">
+            <label>Stock</label>
+            <input type="number" class="form-control" @bind="nuevoProducto.Stock" required />
+        </div>
+        <div class="mb-3">
+            <label>Imagen (nombre de archivo)</label>
+            <input type="text" class="form-control" @bind="nuevoProducto.ImagenUrl" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar producto</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelarAgregarProducto">Cancelar</button>
+    </form>
+}
 
 @code {
-    private List<Producto> productos = new();
-    private Producto? productoEditando;
-    private Carrito carrito = new();
+    private List<Producto>? productos;
+    private List<Producto> carrito = new List<Producto>();
+    private bool mostrarFormularioAgregar = false;
+    private Producto nuevoProducto = new Producto();
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await http.GetFromJsonAsync<List<Producto>>("api/productos") ?? new();
-    }
-
-    private void NuevoProducto()
-    {
-        productoEditando = new Producto();
-    }
-
-    private async Task GuardarProducto()
-    {
-        if (productoEditando!.Id == 0)
+        try
         {
-            var resp = await http.PostAsJsonAsync("api/productos", productoEditando);
-            var creado = await resp.Content.ReadFromJsonAsync<Producto>();
-            if (creado != null) productos.Add(creado);
+            productos = await ProductoService.ObtenerProductosAsync();
+            carrito = await LocalStorage.GetItemAsync<List<Producto>>("carrito") ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"🚨 Error al inicializar productos y carrito: {ex.Message}");
+        }
+    }
+
+    private async Task AñadirAlCarrito(Producto producto)
+    {
+        var existente = carrito.FirstOrDefault(p => p.Id == producto.Id);
+        if (existente != null)
+        {
+            existente.Cantidad++;
         }
         else
         {
-            await http.PutAsJsonAsync($"api/productos/{productoEditando.Id}", productoEditando);
-            var index = productos.FindIndex(p => p.Id == productoEditando.Id);
-            if (index != -1) productos[index] = productoEditando;
+            producto.Cantidad = 1;
+            carrito.Add(producto);
         }
-
-        productoEditando = null;
+        await LocalStorage.SetItemAsync("carrito", carrito);
     }
 
-    private void EditarProducto(Producto producto)
+    private void MostrarFormularioAgregarProducto()
     {
-        productoEditando = new Producto
-        {
-            Id = producto.Id,
-            Nombre = producto.Nombre,
-            Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
-            Stock = producto.Stock,
-            ImagenUrl = producto.ImagenUrl
-        };
+        mostrarFormularioAgregar = true;
     }
 
-    private void CancelarEdicion()
+    private void CancelarAgregarProducto()
     {
-        productoEditando = null;
+        mostrarFormularioAgregar = false;
     }
 
-    private async Task EliminarProducto(int id)
+    private async Task AgregarProducto()
     {
-        await http.DeleteAsync($"api/productos/{id}");
-        productos.RemoveAll(p => p.Id == id);
-    }
-
-    private void AgregarAlCarrito(Producto producto)
-    {
-        carrito.Productos.Add(producto);
+        productos?.Add(nuevoProducto);
+        nuevoProducto = new Producto();
+        mostrarFormularioAgregar = false;
     }
 }

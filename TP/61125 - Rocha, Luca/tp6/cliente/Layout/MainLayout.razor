@@ -1,102 +1,26 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="top-row">
-    <img src="/images/carrito2.png" alt="Carrito"
-         style="height: 60px; margin-right: 15px; border: 2px dashed red;" />
-    <h1>Tienda Online de Laboratorio</h1>
-</div>
+<div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">Mi Tienda</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="/productos">Productos</NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="/carrito">Carrito</NavLink>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-<div class="page">
-    <aside class="sidebar">
-        <NavMenu />
-    </aside>
-
-    <main>
+    <div class="main px-4">
         @Body
-    </main>
+    </div>
 </div>
-
-<style>
-    .page {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-
-    main {
-        flex: 1;
-    }
-
-    .sidebar {
-        background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        background-color: #f7f7f7;
-        border-bottom: 1px solid #d6d5d5;
-        justify-content: flex-start;
-        height: 3.5rem;
-        display: flex;
-        align-items: center;
-        padding-left: 1rem;
-        position: sticky;
-        top: 0;
-        z-index: 999;
-    }
-
-    .top-row img {
-        height: 60px;
-        margin-right: 15px;
-    }
-
-    .top-row h1 {
-        font-size: 1.5rem;
-        color: #333;
-    }
-
-    .top-row a, .top-row .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-    .top-row a:hover, .top-row .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    @media (max-width: 640.98px) {
-        .top-row {
-            justify-content: space-between;
-        }
-
-        .top-row a, .top-row .btn-link {
-            margin-left: 0;
-        }
-    }
-
-    @media (min-width: 641px) {
-        .page {
-            flex-direction: row;
-        }
-
-        .top-row.auth a:first-child {
-            flex: 1;
-            text-align: right;
-            width: 0;
-        }
-
-        .top-row, article {
-            padding-left: 2rem !important;
-            padding-right: 1.5rem !important;
-        }
-    }
-</style>

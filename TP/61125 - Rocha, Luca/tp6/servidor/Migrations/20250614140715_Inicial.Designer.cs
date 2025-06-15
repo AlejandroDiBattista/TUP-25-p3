@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using servidor.Data;
 
@@ -10,23 +11,14 @@ using servidor.Data;
 namespace servidor.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614140715_Inicial")]
+    partial class Inicial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
-
-            modelBuilder.Entity("servidor.Modelos.Carrito", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Carritos");
-                });
 
             modelBuilder.Entity("servidor.Modelos.Compra", b =>
                 {
@@ -90,9 +82,6 @@ namespace servidor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("CarritoId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Descripcion")
                         .HasColumnType("TEXT");
 
@@ -110,8 +99,6 @@ namespace servidor.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CarritoId");
-
                     b.ToTable("Productos");
 
                     b.HasData(
@@ -119,7 +106,7 @@ namespace servidor.Migrations
                         {
                             Id = 1,
                             Descripcion = "100 ml de vidrio",
-                            ImagenUrl = "vaso1.jpg",
+                            ImagenUrl = "img/vaso1.jpg",
                             Nombre = "Vaso medidor",
                             Precio = 550m,
                             Stock = 10
@@ -128,7 +115,7 @@ namespace servidor.Migrations
                         {
                             Id = 2,
                             Descripcion = "500 ml, 220V",
-                            ImagenUrl = "manta.jpg",
+                            ImagenUrl = "img/manta.jpg",
                             Nombre = "Manta calefactora",
                             Precio = 6800m,
                             Stock = 6
@@ -137,7 +124,7 @@ namespace servidor.Migrations
                         {
                             Id = 3,
                             Descripcion = "25 ml, vidrio borosilicato",
-                            ImagenUrl = "pipeta.jpg",
+                            ImagenUrl = "img/pipeta.jpg",
                             Nombre = "Pipeta graduada",
                             Precio = 400m,
                             Stock = 15
@@ -146,7 +133,7 @@ namespace servidor.Migrations
                         {
                             Id = 4,
                             Descripcion = "250 ml",
-                            ImagenUrl = "matraz.jpg",
+                            ImagenUrl = "img/matraz.jpg",
                             Nombre = "Matraz Erlenmeyer",
                             Precio = 900m,
                             Stock = 9
@@ -155,7 +142,7 @@ namespace servidor.Migrations
                         {
                             Id = 5,
                             Descripcion = "Precisión 0.01g",
-                            ImagenUrl = "balanza.jpg",
+                            ImagenUrl = "img/balanza.jpg",
                             Nombre = "Balanza digital",
                             Precio = 5400m,
                             Stock = 3
@@ -164,7 +151,7 @@ namespace servidor.Migrations
                         {
                             Id = 6,
                             Descripcion = "Velocidad regulable",
-                            ImagenUrl = "agitador.jpg",
+                            ImagenUrl = "img/agitador.jpg",
                             Nombre = "Agitador magnético",
                             Precio = 8200m,
                             Stock = 4
@@ -173,7 +160,7 @@ namespace servidor.Migrations
                         {
                             Id = 7,
                             Descripcion = "x10 unidades",
-                            ImagenUrl = "tubos.jpg",
+                            ImagenUrl = "img/tubos.jpg",
                             Nombre = "Tubos de ensayo",
                             Precio = 750m,
                             Stock = 12
@@ -182,7 +169,7 @@ namespace servidor.Migrations
                         {
                             Id = 8,
                             Descripcion = "100 ml con base plástica",
-                            ImagenUrl = "probeta.jpg",
+                            ImagenUrl = "img/probeta.jpg",
                             Nombre = "Probeta",
                             Precio = 600m,
                             Stock = 11
@@ -191,7 +178,7 @@ namespace servidor.Migrations
                         {
                             Id = 9,
                             Descripcion = "Digital, resistente al agua",
-                            ImagenUrl = "cronometro.jpg",
+                            ImagenUrl = "img/cronometro.jpg",
                             Nombre = "Cronómetro",
                             Precio = 950m,
                             Stock = 8
@@ -200,7 +187,7 @@ namespace servidor.Migrations
                         {
                             Id = 10,
                             Descripcion = "-50°C a 300°C",
-                            ImagenUrl = "termometro.jpg",
+                            ImagenUrl = "img/termometro.jpg",
                             Nombre = "Termómetro digital",
                             Precio = 1200m,
                             Stock = 7
@@ -224,18 +211,6 @@ namespace servidor.Migrations
                     b.Navigation("Compra");
 
                     b.Navigation("Producto");
-                });
-
-            modelBuilder.Entity("servidor.Modelos.Producto", b =>
-                {
-                    b.HasOne("servidor.Modelos.Carrito", null)
-                        .WithMany("Productos")
-                        .HasForeignKey("CarritoId");
-                });
-
-            modelBuilder.Entity("servidor.Modelos.Carrito", b =>
-                {
-                    b.Navigation("Productos");
                 });
 
             modelBuilder.Entity("servidor.Modelos.Compra", b =>

@@ -1,90 +1,129 @@
+@page "/carrito"
+@inject cliente.Services.CarritoService CarritoService
+@inject HttpClient Http
+@using System.Net.Http.Json
 @using cliente.Modelos
-<h3 class="text-center mt-3">Carrito de Compras</h3>
 
-@if (itemsCarrito == null)
+<h3 class="mt-3 mb-4">Carrito de compras</h3>
+
+@if (items == null)
 {
-    <div class="text-center">
-        <div class="spinner-border" role="status"></div>
-        <p>Cargando carrito...</p>
-    </div>
+    <p>Cargando productos...</p>
 }
-else if (itemsCarrito.Count == 0)
+else if (!items.Any())
 {
-    <p class="text-center text-muted">Tu carrito está vacío.</p>
+    <p>Tu carrito está vacío.</p>
 }
 else
 {
-    <table class="table table-hover">
-        <thead class="table-dark">
+    <table class="table table-striped">
+        <thead>
             <tr>
                 <th>Producto</th>
+                <th>Precio</th>
                 <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Total</th>
-                <th>Acciones</th>
+                <th>Subtotal</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in itemsCarrito)
+            @foreach (var item in items)
             {
                 <tr>
                     <td>@item.Nombre</td>
-                    <td class="text-center">
-                        <button class="btn btn-outline-secondary btn-sm" @onclick="()=>ModificarCantidad(item.Id, -1)">➖</button>
-                        @item.Cantidad
-                        <button class="btn btn-outline-secondary btn-sm" @onclick="()=>ModificarCantidad(item.Id, 1)">➕</button>
-                    </td>
-                    <td>$@item.PrecioUnitario</td>
-                    <td class="fw-bold">$@(item.Cantidad * item.PrecioUnitario)</td>
+                    <td>$@item.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" @onclick="()=>EliminarProducto(item.Id)">Eliminar</button>
+                        <button class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(item.Id)">Eliminar</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <h4 class="text-end fw-bold">Total: $@total</h4>
-    <div class="text-end">
-        <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
-        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
-    </div>
+    <p class="fw-bold">Total: $@items.Sum(i => i.Precio * i.Cantidad)</p>
+
+    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
 }
 
 @code {
-    private List<Producto> itemsCarrito = new();
-    private decimal total = 0;
+    List<Producto>? items = new();
 
-    private void ModificarCantidad(int productoId, int cambio)
+    protected override async Task OnInitializedAsync()
     {
-        var item = itemsCarrito.FirstOrDefault(p => p.Id == productoId);
-        if (item != null)
+        try
         {
-            item.Cantidad = Math.Max(1, item.Cantidad + cambio);
+            var carritoId = await CarritoService.ObtenerCarritoIdAsync();
+            var response = await Http.GetAsync($"/api/carritos/{carritoId}/productos");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"⚠️ Error al obtener el carrito: {response.StatusCode}");
+                items = new List<Producto>();
+                return;
+            }
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(jsonString))
+            {
+                Console.WriteLine("⚠️ La respuesta de la API está vacía.");
+                items = new List<Producto>();
+                return;
+            }
+
+            items = await response.Content.ReadFromJsonAsync<List<Producto>>() ?? new List<Producto>();
+            Console.WriteLine($"✅ Productos en el carrito: {items.Count}");
         }
-        CalcularTotal();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al cargar el carrito: {ex.Message}");
+        }
     }
 
-    private void EliminarProducto(int id)
+    async Task Eliminar(int productoId)
     {
-        itemsCarrito.RemoveAll(p => p.Id == id);
-        CalcularTotal();
+        try
+        {
+            var carritoId = await CarritoService.ObtenerCarritoIdAsync();
+            var response = await Http.DeleteAsync($"/api/carritos/{carritoId}/productos/{productoId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                items = items!.Where(p => p.Id != productoId).ToList();
+                Console.WriteLine($"✅ Producto {productoId} eliminado del carrito.");
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ No se pudo eliminar el producto: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"🚨 Error al eliminar producto: {ex.Message}");
+        }
     }
 
-    private void VaciarCarrito()
+    async Task ConfirmarCompra()
     {
-        itemsCarrito.Clear();
-        total = 0;
-    }
+        try
+        {
+            var carritoId = await CarritoService.ObtenerCarritoIdAsync();
+            var response = await Http.PostAsync($"/api/carritos/{carritoId}/confirmar", null);
 
-    private void ConfirmarCompra()
-    {
-        Console.WriteLine("Compra confirmada");
-        VaciarCarrito();
-    }
-
-    private void CalcularTotal()
-    {
-        total = itemsCarrito.Sum(p => p.PrecioUnitario * p.Cantidad);
+            if (response.IsSuccessStatusCode)
+            {
+                items = new();
+                Console.WriteLine("✅ Compra confirmada");
+            }
+            else
+            {
+                Console.WriteLine($"❌ Error al confirmar la compra: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"🚨 Error al confirmar compra: {ex.Message}");
+        }
     }
 }
