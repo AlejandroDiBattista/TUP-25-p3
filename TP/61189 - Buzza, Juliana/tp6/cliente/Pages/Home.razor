@@ -1,59 +1,338 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@page "/search"
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CartStateService CartStateService 
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Paris Shoes - Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<div class="relative w-full h-80 bg-medium-gray mb-8 rounded-lg overflow-hidden shadow-xl">
+    <div class="carousel-container relative w-full h-full">
+        @for (int i = 0; i < BannerImages.Length; i++)
+        {
+            <!-- Las imágenes se superponen y su visibilidad se controla con la clase 'opacity-100' -->
+            <img src="@BannerImages[i]" alt="Banner @(i + 1)" 
+                class="carousel-slide w-full h-full object-cover object-center absolute top-0 left-0 transition-opacity duration-700 ease-in-out @(i == currentSlideIndex ? "opacity-100" : "opacity-0")">
+        }
     </div>
     
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+    <!-- Texto superpuesto al banner -->
+    <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+        <h2 class="text-white-bg text-5xl font-extrabold drop-shadow-lg text-center" style="font-family: 'Inter', sans-serif;">Nuestra Colección</h2>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+    <!-- Controles de navegación del carrusel (flechas) -->
+    <button @onclick="PrevSlide" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white-bg bg-opacity-50 p-2 rounded-full shadow-md hover:bg-opacity-75 transition-all duration-200 text-black-text focus:outline-none focus:ring-2 focus:ring-black-accent">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+    <button @onclick="NextSlide" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white-bg bg-opacity-50 p-2 rounded-full shadow-md hover:bg-opacity-75 transition-all duration-200 text-black-text focus:outline-none focus:ring-2 focus:ring-black-accent">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+
+    <!-- Indicadores de carrusel (dots) -->
+    <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+        @for (int i = 0; i < BannerImages.Length; i++)
+        {
+            <span @onclick="() => SetSlide(i)" 
+                class="block w-3 h-3 rounded-full cursor-pointer transition-colors duration-200 
+                                @(i == currentSlideIndex ? "bg-white-bg opacity-75" : "bg-dark-gray opacity-50")"></span>
+        }
     </div>
 </div>
 
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+<h1 class="text-4xl font-extrabold text-center text-black-text mb-8">Catálogo</h1>
+
+@if (Loading)
+{
+    <p class="text-center text-dark-gray">Cargando productos...</p>
+    <div class="flex justify-center items-center h-64">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-medium-gray h-24 w-24"></div>
+    </div>
+}
+else if (Productos.Any())
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @foreach (var producto in Productos)
+        {
+            <!-- Tarjeta de Producto con diseño plano -->
+            <div class="bg-white-bg overflow-hidden transform transition-all duration-300 hover:scale-105">
+                <div class="relative w-full h-96 flex items-center justify-center overflow-hidden">
+                    <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="w-full h-full object-cover object-center">
+                    <!-- Icono de carrito en la esquina superior derecha de la imagen -->
+                    <button @onclick="() => AddToCart(producto)"
+                                class="absolute top-3 right-3 bg-white-bg p-2 rounded-full shadow-md hover:bg-light-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:ring-opacity-75 transition-all duration-200"
+                                title="Añadir al carrito"
+                                disabled="@(producto.Stock <= 0)">
+                        <svg class="w-6 h-6 text-black-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13H4m6 10a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                    </button>
+                    @if (producto.Stock <= 0)
+                    {
+                        <span class="absolute bottom-3 left-3 bg-dark-gray text-white-bg rounded-full text-xs px-2 py-1">Sin Stock</span>
+                    }
+                </div>
+                
+                <div class="p-4 flex flex-col items-start">
+                    <h2 class="text-lg font-semibold text-black-text mb-1 product-title text-left">@producto.Nombre</h2>
+                    <p class="text-dark-gray text-sm mb-2 text-left">@producto.Descripcion</p>
+                    <span class="text-sm font-bold text-dark-gray text-left">@string.Format(new System.Globalization.CultureInfo("es-AR"), "$ {0:N0}", producto.Precio)</span>
+                    
+                    @if (producto.Stock > 0)
+                    {
+                        <button @onclick="() => AddToCart(producto)"
+                                class="mt-4 w-full bg-black text-white-bg py-2 px-4 rounded-full font-semibold text-base hover:bg-medium-gray focus:outline-none focus:ring-2 focus:ring-light-gray focus:ring-opacity-75 transition-all duration-300 shadow-sm flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Agregar al Carrito</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="mt-4 w-full bg-dark-gray text-white-bg py-2 px-4 rounded-full font-semibold cursor-not-allowed shadow-sm">
+                            Sin Stock
+                        </button>
+                    }
+                </div>
+            </div>
         }
+    </div>
+}
+else
+{
+    <p class="text-center text-dark-gray">No se encontraron productos.</p>
+}
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="fixed top-24 right-4 text-white-bg p-4 rounded-lg shadow-lg transform transition-transform duration-300 @(ShowMessage ? "translate-x-0 opacity-100" : "translate-x-full opacity-0") @(isError ? "bg-red-500" : "bg-green-500")" role="alert">
+        @Message
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "query")]
+    public string? SearchTerm { get; set; }
+
+    private List<cliente.Models.Producto> Productos = new();
+    private bool Loading = true;
+    private int? CartId;
+    private string? Message;
+    private bool ShowMessage = false;
+    private bool isError = false; 
+    private System.Timers.Timer? messageTimer;
+
+    private List<cliente.Models.CarritoItemDto> cartItems = new(); 
+
+    private string[] BannerImages = {
+        "/Imagenes/banner1.jpg", 
+        "/Imagenes/banner2.jpg", 
+        "/Imagenes/banner3.jpg"  
+    };
+    private int currentSlideIndex = 0;
+    private System.Timers.Timer? autoSlideTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartStateService.OnCartIdChanged += HandleCartIdChanged;
+        CartId = CartStateService.CartId;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StartAutoSlide();
+            await LoadProducts(); 
+            if (CartId.HasValue)
+            {
+                await LoadCartItems();
+            }
+        }
+    }
+
+    private void HandleCartIdChanged()
+    {
+        CartId = CartStateService.CartId;
+        if (CartId.HasValue)
+        {
+            InvokeAsync(LoadCartItems); 
+        }
+        else
+        {
+            cartItems = new(); 
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProducts();
+        if (CartId.HasValue)
+        {
+            await LoadCartItems();
+        }
+    }
+
+    private async Task LoadProducts()
+    {
+        Loading = true;
+        try
+        {
+            Productos = await ApiService.GetProductos(SearchTerm);
+        }
+        catch (HttpRequestException ex)
+        {
+            ShowNotification($"Error al cargar productos: {ex.Message}", true);
+            Productos = new();
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private async Task LoadCartItems()
+    {
+        if (CartId.HasValue)
+        {
+            try
+            {
+                cartItems = await ApiService.GetCartItems(CartId.Value);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar los ítems del carrito: {ex.Message}");
+                ShowNotification($"Error al cargar el contenido del carrito: {ex.Message}", true);
+                cartItems = new(); 
+            }
+        }
+        else
+        {
+            cartItems = new(); 
+        }
+        StateHasChanged(); 
+    }
+
+    private async Task AddToCart(cliente.Models.Producto producto)
+    {
+        ShowNotification(null, false); 
+
+        try
+        {
+            if (CartId == null)
+            {
+                CartId = await ApiService.InitializeCart();
+                await LoadCartItems(); 
+            }
+
+            var existingCartItem = cartItems.FirstOrDefault(item => item.ProductoId == producto.Id);
+            int currentQuantityInCart = existingCartItem?.Cantidad ?? 0;
+            
+            int newQuantity = currentQuantityInCart + 1;
+
+            if (newQuantity > producto.Stock)
+            {
+                ShowNotification($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}", true);
+                return; 
+            }
+
+            string? error = await ApiService.AddOrUpdateProductInCart(CartId.Value, producto.Id, newQuantity);
+
+            if (error != null)
+            {
+                ShowNotification(error, true);
+            }
+            else
+            {
+                await LoadCartItems(); 
+                ShowNotification($"'{producto.Nombre}' ha sido agregado en el carrito.", false);
+            }
+        }
+        catch (Exception ex) 
+        {
+            ShowNotification($"Error inesperado al agregar {producto.Nombre} al carrito: {ex.Message}", true);
+        }
+    }
+
+    private void ShowNotification(string? message, bool isError)
+    {
+        Message = message;
+        this.isError = isError; 
+        ShowMessage = !string.IsNullOrEmpty(message); 
+
+        if (messageTimer != null)
+        {
+            messageTimer.Dispose();
+        }
+
+        if (ShowMessage) 
+        {
+            messageTimer = new System.Timers.Timer(3000); 
+            messageTimer.Elapsed += (sender, e) =>
+            {
+                ShowMessage = false;
+                this.isError = false; 
+                InvokeAsync(StateHasChanged);
+                messageTimer?.Dispose();
+            };
+            messageTimer.AutoReset = false;
+            messageTimer.Start();
+        }
+        InvokeAsync(StateHasChanged); 
+    }
+
+    private void StartAutoSlide()
+    {
+        if (autoSlideTimer != null)
+        {
+            autoSlideTimer.Dispose();
+        }
+        autoSlideTimer = new System.Timers.Timer(5000); 
+        autoSlideTimer.Elapsed += async (sender, e) =>
+        {
+            await InvokeAsync(NextSlide);
+        };
+        autoSlideTimer.AutoReset = true;
+        autoSlideTimer.Start();
+    }
+
+    private void NextSlide()
+    {
+        currentSlideIndex = (currentSlideIndex + 1) % BannerImages.Length;
+        StateHasChanged();
+        ResetAutoSlideTimer();
+    }
+
+    private void PrevSlide()
+    {
+        currentSlideIndex = (currentSlideIndex - 1 + BannerImages.Length) % BannerImages.Length;
+        StateHasChanged(); 
+        ResetAutoSlideTimer();
+    }
+
+    private void SetSlide(int index)
+    {
+        currentSlideIndex = index;
+        StateHasChanged(); 
+        ResetAutoSlideTimer();
+    }
+
+    private void ResetAutoSlideTimer()
+    {
+        autoSlideTimer?.Stop();
+        autoSlideTimer?.Start();
+    }
+
+    public void Dispose()
+    {
+        if (messageTimer != null)
+        {
+            messageTimer.Dispose();
+        }
+        if (autoSlideTimer != null)
+        {
+            autoSlideTimer.Dispose();
+        }
+        CartStateService.OnCartIdChanged -= HandleCartIdChanged;
     }
 }

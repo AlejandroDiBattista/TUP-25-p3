@@ -1,4 +1,69 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@inject cliente.Services.CartStateService CartStateService 
+@inject NavigationManager Navigation
+
+<div class="main-layout-container">
+    <header class="fixed-header bg-white-bg text-black-text p-4 shadow-md rounded-b-lg border-b border-medium-gray">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-3xl font-bold text-black-text hover:text-dark-gray transition-colors duration-200" style="font-family: 'Inter', sans-serif;">
+                <img src="/Imagenes/logo.jpg" alt="Logo de la Tienda de Calzado" class="h-12 inline-block mr-2 rounded-full shadow-sm">
+                Paris Shoes
+            </a>
+            <div class="flex items-center justify-end flex-1 min-w-0">
+                <div class="relative flex-grow max-w-sm sm:max-w-md mr-4">
+                    <input type="text"
+                        @bind-value="SearchQuery"
+                        @onkeyup="HandleSearch"
+                        placeholder="Buscar calzado..."
+                        class="w-full p-2 pl-10 rounded-full bg-white-bg border border-medium-gray focus:outline-none focus:ring-2 focus:ring-dark-gray focus:border-transparent transition-all duration-200 shadow-sm text-black-text">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <a href="/carrito" class="relative text-black-text hover:text-dark-gray transition-colors duration-200 flex-none">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    @if (CartStateService.ItemCount > 0)
+                    {
+                        <span class="absolute -top-1 -right-1 bg-black-accent text-white-bg rounded-full px-1.5 py-0 text-xs font-bold leading-none min-w-[1.25rem] h-5 flex items-center justify-center">
+                            @CartStateService.ItemCount
+                        </span>
+                    }
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="content-container pt-24 pb-8"> 
+        <div class="container mx-auto px-4">
+            @Body
+        </div>
+    </main>
+
+    <footer class="bg-black-accent text-white-bg p-4 text-center mt-8 rounded-t-lg shadow-inner">
+        <p>&copy; @DateTime.Now.Year Paris Shoes. Todos los derechos reservados.</p>
+    </footer>
 </div>
+
+@code {
+    private string SearchQuery { get; set; } = string.Empty; 
+
+    protected override void OnInitialized()
+    {
+        CartStateService.OnCartItemCountChanged += StateHasChanged;
+        CartStateService.OnCartIdChanged += StateHasChanged;
+    }
+
+    private void HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            Navigation.NavigateTo($"/?query={SearchQuery}");
+        }
+    }
+
+    public void Dispose()
+    {
+        CartStateService.OnCartItemCountChanged -= StateHasChanged;
+        CartStateService.OnCartIdChanged -= StateHasChanged;
+    }
+}
