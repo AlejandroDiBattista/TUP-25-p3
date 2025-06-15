@@ -1,41 +1,39 @@
 @page "/productos"
 @using cliente.Modelos
 @using cliente.Services
+@using cliente.Shared
 @inject ServicioProductos Services
 @inject ServicioCarrito Carritoo
 @inject NavigationManager Nav
+@inject BusquedaService BusquedaService
 
 <h3>Productos</h3>
 
-<p>Productos: @Carritoo.Items.Sum(i => i.Cantidad)</p>
-
-<input placeholder="Buscar productos..." @bind="busqueda" />
-
 @if (productos == null)
 {
-    <p>Cargando...</p>
+    <p>Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <p>No hay productos disponibles.</p>
 }
 else
 {
-    <ul>
-        @foreach (var prod in productos.Where(p =>
-            string.IsNullOrWhiteSpace(busqueda) ||
-            p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
-            p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase)))
-        {
-            <li>
-                @prod.Nombre - $@prod.Precio (Stock: @prod.Stock)
-                <button @onclick="() => AgregarAlCarrito(prod)">Agregar al carrito</button>
-            </li>
-        }
-    </ul>
+    @foreach (var producto in productos.Where(p =>
+        string.IsNullOrWhiteSpace(BusquedaService.Busqueda) ||
+        p.Nombre.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase) ||
+        p.Descripcion.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase)))
+    {
+        <div>
+            <span>@producto.Nombre - $@producto.Precio (Stock: @producto.Stock)</span>
+            <button @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+        </div>
+    }
 }
 
-<button @onclick="IrAlCarrito">Ir al carrito</button>
 
 @code {
     List<Producto> productos;
-    string busqueda = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,7 +42,14 @@ else
 
     protected override void OnInitialized()
     {
+        BusquedaService.OnChange += StateHasChanged;
         Carritoo.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        BusquedaService.OnChange -= StateHasChanged;
+        Carritoo.OnChange -= StateHasChanged;
     }
 
     void AgregarAlCarrito(Producto producto)
@@ -58,3 +63,4 @@ else
         Nav.NavigateTo("/carrito");
     }
 }
+@implements IDisposable

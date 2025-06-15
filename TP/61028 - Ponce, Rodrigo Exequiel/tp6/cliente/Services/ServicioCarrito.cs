@@ -12,7 +12,7 @@ namespace cliente.Services
 
         public event Action OnChange;
 
-        // 🚨 Constructor para debug
+        // Constructor para debug
         public ServicioCarrito()
         {
             Console.WriteLine("🛒 ServicioCarrito creado");

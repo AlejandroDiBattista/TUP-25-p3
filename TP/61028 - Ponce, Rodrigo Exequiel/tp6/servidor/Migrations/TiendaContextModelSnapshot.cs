@@ -23,16 +23,7 @@ namespace servidor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ApellidoCliente")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmailCliente")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("NombreCliente")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Total")

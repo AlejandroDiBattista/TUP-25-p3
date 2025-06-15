@@ -100,3 +100,4 @@ app.MapGet("/compras/{id}", async (int id, TiendaContext db) =>
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 app.Run();
+

@@ -10,6 +10,7 @@ namespace servidor.Modelos
         public DbSet<Compra> Compras { get; set; }
         public DbSet<ItemCompra> ItemsCompra { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // productos de ejemploo

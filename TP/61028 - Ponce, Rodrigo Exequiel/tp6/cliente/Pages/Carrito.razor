@@ -10,7 +10,7 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<h3>carritoo de compras</h3>
+<h3>Resumen del carrito</h3>
 
 @if (carritoo.Items.Count == 0)
 {
@@ -41,15 +41,13 @@ else
                     <td>$@item.Producto.Precio</td>
                     <td>$@(item.Producto.Precio * item.Cantidad)</td>
                     <td>
-                        <button @onclick="() => RemoverItemDelCarrito(item.Producto)">Quitar</button>
+                        <button @onclick="() => RemoverItemDelCarrito(item.Producto)">Quitar producto</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
     <p><b>Total: $@carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</b></p>
-    <h3>Productos</h3>
-    <p>Total: @carritoo.Items.Sum(i => i.Cantidad)</p>
     <button @onclick="Vaciarcarritoo">Vaciar carrito</button> 
 }
 
