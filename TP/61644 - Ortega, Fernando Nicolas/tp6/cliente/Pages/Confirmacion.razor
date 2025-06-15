@@ -1,0 +1,80 @@
+@page "/confirmacion"
+@inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Confirmar compra</PageTitle>
+
+<div class="container">
+    <h2 class="mb-4">Confirmar compra</h2>
+
+    @if (CarritoService.Articulos.Count == 0)
+    {
+        <div class="alert alert-info">El carrito está vacío.</div>
+        <a href="/" class="btn btn-primary">Volver al catálogo</a>
+    }
+    else
+    {
+        <div class="mb-3">
+            <h5>Resumen</h5>
+            <ul>
+                <li>Total de artículos: @CarritoService.Articulos.Sum(a => a.Cantidad)</li>
+                <li>Importe total: $@CarritoService.TotalImporte()</li>
+            </ul>
+        </div>
+        <EditForm Model="@cliente" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-3">
+                <label>Nombre</label>
+                <InputText class="form-control" @bind-Value="cliente.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label>Apellido</label>
+                <InputText class="form-control" @bind-Value="cliente.Apellido" />
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText class="form-control" @bind-Value="cliente.Email" />
+            </div>
+            <button class="btn btn-success" type="submit">Confirmar registro compra</button>
+        </EditForm>
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div class="alert alert-info mt-3">@mensaje</div>
+        }
+    }
+</div>
+@code {
+    private ClienteDto cliente = new();
+    private string mensaje = "";
+
+    private async Task ConfirmarCompra()
+    {
+        int carritoId = CarritoService.CarritoId;
+        var resultado = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
+        if (resultado == "ok")
+        {
+            mensaje = "¡Compra confirmada! Gracias por tu compra.";
+            CarritoService.Vaciar();
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            mensaje = resultado;
+        }
+    }
+
+    public class ClienteDto
+    {
+        [Required]
+        public string Nombre { get; set; } = "";
+        [Required]
+        public string Apellido { get; set; } = "";
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+    }
+}

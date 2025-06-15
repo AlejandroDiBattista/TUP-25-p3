@@ -74,7 +74,7 @@
 
     private void AgregarAlCarrito(Producto producto)
     {
-        CarritoService.Agregar(producto, 1);
+        CarritoService.AgregarAsync(producto, 1);
         Navigation.NavigateTo("/carrito");
     }
 }

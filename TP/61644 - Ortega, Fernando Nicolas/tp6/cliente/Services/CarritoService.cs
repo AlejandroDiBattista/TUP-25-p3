@@ -1,15 +1,41 @@
 using System.Collections.ObjectModel;
+using cliente.Services;
 
 namespace cliente.Services;
 
 public class CarritoService
 {
-    public ObservableCollection<ArticuloCarrito> Articulos { get; } = new();
+    public int CarritoId { get; set; } = 0;
+    public List<ArticuloCarrito> Articulos { get; } = new();
+    public string Mensaje { get; set; } = "";
 
     public event Action? OnChange;
 
-    public void Agregar(Producto producto, int cantidad = 1)
+    private readonly ApiService _apiService;
+
+    public CarritoService(ApiService apiService)
     {
+        _apiService = apiService;
+    }
+
+    public async Task AgregarAsync(Producto producto, int cantidad = 1)
+    {
+        if (CarritoId == 0)
+        {
+            CarritoId = await _apiService.CrearCarritoAsync();
+        }
+
+        var ok = await _apiService.AgregarOActualizarProductoEnCarritoAsync(CarritoId, producto.Id, cantidad);
+
+        if (!ok)
+        {
+            CarritoId = await _apiService.CrearCarritoAsync();
+            Articulos.Clear();
+            Mensaje = "El carrito se perdió. Se creó uno nuevo. Agregue los productos nuevamente.";
+            OnChange?.Invoke();
+            return;
+        }
+
         var existente = Articulos.FirstOrDefault(a => a.ProductoId == producto.Id);
         if (existente != null)
         {
@@ -26,32 +52,69 @@ public class CarritoService
                 ImagenUrl = producto.ImagenUrl
             });
         }
+        Mensaje = "";
         OnChange?.Invoke();
     }
 
-    public void Quitar(int productoId)
+    public async Task CambiarCantidadAsync(int productoId, int nuevaCantidad)
     {
+        if (CarritoId != 0)
+        {
+            var ok = await _apiService.AgregarOActualizarProductoEnCarritoAsync(CarritoId, productoId, nuevaCantidad);
+            if (!ok)
+            {
+                CarritoId = 0;
+                Articulos.Clear();
+                Mensaje = "El carrito se perdió o hubo un error. Agregue los productos nuevamente.";
+                OnChange?.Invoke();
+                return;
+            }
+        }
+        var index = Articulos.FindIndex(a => a.ProductoId == productoId);
+        if (index != -1 && nuevaCantidad > 0)
+        {
+            var articulo = Articulos[index];
+            Articulos[index] = new ArticuloCarrito
+            {
+                ProductoId = articulo.ProductoId,
+                Nombre = articulo.Nombre,
+                PrecioUnitario = articulo.PrecioUnitario,
+                Cantidad = nuevaCantidad,
+                ImagenUrl = articulo.ImagenUrl
+            };
+        }
+        Mensaje = "";
+        OnChange?.Invoke();
+    }
+
+    public async Task QuitarAsync(int productoId)
+    {
+        if (CarritoId != 0)
+        {
+            var ok = await _apiService.QuitarProductoDelCarritoAsync(CarritoId, productoId);
+            if (!ok)
+            {
+                CarritoId = 0;
+                Articulos.Clear();
+                Mensaje = "El carrito se perdió o hubo un error. Agregue los productos nuevamente.";
+                OnChange?.Invoke();
+                return;
+            }
+        }
         var articulo = Articulos.FirstOrDefault(a => a.ProductoId == productoId);
         if (articulo != null)
         {
             Articulos.Remove(articulo);
-            OnChange?.Invoke();
         }
-    }
-
-    public void CambiarCantidad(int productoId, int nuevaCantidad)
-    {
-        var articulo = Articulos.FirstOrDefault(a => a.ProductoId == productoId);
-        if (articulo != null && nuevaCantidad > 0)
-        {
-            articulo.Cantidad = nuevaCantidad;
-            OnChange?.Invoke();
-        }
+        Mensaje = "";
+        OnChange?.Invoke();
     }
 
     public void Vaciar()
     {
         Articulos.Clear();
+        CarritoId = 0;
+        Mensaje = "";
         OnChange?.Invoke();
     }
 

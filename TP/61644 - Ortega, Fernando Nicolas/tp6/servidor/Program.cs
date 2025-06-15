@@ -212,6 +212,11 @@ app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, ClienteD
         return Results.BadRequest("Todos los datos del cliente son obligatorios.");
     }
 
+    if (compra.Articulos == null || !compra.Articulos.Any())
+    {
+        return Results.BadRequest("El carrito está vacío.");
+    }
+
     compra.NombreCliente = cliente.Nombre;
     compra.ApellidoCliente = cliente.Apellido;
     compra.EmailCliente = cliente.Email;
