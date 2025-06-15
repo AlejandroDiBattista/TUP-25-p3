@@ -1,0 +1,74 @@
+@page "/carrito"
+@inject TiendaService Tienda
+@inject NavigationManager Nav
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">Carrito de Compra</h2>
+
+    @if (Tienda.Carrito == null || !Tienda.Carrito.Any())
+    {
+        <p class="text-center">El carrito está vacío.</p>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Tienda.Carrito)
+                        {
+                            <tr>
+                                <td>@item.producto.Titulo</td>
+                                <td>$@(item.producto?.Valor ?? 0)</td>
+                                <td>@item.Cantidad</td>
+                                <td>$@((item.producto?.Valor ?? 0) * item.Cantidad)</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" @onclick="@(() => Quitar(item.producto?.ProductoId ?? 0))">Quitar</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="text-end mb-3">
+                    <strong>Total: $@Tienda.CalcularTotal()</strong>
+                </div>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button class="btn btn-secondary px-4" @onclick="Vaciar">Cancelar</button>
+                    <button class="btn btn-primary px-4" @onclick="ConfirmarCompra">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    async Task Quitar(int productoId)
+    {
+        if (productoId > 0)
+        {
+            await Tienda.QuitarDelCarrito(productoId);
+            StateHasChanged();
+        }
+    }
+
+    async Task Vaciar()
+    {
+        await Tienda.VaciarCarrito();
+        StateHasChanged();
+    }
+
+    async Task ConfirmarCompra()
+    {
+        Nav.NavigateTo("/confirmar");
+        await Task.CompletedTask;
+    }
+}

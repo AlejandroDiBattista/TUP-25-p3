@@ -1,57 +1,60 @@
-﻿@page "/"
+﻿@page "/Home"
 @using cliente.Services
+@using Cliente.Models
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
 
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
+    <div class="col-12">            
+        @if (error != null) {
+            <div class="alert alert-danger">
+                Error: @error
+            </div>
+        } else if (cargando) {
+            <div class="alert alert-info">Cargando datos...</div>
+        } else if (productos != null && productos.Any()) {
+            <div class="card" style="width: 300px;">
+                <div class="card-header">
+                    Productos del servidor
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
+                <div class="card-body">
+                    <ul>
+                        @foreach (var p in productos)
+                        {
+                            <li>@p.Titulo - $@p.Valor</li>
+                        }
+                    </ul>
                 </div>
-            }
-        </div>
+            </div>
+        } else if (productos != null && !productos.Any()) {
+            <div class="alert alert-warning">
+                No hay productos para mostrar.
+            </div>
+        }
     </div>
+</div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> productos;
     private string error;
     private bool cargando = false;
+
+   protected override async Task OnInitializedAsync()
+    {
+        await ObtenerDatosDelServidor();
+    }
 
     private async Task ObtenerDatosDelServidor() {
         try {
             cargando = true;
             error = null;
-            datos = await ApiService.ObtenerDatosAsync();
+            productos = await ApiService.ObtenerDatosAsync();
         } catch (Exception ex) {
             error = ex.Message;
-            datos = null;
+            productos = null;
         } finally {
             cargando = false;
         }

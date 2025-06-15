@@ -7,17 +7,17 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: #830202;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #830202;
+    border-color: #830202;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #1d0000;
 }
 
 .content {
@@ -25,7 +25,7 @@ a, .btn-link {
 }
 
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid #9b0000;
 }
 
 .invalid {
@@ -84,7 +84,7 @@ a, .btn-link {
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #830202;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
@@ -111,4 +111,77 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+.tarjeta-producto {
+    width: 350px;
+    min-width: 350px;
+    max-width: 350px;
+    background: var(--tarjeta-bg, #23272b);
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.tarjeta-img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    border: none;
+    border-radius: 0;
+}
+
+/* El oscurito */
+body.dark-mode .tarjeta-producto {
+    --tarjeta-bg: #0f1010;
+    color: #f1f1f1;
+}
+body:not(.dark-mode) .tarjeta-producto {
+    --tarjeta-bg: #fff;
+    color: #0f1010;
+}
+
+body.dark-mode {
+    background-color: #0f1010 !important;
+    color: #f1f1f1 !important;
+}
+
+body.dark-mode .navbar,
+body.dark-mode .card {
+    background-color: #1c1c1c !important;
+    color: #f1f1f1 !important;
+}
+
+body.dark-mode .btn {
+    background-color: #dcdcdc !important;
+    color: #000000 !important;
+    border-color: #222222 !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #320000; 
+    border-color: #3d0202;
+    color: #fff;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+    background-color: #000000; 
+    border-color: #000000;
+    color: #fff;
+}
+
+.navbar-custom {
+    background-color: #343a40; 
+    transition: background 0.3s;
+}
+body.dark-mode .navbar-custom {
+    background-color: #181a1b; 
+}
+body:not(.dark-mode) .navbar-custom {
+    background-color: #282828;
 }

@@ -1,0 +1,47 @@
+@page "/confirmar"
+@inject TiendaService Tienda
+@inject NavigationManager Nav
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h2 class="text-center mb-4">Confirmar Compra</h2>
+
+            <EditForm Model="@cliente" OnValidSubmit="Confirmar">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>Nombre</label>
+                    <InputText class="form-control" @bind-Value="cliente.Nombre" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Apellido</label>
+                    <InputText class="form-control" @bind-Value="cliente.Apellido" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Email</label>
+                    <InputText class="form-control" @bind-Value="cliente.email" />
+                </div>
+
+                <p class="text-center"><strong>Total a pagar: $@Tienda.CalcularTotal()</strong></p>
+
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-success" type="submit">Confirmar compra</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    DatosCliente cliente = new();
+
+    async Task Confirmar()
+    {
+        await Tienda.ConfirmarCompra(cliente);
+        Nav.NavigateTo("/");
+    }
+}
