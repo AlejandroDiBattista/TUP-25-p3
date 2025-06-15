@@ -17,7 +17,13 @@
     </div>
 }
 
-<input class="form-control mb-3" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+<div class="input-group mb-3">
+    <input class="form-control" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+    <button class="btn btn-outline-secondary" type="button" @onclick="BuscarProductos">
+        Buscar
+    </button>
+</div>
+
 
 @if (cargando)
 {
@@ -48,18 +54,13 @@ else
     </div>
 }
 
-
-
-
-
 @code {
     
     private List<Producto> productos = new(); 
     private List<Producto> productosFiltrados = new();
     private string busqueda = string.Empty;
-        private DatosRespuesta datos;
-        private string error;
-        private bool cargando = false;
+    private string error;
+    private bool cargando = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,21 +79,18 @@ else
             cargando = false;
         }
     }
+ 
 
     void AgregarProducto(Producto producto)
     {
         CarritoService.AgregarAlCarrito(producto);
     }
 
-    private string Busqueda
+    private void BuscarProductos()
     {
-        get => busqueda;
-        set
-        {
-            busqueda = value;
-            productosFiltrados = productos
-                .Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
+        productosFiltrados = productos
+            .Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
+
 }
