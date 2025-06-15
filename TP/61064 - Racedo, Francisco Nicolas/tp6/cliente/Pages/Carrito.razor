@@ -1,0 +1,189 @@
+@using cliente.Services
+@page "/carrito"
+@inject cliente.Services.ApiService Api
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<h2>Carrito de Compras</h2>
+
+@if (items is null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (items.Count == 0)
+{
+    <div class="card shadow p-4 text-center" style="max-width:500px;margin:2rem auto;">
+        <h4>El carrito está vacío.</h4>
+        <button class="btn btn-primary mt-3" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card shadow p-4 mb-4">
+                    <h3 class="mb-4">Detalle del Carrito</h3>
+                    @foreach (var item in items)
+                    {
+                        <div class="card flex-row flex-wrap flex-md-nowrap align-items-center shadow border border-primary bg-light p-2 mb-3"
+                            style="min-height:180px; max-height:240px;">
+                            <div class="d-flex align-items-center justify-content-center bg-white border-end border-2 border-primary"
+                                style="min-width:200px;max-width:240px;width:45%;min-height:180px;max-height:220px;">
+                                <img src="@item.ImagenUrl" alt="@item.Nombre" class="img-fluid rounded"
+                                    style="max-height:180px;max-width:100%;object-fit:contain;">
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-between p-3"
+                                style="min-width:180px;width:55%;min-height:180px;">
+                                <h5 class="card-title mb-2"
+                                    style="font-weight:bold;font-size:1.2rem;">@item.Nombre</h5>
+                                <p class="card-text text-muted mb-2"
+                                    style="font-size:1.1rem;">Subtotal: $@item.Subtotal.ToString("N2")</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-success me-2" style="font-size:1.25rem;">$@item.Precio.ToString("N2")</span>
+                                    <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @item.Stock</span>
+                                </div>
+                                <div class="d-flex gap-2 mt-1 align-items-center">
+                                    <button class="btn btn-sm btn-secondary me-1"
+                                        @onclick="() => CambiarCantidad(item, item.Cantidad - 1)"
+                                        disabled="@(item.Cantidad <= 1)">−</button>
+                                    <span class="mx-1" style="font-size:1.1rem;">@item.Cantidad</span>
+                                    <button class="btn btn-sm btn-secondary ms-1"
+                                        @onclick="() => CambiarCantidad(item, item.Cantidad + 1)"
+                                        disabled="@(item.Cantidad >= item.Stock)">+</button>
+                                    <button class="btn btn-outline-danger btn-sm ms-2"
+                                        @onclick="() => EliminarProducto(item)">Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="mt-4 mb-3 text-end">
+                        <span class="badge bg-warning text-dark" style="font-size:1.3rem;">Total: $@items.Sum(i => i.Subtotal).ToString("N2")</span>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
+                        <button class="btn btn-vaciar me-md-2 mb-2 mb-md-0" @onclick="VaciarCarrito">Vaciar carrito</button>
+                        <button class="btn btn-confirmar me-md-2 mb-2 mb-md-0" @onclick="ConfirmarCompra">Confirmar compra</button>
+                        <button class="btn btn-modificar" @onclick="ContinuarAgregando">Modificar compra</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    #nullable enable
+    List<CarritoItemDto>? items;
+    Guid carritoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener carritoId de localStorage (idéntico a Catalogo.razor)
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+        {
+            carritoId = await Api.CrearCarritoAsync();
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+        }
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        items = await Api.GetCarritoAsync(carritoId);
+    }
+
+    async Task CambiarCantidad(CarritoItemDto item, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1 || nuevaCantidad > item.Stock)
+            return;
+
+        await Api.PutCarritoItemAsync(carritoId, item.Id, nuevaCantidad);
+        items = await Api.GetCarritoAsync(carritoId);
+        await ActualizarContadorCarrito();
+        StateHasChanged();
+    }
+
+    async Task EliminarProducto(CarritoItemDto item)
+    {
+        await Api.DeleteCarritoItemAsync(carritoId, item.Id);
+        items = await Api.GetCarritoAsync(carritoId);
+        await ActualizarContadorCarrito();
+        StateHasChanged();
+    }
+
+    async Task VaciarCarrito()
+    {
+        await Api.VaciarCarritoAsync(carritoId);
+        await ActualizarContadorCarrito();
+        Navigation.NavigateTo("/catalogo", forceLoad: true, replace: true);
+    }
+
+    async Task ActualizarContadorCarrito()
+    {
+        var itemsCarrito = await Api.GetCarritoAsync(carritoId);
+        int total = itemsCarrito?.Sum(i => i.Cantidad) ?? 0;
+        await JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", total.ToString());
+    }
+
+    async Task ConfirmarCompra()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+
+    void ContinuarAgregando()
+    {
+        Navigation.NavigateTo("/catalogo");
+    }
+
+    void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/catalogo");
+    }
+}
+
+<style>
+.btn-celeste-continuar {
+    background-color: #0aa6c8;
+    color: #fff;
+    border: none;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-celeste-continuar:hover, .btn-celeste-continuar:focus {
+    background-color: #0887a6;
+    color: #fff;
+}
+.btn-modificar, .btn-vaciar, .btn-confirmar {
+    border-radius: 2rem;
+    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-modificar {
+    background-color: #fd7e14;
+    color: #fff;
+    border: none;
+}
+.btn-modificar:hover, .btn-modificar:focus {
+    background-color: #c76a0b;
+    color: #fff;
+}
+.btn-vaciar {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+}
+.btn-vaciar:hover, .btn-vaciar:focus {
+    background-color: #a71d2a;
+    color: #fff;
+}
+.btn-confirmar {
+    background-color: #198754;
+    color: #fff;
+    border: none;
+}
+.btn-confirmar:hover, .btn-confirmar:focus {
+    background-color: #145c32;
+    color: #fff;
+}
+</style>
