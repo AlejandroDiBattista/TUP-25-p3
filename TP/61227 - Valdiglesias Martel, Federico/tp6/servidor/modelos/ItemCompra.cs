@@ -1,3 +1,4 @@
+namespace servidor.modelos;
 public class ItemCompra
 {
     public int Id { get; set; }
