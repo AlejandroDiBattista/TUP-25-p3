@@ -1,59 +1,55 @@
 ﻿@page "/"
+@using cliente.modelos
 @using cliente.Services
-@inject ApiService ApiService
+@using cliente.Layout
+@inject ApiService Api
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Catálogo de Productos</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+@if (TerminoBusqueda != null)
+{
+    <div class="container mt-4">
+        <h3>Resultados para: "@TerminoBusqueda"</h3>
+        <hr />
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
+}
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+<section class="my-5">
+    <div class="container">
+        @if (listaProductos == null)
+        {
+            <p><em>Cargando productos...</em></p>
+        }
+        else if (!listaProductos.Any())
+        {
+            <div class="text-center">
+                <h4>No se encontraron productos.</h4>
+                <p>Intenta con otro término de búsqueda.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
+                @foreach (var prod in listaProductos)
+                {
+                    <div class="col">
+                        <TarjetaProducto Producto="prod" />
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+                }
+            </div>
+        }
     </div>
-</div>
+</section>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private List<Producto>? listaProductos;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? TerminoBusqueda { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        listaProductos = await Api.ObtenerProductosAsync(TerminoBusqueda);
     }
 }
