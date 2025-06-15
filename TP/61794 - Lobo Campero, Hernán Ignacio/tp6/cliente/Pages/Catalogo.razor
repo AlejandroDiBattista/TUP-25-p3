@@ -1,0 +1,291 @@
+@page "/"
+@page "/Catalogo"
+@inject Cliente.Services.ApiService ApiService
+@inject Cliente.Services.CarritoService CarritoService
+@inject Cliente.Services.ToastService ToastService
+@inject Cliente.Services.DebounceService DebounceService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject Microsoft.Extensions.Options.IOptions<Cliente.Constants.AppSettings> AppSettings
+@implements IDisposable
+
+@code {    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
+    [CascadingParameter] public int CarritoCantidad { get; set; }    private List<Cliente.Models.Producto>? productos;
+    private List<Cliente.Models.Producto>? todosLosProductos;
+    private HashSet<int> productosAgregando = new();
+    private HashSet<int> productosAgregadosConExito = new();
+    private string? busquedaActual = "";
+    
+
+    private int paginaActual = 1;
+    private int productosPorPagina => AppSettings.Value.ProductosPorPagina;
+    private int totalPaginas = 0;protected override async Task OnInitializedAsync()
+    {
+
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        busquedaActual = "";        if (query.TryGetValue("q", out var q) && q.Count > 0)
+        {
+            busquedaActual = q.FirstOrDefault() ?? "";
+        }
+        
+        await Buscar(busquedaActual);
+        
+
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+      private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        var uri = Navigation.ToAbsoluteUri(e.Location);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        var nuevaBusqueda = "";        if (query.TryGetValue("q", out var q) && q.Count > 0)
+        {
+            nuevaBusqueda = q.FirstOrDefault() ?? "";
+        }
+        
+        if (nuevaBusqueda != busquedaActual)
+        {
+            busquedaActual = nuevaBusqueda;
+            await InvokeAsync(async () =>
+            {
+                await Buscar(busquedaActual);
+                StateHasChanged();
+            });
+        }
+    }public async Task Buscar(string? query = null)
+    {
+        todosLosProductos = await ApiService.GetProductosAsync(query);
+        paginaActual = 1; // Resetear a la primera página en nueva búsqueda
+        ActualizarProductosPagina();
+        StateHasChanged();
+    }
+    
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+    
+    private void ActualizarProductosPagina()
+    {
+        if (todosLosProductos == null)
+        {
+            productos = null;
+            totalPaginas = 0;
+            return;
+        }
+        
+        totalPaginas = (int)Math.Ceiling((double)todosLosProductos.Count / productosPorPagina);
+        
+        var indiceInicio = (paginaActual - 1) * productosPorPagina;
+        productos = todosLosProductos.Skip(indiceInicio).Take(productosPorPagina).ToList();
+    }
+    
+    private void IrAPagina(int numeroPagina)
+    {
+        if (numeroPagina >= 1 && numeroPagina <= totalPaginas)
+        {
+            paginaActual = numeroPagina;
+            ActualizarProductosPagina();
+            StateHasChanged();
+        }
+    }
+    
+    private void PaginaAnterior()
+    {
+        if (paginaActual > 1)
+        {
+            paginaActual--;
+            ActualizarProductosPagina();
+            StateHasChanged();
+        }
+    }
+    
+    private void PaginaSiguiente()
+    {
+        if (paginaActual < totalPaginas)
+        {
+            paginaActual++;
+            ActualizarProductosPagina();
+            StateHasChanged();
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        if (productosAgregando.Contains(productoId)) return;
+        
+        try
+        {
+            productosAgregando.Add(productoId);
+            StateHasChanged();            var exito = await CarritoService.AgregarProductoAsync(productoId, 1);            if (exito)
+            {
+
+                var nuevaCantidad = await CarritoService.ObtenerCantidadItemsAsync();
+                ActualizarCarrito?.Invoke(nuevaCantidad);
+                
+
+                ToastService.ShowSuccess("Producto agregado al carrito exitosamente");
+                
+
+                productosAgregadosConExito.Add(productoId);
+                StateHasChanged();
+
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(Cliente.Constants.AppConstants.SUCCESS_ANIMATION_DURATION);
+                    productosAgregadosConExito.Remove(productoId);
+                    await InvokeAsync(StateHasChanged);
+                });
+            }            else
+            {
+
+                ToastService.ShowError("Error al agregar producto. Posibles causas: Stock insuficiente o problema de conexión.");
+            }
+        }        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+            ToastService.ShowError("Error inesperado al agregar el producto. Por favor, inténtalo nuevamente.");
+        }
+        finally
+        {
+            productosAgregando.Remove(productoId);
+            StateHasChanged();
+        }
+    }
+}
+
+<div class="container py-4">    @if (productos is null)
+    {
+        <LoadingSpinner Message="Cargando productos..." Size="LoadingSpinner.LoadingSize.Large" Fullscreen="true" />
+    }
+    else if (productos.Count == 0)
+    {
+        <div class="alert alert-warning text-center shadow-orange">
+            <i class="bi bi-exclamation-triangle fs-1 d-block mb-3 text-gradient"></i>
+            <h4>No se encontraron productos</h4>
+            <p>Intenta con otros términos de búsqueda o explora nuestro catálogo completo.</p>
+        </div>
+    }else
+    {        <div class="row g-4 justify-content-center fade-in-up">
+            @foreach (var prod in productos)
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 product-card border-0">
+                        <img src="images/@prod.ImagenUrl" class="card-img-top product-image p-3 bg-light" alt="@prod.Nombre" style="height:200px;object-fit:contain;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-semibold text-gradient">@prod.Nombre</h5>
+                            <p class="card-text small text-muted">@prod.Descripcion</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="stock-badge">Stock: @prod.Stock</span>
+                                    <span class="price-tag">$@prod.Precio.ToString("N0")</span>
+                                </div>                                <button class="btn @(productosAgregadosConExito.Contains(prod.Id) ? "btn-warning pulse-animation" : "btn-primary") w-100" 
+                                        id="btn-cart-@prod.Id" 
+                                        @onclick="() => AgregarAlCarrito(prod.Id)"
+                                        disabled="@(prod.Stock <= 0 || productosAgregando.Contains(prod.Id))">>                                    @if (productosAgregando.Contains(prod.Id))
+                                    {
+                                        <ButtonSpinner CssClass="me-2" />
+                                        <span>Agregando...</span>
+                                    }
+                                    else if (productosAgregadosConExito.Contains(prod.Id))
+                                    {
+                                        <i class="bi bi-check-lg me-2"></i>
+                                        <span>¡Agregado!</span>
+                                    }
+                                    else if (prod.Stock <= 0)
+                                    {
+                                        <i class="bi bi-x-circle me-2"></i>
+                                        <span>Sin stock</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-cart-plus me-2"></i>
+                                        <span>Agregar al carrito</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <!-- Controles de paginación -->
+        @if (totalPaginas > 1)
+        {
+            <div class="row mt-5">
+                <div class="col-12">
+                    <nav aria-label="Navegación del catálogo">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted">
+                                Mostrando @((paginaActual - 1) * productosPorPagina + 1) - @(Math.Min(paginaActual * productosPorPagina, todosLosProductos!.Count)) 
+                                de @todosLosProductos!.Count productos
+                            </div>
+                            <div class="text-muted">
+                                Página @paginaActual de @totalPaginas
+                            </div>
+                        </div>
+                        
+                        <ul class="pagination justify-content-center">
+                            <!-- Botón Anterior -->
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaAnterior" disabled="@(paginaActual == 1)">
+                                    <i class="bi bi-chevron-left"></i> Anterior
+                                </button>
+                            </li>
+                            
+                            <!-- Números de página -->
+                            @{
+                                var paginaInicio = Math.Max(1, paginaActual - 2);
+                                var paginaFin = Math.Min(totalPaginas, paginaActual + 2);
+                            }
+                            
+                            @if (paginaInicio > 1)
+                            {
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="() => IrAPagina(1)">1</button>
+                                </li>
+                                @if (paginaInicio > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+                            
+                            @for (var i = paginaInicio; i <= paginaFin; i++)
+                            {
+                                var pagina = i;
+                                <li class="page-item @(pagina == paginaActual ? "active" : "")">
+                                    <button class="page-link" @onclick="() => IrAPagina(pagina)">@pagina</button>
+                                </li>
+                            }
+                            
+                            @if (paginaFin < totalPaginas)
+                            {
+                                @if (paginaFin < totalPaginas - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="() => IrAPagina(totalPaginas)">@totalPaginas</button>
+                                </li>
+                            }
+                            
+                            <!-- Botón Siguiente -->
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <button class="page-link" @onclick="PaginaSiguiente" disabled="@(paginaActual == totalPaginas)">
+                                    Siguiente <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+    }
+</div>

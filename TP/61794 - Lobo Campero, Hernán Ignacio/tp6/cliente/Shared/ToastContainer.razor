@@ -1,0 +1,119 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Cliente.Services
+@inject ToastService ToastService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<!-- Contenedor de toasts en la parte superior central con estilo TUC BYTE -->
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1055; min-width: 350px; margin-top: 20px;">
+    @foreach (var toast in toasts)
+    {        <div id="toast-@toast.Id" class="toast align-items-center text-white border-0 @GetToastClass(toast.Type) mb-2 fade-in-up" 
+             role="alert" aria-live="assertive" aria-atomic="true" 
+             data-bs-autohide="true" data-bs-delay="@toast.Duration" 
+             style="width: 100%; min-width: 300px; box-shadow: var(--shadow-orange-lg); border-radius: var(--border-radius-md); backdrop-filter: blur(10px);">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center p-3">
+                    <i class="@GetIconClass(toast.Type) me-3 fs-5"></i>
+                    <span class="fw-semibold">@toast.Message</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto opacity-75" 
+                        @onclick="() => RemoveToast(toast.Id)"></button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastModel> toasts = new();    protected override void OnInitialized()
+    {
+        ToastService.OnToastRequested += ShowToastHandler;
+    }
+    
+    private void ShowToastHandler(string message, ToastType type, int duration)
+    {
+        _ = Task.Run(async () => await ShowToast(message, type, duration));
+    }
+      public void Dispose()
+    {
+        ToastService.OnToastRequested -= ShowToastHandler;
+    }
+      public class ToastModel
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Message { get; set; } = "";
+        public ToastType Type { get; set; }
+        public int Duration { get; set; } = 4000;
+    }      private async Task ShowToast(string message, ToastType type, int duration)
+    {
+        try
+        {
+            var toast = new ToastModel
+            {
+                Message = message,
+                Type = type,
+                Duration = duration
+            };
+            
+            toasts.Add(toast);
+            await InvokeAsync(StateHasChanged);
+            
+
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("showToast", toast.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al mostrar toast: {ex.Message}");
+            }
+            
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(duration);
+                    await InvokeAsync(() =>
+                    {
+                        RemoveToast(toast.Id);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al auto-remover toast: {ex.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en ShowToast: {ex.Message}");
+        }
+    }      private void RemoveToast(string id)
+    {
+        try
+        {
+            toasts.RemoveAll(t => t.Id == id);
+            InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al remover toast: {ex.Message}");
+        }
+    }private string GetToastClass(ToastType type) => type switch
+    {
+        ToastType.Success => "bg-success shadow-sm",
+        ToastType.Error => "bg-danger shadow-sm",
+        ToastType.Warning => "bg-warning shadow-sm",
+        ToastType.Info => "bg-gradient-primary shadow-orange",
+        _ => "bg-gradient-primary shadow-orange"
+    };
+    
+    private string GetIconClass(ToastType type) => type switch
+    {
+        ToastType.Success => "bi bi-check-circle-fill",
+        ToastType.Error => "bi bi-exclamation-triangle-fill",
+        ToastType.Warning => "bi bi-exclamation-circle-fill",
+        ToastType.Info => "bi bi-info-circle-fill",
+        _ => "bi bi-info-circle-fill"
+    };
+}
