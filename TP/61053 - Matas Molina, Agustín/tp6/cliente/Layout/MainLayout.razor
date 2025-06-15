@@ -1,4 +1,71 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using cliente.Services
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+@inject BusquedaService BusquedaService
+@inject CarritoService CarritoService
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary py-1 fixed-top" style="min-height:44px;">
+    <div class="container-fluid">
+        <a class="navbar-brand py-0" href="/" style="font-size:1.2rem;">Mundo Pc</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <NavLink class="nav-link px-2" href="/">Home</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-2" href="/productos">Productos</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-2" href="/Carrito">Mi Carrito</NavLink>
+                </li>
+            </ul>
+            @if (Nav.Uri.Contains("/productos"))
+            {
+                <form class="d-flex" role="search" onsubmit="return false;">
+                    <input class="form-control form-control-sm me-2"
+                           type="search"
+                           placeholder="Buscar producto..."
+                           value="@BusquedaService.TextoBusqueda"
+                           @oninput="OnInputBusqueda"
+                           style="height:28px; font-size:0.95rem; max-width: 350px;" />
+                </form>
+            }
+
+            <span id="iconoCarrito" style="position:relative; cursor:pointer;" @onclick='() => Nav.NavigateTo("/Carrito")'>
+                <img src="imagenes/carrito.svg" alt="Carrito" style="width:32px; height:32px;" />
+                <span class="carrito-contador">
+                    @(CarritoService.CarritoActual?.Items.Sum(i => i.Cantidad) ?? 0)
+                </span>
+            </span>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
     @Body
 </div>
+
+@code {
+    protected int CantidadEnCarrito => CarritoService.CarritoActual?.Items.Sum(i => i.Cantidad) ?? 0;
+
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+
+    void OnInputBusqueda(ChangeEventArgs e)
+    {
+        BusquedaService.SetTexto(e.Value?.ToString() ?? "");
+    }
+}
+
+

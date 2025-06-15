@@ -1,0 +1,141 @@
+@page "/Carrito"
+@using cliente.Services
+@using TuProyecto.Models
+@inject CarritoService CarritoService
+
+<style>
+    body {
+        padding-top: 56px;
+    }
+</style>
+<h1>Mi Carrito</h1>
+
+<!-- Mostrar los elementos del carrito -->
+@if (CarritoService.CarritoActual?.Items?.Count > 0)
+{
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Imagen</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.CarritoActual.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td><img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" style="width:60px;height:60px;object-fit:contain;" /></td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-success btn-sm"
+                                @onclick="async () => await CarritoService.AgregarOActualizarProductoAsync(item.ProductoId, 1)"
+                                disabled="@(item.Cantidad >= item.Producto.Stock)">
+                            +
+                        </button>
+                        <button class="btn btn-warning btn-sm"
+                                @onclick="async () => await CarritoService.AgregarOActualizarProductoAsync(item.ProductoId, -1)"
+                                disabled="@(item.Cantidad <= 1)">
+                            -
+                        </button>
+                        <button class="btn btn-danger btn-sm"
+                                @onclick="async () => await CarritoService.EliminarProductoAsync(item.ProductoId)">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4>Total: $@CarritoService.CarritoActual.Items.Sum(i => i.PrecioUnitario * i.Cantidad)</h4>
+    <button class="btn btn-danger" @onclick="async () => await CarritoService.VaciarCarritoAsync()">Vaciar carrito</button>
+}
+else
+{
+    <p>Tu carrito está vacío.</p>
+}
+
+@if (CarritoService.CarritoActual?.Items != null && CarritoService.CarritoActual.Items.Count > 0 && !mostrarFormulario)
+{
+    <button class="btn btn-primary" @onclick="MostrarFormulario">Confirmar compra</button>
+}
+
+@if (mostrarFormulario)
+{
+    <EditForm Model="datosCompra" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <InputText id="nombre" class="form-control" @bind-Value="datosCompra.NombreCliente" required />
+        </div>
+        <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <InputText id="apellido" class="form-control" @bind-Value="datosCompra.ApellidoCliente" required />
+        </div>
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <InputText id="correo" class="form-control" @bind-Value="datosCompra.EmailCliente" required />
+        </div>
+        <button type="submit" class="btn btn-success">Finalizar compra</button>
+        <button type="button" class="btn btn-secondary ms-2" @onclick="CancelarFormulario">Cancelar</button>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(mensajeCompra))
+{
+    <div class="alert alert-info">@mensajeCompra</div>
+}
+
+@code {
+    private bool mostrarFormulario = false;
+
+    private Compra datosCompra = new Compra();
+    private string mensajeCompra = "";
+
+    private void MostrarFormulario()
+    {
+        mostrarFormulario = true;
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        datosCompra = new Compra();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        try
+        {
+            await CarritoService.ConfirmarCompraAsync(
+                datosCompra.NombreCliente,
+                datosCompra.ApellidoCliente,
+                datosCompra.EmailCliente
+            );
+            mostrarFormulario = false;
+            await CarritoService.RefrescarCarritoAsync();
+            mensajeCompra = "¡Compra confirmada!";
+        }
+        catch (Exception ex)
+        {
+            mensajeCompra = "Error al confirmar la compra: " + ex.Message;
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoService.OnChange += StateHasChanged;
+        await CarritoService.RefrescarCarritoAsync();
+    }
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+}
