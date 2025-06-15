@@ -1,34 +1,60 @@
-using TuApi.Models;
+using Microsoft.EntityFrameworkCore;
+using servidor.Data;
+using servidor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
+// Configurar la conexión a la base de datos SQLite
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
+// Configurar CORS para permitir solicitudes desde el frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp", policy =>
+    {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Registrar ProductoService como singleton
-builder.Services.AddSingleton<ProductoService>();
+// Registrar ProductoService para la inyección de dependencias
+builder.Services.AddScoped<ProductoService>();
 
+// Agregar soporte para controladores API
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) {
+// Configuración en modo desarrollo
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
 }
 
+// Aplicar CORS
 app.UseCors("AllowClientApp");
 
+// Mapear controladores API
+app.MapControllers();
+
+// Ruta base para verificar que el servidor está corriendo
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
-// Endpoint que usa la instancia inyectada de ProductoService
-app.MapGet("/api/productos", (ProductoService servicio) => {
-    return Results.Ok(servicio.ObtenerProductos());
+// Ruta para obtener productos desde el servicio
+app.MapGet("/api/productos", async (ProductoService servicio) =>
+{
+    return Results.Ok(await servicio.ObtenerProductosAsync());
 });
 
+// Inicializar productos en la base de datos si aún no existen
+using (var scope = app.Services.CreateScope())
+{
+    var servicios = scope.ServiceProvider;
+    var productoService = servicios.GetRequiredService<ProductoService>();
+    await productoService.AgregarProductosInicialesAsync();
+}
+
+// Ejecutar la aplicación
 app.Run();

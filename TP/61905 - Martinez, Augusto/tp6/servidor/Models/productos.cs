@@ -1,4 +1,4 @@
-namespace TuApi.Models;
+namespace servidor.Models;
 
 public class Producto
 {
