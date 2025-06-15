@@ -1,5 +1,4 @@
-﻿@page "/"
-@using cliente.Services
+﻿@using cliente.Services
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
@@ -44,7 +43,7 @@
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
+    private async Task ObtenerDatosDelServidor(){ 
         try {
             cargando = true;
             error = null;

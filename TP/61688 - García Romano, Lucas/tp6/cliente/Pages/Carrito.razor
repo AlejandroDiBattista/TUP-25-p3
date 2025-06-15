@@ -1,0 +1,160 @@
+@page "/carrito"
+@using cliente.Services
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<h1>🛒 Carrito de Compras</h1> 
+
+@if (items == null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <!--Sirve para mandar un comentario-->
+    <p style="margin-top: 3rem; font-size: 1.3rem;">Tu carrito está vacío.</p>
+}
+else
+{
+    
+    <table class="tabla-carrito">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio unitario</th>
+                <th>Cantidad</th>
+                <th>Stock</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.PrecioUnitario.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))</td>
+                    <td>
+                        <button @onclick="() => CambiarCantidadLocal(item, -1)" disabled="@(item.Cantidad <= 0)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => CambiarCantidadLocal(item, 1)" 
+                                disabled="@(item.Cantidad >= item.Stock)">+</button>
+                    </td>
+                    <td>@item.Stock</td>
+                    <td>@((item.Cantidad * item.PrecioUnitario).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR")))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="acciones-carrito">
+        <button class="btn-vaciar" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn-confirmar" @onclick="ConfirmarCompra">Confirmar Compra</button>
+    </div>
+
+    <div class="total-box">
+        <strong>Total: </strong> @((items.Sum(i => i.Cantidad * i.PrecioUnitario)).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR")))
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje)) //manda un msj de error si hay un problema
+{
+    <div class="alert alert-danger mt-2">@mensaje</div>
+}
+
+@code {
+    private List<ItemCarritoDto> items; //lista de items del carrito
+    private string mensaje;//mensaje de error o info
+
+    protected override async Task OnInitializedAsync()//inicializa el componente
+    {
+        await CargarItems();//cargo los items del carrito
+        CarritoService.OnCarritoActualizado += ActualizarDesdeServicio;//me inscribo al evento de actualización del carrito
+    }
+
+    protected override async Task OnParametersSetAsync()//se ejecuta cada vez que se establecen los parámetros del componente
+    {
+        await CargarItems();//se cargan los items del carrito
+    }
+
+    private async void ActualizarDesdeServicio()//actualiza los items del carrito cuando el servicio notifica un cambio
+    {
+        await CargarItems();//actualiza los items del carrito
+        await InvokeAsync(StateHasChanged);//cambia el estado del componente para que se renderice de nuevo
+    }
+
+    private async Task CargarItems()//carga los items del carrito desde el servicio
+    {
+        items = await CarritoService.ObtenerItemsDelCarritoAsync();//obtiene los items del carrito
+    }
+
+    private async Task CambiarCantidad(ItemCarritoDto item, int delta)//cambia la cantidad de un item en el carrito
+    {
+        var nuevaCantidad = item.Cantidad + delta;//obtiene la nueva cantidad sumando o restando el delta
+        try
+        {
+            if (nuevaCantidad <= 0)//si la cantidas es menor a 0 se elimina del carrito
+            {
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, 0);//elimina del carrito
+            }
+            else
+            {
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, nuevaCantidad);//modifica la cantidad de items en el carrito
+            }
+            mensaje = string.Empty;//limpia el mensaje de error
+            await CargarItems(); // Asegura recarga de items desde backend
+            await InvokeAsync(StateHasChanged); // Refresca UI correctamente
+        }
+        catch (Exception ex) //maneja errores al modificar la cantidad
+        {
+            mensaje = ex.Message; //muestra el mensaje de error del backend (por ejemplo, 'Stock insuficiente')
+        }
+        
+    }
+
+    private async Task CambiarCantidadLocal(ItemCarritoDto item, int delta)
+    {
+        // Actualiza la cantidad localmente para feedback inmediato
+        var nuevaCantidad = item.Cantidad + delta;
+        if (nuevaCantidad < 0 || nuevaCantidad > item.Stock) return;
+        item.Cantidad = nuevaCantidad;
+        StateHasChanged(); // Refresca la UI inmediatamente
+        try
+        {
+            if (nuevaCantidad == 0)
+            {
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, 0);
+            }
+            else
+            {
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, nuevaCantidad);
+            }
+            mensaje = string.Empty;
+            await CargarItems(); // Sincroniza con backend
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+            await CargarItems(); // Revierte si hay error
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task VaciarCarrito() //vacia el carrito
+    {
+        await CarritoService.VaciarCarritoAsync(); //vacia el carrito a través del servicio
+        items = new();//limpia la lista de items en el carrito
+        
+    }
+
+    private void ConfirmarCompra()//redirecciona a confirmación de compra
+    {
+        Navigation.NavigateTo("/confirmacion");//te manda a condirmación de compra
+    }
+
+    public void Dispose() //libera recursos y se desuscribe del evento
+    {
+        CarritoService.OnCarritoActualizado -= ActualizarDesdeServicio; //desuscribe del evento de actualización del carrito
+    }
+}
+@implements IDisposable
