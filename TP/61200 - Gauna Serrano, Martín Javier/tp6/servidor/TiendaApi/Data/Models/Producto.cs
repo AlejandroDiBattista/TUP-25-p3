@@ -1,6 +1,7 @@
 
 #nullable enable
     namespace TiendaApi.Models
+namespace TiendaApi.Models
 {
     public class Producto
     {
@@ -10,4 +11,8 @@
         public decimal Precio { get; set; }
         public int Stock { get; set; }
     }
+    // En tu Program.cs o en un controlador
+
+
+
 }

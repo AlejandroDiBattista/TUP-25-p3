@@ -27,6 +27,7 @@ namespace TiendaApi.Models
                 });
             }
         }
+
         public void EliminarItem(int productoId)
         {
             var item = Items.FirstOrDefault(i => i.ProductoId == productoId);
@@ -35,5 +36,22 @@ namespace TiendaApi.Models
                 Items.Remove(item);
             }
         }
+
+        // Método para confirmar la compra: retorna el total y vacía el carrito
+        public decimal ConfirmarCompra()
+        {
+            decimal total = Items.Sum(i => i.PrecioUnitario * i.Cantidad);
+            Items.Clear();
+            return total;
+        }
     }
+
+    public class ItemCarrito
+    {
+        public int ProductoId { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public decimal PrecioUnitario { get; set; }
+        public int Cantidad { get; set; }
+    }
+
 }
