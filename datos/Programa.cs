@@ -186,7 +186,6 @@ class Program {
         }
 
         Consola.Escribir($"Hay {lineas.Count()} líneas en el archivo con {contarTelefonos} telefonos y {contarNotas} notas.");
-        // Consola.EsperarTecla();
     }
 
     static void CopiarHistoriaChat(Clase clase) {
@@ -205,12 +204,10 @@ class Program {
 
         var origen  = Path.Combine(capetaOrigen);
         var destino = Path.Combine(carpetaDestino);
-        Consola.EsperarTecla( $"Procesando comisión WhatsApp en {comision}...");
         try
         {
             var archivos = Directory.GetFiles(origen, $"WhatsApp*{comision}*.zip");
             Consola.Escribir($"Se encontraron {archivos.Length} archivos zip para la comisión {comision}.", ConsoleColor.Cyan);
-            Consola.EsperarTecla();
             var ultimo = archivos.Select(f => new FileInfo(f)).OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
             if (ultimo == null) return; // No hay archivos zip para esta comision, salimos sin hacer nien
 
@@ -232,8 +229,7 @@ class Program {
                 }
             }
             // Delete all previous WhatsApp zip files for this commission
-            foreach (var file in archivos)
-            {
+            foreach (var file in archivos){
                 File.Delete(file);
             }
         }
