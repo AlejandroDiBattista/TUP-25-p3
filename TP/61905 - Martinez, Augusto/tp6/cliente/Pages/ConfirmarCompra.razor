@@ -4,6 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject CarritoService CarritoService
 @inject NavigationManager Navigation
+@inject ApiService ApiService
 
 <h2>Confirmar Compra</h2>
 
@@ -48,11 +49,38 @@ else
 @code {
     private FormularioCompra formulario = new();
 
-    private void ProcesarCompra()
+    private async Task ProcesarCompra()
     {
-        // Aquí podrías guardar la compra en base de datos o generar una orden
-        CarritoService.Vaciar();
-        Navigation.NavigateTo("/");
+        try
+        {
+            // 🔥 Combinar nombre y apellido en ClienteNombre
+            string clienteNombreCompleto = $"{formulario.Nombre} {formulario.Apellido}";
+
+            await CarritoService.ConfirmarCompraAsync(clienteNombreCompleto, formulario.Email);
+
+            // 🔥 Recargar productos después de la compra para actualizar stock
+            await CargarProductos();
+
+            // 🔥 Redirigir al catálogo después de confirmar la compra
+            Navigation.NavigateTo("/catalogo");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar compra: {ex.Message}");
+        }
+    }
+
+    private async Task CargarProductos()
+    {
+        try
+        {
+            var productos = await ApiService.ObtenerProductosAsync();
+            CarritoService.ActualizarProductos(productos); // 🔥 Nueva función para reflejar stock actualizado
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar productos: {ex.Message}");
+        }
     }
 
     public class FormularioCompra

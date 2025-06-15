@@ -1,11 +1,21 @@
-using Cliente.Models;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Cliente.Models;
 
 namespace Cliente.Services
 {
     public class CarritoService
     {
+        private readonly HttpClient _httpClient;
+
+        public CarritoService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public List<CarritoItem> Items { get; private set; } = new();
 
         public decimal Total => Items.Sum(i => i.Importe);
@@ -65,6 +75,51 @@ namespace Cliente.Services
         {
             return Items.Sum(i => i.Cantidad);
         }
+
+        // 🔥 Nuevo método para actualizar productos después de la compra
+        public void ActualizarProductos(List<Producto> productosActualizados)
+        {
+            foreach (var actualizado in productosActualizados)
+            {
+                var itemEnCarrito = Items.FirstOrDefault(i => i.ProductoId == actualizado.Id);
+                if (itemEnCarrito != null)
+                {
+                    itemEnCarrito.PrecioUnitario = actualizado.Precio;
+                }
+            }
+        }
+
+        // ✅ Método mejorado para confirmar compra y reflejar stock actualizado
+        public async Task ConfirmarCompraAsync(string clienteNombre, string clienteEmail)
+        {
+            var venta = new Venta
+            {
+                ClienteNombre = clienteNombre,
+                ClienteEmail = clienteEmail,
+                Items = Items.Select(item => new VentaItem
+                {
+                    ProductoId = item.ProductoId,
+                    Cantidad = item.Cantidad,
+                    PrecioUnitario = item.PrecioUnitario
+                }).ToList()
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/comprar", venta);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var productosActualizados = await _httpClient.GetFromJsonAsync<List<Producto>>("api/productos");
+                if (productosActualizados != null)
+                {
+                    ActualizarProductos(productosActualizados);
+                }
+
+                Vaciar(); // Vaciar el carrito después de la compra exitosa
+            }
+            else
+            {
+                throw new HttpRequestException("Error al confirmar la compra");
+            }
+        }
     }
 }
-

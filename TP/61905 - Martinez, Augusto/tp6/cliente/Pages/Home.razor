@@ -78,20 +78,21 @@
 
     private async Task CargarProductos()
     {
-        try
-        {
-            cargando = true;
-            productos = await ApiService.ObtenerProductosAsync();
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-        }
-        finally
-        {
-            cargando = false;
-        }
+    try
+    {
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync();
     }
+    catch (Exception ex)
+    {
+        error = ex.Message;
+    }
+    finally
+    {
+        cargando = false;
+        StateHasChanged(); // 🔥 Refresca la UI para que el stock refleje la compra
+    }
+}
 
     private IEnumerable<Producto> productosFiltrados => string.IsNullOrWhiteSpace(busqueda)
         ? productos
