@@ -1,0 +1,129 @@
+@page "/confirmar"
+@using cliente.Services
+@using cliente.Modelos
+@using System.ComponentModel.DataAnnotations
+@inject CarritoService CarritoService
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Confirmación de compra</h3>
+
+@if (CarritoService.Items.Count == 0)
+{
+    <div class="alert alert-warning">No hay productos en el carrito.</div>
+}
+else
+{
+    <div class="mb-3">
+        <p><strong>Total ítems:</strong> @CarritoService.TotalItems</p>
+        <p><strong>Importe total:</strong> $@CarritoService.Total</p>
+    </div>
+
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-2">
+            <label for="nombre">Nombre</label>
+            <InputText id="nombre" class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
+        </div>
+
+        <div class="mb-2">
+            <label for="apellido">Apellido</label>
+            <InputText id="apellido" class="form-control" @bind-Value="cliente.Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="cliente.Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Confirmar compra</button>
+
+        @if (huboError)
+        {
+            <div class="alert alert-danger mt-3">Hubo un error al confirmar la compra. Intenta nuevamente.</div>
+        }
+    </EditForm>
+}
+
+@code {
+    private Cliente cliente = new();
+    private bool huboError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await CarritoService.Inicializar();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al inicializar carrito: " + ex.Message);
+            huboError = true;
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        huboError = false;
+
+        if (CarritoService.Items.Count == 0)
+        {
+            huboError = true;
+            return;
+        }
+
+                var compra = new CompraDTO
+            {
+                Cliente = new ClienteDto
+                {
+                    Nombre = cliente.Nombre,
+                    Apellido = cliente.Apellido,
+                    Email = cliente.Email
+                },
+                Items = CarritoService.Items.Select(i => new ItemDTO
+                {
+                    ProductoId = i.Producto.Id,
+                    Cantidad = i.Cantidad
+                }).ToList()
+            };
+
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"/carritos/{CarritoService.CarritoId}/confirmar", compra);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await CarritoService.Vaciar();
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                huboError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al confirmar compra: " + ex.Message);
+            huboError = true;
+        }
+    }
+
+    public class Cliente
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; } = "";
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; } = "";
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Email no válido")]
+        public string Email { get; set; } = "";
+    }
+}
