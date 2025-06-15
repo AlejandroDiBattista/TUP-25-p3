@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Text.Json.Serialization;
 using TuProyecto.Models;
 var builder = WebApplication.CreateBuilder(args);
 
+// Agrega esta línea:
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
@@ -64,56 +70,60 @@ using (var scope = app.Services.CreateScope())
 }
 app.MapPost("/api/carrito", async (TiendaDbContext db) =>
 {
-    var compra = new compra { fecha = DateTime.now, total = 0 };
+    var compra = new Compra { Items = new List<ItemCompra>() };
     db.Compras.Add(compra);
     await db.SaveChangesAsync();
-    return Results.Ok(new { carritoId = compra.Id });
+    return Results.Ok(new { carritoId = compra.Id }); // <-- Aquí debe devolver el ID real
 });
 app.MapGet("/api/carrito/{carritoId=int}", async (int carritoId, TiendaDbContext db) =>
 {
     var compra = await db.Compras
-    .Include(c => c.Items)
-        .ThenInclude(i => i.Producto)
+        .Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
         .FirstOrDefaultAsync(c => c.Id == carritoId);
+
     if (compra == null)
-
         return Results.NotFound();
-    return Results.Ok(compra);
 
-
+    // Usa Results.Json para evitar el ciclo de referencias
+    return Results.Json(compra, new System.Text.Json.JsonSerializerOptions
+    {
+        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+    });
 });
-app.MapPut("/api/carrito/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, [FromBody] int cantidad, TiendaDbContext db) =>
+app.MapPut("/api/carrito/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, int cantidad, TiendaDbContext db) =>
 {
-    if (cantidad <= 0) return Results.BadRequest("La Cantidad debe ser mayor a 0.");
+    var compra = await db.Compras
+        .Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
-    var producto = await db.Productos.FindAsync(productoId);
-
-    if (compra == null || producto == null)
+    if (compra == null)
         return Results.NotFound();
 
-    if (producto.Stock < cantidad)
-        return Results.BadRequest("No hay suficiente stock.");
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+        return Results.NotFound();
 
     var item = compra.Items.FirstOrDefault(i => i.ProductoId == productoId);
-
     if (item == null)
     {
         item = new ItemCompra
         {
             ProductoId = productoId,
             Cantidad = cantidad,
-            PrecioUnitario = producto.Precio
+            PrecioUnitario = producto.Precio,
+            Producto = producto
         };
         compra.Items.Add(item);
     }
     else
     {
-        item.Cantidad = cantidad;
+        item.Cantidad += cantidad;
     }
 
     await db.SaveChangesAsync();
-    return Results.Ok(compra);
+    return Results.Ok();
 });
 
 app.MapDelete("/api/carrito/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, TiendaDbContext db) =>
@@ -137,32 +147,43 @@ app.MapDelete("/api/carrito/{carritoId:int}", async (int carritoId, TiendaDbCont
     await db.SaveChangesAsync();
     return Results.Ok();
 });
-app.MapPut("/api/carrito/{carritoId:int}/confirmar", async (int carritoId, [FromBody] Compra datos, TiendaDbContext db) =>
+app.MapPut("/api/carrito/{carritoId:int}/confirmar", async (int carritoId, Compra datos, TiendaDbContext db) =>
 {
-    var compra = await db.Compras.Include(c => c.Items).ThenInclude(i => i.Producto).FirstOrDefaultAsync(c => c.Id == carritoId);
+    var compra = await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
     if (compra == null) return Results.NotFound();
 
- 
+    // Validar stock antes de descontar
     foreach (var item in compra.Items)
     {
         if (item.Producto.Stock < item.Cantidad)
             return Results.BadRequest($"No hay suficiente stock para {item.Producto.Nombre}");
     }
 
-
+    // Descontar stock
     foreach (var item in compra.Items)
     {
         item.Producto.Stock -= item.Cantidad;
     }
+
     compra.NombreCliente = datos.NombreCliente;
     compra.ApellidoCliente = datos.ApellidoCliente;
     compra.EmailCliente = datos.EmailCliente;
-    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
     compra.Fecha = DateTime.Now;
+    compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
 
     await db.SaveChangesAsync();
+
     return Results.Ok(compra);
 });
+app.MapGet("/api/productos", async (TiendaDbContext db) =>
+    await db.Productos.ToListAsync());
+app.MapControllers();
 app.Run();
+
+
 
 

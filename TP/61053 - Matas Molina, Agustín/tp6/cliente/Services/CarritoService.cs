@@ -1,64 +1,82 @@
-public class CarritoService
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using TuProyecto.Models;
+using System.Text.Json;
+
+
+namespace cliente.Services
 {
-    public event Action? OnChange;
-    private List<ProductoCarrito> productos = new();
-
-    public IReadOnlyList<ProductoCarrito> Productos => productos;
-
-    public int CantidadTotal => productos.Sum(p => p.Cantidad);
-
-    public void AgregarProducto(ProductoCarrito producto)
+    public class CarritoService
     {
-        var existente = productos.FirstOrDefault(p => p.Id == producto.Id);
-        if (existente != null)
-            existente.Cantidad++;
-        else
-            productos.Add(new ProductoCarrito
+        private readonly HttpClient httpClient;
+        public int? CarritoId { get; set; }
+        public Compra? CarritoActual { get; set; }
+
+        public event Action? OnChange;
+
+        public CarritoService(HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
+        }
+
+        // Crear un nuevo carrito (si no existe)
+        public async Task CrearCarritoSiNoExisteAsync()
+        {
+            if (CarritoId != null && CarritoId != 0) return;
+            var response = await httpClient.PostAsync("/api/carrito", null);
+            if (response.IsSuccessStatusCode)
             {
-                Id = producto.Id,
-                Nombre = producto.Nombre,
-                ImagenUrl = producto.ImagenUrl,
-                Precio = producto.Precio,
-                Cantidad = 1
-            });
-        OnChange?.Invoke();
-    }
+                var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+                CarritoId = json.GetProperty("carritoId").GetInt32();
+            }
+        }
 
-    public void SumarCantidad(int productoId)
-    {
-        var prod = productos.FirstOrDefault(p => p.Id == productoId);
-        if (prod != null)
+        // Agregar o actualizar cantidad de un producto
+        public async Task AgregarOActualizarProductoAsync(int productoId, int cantidad)
         {
-            prod.Cantidad++;
+            await CrearCarritoSiNoExisteAsync();
+            var response = await httpClient.PutAsync($"/api/carrito/{CarritoId}/{productoId}?cantidad={cantidad}", null);
+            if (response.IsSuccessStatusCode)
+                await RefrescarCarritoAsync();
+        }
+
+        // Refrescar el carrito desde el backend
+        public async Task RefrescarCarritoAsync()
+        {
+            if (CarritoId == null || CarritoId == 0) return;
+            CarritoActual = await httpClient.GetFromJsonAsync<Compra>($"/api/carrito/{CarritoId}");
             OnChange?.Invoke();
         }
-    }
 
-    public void RestarCantidad(int productoId)
-    {
-        var prod = productos.FirstOrDefault(p => p.Id == productoId);
-        if (prod != null)
+        // Eliminar un producto del carrito
+        public async Task EliminarProductoAsync(int productoId)
         {
-            prod.Cantidad--;
-            if (prod.Cantidad <= 0)
-                productos.Remove(prod);
-            OnChange?.Invoke();
+            if (CarritoId == null) return;
+            await httpClient.DeleteAsync($"/api/carrito/{CarritoId}/{productoId}");
+            await RefrescarCarritoAsync();
         }
-    }
 
-    public void EliminarProducto(int productoId)
-    {
-        var prod = productos.FirstOrDefault(p => p.Id == productoId);
-        if (prod != null)
+        // Vaciar el carrito
+        public async Task VaciarCarritoAsync()
         {
-            productos.Remove(prod);
-            OnChange?.Invoke();
+            if (CarritoId == null) return;
+            await httpClient.DeleteAsync($"/api/carrito/{CarritoId}");
+            await RefrescarCarritoAsync();
         }
-    }
 
-    public void Vaciar()
-    {
-        productos.Clear();
-        OnChange?.Invoke();
+        // Confirmar la compra
+        public async Task ConfirmarCompraAsync(string nombre, string apellido, string email)
+        {
+            if (CarritoId == null) return;
+            var datos = new Compra
+            {
+                NombreCliente = nombre,
+                ApellidoCliente = apellido,
+                EmailCliente = email
+            };
+            await httpClient.PutAsJsonAsync($"/api/carrito/{CarritoId}/confirmar", datos);
+            await RefrescarCarritoAsync();
+        }
     }
 }

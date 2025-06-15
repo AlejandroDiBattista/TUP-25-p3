@@ -1,8 +1,17 @@
 @page "/productos"
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager Nav
+@inject BusquedaService BusquedaService
+@inject IJSRuntime JS
+@inject CarritoService CarritoService
+@using TuProyecto.Models
 
 <h2>Todos los productos</h2>
+
+<div style="height: 90px; margin-bottom: 1.5rem;">
+    <img src="imagenes/bannerProductos.jpg" alt="Banner de Productos" class="img-fluid rounded" style="width: 100%; height: 250px;">
+</div>
 
 @if (productos == null)
 {
@@ -15,16 +24,30 @@ else if (productos.Count == 0)
 else
 {
     <div class="row">
-        @foreach (var prod in productos)
+        @foreach (var prod in productos
+            .Where(p => string.IsNullOrWhiteSpace(BusquedaService.TextoBusqueda)
+                || p.Nombre.Contains(BusquedaService.TextoBusqueda, StringComparison.OrdinalIgnoreCase)
+                || p.Descripcion.Contains(BusquedaService.TextoBusqueda, StringComparison.OrdinalIgnoreCase)))
         {
-            <div class="col-md-4 mb-3">
-                <div class="card h-100">
-                    <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:180px;object-fit:contain;">
-                    <div class="card-body">
-                        <h5>@prod.Nombre</h5>
-                        <p>@prod.Descripcion</p>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2 px-0 mb-2">
+                <div class="card h-100 producto-card custom-product-card position-relative">
+                    <span class="badge bg-primary position-absolute top-0 end-0 m-2" style="font-size:0.9rem;">
+                        Stock: @prod.Stock
+                    </span>
+                    <img src="@prod.ImagenUrl"
+                         class="card-img-top"
+                         alt="@prod.Nombre"
+                         style="max-height:180px;object-fit:contain;"
+                         id="img-prod-@prod.Id" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@prod.Nombre</h5>
+                        <p class="card-text">@prod.Descripcion</p>
                         <p><b>$@prod.Precio</b></p>
-                        <button class="btn btn-success" @onclick="() => ComprarProducto(prod.Id)">Comprar</button>
+                        <button class="btn btn-success mt-auto"
+                                @onclick="() => ComprarAnimado(prod.Id)"
+                                disabled="@(prod.Stock == 0 || (CarritoService.CarritoActual?.Items.FirstOrDefault(p => p.Producto.Id == prod.Id)?.Cantidad ?? 0) >= prod.Stock)">
+                            Comprar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -32,16 +55,25 @@ else
     </div>
 }
 
+<span class="carrito-contador">@((CarritoService.CarritoActual?.Items.Sum(item => item.Cantidad) ?? 0))</span>
 @code {
     private List<Producto> productos;
 
     protected override async Task OnInitializedAsync()
     {
         productos = await ApiService.GetProductosAsync();
+        BusquedaService.OnChange += StateHasChanged;
     }
 
-    private void ComprarProducto(int productoId)
+    public void Dispose()
     {
-        // Lógica para agregar al carrito
+        BusquedaService.OnChange -= StateHasChanged;
+    }
+
+    private async Task ComprarAnimado(int productoId)
+    {
+        await JS.InvokeVoidAsync("flyToCart", $"#img-prod-{productoId}", "#iconoCarrito");
+        var prod = productos.First(p => p.Id == productoId);
+        await CarritoService.AgregarOActualizarProductoAsync(productoId, 1);
     }
 }

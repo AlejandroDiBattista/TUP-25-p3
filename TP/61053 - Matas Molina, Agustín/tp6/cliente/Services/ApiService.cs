@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using TuProyecto.Models;
 
 namespace cliente.Services;
 
@@ -23,7 +24,16 @@ public class ApiService {
  
     public async Task<List<Producto>> GetProductosAsync()
     {
-        return await _httpClient.GetFromJsonAsync<List<Producto>>("/api/productos");
+        try
+        {
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/api/productos");
+            return productos ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al deserializar productos: " + ex.Message);
+            return new List<Producto>();
+        }
     }
 
 
@@ -46,15 +56,6 @@ public class DatosRespuesta {
     public DateTime Fecha { get; set; }
 }
 
-public class Producto
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Descripcion { get; set; }
-    public decimal Precio { get; set; }
-    public int Stock { get; set; }
-    public string ImagenUrl { get; set; }
-}
 
 public class CarritoIdResponse
 {
