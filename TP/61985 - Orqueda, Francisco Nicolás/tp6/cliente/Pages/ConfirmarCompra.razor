@@ -1,0 +1,100 @@
+@page "/confirmar-compra/{carritoId:guid}"
+@using cliente.Models
+@using cliente.Services
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<h3>Confirmar compra</h3>
+
+@if (items == null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <div class="alert alert-warning">El carrito está vacío.</div>
+}
+else if (!compraEnviada)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Producto?.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.Producto?.Precio.ToString("C")</td>
+                    <td>@((item.Producto?.Precio ?? 0) * item.Cantidad).ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><b>Total:</b> @items.Sum(i => (i.Producto?.Precio ?? 0) * i.Cantidad).ToString("C")</p>
+
+    <EditForm Model="datos" OnValidSubmit="Confirmar">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label>Nombre</label>
+            <InputText class="form-control" @bind-Value="datos.Nombre" required />
+        </div>
+        <div class="mb-3">
+            <label>Apellido</label>
+            <InputText class="form-control" @bind-Value="datos.Apellido" required />
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="datos.Email" required />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+}
+else
+{
+    <div class="alert alert-success mt-3">¡Compra confirmada!</div>
+}
+
+@if (mensaje != null)
+{
+    <div class="alert alert-info mt-3">@mensaje</div>
+}
+
+<button class="btn btn-secondary" @onclick="VolverAlCatalogo">Volver al Inicio</button>
+
+@code {
+    [Parameter]
+    public Guid carritoId { get; set; }
+
+    List<CarritoItem> items;
+    string mensaje;
+    bool compraEnviada = false;
+
+    CompraConfirmacionDto datos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await ApiService.ObtenerItemsCarritoAsync(carritoId);
+    }
+
+    async Task Confirmar()
+    {
+        var ok = await ApiService.ConfirmarCompraAsync(carritoId, datos);
+        if (ok)
+        {
+            compraEnviada = true;
+        }
+        else
+        {
+            mensaje = "Ocurrió un error al confirmar la compra.";
+        }
+    }
+
+    void VolverAlCatalogo() => NavigationManager.NavigateTo("/");
+}
