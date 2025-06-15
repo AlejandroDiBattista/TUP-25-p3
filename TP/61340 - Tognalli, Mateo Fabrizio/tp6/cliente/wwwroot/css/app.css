@@ -7,17 +7,17 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: #D2691E;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #E67E22;
+    border-color: #D35400;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #F39C12;
 }
 
 .content {
@@ -111,4 +111,74 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+/* Tema Naranja Elegante */
+.bg-elegant-orange {
+    background: linear-gradient(135deg, #F39C12 0%, #E67E22 50%, #D35400 100%) !important;
+}
+
+.btn-primary:hover {
+    background-color: #D35400;
+    border-color: #A04000;
+}
+
+.btn-primary:active, .btn-primary:focus, .btn-primary.active {
+    background-color: #A04000 !important;
+    border-color: #8B3A00 !important;
+    box-shadow: 0 0 0 0.25rem rgba(230, 126, 34, 0.25) !important;
+}
+
+.btn-primary:active:focus {
+    box-shadow: 0 0 0 0.25rem rgba(230, 126, 34, 0.25) !important;
+}
+
+.btn-primary:disabled, .btn-primary.disabled {
+    background-color: #BDC3C7 !important;
+    border-color: #95A5A6 !important;
+    color: #6C757D !important;
+}
+
+/* Botón Success con tema naranja */
+.btn-success {
+    background-color: #E67E22 !important;
+    border-color: #D35400 !important;
+}
+
+.btn-success:hover, .btn-success:active, .btn-success:focus {
+    background-color: #D35400 !important;
+    border-color: #A04000 !important;
+    box-shadow: 0 0 0 0.25rem rgba(230, 126, 34, 0.25) !important;
+}
+
+/* Botones outline con tema naranja */
+.btn-outline-secondary {
+    color: #E67E22 !important;
+    border-color: #E67E22 !important;
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:active, .btn-outline-secondary:focus {
+    background-color: #E67E22 !important;
+    border-color: #E67E22 !important;
+    color: white !important;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Enlaces hover naranja */
+a:hover, .btn-link:hover {
+    color: #F39C12;
+}
+
+/* Texto naranja personalizado */
+.text-orange {
+    color: #E67E22 !important;
+}
+
+/* Spinner naranja */
+.spinner-border.text-orange {
+    color: #E67E22 !important;
 }

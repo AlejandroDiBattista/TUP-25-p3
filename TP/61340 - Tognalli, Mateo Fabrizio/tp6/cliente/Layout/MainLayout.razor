@@ -1,4 +1,87 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+﻿@namespace Cliente.Layout
+@using Cliente.Services
+@using Cliente.Models
+@inherits LayoutComponentBase
+@inject CarritoEstado CarritoEstado
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<div class="page">    <!-- Navbar fija -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-elegant-orange fixed-top">
+        <div class="container">            <!-- Logo/Home -->            <a class="navbar-brand" href="/" @onclick="IrAHome" @onclick:preventDefault="true">
+                <i class="fas fa-store me-2"></i>
+                TechStore
+            </a>
+
+            <!-- Buscador -->
+            <div class="mx-auto" style="max-width: 400px;">                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar productos..." 
+                           @bind="terminoBusqueda" @bind:event="oninput" 
+                           @onkeydown="BuscarAlPresionarEnter">
+                    <button class="btn btn-outline-light" type="button" @onclick="Buscar">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Carrito -->
+            <div class="d-flex">
+                <button class="btn btn-outline-light position-relative" @onclick="IrAlCarrito">
+                    <i class="fas fa-shopping-cart"></i>
+                    @if (CarritoEstado.Carrito?.TotalItems > 0)
+                    {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @CarritoEstado.Carrito.TotalItems
+                        </span>
+                    }
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal con padding superior para compensar navbar fija -->
+    <main style="padding-top: 80px;">
+        @Body
+    </main>
 </div>
+
+@code {
+    private string terminoBusqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoEstado.OnChange += StateHasChanged;
+        await CarritoEstado.InicializarCarritoAsync();
+    }    private void IrAHome()
+    {
+        terminoBusqueda = "";
+        Navigation.NavigateTo("/");
+    }
+
+    private void IrAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+        {
+            Navigation.NavigateTo($"/?busqueda={Uri.EscapeDataString(terminoBusqueda)}");
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }    private void BuscarAlPresionarEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Buscar();
+        }
+    }
+
+    public void Dispose()
+    {
+        CarritoEstado.OnChange -= StateHasChanged;
+    }
+}

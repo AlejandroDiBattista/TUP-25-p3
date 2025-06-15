@@ -1,0 +1,284 @@
+@page "/confirmacion"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+@inject CarritoEstado CarritoEstado
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<h3 class="text-center mb-4">
+    <i class="fas fa-credit-card me-2"></i>
+    Confirmación de Compra
+</h3>
+
+<div class="container">
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-orange" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando información...</p>
+        </div>
+    }
+    else if (CarritoEstado.Carrito == null || !CarritoEstado.Carrito.Items.Any())
+    {
+        <div class="text-center">
+            <div class="alert alert-warning">
+                <h4>No hay productos en el carrito</h4>
+                <p>Agrega productos al carrito antes de proceder con la compra.</p>
+                <button class="btn btn-primary" @onclick="IrAlCatalogo">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Ir al Catálogo
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Resumen de la compra -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Resumen de tu Compra
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var item in CarritoEstado.Carrito.Items)
+                        {
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="@item.ImagenUrl" 
+                                         class="me-3" 
+                                         alt="@item.NombreProducto"
+                                         style="width: 50px; height: 50px; object-fit: cover;">                                    <div>
+                                        <h6 class="mb-0">@item.NombreProducto</h6>
+                                        <small class="text-muted">$@item.PrecioUnitario.ToString("N2") c/u</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-secondary me-2">@item.Cantidad</span>
+                                    <strong>$@item.Importe.ToString("N2")</strong>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <strong>Total de artículos: @CarritoEstado.Carrito.TotalItems</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <h5 class="text-orange mb-0">
+                                    <strong>Total: $@CarritoEstado.Carrito.Total.ToString("N2")</strong>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulario de datos del cliente -->
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>
+                            Datos del Cliente
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="@datosCliente" OnValidSubmit="@ConfirmarCompra">
+                            <DataAnnotationsValidator />                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre *</label>
+                                <InputText id="nombre" 
+                                          class="form-control" 
+                                          @bind-Value="datosCliente.NombreCliente" 
+                                          @onkeypress="@((e) => ValidarSoloLetras(e))"
+                                          @oninput="@((e) => LimpiarNumeros(e, nameof(datosCliente.NombreCliente)))"
+                                          placeholder="Ingresa tu nombre" />
+                                <ValidationMessage For="@(() => datosCliente.NombreCliente)" class="text-danger" />
+                                <small class="text-muted">Solo se permiten letras y espacios</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="apellido" class="form-label">Apellido *</label>
+                                <InputText id="apellido" 
+                                          class="form-control" 
+                                          @bind-Value="datosCliente.ApellidoCliente" 
+                                          @onkeypress="@((e) => ValidarSoloLetras(e))"
+                                          @oninput="@((e) => LimpiarNumeros(e, nameof(datosCliente.ApellidoCliente)))"
+                                          placeholder="Ingresa tu apellido" />
+                                <ValidationMessage For="@(() => datosCliente.ApellidoCliente)" class="text-danger" />
+                                <small class="text-muted">Solo se permiten letras y espacios</small>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email *</label>
+                                <InputText id="email" 
+                                          type="email" 
+                                          class="form-control" 
+                                          @bind-Value="datosCliente.EmailCliente" 
+                                          placeholder="tu@email.com" />
+                                <ValidationMessage For="@(() => datosCliente.EmailCliente)" class="text-danger" />
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" 
+                                        class="btn btn-success btn-lg" 
+                                        disabled="@procesando">
+                                    @if (procesando)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        <span>Procesando...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-check me-2"></i>
+                                        <span>Confirmar Compra</span>
+                                    }
+                                </button>
+                                
+                                <button type="button" 
+                                        class="btn btn-outline-secondary" 
+                                        @onclick="VolverAlCarrito"
+                                        disabled="@procesando">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Volver al Carrito
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal de éxito -->
+@if (mostrarModalExito)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ¡Compra Realizada!
+                    </h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4>¡Gracias por tu compra!</h4>
+                    <p>Tu pedido ha sido procesado exitosamente.</p>
+                    <p class="text-muted">Recibirás un email de confirmación en: <strong>@datosCliente.EmailCliente</strong></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-primary" @onclick="IrAlCatalogo">
+                        <i class="fas fa-shopping-bag me-2"></i>
+                        Seguir Comprando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool cargando = true;
+    private bool procesando = false;
+    private bool mostrarModalExito = false;
+    
+    private ConfirmarCompraDto datosCliente = new()
+    {
+        NombreCliente = "",
+        ApellidoCliente = "",
+        EmailCliente = ""
+    };    protected override async Task OnInitializedAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "document.title = 'TechStore - Confirmación'");
+        CarritoEstado.OnChange += StateHasChanged;
+        await CarritoEstado.InicializarCarritoAsync();
+        cargando = false;
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        procesando = true;
+        try
+        {
+            var exito = await CarritoEstado.ConfirmarCompraAsync(datosCliente);
+            if (exito)
+            {
+                mostrarModalExito = true;
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    "No se pudo procesar la compra. Verifica que todos los productos tengan stock disponible.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al confirmar compra: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al procesar la compra. Inténtalo nuevamente.");
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private void VolverAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }    private void IrAlCatalogo()
+    {
+        mostrarModalExito = false;
+        Navigation.NavigateTo("/");
+    }    private void ValidarSoloLetras(KeyboardEventArgs e)
+    {
+        // Permitir teclas especiales como backspace, delete, enter, tab, etc.
+        if (e.Key.Length == 1)
+        {
+            var caracter = e.Key[0];
+            
+            // Verificar si es un número (0-9)
+            if (char.IsDigit(caracter))
+            {
+                // Mostrar mensaje de ayuda al usuario
+                JSRuntime.InvokeVoidAsync("console.log", "Solo se permiten letras en este campo");
+                return;
+            }
+        }
+    }    private void LimpiarNumeros(ChangeEventArgs e, string campo)
+    {
+        var valor = e.Value?.ToString() ?? "";
+        
+        // Remover números y caracteres no permitidos
+        var valorLimpio = Regex.Replace(valor, @"[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]", "");
+        
+        // Actualizar el campo correspondiente
+        if (campo == nameof(datosCliente.NombreCliente))
+        {
+            datosCliente.NombreCliente = valorLimpio;
+        }
+        else if (campo == nameof(datosCliente.ApellidoCliente))
+        {
+            datosCliente.ApellidoCliente = valorLimpio;
+        }
+        
+        // Refrescar el componente para mostrar el valor limpio
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        CarritoEstado.OnChange -= StateHasChanged;
+    }
+}
