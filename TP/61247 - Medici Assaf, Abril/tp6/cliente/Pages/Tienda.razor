@@ -11,7 +11,7 @@
 }
 else if (productos.Count == 0)
 {
-    <div class="alert alert-warning">Me mato lpm...</div>
+    <div class="alert alert-warning">No hay productos :(</div>
 }
 else
 {
@@ -29,7 +29,7 @@ else
                         <h5>@producto.Titulo</h5>
                         <p>@producto.Detalle</p>
                         <p><strong>$@producto.Valor</strong></p>
-                        <button class="btn btn-success mt-auto" @onclick="() => Agregar(producto.ProductoId)">Agregar al carrito</button>
+                        <button class="btn btn-primary mt-auto" @onclick="() => Agregar(producto.ProductoId)">Agregar al carrito</button>
                     </div>
                 </div>
             </div>

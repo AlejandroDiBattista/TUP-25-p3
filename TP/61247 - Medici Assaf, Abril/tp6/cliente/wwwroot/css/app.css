@@ -159,3 +159,29 @@ body.dark-mode .btn {
     color: #000000 !important;
     border-color: #222222 !important;
 }
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #320000; 
+    border-color: #3d0202;
+    color: #fff;
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+    background-color: #000000; 
+    border-color: #000000;
+    color: #fff;
+}
+
+.navbar-custom {
+    background-color: #343a40; 
+    transition: background 0.3s;
+}
+body.dark-mode .navbar-custom {
+    background-color: #181a1b; 
+}
+body:not(.dark-mode) .navbar-custom {
+    background-color: #282828;
+}
