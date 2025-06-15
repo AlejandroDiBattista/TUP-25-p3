@@ -1,31 +1,53 @@
+using Microsoft.EntityFrameworkCore;
+using servidor.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// Configurar CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins("http://localhost:5184", "http://localhost:5177")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Agregar controladores si es necesario
+// Agregar DbContext
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
 builder.Services.AddControllers();
-
+// Construir la aplicación
 var app = builder.Build();
+
+// Crear la base de datos si no existe
+using (var scope = app.Services.CreateScope()) {
+    var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    db.Database.EnsureCreated();
+}
 
 // Configurar el pipeline de solicitudes HTTP
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
+app.UseRouting();
 
-// Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
-// Ejemplo de endpoint de API
+// Endpoint de prueba
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Endpoint de productos
+app.MapGet("/api/productos", async (TiendaDbContext db) =>
+    await db.Productos.ToListAsync()
+);
+//app.MapPost("/api/compras", async (servidor.Data.TiendaDbContext db, servidor.Models.Compra compra) =>
+//*{
+// db.Compras.Add(compra);
+//wait db.SaveChangesAsync();
+//return Results.Ok();
+//})
+
+app.MapControllers();
 app.Run();
