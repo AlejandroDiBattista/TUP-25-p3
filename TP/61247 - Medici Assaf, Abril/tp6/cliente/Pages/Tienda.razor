@@ -16,23 +16,25 @@ else if (productos.Count == 0)
 else
 {
 
-<div class="row justify-content-center g-0">
-    @foreach (var producto in productosFiltrados)
-    {
-        <div class="col-12 col-sm-8 col-md-6 col-lg-4 d-flex justify-content-center p-0">
-            <div class="tarjeta-producto">
-                <img src="@producto.ImagenUrl"
-                     alt="@producto.Titulo"
-                     style="width: 100%; height: 350px; object-fit: cover; border: none;" />
-                <div class="p-3 d-flex flex-column">
-                    <h5>@producto.Titulo</h5>
-                    <p>@producto.Detalle</p>
-                    <p><strong>$@producto.Valor</strong></p>
-                    <button class="btn btn-success mt-auto" @onclick="() => Agregar(producto.ProductoId)">Agregar al carrito</button>
+<div class="container">
+    <div class="row justify-content-center">
+        @foreach (var producto in productosFiltrados)
+        {
+            <div class="col-12 col-md-4 d-flex justify-content-center mb-4">
+                <div class="tarjeta-producto">
+                    <img src="@producto.ImagenUrl"
+                         alt="@producto.Titulo"
+                         class="tarjeta-img" />
+                    <div class="p-3 d-flex flex-column">
+                        <h5>@producto.Titulo</h5>
+                        <p>@producto.Detalle</p>
+                        <p><strong>$@producto.Valor</strong></p>
+                        <button class="btn btn-success mt-auto" @onclick="() => Agregar(producto.ProductoId)">Agregar al carrito</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 }
@@ -70,7 +72,7 @@ else
     async Task Agregar(int id)
     {
         await ServiceTienda.AgregarAlCarrito(id);
-        StateHasChanged(); // Esto actualiza la UI, opcional pero recomendable
+        StateHasChanged();
     }
 
 }
