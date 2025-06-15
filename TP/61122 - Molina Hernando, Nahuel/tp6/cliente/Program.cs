@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
 using cliente.Services;
+using cliente.Models;
 
 namespace cliente
 {
@@ -13,7 +14,7 @@ namespace cliente
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-
+            builder.Services.AddSingleton<AppState>();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
 
             // Registra tu ApiService para inyección de dependencias

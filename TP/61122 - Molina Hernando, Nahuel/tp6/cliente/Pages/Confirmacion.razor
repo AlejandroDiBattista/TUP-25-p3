@@ -110,7 +110,7 @@
 
 @code {
     string carritoId;
-    List<CarritoItem> items;
+    List<ProductoCarrito> items;
     ClienteDatos cliente = new();
     bool cargando = true;
     string mensaje;
@@ -126,8 +126,6 @@
         cargando = true;
         mensaje = error = null;
         carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
-        if (!string.IsNullOrEmpty(carritoId))
-            carritoId = carritoId.Trim('"');
         if (!string.IsNullOrEmpty(carritoId))
         {
             try

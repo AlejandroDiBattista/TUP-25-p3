@@ -3,6 +3,7 @@
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject AppState AppState
 
 <h2 class="fw-bold text-center text-dark mb-4">Tu Carrito</h2>
 
@@ -33,7 +34,7 @@ else
             <tbody>
                 @foreach (var item in items)
                 {
-                    <tr>
+                    <tr @key="item">
                         <td>
                             <div class="d-flex align-items-center">
                                 @if (!string.IsNullOrEmpty(item.Producto.ImagenUrl))
@@ -46,18 +47,18 @@ else
                         <td class="text-success fw-bold">$@item.Producto.Precio</td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" @onclick="() => CambiarCantidad(item.Producto.Id, item.Cantidad - 1)" disabled="@(item.Cantidad <= 1)">
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" @onclick="() => EliminarProducto(item.Producto.Id, 1)" disabled="@(item.Cantidad <= 1)">
                                     <i class="bi bi-dash"></i>
                                 </button>
                                 <span class="mx-2">@item.Cantidad</span>
-                                <button class="btn btn-sm btn-outline-secondary rounded-circle ms-1" @onclick="() => CambiarCantidad(item.Producto.Id, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle ms-1" @onclick="() => AgregarProducto(item.Producto.Id, 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">
                                     <i class="bi bi-plus"></i>
                                 </button>
                             </div>
                         </td>
                         <td class="fw-bold">$@(item.Producto.Precio * item.Cantidad)</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger rounded-circle" @onclick="() => EliminarProducto(item.Producto.Id)">
+                            <button class="btn btn-sm btn-outline-danger rounded-circle" @onclick="() => EliminarProducto(item.Producto.Id, item.Cantidad)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -67,7 +68,7 @@ else
         </table>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <strong class="fs-4">Total: $@(items?.Sum(i => i.Producto.Precio * i.Cantidad) ?? 0)</strong>
+        <strong class="fs-4" @key="total">Total: $@total</strong>
         <div>
             <button class="btn btn-outline-warning me-2" @onclick="VaciarCarrito">
                 <i class="bi bi-x-circle me-1"></i> Vaciar carrito
@@ -90,7 +91,8 @@ else
 
 @code {
     string carritoId;
-    List<CarritoItem> items;
+    List<ProductoCarrito> items = new List<ProductoCarrito>();
+    decimal total = 0;
     bool cargando = true;
     string error;
     string mensajeStock;
@@ -121,12 +123,9 @@ else
     async Task<string> ObtenerOCrearCarritoId()
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
-        if (!string.IsNullOrEmpty(id))
-            id = id.Trim('"');
         if (string.IsNullOrEmpty(id))
         {
             id = await ApiService.CrearCarritoAsync();
-            id = id.Trim('"');
             await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
         }
         return id;
@@ -134,25 +133,17 @@ else
 
     async Task CargarCarrito()
     {
-        try
-        {
-            items = await ApiService.ObtenerCarritoAsync(carritoId);
-        }
-        catch
-        {
-            await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
-            carritoId = await ApiService.CrearCarritoAsync();
-            carritoId = carritoId.Trim('"');
-            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
-            items = await ApiService.ObtenerCarritoAsync(carritoId);
-        }
+        items = await ApiService.ObtenerCarritoAsync(carritoId);
+        total = items?.Sum(i => i.Producto.Precio * i.Cantidad) ?? 0;
+        AppState.ContadorCarrito = items?.Sum(p => p.Cantidad) ?? 0;
+
         StateHasChanged();
     }
 
-    async Task CambiarCantidad(int productoId, int nuevaCantidad)
+    async Task AgregarProducto(int productoId, int cantidad)
     {
         var item = items.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null && nuevaCantidad > item.Producto.Stock)
+        if (item != null && cantidad > item.Producto.Stock)
         {
             mensajeStock = "No hay suficiente stock para este producto.";
             StateHasChanged();
@@ -160,13 +151,13 @@ else
         }
 
         mensajeStock = null;
-        await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, nuevaCantidad);
+        await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, cantidad);
         await CargarCarrito();
     }
 
-    async Task EliminarProducto(int productoId)
+    async Task EliminarProducto(int productoId, int cantidad)
     {
-        await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoId);
+        await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoId, cantidad);
         await CargarCarrito();
     }
 

@@ -13,11 +13,13 @@ public class ApiService
     }
 
     
-    public async Task<List<Producto>> ObtenerProductosAsync(string buscar = null)
+    public async Task<List<Producto>> ObtenerProductosAsync(string filtro = null)
     {
         var url = "/productos";
-        if (!string.IsNullOrEmpty(buscar))
-            url += $"?buscar={buscar}";
+        if (!string.IsNullOrEmpty(filtro))
+        {
+            url += $"?filtro={filtro}";
+        }
         return await _httpClient.GetFromJsonAsync<List<Producto>>(url);
     }
 
@@ -30,11 +32,11 @@ public class ApiService
     }
 
     
-    public async Task<List<CarritoItem>> ObtenerCarritoAsync(string carritoId)
+    public async Task<List<ProductoCarrito>> ObtenerCarritoAsync(string carritoId)
     {
         var resp = await _httpClient.GetAsync($"/carritos/{carritoId}");
         resp.EnsureSuccessStatusCode();
-        return await resp.Content.ReadFromJsonAsync<List<CarritoItem>>();
+        return await resp.Content.ReadFromJsonAsync<List<ProductoCarrito>>();
     }
 
     
@@ -53,16 +55,16 @@ public class ApiService
     }
 
    
-    public async Task EliminarProductoDelCarritoAsync(string carritoId, int productoId)
+    public async Task EliminarProductoDelCarritoAsync(string carritoId, int productoId, int cantidad)
     {
-        var resp = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+        var resp = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}");
         resp.EnsureSuccessStatusCode();
     }
 
     
     public async Task<ConfirmacionCompraRespuesta> ConfirmarCompraAsync(string carritoId, ClienteDatos datos)
     {
-        var resp = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datos);
+        var resp = await _httpClient.PostAsJsonAsync($"/carritos/{carritoId}/confirmar", datos);
         resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadFromJsonAsync<ConfirmacionCompraRespuesta>();
     }

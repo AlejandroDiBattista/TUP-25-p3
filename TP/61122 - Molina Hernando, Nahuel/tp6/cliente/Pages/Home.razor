@@ -3,23 +3,24 @@
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject AppState AppState
 
 <h2 class="fw-bold text-center text-dark mb-4">Catálogo de Iphones</h2>
 
-@if (productos is null)
+@if (AppState.Productos is null)
 {
     <p>Cargando productos...</p>
 }
-else if (productos.Count == 0)
+else if (AppState.Productos.Count == 0)
 {
     <p>No hay productos para mostrar.</p>
 }
 else
 {
     <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var producto in productos)
+        @foreach (var producto in AppState.Productos)
         {
-            <div class="col">
+            <div class="col" @key="producto">
                 <div class="card h-100 shadow-sm border-0 rounded-4">
                     @if (!string.IsNullOrEmpty(producto.ImagenUrl))
                     {
@@ -52,25 +53,20 @@ else
 }
 
 @code {
-    List<Producto> productos;
     string carritoId;
     string mensaje;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ApiService.ObtenerProductosAsync();
+        AppState.OnProductosChange += StateHasChanged;
     }
 
     async Task<string> ObtenerOCrearCarritoId()
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
-        if (!string.IsNullOrEmpty(id))
-            id = id.Trim('"'); 
-
         if (string.IsNullOrEmpty(id))
         {
             id = await ApiService.CrearCarritoAsync();
-            id = id.Trim('"'); 
             await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
         }
         return id;
@@ -89,5 +85,10 @@ else
             mensaje = "No hay stock disponible.";
         }
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AppState.OnProductosChange -= StateHasChanged;
     }
 }

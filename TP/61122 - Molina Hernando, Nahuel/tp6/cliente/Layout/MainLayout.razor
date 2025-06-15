@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@using cliente.Models
+@inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
+@inject AppState AppState
 
 
     <nav class="navbar navbar-dark bg-dark sticky-top mb-4">
@@ -15,8 +18,11 @@
             <button class="btn btn-outline-light position-relative" @onclick="IrAlCarrito">
                 <i class="bi bi-cart"></i>
                 Carrito
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    @contadorCarrito
+                <span 
+                    @key="AppState.ContadorCarrito"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                >
+                    @AppState.ContadorCarrito
                 </span>
             </button>
         </div>
@@ -31,14 +37,28 @@
     string busqueda = "";
     int contadorCarrito = 0;
 
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.OnContadorChange += StateHasChanged;
+        contadorCarrito = AppState.ContadorCarrito;
+
+        var productos = await ApiService.ObtenerProductosAsync();
+        AppState.Productos = productos;
+    }
+
     async Task Buscar()
     {
-        Navigation.NavigateTo($"/?buscar={busqueda}");
-        await Task.CompletedTask;
+        var productos = await ApiService.ObtenerProductosAsync(busqueda);
+        AppState.Productos = productos;
     }
 
     void IrAlCarrito()
     {
         Navigation.NavigateTo("/carrito");
+    }
+
+    public void Dispose()
+    {
+        AppState.OnContadorChange -= StateHasChanged;
     }
 }

@@ -8,6 +8,7 @@ namespace servidor.Models
         public string NombreCliente { get; set; }
         public string ApellidoCliente { get; set; }
         public string EmailCliente { get; set; }
-        public List<ArticuloDeCompra> Articulos { get; set; }
+        
+        public List<ArticuloDeCompra> Articulos { get; set; } = new List<ArticuloDeCompra>();
     }
 }
