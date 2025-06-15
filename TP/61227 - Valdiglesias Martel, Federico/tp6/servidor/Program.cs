@@ -1,8 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<TiendaDb>(opt => opt.UseSqlite("Data Source=tienda_manual.db"));
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
+builder.Services.AddDbContext<TiendaDb>(opt => opt.UseSqlite("Data Source=tienda.db"));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp", policy =>
+    {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221").AllowAnyHeader().AllowAnyMethod();
     });
 });
@@ -189,5 +193,26 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
+
+
+// Endpoint para obtener productos (no cambia)
+app.MapGet("/api/productos", async (string? q, TiendaDb db) =>
+{
+    var query = db.Productos.AsQueryable();
+    if (!string.IsNullOrWhiteSpace(q))
+    {
+        query = query.Where(p => p.Nombre.ToLower().Contains(q.ToLower()));
+    }
+    return await query.ToListAsync();
+});
+
+// Endpoint para crear una compra (carrito)
+app.MapPost("/api/compras", async (TiendaDb db) =>
+{
+    var nuevaCompra = new Compra();
+    db.Compras.Add(nuevaCompra);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/compras/{nuevaCompra.Id}", nuevaCompra);
+});
 
 app.Run();
