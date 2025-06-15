@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using servidor.Models;
 
-namespace Servidor.Models
+namespace servidor.Models
 {
     public class Carrito
     {

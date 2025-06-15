@@ -56,8 +56,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Aquí deberías obtener o crear el carritoId (puedes guardarlo en localStorage o en memoria)
-        carritoId = await ObtenerOCrearCarritoId();
+        carritoId = await ApiService.ObtenerOCrearCarritoIdAsync();
         items = await ApiService.ObtenerItemsCarritoAsync(carritoId);
     }
 
@@ -84,12 +83,5 @@ else
     {
         // Redirige a la página de confirmación
         NavigationManager.NavigateTo($"/confirmar-compra/{carritoId}");
-    }
-
-    async Task<Guid> ObtenerOCrearCarritoId()
-    {
-        // Implementa lógica para obtener el carritoId de localStorage o crear uno nuevo
-        // Por ahora, crea uno nuevo cada vez
-        return await ApiService.CrearCarritoAsync() ?? Guid.NewGuid();
     }
 }

@@ -7,6 +7,7 @@ namespace cliente.Services
     public class ApiService
     {
         private readonly HttpClient _httpClient;
+        private static Guid? _carritoId;
 
         public ApiService(HttpClient httpClient)
         {
@@ -102,21 +103,6 @@ namespace cliente.Services
             }
         }
 
-        // Obtener los items de un carrito
-        public async Task<List<CarritoItem>> ObtenerItemsCarritoAsync(Guid carritoId)
-        {
-            try
-            {
-                var items = await _httpClient.GetFromJsonAsync<List<CarritoItem>>($"/carritos/{carritoId}");
-                return items ?? new List<CarritoItem>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener items del carrito: {ex.Message}");
-                return new List<CarritoItem>();
-            }
-        }
-
         // Agregar o actualizar producto en carrito
         public async Task<bool> AgregarProductoAlCarritoAsync(Guid carritoId, int productoId, int cantidad)
         {
@@ -129,6 +115,21 @@ namespace cliente.Services
             {
                 Console.WriteLine($"Error al agregar producto al carrito: {ex.Message}");
                 return false;
+            }
+        }
+
+        // Obtener los items de un carrito
+        public async Task<List<CarritoItem>> ObtenerItemsCarritoAsync(Guid carritoId)
+        {
+            try
+            {
+                var items = await _httpClient.GetFromJsonAsync<List<CarritoItem>>($"/carritos/{carritoId}");
+                return items ?? new List<CarritoItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener items del carrito: {ex.Message}");
+                return new List<CarritoItem>();
             }
         }
 
@@ -175,6 +176,16 @@ namespace cliente.Services
                 Console.WriteLine($"Error al quitar producto del carrito: {ex.Message}");
                 return false;
             }
+        }
+
+        public async Task<Guid> ObtenerOCrearCarritoIdAsync()
+        {
+            if (_carritoId != null)
+                return _carritoId.Value;
+
+            var id = await CrearCarritoAsync();
+            _carritoId = id ?? Guid.NewGuid();
+            return _carritoId.Value;
         }
     }
 

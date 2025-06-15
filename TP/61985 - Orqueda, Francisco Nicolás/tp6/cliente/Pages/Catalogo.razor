@@ -1,7 +1,7 @@
 @page "/catalogo"
 @using cliente.Models
-@inject ApiService ApiService
 @using cliente.Services
+@inject ApiService ApiService
 @inject NavigationManager NavigationManager
 <h1>Catálogo de Productos</h1>
 
@@ -51,14 +51,10 @@ else
         productos = await ApiService.ObtenerProductosAsync(busqueda);
     }
 
-    @code {
-    Guid carritoId;
-
     async Task AgregarAlCarrito(int productoId)
     {
-        carritoId = await ApiService.CrearCarritoAsync() ?? Guid.NewGuid();
+        var carritoId = await ApiService.ObtenerOCrearCarritoIdAsync();
         await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, 1);
         NavigationManager.NavigateTo("/carrito");
     }
-}
 }

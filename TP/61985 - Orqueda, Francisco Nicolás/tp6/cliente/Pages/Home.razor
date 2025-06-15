@@ -4,27 +4,32 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-            <a href="/catalogo" class="btn btn-link">Ir al Catálogo de Productos</a>
-            <a href="/carrito" class="btn btn-link">Ir al Carrito</a>
+<div class="bg-gradient-primary-to-secondary py-5">
+    <div class="container text-center text-white">
+        <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" alt="Logo" style="width:90px; margin-bottom: 1rem;" />
+        <h1 class="display-3 fw-bold mb-3">¡Bienvenido a Tu Tienda Online!</h1>
+        <p class="lead mb-4">
+            Descubre los mejores productos, agrégalos a tu carrito y realiza tu compra de forma fácil y segura.
+        </p>
+        <div class="mb-4">
+            <a href="/catalogo" class="btn btn-lg btn-warning mx-2 shadow">Ver Catálogo</a>
+            <a href="/carrito" class="btn btn-lg btn-outline-light mx-2 shadow">Ir al Carrito</a>
         </div>
+        <button class="btn btn-info btn-sm" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
+</div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            @if (cargando)
+            {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
+            }
+            else if (datos != null)
+            {
+                <div class="card border-success shadow">
+                    <div class="card-header bg-success text-white">
                         Respuesta del servidor
                     </div>
                     <div class="card-body">
@@ -32,7 +37,9 @@
                         <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                 </div>
-            } else if (error != null) {
+            }
+            else if (error != null)
+            {
                 <div class="alert alert-danger">
                     Error: @error
                 </div>
@@ -41,20 +48,32 @@
     </div>
 </div>
 
+<style>
+.bg-gradient-primary-to-secondary {
+    background: linear-gradient(90deg, #007bff 0%, #6f42c1 100%);
+}
+</style>
+
 @code {
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }
