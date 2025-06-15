@@ -4,6 +4,8 @@ using servidor.Modelos;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
@@ -17,6 +19,7 @@ builder.Services.AddCors(options =>
 
 builder.Services
     .AddDbContext<ContactosDb>(opt => opt.UseSqlite("Data Source=tienda.db"));
+
 
 var app = builder.Build();
 
@@ -43,6 +46,7 @@ app.UseCors();
 
 var carritos = new Dictionary<string, List<CarritoDto>>();
 
+// 🎯 Crea un nuevo carrito y devuelve su ID
 app.MapGet("api/carritos", () =>
 {
     string carritoId = Guid.NewGuid().ToString();
@@ -50,6 +54,7 @@ app.MapGet("api/carritos", () =>
     return Results.Ok(carritoId);
 });
 
+// 🛒 Obtiene los productos dentro de un carrito específico
 app.MapGet("api/carritos/{carritoId}", (string carritoId) =>
 {
     if (!carritos.ContainsKey(carritoId))
@@ -58,6 +63,7 @@ app.MapGet("api/carritos/{carritoId}", (string carritoId) =>
     return Results.Ok(carritos[carritoId]);
 });
 
+// 🗑️ Elimina completamente un carrito
 app.MapDelete("api/carritos/{carritoId}", (string carritoId) =>
 {
     if (!ValidarCarritoId(carritoId))
@@ -67,10 +73,12 @@ app.MapDelete("api/carritos/{carritoId}", (string carritoId) =>
     return Results.Ok("El carrito fue eliminado con éxito.");
 });
 
+
+// ➕ Agrega un producto al carrito (si hay stock disponible)
 app.MapGet("api/carritos/{carritoId}/{productoId}", async (ContactosDb db, string carritoId, int productoId) =>
 {
     if (!ValidarCarritoId(carritoId))
-        carritos[carritoId] = new List<CarritoDto>();
+        carritos[carritoId] = new List<CarritoDto>(); // Si no existe, se crea automáticamente
 
     var producto = await db.Productos.FirstOrDefaultAsync(x => x.Id == productoId);
     if (producto == null)
@@ -87,10 +95,12 @@ app.MapGet("api/carritos/{carritoId}/{productoId}", async (ContactosDb db, strin
 
     if (cantidadActual > 0)
     {
+          // Ya existe el producto en el carrito, se incrementa la cantidad
         carritos[carritoId].First(x => x.ProductoId == productoId).Cantidad++;
     }
     else
     {
+        // Se agrega el producto por primera vez al carrito
         carritos[carritoId].Add(new CarritoDto
         {
             ProductoId = productoId,
@@ -104,6 +114,7 @@ app.MapGet("api/carritos/{carritoId}/{productoId}", async (ContactosDb db, strin
     return Results.Ok("Producto agregado al carrito.");
 });
 
+// ❌ Elimina un producto específico del carrito
 app.MapDelete("api/carritos/{carritoId}/eliminar/{productoId}", (string carritoId, int productoId) =>
 {
     if (!ValidarCarritoId(carritoId))
@@ -117,7 +128,7 @@ app.MapDelete("api/carritos/{carritoId}/eliminar/{productoId}", (string carritoI
     return Results.Ok("Producto eliminado del carrito");
 });
 
-
+// 🧹 Vacía todo el contenido del carrito
 app.MapDelete("api/carritos/{carritoId}/vaciar", (string carritoId) =>
 {
     if (!ValidarCarritoId(carritoId))
@@ -127,6 +138,7 @@ app.MapDelete("api/carritos/{carritoId}/vaciar", (string carritoId) =>
     return Results.Ok("Carrito vaciado con éxito");
 });
 
+// Endpoint para ver los productos de un carrito específico
 app.MapGet("/productos/{carritoId}", (string carritoId) =>
 {
     if (!ValidarCarritoId(carritoId))
@@ -154,6 +166,7 @@ app.MapGet("api/productos", async (ContactosDb db, string parametroBusqueda = ""
 });
 
 // POST Compras
+// 💰 Realiza la compra de los productos en el carrito
 app.MapPost("api/nuevaCompra", async (ContactosDb db, NuevaCompraDto nuevaCompraDto) =>
 {
     if (!ValidarCarritoId(nuevaCompraDto.CarritoId))
@@ -164,6 +177,7 @@ app.MapPost("api/nuevaCompra", async (ContactosDb db, NuevaCompraDto nuevaCompra
     {
         db.Compras.Add(new Compras
         {
+            // Se registra la compra principal
             Fecha = DateTime.Now.ToString("dd/MM/yyyy"),
             NombreCliente = nuevaCompraDto.Nombre,
             ApellidoCliente = nuevaCompraDto.Apellido,
@@ -315,18 +329,18 @@ app.MapGet("/", () => "Hello World!");
 
 app.Run();
 
-public class Contacto
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; } = null!;
-    public string Apellido { get; set; } = null!;
-    public string Telefono { get; set; } = null!;
-    public string Email { get; set; } = null!;
-}
+
+// 💾 Representa la base de datos usando Entity Framework Core
 public class ContactosDb : DbContext
 {
+    // la conexión a SQLite)
     public ContactosDb(DbContextOptions<ContactosDb> options) : base(options) { }
+
+    
     public DbSet<Productos> Productos { get; set; }
-    public DbSet<Compras> Compras { get; set; }
+
+       public DbSet<Compras> Compras { get; set; }
+
+    
     public DbSet<ItemsCompra> ItemsCompra { get; set; }
 }

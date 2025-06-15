@@ -1,3 +1,4 @@
+// Representa una compra realizada por un cliente dentro del sistema.
 public class Compras
 {
     public int Id { get; set; }
