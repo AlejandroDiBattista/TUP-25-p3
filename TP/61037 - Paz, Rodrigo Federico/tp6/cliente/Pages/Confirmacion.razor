@@ -1,0 +1,75 @@
+@page "/confirmar"
+@using cliente.Models
+@inject ICarritoService CarritoService
+@inject NavigationManager NavigationManager
+@using System.ComponentModel.DataAnnotations
+
+<h3>Confirmación de compra</h3>
+
+@if (items == null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <div class="alert alert-warning">El carrito está vacío.</div>
+    <a class="btn btn-primary" href="/">Volver al catálogo</a>
+}
+else
+{
+    <div class="mb-4">
+        <h5>Resumen</h5>
+        <p>Total de ítems: @items.Sum(item => item.Cantidad)</p>
+        <p>Total a pagar: $@items.Sum(item => item.Subtotal).ToString("N2")</p>
+    </div>
+
+    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompraAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre</label>
+            <InputText class="form-control" @bind-Value="datosCliente.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label>Apellido</label>
+            <InputText class="form-control" @bind-Value="datosCliente.Apellido" />
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="datosCliente.Email" />
+        </div>
+
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+}
+
+@code {
+    private List<ItemCarritoResponse>? items;
+    private DatosCliente datosCliente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await CarritoService.ObtenerItemsCarritoAsync();
+    }
+
+    private async Task ConfirmarCompraAsync()
+    {
+        try
+        {
+            await CarritoService.ConfirmarCompraAsync(datosCliente.Nombre, datosCliente.Apellido, datosCliente.Email);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+        }
+    }
+
+    public class DatosCliente
+    {
+        [Required] public string Nombre { get; set; } = "";
+        [Required] public string Apellido { get; set; } = "";
+        [Required, EmailAddress] public string Email { get; set; } = "";
+    }
+}
