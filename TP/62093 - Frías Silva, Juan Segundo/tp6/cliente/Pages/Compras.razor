@@ -1,0 +1,65 @@
+@page "/compras"
+@inject HttpClient Http
+
+<h2>Historial de Compras</h2>
+
+@if (compras is null)
+{
+    <p>Cargando...</p>
+}
+else if (compras.Count == 0)
+{
+    <p>No hay compras registradas.</p>
+}
+else
+{
+    @foreach (var compra in compras)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Compra #@compra.Id - @compra.NombreCliente @compra.ApellidoCliente</h5>
+                <p>Email: @compra.EmailCliente</p>
+                <p>Fecha: @compra.Fecha.ToString("g")</p>
+                <ul>
+                    @foreach (var item in compra.Items)
+                    {
+                        <li>@item.Producto.Nombre (x@item.Cantidad) - $@item.PrecioUnitario</li>
+                    }
+                </ul>
+                <strong>Total: $@compra.Total</strong>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<CompraDto>? compras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        compras = await Http.GetFromJsonAsync<List<CompraDto>>("/compras");
+    }
+
+    class CompraDto
+    {
+        public int Id { get; set; }
+        public string NombreCliente { get; set; } = "";
+        public string ApellidoCliente { get; set; } = "";
+        public string EmailCliente { get; set; } = "";
+        public decimal Total { get; set; }
+        public DateTime Fecha { get; set; }
+        public List<ItemCompraDto> Items { get; set; } = new();
+    }
+
+    class ItemCompraDto
+    {
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public ProductoDto Producto { get; set; } = new();
+    }
+
+    class ProductoDto
+    {
+        public string Nombre { get; set; } = "";
+    }
+}
