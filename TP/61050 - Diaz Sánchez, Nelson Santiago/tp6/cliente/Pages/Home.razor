@@ -4,34 +4,44 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Bienvenido a la Tienda</h1>
+        <p class="lead">Explora nuestros productos y realiza tu compra fácilmente.</p>
+        <a href="./Catalogo" class="btn btn-success btn-lg">
+            Ir a la Tienda
+        </a>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
+    <div class="text-center mb-4">
+        <button class="btn btn-outline-primary" @onclick="ObtenerDatosDelServidor">
+            Probar conexión con el servidor
+        </button>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            @if (cargando)
+            {
+                <div class="alert alert-info text-center">Cargando datos...</div>
+            }
+            else if (datos != null)
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
                         Respuesta del servidor
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                        <p class="card-text">
+                            Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")
+                        </p>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
+            }
+            else if (error != null)
+            {
+                <div class="alert alert-danger text-center">
                     Error: @error
                 </div>
             }
@@ -44,15 +54,21 @@
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
     }
