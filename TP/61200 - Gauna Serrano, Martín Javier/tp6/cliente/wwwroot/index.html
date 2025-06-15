@@ -28,5 +28,375 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
+<!DOCTYPE html>
+<<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo de Ropa para Hombre</title>
+    <title>Catálogo de Ropa Deportiva para Hombre</title>
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        .card-img-top {
+            height: 250px;
+            height: 500px;
+            object-fit: cover;
+        }
+        #resumenCarrito {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body>
+<!-- Agrega esto antes de cerrar el </body> -->
+<!-- Modal para descripción -->
+<div class="modal fade" id="descripcionModal" tabindex="-1" aria-labelledby="descripcionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="descripcionModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="descripcionModalBody"></div>
+    </div>
+  </div>
+</div>
 
+<!-- Resumen de compra -->
+<div id="resumenCarrito" class="card shadow d-none">
+    <div class="card-header bg-primary text-white">
+        Resumen de compra
+    </div>
+    <div class="card-body">
+        <ul id="listaCarrito" class="list-group mb-2"></ul>
+        <p class="fw-bold">Total: $<span id="totalCarrito">0</span></p>
+        <button class="btn btn-success" onclick="confirmarCompra()">Confirmar compra</button>
+        <button class="btn btn-danger btn-sm float-end" onclick="vaciarCarrito()">Vaciar carrito</button>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Catálogo de Ropa para Hombre</h1>
+    <!-- Agrega esto dentro del <div class="container mt-4">, antes del catálogo -->
+<form class="mb-4" id="formularioUsuario" onsubmit="return validarFormulario()">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Camiseta básica">
+                    <div class="card-body">
+                        <h5 class="card-title">Camiseta Básica</h5>
+                        <p class="card-text">Camiseta de algodón 100% color blanco.</p>
+                        <p class="card-text">Precio: $2500</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Pantalón Chino">
+                    <div class="card-body">
+                        <h5 class="card-title">Pantalón Chino</h5>
+                        <p class="card-text">Pantalón chino beige, corte slim fit.</p>
+                        <p class="card-text">Precio: $4500</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1469398715555-76331a6c7c9b?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Zapatillas Urbanas">
+                    <div class="card-body">
+                        <h5 class="card-title">Zapatillas Urbanas</h5>
+                        <p class="card-text">Zapatillas deportivas para uso diario.</p>
+                        <p class="card-text">Precio: $8000</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Camisa de Jean">
+                    <div class="card-body">
+                        <h5 class="card-title">Camisa de Jean</h5>
+                        <p class="card-text">Camisa de jean azul, manga larga.</p>
+                        <p class="card-text">Precio: $3500</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1526178613658-3f1622045557?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Buzo con Capucha">
+                    <div class="card-body">
+                        <h5 class="card-title">Buzo con Capucha</h5>
+                        <p class="card-text">Buzo gris con capucha y bolsillo frontal.</p>
+                        <p class="card-text">Precio: $4200</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Remera Estampada">
+                    <div class="card-body">
+                        <h5 class="card-title">Remera Estampada</h5>
+                        <p class="card-text">Remera con diseño gráfico moderno.</p>
+                        <p class="card-text">Precio: $2700</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Campera de Cuero">
+                    <div class="card-body">
+                        <h5 class="card-title">Campera de Cuero</h5>
+                        <p class="card-text">Campera negra de cuero sintético.</p>
+                        <p class="card-text">Precio: $12000</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Short Deportivo">
+                    <div class="card-body">
+                        <h5 class="card-title">Short Deportivo</h5>
+                        <p class="card-text">Short de poliéster para entrenamiento.</p>
+                        <p class="card-text">Precio: $1800</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1465101178521-c1a9136a3c5c?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Sweater de Lana">
+                    <div class="card-body">
+                        <h5 class="card-title">Sweater de Lana</h5>
+                        <p class="card-text">Sweater tejido, color azul marino.</p>
+                        <p class="card-text">Precio: $3900</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Chaleco Puff">
+                    <div class="card-body">
+                        <h5 class="card-title">Chaleco Puff</h5>
+                        <p class="card-text">Chaleco inflable, ideal para el frío.</p>
+                        <p class="card-text">Precio: $5000</p>
+                    </div>
+                </div>
+            </div>
+        <div class="col-md-4 mb-2">
+            <input type="text" class="form-control" id="nombre" placeholder="Nombre *" required>
+        </div>
+        <div class="col-md-4 mb-2">
+            <input type="text" class="form-control" id="apellido" placeholder="Apellido *" required>
+        </div>
+        <div class="col-md-4 mb-2">
+            <input type="email" class="form-control" id="email" placeholder="Email *" required>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Enviar</button>
+</form>
+    <h1 class="mb-4">Catálogo de Ropa Deportiva para Hombre</h1>
+    <!-- Buscador -->
+    <div class="mb-4">
+        <input type="text" id="buscador" class="form-control" placeholder="Buscar producto..." oninput="filtrarProductos()" />
+    </div>
+    <div class="row" id="productosContainer">
+        <!-- Los productos se insertan aquí por JS -->
+    </div>
+    <img src="..." class="card-img-top" alt="Camiseta básica"
+     style="cursor:pointer"
+     onclick="mostrarDescripcion('Camiseta Básica', 'Camiseta de algodón 100% color blanco.')" />
+</div>
+
+<h5 class="card-title" style="cursor:pointer"
+    onclick="mostrarDescripcion('Camiseta Básica', 'Camiseta de algodón 100% color blanco.')">
+    Camiseta Básica
+</h5>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Lista de productos
+const productos = [
+    {
+        nombre: "Camiseta De Brasil",
+        descripcion: "Camiseta de titular de la selección de Brasil.",
+        precio: 15000,
+        imagen: "https://www.dexter.com.ar/on/demandware.static/-/Sites-365-dabra-catalog/default/dwc951865d/products/NI_DN0680-741/NI_DN0680-741-1.JPG"
+    },
+    {
+        nombre: "Camiseta Titular Del Real Madrid",
+        descripcion: "Camiseta adidas de la temporada 25/26.",
+        precio: 30000,
+        imagen: "https://assets.adidas.com/images/w_600,f_auto,q_auto/78b62417f1e042aeb25e3353d278de3b_9366/Camiseta_Titular_Real_Madrid_24-25_Version_Jugador_Blanco_IX8095_HM1.jpg"
+    },
+    {
+        nombre: "Short Deportivo Puma",
+        descripcion: "Short deportivo para uso diario.",
+        precio: 9500,
+        imagen: "https://d3fvqmu2193zmz.cloudfront.net/items_2/uid_commerces.1/uid_items_2.FDC2JKU0FBII/500x500/64DBA1557DDB7-Short-Deportivo-Hombre-Teamliga-Training-Shorts-2--Open-Pockets.webp"
+    },
+    {
+        nombre: "Short Del Club Atletico River Plate",
+        descripcion: "Short de poliéster para Partido.",
+        precio: 7500,
+        imagen: "https://rossettiar.vtexassets.com/arquivos/ids/1815434-800-auto?v=638608841275130000&width=800&height=auto&aspect=true"
+    },
+    {
+        nombre: "Short Deportivo adidas",
+        descripcion: "Short deportivo para uso diario Adidas.",
+        precio: 8200,
+        imagen: "https://www.becoenlinea.com/wp-content/uploads/2023/12/FT6685.webp"
+    },
+    {
+        nombre: "Camiseta Titular de River Plate",
+        descripcion: "Camiseta titular versión jugador.",
+        precio: 27000,
+        imagen: "https://templofutbol.vtexassets.com/arquivos/ids/20359721/JN6465-A.jpg?v=638852428398900000"
+    },
+    {
+        nombre: "Camiseta retro de Argentina",
+        descripcion: "Camiseta de retro de maradona color azul.",
+        precio: 12000,
+        imagen: "https://acdn-us.mitiendanube.com/stores/145/898/products/1-3c7d94bd28b57b38f817047553855720-480-0.jpg"
+    },
+    {
+        nombre: "Camiseta de entrenamiento de river plate",
+        descripcion: "Camiseta para entrenamiento.",
+        precio: 5000,
+        imagen: "https://media2.solodeportes.com.ar/media/catalog/product/cache/7c4f9b393f0b8cb75f2b74fe5e9e52aa/r/e/remera-de-river-adidas-entrenamiento-bordo-100020is5542001-1.jpg"
+    },
+    {
+        nombre: "Camiseta suplente de boca juniors",
+        descripcion: "Camiseta de boca juniors adidas, color amarillo con azul.",
+        precio: 8000,
+        imagen: "https://rossettiar.vtexassets.com/arquivos/ids/2024722-800-auto?v=638799114890200000&width=800&height=auto&aspect=true"
+    },
+    {
+        nombre: "Camiseta de la Seleción Argentina",
+        descripcion: "Camiseta de Argentina, ideal para los partidos.",
+        precio: 10000,
+        imagen: "https://images.footballfanatics.com/argentina-national-team/mens-adidas-lionel-messi-blue-argentina-national-team-2024-away-replica-player-jersey_ss5_p-201337023+pv-1+u-en6cedqvd7z0tktoxwun+v-21nsj30uwjo88x5z5hlw.jpg?_hv=2&w=900"
+    }
+];
+
+// Carrito de compras
+let carrito = [];
+
+// Renderizar productos
+function renderizarProductos(filtro = "") {
+    const container = document.getElementById('productosContainer');
+    container.innerHTML = "";
+    let productosFiltrados = productos.filter(p =>
+        p.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
+        p.descripcion.toLowerCase().includes(filtro.toLowerCase())
+    );
+    if (productosFiltrados.length === 0) {
+        container.innerHTML = "<p>No se encontraron productos.</p>";
+        return;
+    }
+    productosFiltrados.forEach((p, idx) => {
+        container.innerHTML += `
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="${p.imagen}" class="card-img-top"
+                     alt="${p.nombre}"
+                     style="cursor:pointer"
+                     onclick="mostrarDescripcion('${p.nombre.replace(/'/g,"\\'")}', '${p.descripcion.replace(/'/g,"\\'")}')" />
+                <div class="card-body">
+                    <h5 class="card-title" style="cursor:pointer"
+                        onclick="mostrarDescripcion('${p.nombre.replace(/'/g,"\\'")}', '${p.descripcion.replace(/'/g,"\\'")}')">
+                        ${p.nombre}
+                    </h5>
+                    <p class="card-text">${p.descripcion}</p>
+                    <p class="card-text">Precio: $${p.precio.toLocaleString()}</p>
+                    <button class="btn btn-success" onclick="agregarAlCarrito(${idx})">Agregar al carrito</button>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+}
+
+// Buscador
+function filtrarProductos() {
+    const filtro = document.getElementById('buscador').value;
+    renderizarProductos(filtro);
+}
+
+// Modal de descripción
+function mostrarDescripcion(nombre, descripcion) {
+    document.getElementById('descripcionModalLabel').textContent = nombre;
+    document.getElementById('descripcionModalBody').textContent = descripcion;
+    var modal = new bootstrap.Modal(document.getElementById('descripcionModal'));
+    modal.show();
+}
+
+// Carrito
+function agregarAlCarrito(idx) {
+    const producto = productos[idx];
+    const existente = carrito.find(p => p.nombre === producto.nombre);
+    if (existente) {
+        existente.cantidad++;
+    } else {
+        carrito.push({ ...producto, cantidad: 1 });
+    }
+    actualizarResumenCarrito();
+}
+
+function actualizarResumenCarrito() {
+    const resumen = document.getElementById('resumenCarrito');
+    const lista = document.getElementById('listaCarrito');
+    const total = document.getElementById('totalCarrito');
+    lista.innerHTML = "";
+    let suma = 0;
+    carrito.forEach((p, idx) => {
+        suma += p.precio * p.cantidad;
+        lista.innerHTML += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                ${p.nombre} <span>x${p.cantidad}</span>
+                <button class="btn btn-danger btn-sm" onclick="eliminarDelCarrito(${idx})">Quitar</button>
+            </li>
+        `;
+    });
+    total.textContent = suma.toLocaleString();
+    resumen.classList.toggle("d-none", carrito.length === 0);
+}
+
+function eliminarDelCarrito(idx) {
+    carrito.splice(idx, 1);
+    actualizarResumenCarrito();
+}
+
+function vaciarCarrito() {
+    carrito = [];
+    actualizarResumenCarrito();
+}
+
+function confirmarCompra() {
+    if (carrito.length === 0) {
+        alert("El carrito está vacío.");
+        return;
+    }
+    let total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+    alert("¡Compra confirmada!\nTotal: $" + total.toLocaleString());
+    vaciarCarrito();
+}
+
+// Inicializar
+renderizarProductos();
+function validarFormulario() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (!nombre || !apellido || !email) {
+        alert("Por favor, complete todos los campos obligatorios.");
+        return false;
+    }
+    alert("¡Formulario enviado correctamente!");
+    return false; // Evita recargar la página, quita esto si quieres enviar el formulario realmente
+}
+</script>
+</body>
+</html>
+</html>
 </html>

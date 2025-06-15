@@ -4,12 +4,13 @@ namespace cliente.Services;
 
 public class ApiService {
     private readonly HttpClient _httpClient;
-
-    public ApiService(HttpClient httpClient) {
+    public ApiService(HttpClient httpClient)
+    {
         _httpClient = httpClient;
     }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
+    public async Task<DatosRespuesta> ObtenerDatosAsync()
+    {
         try {
             var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
             return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
