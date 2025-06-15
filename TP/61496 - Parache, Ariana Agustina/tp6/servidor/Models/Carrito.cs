@@ -1,4 +1,9 @@
+using Compartido.Models;
+using Compartido.Dtos;
+
 namespace servidor.Models
+
+
 {
     public class Carrito
     {
@@ -6,8 +11,8 @@ namespace servidor.Models
         public List<ItemCarrito> Items { get; set; } = new();
         public bool Confirmado { get; set; } = false;
 
-        public string? NombreCliente { get; set; }
-        public string? ApellidoCliente { get; set; }
-        public string? EmailCliente { get; set; }
+        public string? NombreCliente { get; set; } = string.Empty;
+        public string? ApellidoCliente { get; set; } = string.Empty;
+        public string? EmailCliente { get; set; } = string.Empty;
     }
 }

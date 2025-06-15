@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using servidor.Models;
+using Compartido.Models;
+using Compartido.Dtos;
+
 
 namespace servidor.Data 
 {

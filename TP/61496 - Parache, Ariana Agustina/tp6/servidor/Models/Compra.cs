@@ -1,12 +1,15 @@
-namespace servidor.Models;
-public class Compra
-{
-    public int Id { get; set; }
-    public DateTime Fecha { get; set; } = DateTime.Now;
-    public decimal Total { get; set; }
-    public string NombreCliente { get; set; }
-    public string ApellidoCliente { get; set; }
-    public string EmailCliente { get; set; }
 
-    public List<ItemCompra> Items { get; set; } = new();
+namespace servidor.Models
+{
+    public class Compra
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }      // Agregá estas propiedades
+        public string Apellido { get; set; }
+        public string Email { get; set; }
+        public DateTime Fecha { get; set; }
+
+        // Lista de los ítems de esta compra
+        public List<ItemCompra> Items { get; set; }
+    }
 }

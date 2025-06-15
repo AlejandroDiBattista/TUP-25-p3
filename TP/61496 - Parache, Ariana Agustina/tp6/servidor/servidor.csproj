@@ -17,4 +17,8 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Compartido\Compartido.csproj" />
+  </ItemGroup>
+
 </Project>

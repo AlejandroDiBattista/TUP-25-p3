@@ -1,3 +1,6 @@
+using Compartido.Models;
+using servidor.Models;
+
 namespace servidor.Models;
 public class ItemCompra
 {
