@@ -1,0 +1,117 @@
+@page "/confirmacion"
+@using System.ComponentModel.DataAnnotations
+@using cliente.Services
+@using cliente.Modelos
+@inject NavigationManager NavigationManager
+@inject ApiService ApiService
+@inject CarritoService CarritoService
+
+<PageTitle>Confirmar compra</PageTitle>
+
+<div class="fondo-productos min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card resumen-compra-total p-4" style="max-width: 430px; width: 100%;">
+        @if (!compraFinalizada)
+        {
+            <h2 class="titulo-confirmacion mb-4">Resumen de tu compra</h2>
+            <ul class="mb-3 ps-3">
+                @foreach (var item in CarritoService.Items)
+                {
+                    <li>
+                        <span style="font-weight:600">@item.Producto.Nombre</span>
+                        x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)
+                    </li>
+                }
+            </ul>
+            <p class="mb-1"><strong>Total de ítems:</strong> @CarritoService.Items.Sum(i => i.Cantidad)</p>
+            <p class="mb-3"><strong>Importe total:</strong> $@CarritoService.Total</p>
+            <hr />
+            <EditForm Model="@formData" OnValidSubmit="ConfirmarCompra">
+                <DataAnnotationsValidator />
+                
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="formData.Nombre" />
+                    <ValidationMessage For="@(() => formData.Nombre)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellido</strong></label>
+                    <InputText class="form-control" @bind-Value="formData.Apellido" />
+                    <ValidationMessage For="@(() => formData.Apellido)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Email</strong></label>
+                    <InputText class="form-control" @bind-Value="formData.Email" />
+                    <ValidationMessage For="@(() => formData.Email)" />
+                </div>
+                <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
+                    <button class="btn btn-success" type="submit">Confirmar compra</button>
+                    <button class="btn btn-secondary" type="button" @onclick="VolverAProductos">Volver a productos</button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <div class="alert alert-success text-center" role="alert">
+                <h3 class="titulo-confirmacion">¡Compra finalizada!</h3>
+                <p>Gracias por tu compra, <strong>@formData.Nombre @formData.Apellido</strong>!</p>
+                <p><strong>Email:</strong> @formData.Email</p>
+                <h5 class="mt-4">Detalle de tu compra:</h5>
+                <ul class="list-unstyled">
+                    @foreach (var item in compraFinal)
+                    {
+                        <li>@item.Producto.Nombre x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)</li>
+                    }
+                </ul>
+                <p><strong>Total de ítems:</strong> @compraFinal.Sum(i => i.Cantidad)</p>
+                <p><strong>Importe total:</strong> $@compraFinal.Sum(i => i.Producto.Precio * i.Cantidad)</p>
+                <button class="btn btn-volver-catalogo mt-3" @onclick="VolverAProductos">Volver al catálogo</button>
+            </div>
+        }
+    </div>
+</div>
+
+
+
+@code {
+    private FormData formData = new();
+    private bool compraFinalizada = false;
+    private List<CarritoItem> compraFinal = new();
+
+    private async Task ConfirmarCompra()
+    {
+        var itemsDto = CarritoService.Items.Select(i => new CarritoItemDTO
+        {
+            ProductoId = i.Producto.Id,
+            Cantidad = i.Cantidad
+        }).ToList();
+
+        var exito = await ApiService.ConfirmarCompraAsync(itemsDto);
+
+        if (exito)
+        {
+            compraFinal = CarritoService.Items.Select(i => new CarritoItem
+        {
+            Producto = i.Producto,
+            Cantidad = i.Cantidad
+        }).ToList();
+        await CarritoService.VaciarCarrito();
+        compraFinalizada = true;
+        }
+    }
+
+    private void VolverAProductos()
+    {
+        NavigationManager.NavigateTo("/productos", true);
+    }
+
+    public class FormData
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; }
+    }
+}
