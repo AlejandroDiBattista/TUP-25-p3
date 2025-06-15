@@ -4,8 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 

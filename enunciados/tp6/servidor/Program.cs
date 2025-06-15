@@ -19,6 +19,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
 
+app.UseStaticFiles(); // Servir archivos estáticos si es necesario
 // Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
