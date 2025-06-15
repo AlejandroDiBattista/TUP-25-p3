@@ -67,6 +67,7 @@ else
         if (string.IsNullOrEmpty(id))
         {
             id = await ApiService.CrearCarritoAsync();
+            id = id.Trim('"');
             await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
         }
         return id;
