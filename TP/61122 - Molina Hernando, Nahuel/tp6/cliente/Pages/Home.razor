@@ -1,59 +1,95 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using cliente.Models
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject AppState AppState
 
-<PageTitle>Inicio</PageTitle>
+<h2 class="fw-bold text-center text-dark mb-4">Catálogo de Iphones</h2>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
+@if (AppState.Productos is null)
+{
+    <p>Cargando productos...</p>
+}
+else if (AppState.Productos.Count == 0)
+{
+    <p>No hay productos para mostrar.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var producto in AppState.Productos)
+        {
+            <div class="col" @key="producto">
+                <div class="card h-100 shadow-sm border-0 rounded-4">
+                    @if (!string.IsNullOrEmpty(producto.ImagenUrl))
+                    {
+                        <img src="@producto.ImagenUrl" class="card-img-top p-3" alt="@producto.Nombre" style="max-height: 180px; object-fit: contain; border-radius: 1rem;" />
+                    }
                     <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                        <h5 class="card-title fw-bold text-dark">@producto.Nombre</h5>
+                        <p class="card-text text-muted">@producto.Descripcion</p>
+                    </div>
+                    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold text-success fs-5">$@producto.Precio</span>
+                            <span class="text-secondary small ms-2">Stock: @producto.Stock</span>
+                        </div>
+                        <button class="btn btn-outline-primary rounded-pill d-flex align-items-center"
+                                @onclick="() => AgregarAlCarrito(producto.Id, producto.Stock)"
+                                disabled="@((producto.Stock == 0))">
+                            <i class="bi bi-cart-plus me-2"></i> Agregar
+                        </button>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success mt-3">@mensaje</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    string carritoId;
+    string mensaje;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.OnProductosChange += StateHasChanged;
+    }
+
+    async Task<string> ObtenerOCrearCarritoId()
+    {
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (string.IsNullOrEmpty(id))
+        {
+            id = await ApiService.CrearCarritoAsync();
+            id = id.Trim('"');
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
         }
+        return id;
+    }
+
+    async Task AgregarAlCarrito(int productoId, int stock)
+    {
+        carritoId = await ObtenerOCrearCarritoId();
+        if (stock > 0)
+        {
+            await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, 1);
+            Navigation.NavigateTo("/carrito"); 
+        }
+        else
+        {
+            mensaje = "No hay stock disponible.";
+        }
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AppState.OnProductosChange -= StateHasChanged;
     }
 }
