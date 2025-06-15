@@ -195,7 +195,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-// Endpoint para obtener productos (no cambia)
 app.MapGet("/api/productos", async (string? q, TiendaDb db) =>
 {
     var query = db.Productos.AsQueryable();
@@ -206,7 +205,7 @@ app.MapGet("/api/productos", async (string? q, TiendaDb db) =>
     return await query.ToListAsync();
 });
 
-// Endpoint para crear una compra (carrito)
+
 app.MapPost("/api/compras", async (TiendaDb db) =>
 {
     var nuevaCompra = new Compra();
