@@ -1,0 +1,13 @@
+@using cliente.Services
+
+@inject CarritoService CarritoService
+
+<a href="/carrito" class="carrito-icono">
+    <img src="carrito.png" alt="Carrito" style="width:32px;height:32px;" />
+    @if (CarritoService.CantidadTotal > 0)
+    {
+        <span class="badge bg-danger" style="position:relative;top:-10px;left:-15px;">
+            @CarritoService.CantidadTotal
+        </span>
+    }
+</a>
