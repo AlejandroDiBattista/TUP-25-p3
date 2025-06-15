@@ -1,0 +1,43 @@
+@page "/productos"
+@inject ApiService ApiService
+@using cliente.Services
+
+
+<h3>📦 Productos disponibles</h3>
+
+@if (productos == null)
+{
+    <p><em>Cargando productos...</em></p>
+}
+else if (productos.Count == 0)
+{
+    <p>No hay productos para mostrar.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var p in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" />
+                    <div class="card-body">
+                        <h5 class="card-title">@p.Nombre</h5>
+                        <p class="card-text">@p.Descripcion</p>
+                        <p class="card-text fw-bold">$@p.Precio</p>
+                        <p class="card-text text-muted">Stock: @p.Stock</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<Producto>? productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.ObtenerProductosAsync();
+    }
+}

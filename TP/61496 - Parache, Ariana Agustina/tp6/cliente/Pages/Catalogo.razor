@@ -1,0 +1,46 @@
+@page "/"
+@inject ProductoService productoService
+@inject CarritoService carritoService
+
+<h1>Catálogo de Productos</h1>
+
+@if (productoService.ProductosFiltrados.Count == 0)
+{
+    <p>No hay productos para mostrar.</p>
+}
+else
+{
+    <div class="productos-grid">
+        @foreach (var producto in productoService.ProductosFiltrados)
+        {
+            <div class="producto-card">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" />
+                <h3>@producto.Nombre</h3>
+                <p>@producto.Descripcion</p>
+                <p>Stock: @producto.Stock</p>
+                <p>Precio: $@producto.Precio</p>
+
+                <button @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await productoService.CargarProductos();
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        if (producto.Stock > 0)
+        {
+            carritoService.AgregarAlCarrito(producto);
+        }
+        else
+        {
+            // Acá podemos poner un alert o un mensaje visual.
+        }
+    }
+}
