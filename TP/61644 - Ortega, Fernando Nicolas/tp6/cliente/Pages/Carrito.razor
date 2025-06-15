@@ -2,65 +2,68 @@
 @inject cliente.Services.CarritoService CarritoService
 @inject NavigationManager Navigation
 @using cliente.Services
+<div class="fondo">
+    <div class="container mt-4"> 
+        <PageTitle>Carrito</PageTitle>
 
-<PageTitle>Carrito</PageTitle>
+        <div class="container">
+            <h2 class="mb-4 text-center text-white">Carrito de compras</h2>
 
-<div class="container">
-    <h2 class="mb-4">Carrito de compras</h2>
+            @if (CarritoService.Articulos.Count == 0)
+            {
+                <div class="alert alert-info">El carrito está vacío.</div>
+                <a href="/" class="btn btn-primary">Volver al catálogo</a>
+            }
+            else
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Producto</th>
+                            <th>Precio unitario</th>
+                            <th>Cantidad</th>
+                            <th>Importe</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var articulo in CarritoService.Articulos)
+                        {
+                            <tr>
+                                <td><img src="@articulo.ImagenUrl" alt="@articulo.Nombre" width="60" /></td>
+                                <td>@articulo.Nombre</td>
+                                <td>$@articulo.PrecioUnitario</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary"
+                                            @onclick="async () => await CambiarCantidad(articulo, articulo.Cantidad - 1)"
+                                            disabled="@(articulo.Cantidad <= 1)">-</button>
+                                    <span class="mx-2">@articulo.Cantidad</span>
+                                    <button class="btn btn-sm btn-secondary"
+                                            @onclick="async () => await CambiarCantidad(articulo, articulo.Cantidad + 1)">+</button>
+                                </td>
+                                <td>$@(articulo.Cantidad * articulo.PrecioUnitario)</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" @onclick="async () => await Quitar(articulo.ProductoId)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-    @if (CarritoService.Articulos.Count == 0)
-    {
-        <div class="alert alert-info">El carrito está vacío.</div>
-        <a href="/" class="btn btn-primary">Volver al catálogo</a>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Imagen</th>
-                    <th>Producto</th>
-                    <th>Precio unitario</th>
-                    <th>Cantidad</th>
-                    <th>Importe</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var articulo in CarritoService.Articulos)
-                {
-                    <tr>
-                        <td><img src="@articulo.ImagenUrl" alt="@articulo.Nombre" width="60" /></td>
-                        <td>@articulo.Nombre</td>
-                        <td>$@articulo.PrecioUnitario</td>
-                        <td>
-                            <button class="btn btn-sm btn-secondary"
-                                    @onclick="async () => await CambiarCantidad(articulo, articulo.Cantidad - 1)"
-                                    disabled="@(articulo.Cantidad <= 1)">-</button>
-                            <span class="mx-2">@articulo.Cantidad</span>
-                            <button class="btn btn-sm btn-secondary"
-                                    @onclick="async () => await CambiarCantidad(articulo, articulo.Cantidad + 1)">+</button>
-                        </td>
-                        <td>$@(articulo.Cantidad * articulo.PrecioUnitario)</td>
-                        <td>
-                            <button class="btn btn-sm btn-danger" @onclick="async () => await Quitar(articulo.ProductoId)">Eliminar</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                <div class="mb-3 text-white">
+                    <strong>Total: $@CarritoService.TotalImporte()</strong>
+                </div>
+                <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
+                <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+            }
 
-        <div class="mb-3">
-            <strong>Total: $@CarritoService.TotalImporte()</strong>
+            @if (!string.IsNullOrEmpty(CarritoService.Mensaje))
+            {
+                <div class="alert alert-warning">@CarritoService.Mensaje</div>
+            }
         </div>
-        <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
-        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
-    }
-
-    @if (!string.IsNullOrEmpty(CarritoService.Mensaje))
-    {
-        <div class="alert alert-warning">@CarritoService.Mensaje</div>
-    }
+    </div>
 </div>
 @implements IDisposable
 @code {

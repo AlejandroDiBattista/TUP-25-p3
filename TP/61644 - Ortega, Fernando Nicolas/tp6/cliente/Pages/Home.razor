@@ -3,49 +3,51 @@
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject CarritoService CarritoService
+<div class="fondo">
+    <div class="container mt-4">   
+        <PageTitle>Catálogo</PageTitle>
 
-<PageTitle>Catálogo</PageTitle>
-
-<div class="container">
-    <h1 class="mb-4">Catálogo de Productos</h1>
-    <div class="mb-3">
-        <input class="form-control" placeholder="Buscar..." @bind="busqueda" @bind:event="oninput" />
-        <button class="btn btn-primary mt-2" @onclick="BuscarProductos">Buscar</button>
-    </div>
-    <div class="row">
-        @if (cargando)
-        {
-            <div class="col-12">
-                <div class="alert alert-info">Cargando productos...</div>
+        <div class="container">
+            <h1 class="mb-4 text-center text-white">Catálogo de Productos</h1>
+            <div class="mb-3">
+                <input class="form-control" placeholder="Buscar..." @bind="busqueda" @bind:event="oninput" />
+                <button class="btn btn-primary mt-2" @onclick="BuscarProductos">Buscar</button>
             </div>
-        }
-        else if (productos.Count == 0)
-        {
-            <div class="col-12">
-                <div class="alert alert-warning">No hay productos para mostrar.</div>
-            </div>
-        }
-        else
-        {
-            @foreach (var producto in productos)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height:200px;object-fit:contain;">
-                        <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            <p class="card-text">@producto.Descripcion</p>
-                            <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
-                            <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-                            <button class="btn btn-success" disabled="@(!PuedeAgregar(producto))" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
-                        </div>
+            <div class="row">
+                @if (cargando)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-info">Cargando productos...</div>
                     </div>
-                </div>
-            }
-        }
+                }
+                else if (productos.Count == 0)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-warning">No hay productos para mostrar.</div>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var producto in productos)
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height:200px;object-fit:contain;">
+                                <div class="card-body">
+                                    <h5 class="card-title">@producto.Nombre</h5>
+                                    <p class="card-text">@producto.Descripcion</p>
+                                    <p class="card-text"><strong>Precio:</strong> $@producto.Precio</p>
+                                    <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
+                                    <button class="btn btn-success" disabled="@(!PuedeAgregar(producto))" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
     </div>
 </div>
-
 @code {
     private List<Producto> productos = new();
     private string busqueda = "";

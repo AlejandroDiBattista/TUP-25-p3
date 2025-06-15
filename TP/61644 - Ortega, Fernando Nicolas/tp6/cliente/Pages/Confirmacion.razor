@@ -3,48 +3,51 @@
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
+<div class="fondo">
+    <div class="container mt-4 text-white"> 
+        <PageTitle>Confirmar compra</PageTitle>
 
-<PageTitle>Confirmar compra</PageTitle>
+        <div class="container">
+            <h2 class="mb-4 text-center">Confirmar compra</h2>
 
-<div class="container">
-    <h2 class="mb-4">Confirmar compra</h2>
-
-    @if (CarritoService.Articulos.Count == 0)
-    {
-        <div class="alert alert-info">El carrito está vacío.</div>
-        <a href="/" class="btn btn-primary">Volver al catálogo</a>
-    }
-    else
-    {
-        <div class="mb-3">
-            <h5>Resumen</h5>
-            <ul>
-                <li>Total de artículos: @CarritoService.Articulos.Sum(a => a.Cantidad)</li>
-                <li>Importe total: $@CarritoService.TotalImporte()</li>
-            </ul>
+            @if (CarritoService.Articulos.Count == 0)
+            {
+                <div class="alert alert-info">El carrito está vacío.</div>
+                <a href="/" class="btn btn-primary">Volver al catálogo</a>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <h5>Resumen</h5>
+                    <ul>
+                        <li>Total de artículos: @CarritoService.Articulos.Sum(a => a.Cantidad)</li>
+                        <li>Importe total: $@CarritoService.TotalImporte()</li>
+                    </ul>
+                </div>
+                <EditForm Model="@cliente" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="mb-3">
+                        <label>Nombre</label>
+                        <InputText class="form-control" @bind-Value="cliente.Nombre" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Apellido</label>
+                        <InputText class="form-control" @bind-Value="cliente.Apellido" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <InputText class="form-control" @bind-Value="cliente.Email" />
+                    </div>
+                    <button class="btn btn-success" type="submit">Confirmar registro compra</button>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(mensaje))
+                {
+                    <div class="alert alert-info mt-3">@mensaje</div>
+                }
+            }
         </div>
-        <EditForm Model="@cliente" OnValidSubmit="ConfirmarCompra">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <div class="mb-3">
-                <label>Nombre</label>
-                <InputText class="form-control" @bind-Value="cliente.Nombre" />
-            </div>
-            <div class="mb-3">
-                <label>Apellido</label>
-                <InputText class="form-control" @bind-Value="cliente.Apellido" />
-            </div>
-            <div class="mb-3">
-                <label>Email</label>
-                <InputText class="form-control" @bind-Value="cliente.Email" />
-            </div>
-            <button class="btn btn-success" type="submit">Confirmar registro compra</button>
-        </EditForm>
-        @if (!string.IsNullOrEmpty(mensaje))
-        {
-            <div class="alert alert-info mt-3">@mensaje</div>
-        }
-    }
+    </div>
 </div>
 @code {
     private ClienteDto cliente = new();

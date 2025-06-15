@@ -3,16 +3,16 @@
 @inherits LayoutComponentBase
 <div class="top-row px-4 bg-light shadow-sm">
     <a href="/" class="navbar-brand">
-        <img src="logo.png" alt="Logo" style="height:40px;" />
-        Tienda Online
+        <img src="img/logomotogp.jpg" alt="Logo" style="height:40px;" />
+        Tienda Online MOTO GP
     </a>
     <div class="ms-auto">
-        <a href="/carrito" class="btn btn-outline-primary position-relative">
-            <span class="bi bi-cart"></span> Carrito
-            @if (CarritoService.Articulos.Count > 0)
+        <a href="/carrito" class="btn btn-outline-primary position-relative" style="width: 50px; height: 50px;">
+            <img src="img/carrito.png" alt="Carrito" style="width:32px; height:32px;" />
+            @if (CarritoService.TotalArticulos() > 0)
             {
-                <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle">
-                    @CarritoService.Articulos.Count
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                    @CarritoService.TotalArticulos()
                 </span>
             }
         </a>

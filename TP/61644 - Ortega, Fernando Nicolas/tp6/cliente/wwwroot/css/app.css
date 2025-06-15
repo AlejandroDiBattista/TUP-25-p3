@@ -115,3 +115,18 @@ code {
 .badge {
     font-size: 1rem;
 }
+.fondo {
+    background-image: url('/img/fondo.jpg'); 
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    
+    width: 100vw;
+    min-height: 100vh;
+
+    margin: 0;
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
