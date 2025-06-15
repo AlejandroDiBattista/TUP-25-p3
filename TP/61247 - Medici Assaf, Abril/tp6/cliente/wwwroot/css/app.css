@@ -112,3 +112,34 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/*modo oscuro*/
+body.dark-mode {
+    background-color: #181818 !important;
+    color: #f1f1f1 !important;
+}
+
+body.dark-mode .navbar,
+body.dark-mode .card {
+    background-color: #23272b !important;
+    color: #f1f1f1 !important;
+}
+
+body.dark-mode .btn {
+    background-color: #444 !important;
+    color: #f1f1f1 !important;
+    border-color: #888 !important;
+}
+
+.tarjeta-producto {
+    background: #fff;
+    width: 100%;
+    max-width: 350px;
+    border-radius: 0;
+    box-shadow: none;
+    transition: background 0.3s;
+}
+
+body.dark-mode .tarjeta-producto {
+    background: #23272b;
+}
