@@ -9,6 +9,5 @@ public class TiendaDb : DbContext
 
     public DbSet<Producto> Productos { get; set; }
     public DbSet<Compra> Compras { get; set; }
-    // CORREGIDO: Ahora usa el nombre correcto de la clase
     public DbSet<ItemCompra> ItemsCompra { get; set; }
 }
