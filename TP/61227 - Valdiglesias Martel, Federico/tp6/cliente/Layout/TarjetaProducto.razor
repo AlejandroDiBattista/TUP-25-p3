@@ -1,0 +1,55 @@
+@using cliente.modelos
+@using cliente.Servicios
+@inject ServicioApi Api
+
+<div class="card h-100 card-product">
+    <div class="card-body position-relative">
+        <div class="text-center position-relative">
+            <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" class="mb-3 img-fluid product-image">
+        </div>
+        <div class="text-small mb-1">
+            <a href="#" class="text-decoration-none text-muted"><small>Ropa Deportiva</small></a>
+        </div>
+        <h2 class="fs-6">
+            <a href="#" class="text-inherit text-decoration-none">@Producto.Nombre</a>
+        </h2>
+        <div>
+            <small class="text-warning">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+            </small>
+            <span class="text-muted small">4.5</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <span class="text-dark">@Producto.Precio.ToString("C")</span>
+            </div>
+            <div>
+                <button class="btn btn-primary btn-sm" @onclick="() => ManejarAgregarAlCarrito(Producto.Id)" disabled="@agregando">
+                    @if(agregando)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-plus-lg"></i><span> Add</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Producto Producto { get; set; } = new();
+
+    private bool agregando = false;
+
+
+    private async Task ManejarAgregarAlCarrito(int productoId)
+    {
+        agregando = true;
+        await Api.AgregarAlCarrito(productoId);
+        agregando = false;
+    }
+}
