@@ -195,6 +195,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+
+
 app.MapGet("/api/productos", async (string? q, TiendaDb db) =>
 {
     var query = db.Productos.AsQueryable();
@@ -213,5 +215,87 @@ app.MapPost("/api/compras", async (TiendaDb db) =>
     await db.SaveChangesAsync();
     return Results.Created($"/api/compras/{nuevaCompra.Id}", nuevaCompra);
 });
+
+
+app.MapGet("/api/compras/{idCompra:int}", async (int idCompra, TiendaDb db) =>
+{
+    var compra = await db.Compras.FindAsync(idCompra);
+    if (compra is null) return Results.NotFound("Compra no encontrada.");
+
+    var detalles = await db.DetallesCompra.Where(d => d.CompraId == idCompra).ToListAsync();
+    var respuesta = new CompraRespuestaDto { Id = compra.Id };
+    decimal totalCalculado = 0;
+
+    foreach (var detalle in detalles)
+    {
+        var producto = await db.Productos.FindAsync(detalle.ProductoId);
+        if (producto != null)
+        {
+            respuesta.Items.Add(new DetalleRespuestaDto
+            {
+                ProductoId = producto.Id,
+                NombreProducto = producto.Nombre,
+                Cantidad = detalle.Cantidad,
+                PrecioUnitario = detalle.PrecioUnitario,
+                ImagenUrl = producto.ImagenUrl
+            });
+            totalCalculado += detalle.Cantidad * detalle.PrecioUnitario;
+        }
+    }
+    respuesta.Total = totalCalculado;
+    return Results.Ok(respuesta);
+});
+
+
+app.MapPut("/api/compras/{idCompra:int}/productos/{idProducto:int}", async (int idCompra, int idProducto, TiendaDb db) =>
+{
+    var compra = await db.Compras.FindAsync(idCompra);
+    var producto = await db.Productos.FindAsync(idProducto);
+    if (compra is null || producto is null) return Results.NotFound();
+    if (producto.Stock <= 0) return Results.BadRequest("Sin stock.");
+    var item = await db.DetallesCompra.FirstOrDefaultAsync(d => d.CompraId == idCompra && d.ProductoId == idProducto);
+    if (item is null)
+    {
+        db.DetallesCompra.Add(new DetalleCompra { CompraId = idCompra, ProductoId = idProducto, Cantidad = 1, PrecioUnitario = producto.Precio });
+    }
+    else
+    {
+        item.Cantidad++;
+    }
+    producto.Stock--;
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+
+app.MapDelete("/api/compras/{idCompra:int}/productos/{idProducto:int}", async (int idCompra, int idProducto, TiendaDb db) =>
+{
+    var detalle = await db.DetallesCompra.FirstOrDefaultAsync(d => d.CompraId == idCompra && d.ProductoId == idProducto);
+    if (detalle is null) return Results.NotFound("El producto no está en la compra.");
+    var producto = await db.Productos.FindAsync(detalle.ProductoId);
+    if (producto is not null) producto.Stock++;
+    if (detalle.Cantidad > 1) detalle.Cantidad--;
+    else db.DetallesCompra.Remove(detalle);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+
+app.MapPut("/api/compras/{idCompra:int}/confirmar", async (int idCompra, DatosClienteDto datos, TiendaDb db) =>
+{
+    var compra = await db.Compras.FindAsync(idCompra);
+    if (compra is null) return Results.NotFound();
+    var detalles = await db.DetallesCompra.Where(d => d.CompraId == idCompra).ToListAsync();
+    if (!detalles.Any()) return Results.BadRequest("No se puede confirmar una compra vacía.");
+
+    compra.NombreCliente = datos.Nombre;
+    compra.ApellidoCliente = datos.Apellido;
+    compra.EmailCliente = datos.Email;
+    compra.Total = detalles.Sum(i => i.Cantidad * i.PrecioUnitario);
+
+    await db.SaveChangesAsync();
+    return Results.Ok(compra);
+});
+
 
 app.Run();
