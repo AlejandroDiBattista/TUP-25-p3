@@ -1,4 +1,40 @@
 ﻿@inherits LayoutComponentBase
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<header class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img src="img/Logo.png" alt="Logo" style="height:32px; margin-right:8px; vertical-align:middle;">
+            Computer Online
+        </a>
+        <form class="d-flex" @onsubmit="Buscar">
+            <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" @bind="busqueda">
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+        <a class="nav-link position-relative" href="/carrito">
+            <span class="bi bi-cart">🛒</span>
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">@CarritoService.Contador</span>
+        </a>
+    </div>
+</header>
 <div class="page">
     @Body
 </div>
+
+@code {
+    string busqueda;
+
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            NavigationManager.NavigateTo($"/?busqueda={busqueda}");
+        else
+            NavigationManager.NavigateTo("/");
+    }
+}

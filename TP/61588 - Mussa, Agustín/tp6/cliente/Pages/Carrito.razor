@@ -1,0 +1,114 @@
+﻿@page "/carrito"
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager NavigationManager
+@using cliente.Modelos
+@using cliente.Services
+
+<div class="FondoDePantalla">
+    <div class="container mt-4"> 
+        @if (CarritoService.Items.Count == 0)
+        {
+            <p><img src="img/CarritoVacio.png" alt="Logo Catálogo" style="height:150px; vertical-align:middle; margin-right:1000px;">
+            Vacio</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CarritoService.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductoId</td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, -1)">-</button>
+                                @item.Cantidad
+                                <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, 1)">+</button>
+                            </td>
+                            <td>@item.PrecioUnitario</td>
+                            <td>@(item.PrecioUnitario * item.Cantidad)</td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p><b>Total:</b> @CarritoService.Items.Sum(i => i.PrecioUnitario * i.Cantidad)</p>
+            <button class="btn btn-warning" @onclick="MostrarConfirmacionVaciar">Vaciar carrito</button>
+
+            @if (mostrarConfirmacion)
+            {
+                <div class="alert alert-warning mt-2">
+                    ¿Quiere eliminar todo el carrito?
+                    <button class="btn btn-danger ms-2" @onclick="VaciarCarrito">Sí</button>
+                    <button class="btn btn-secondary ms-2" @onclick="CancelarVaciar">No</button>
+                </div>
+            }
+
+            <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+        }
+    </div>
+</div>
+@code {
+    bool mostrarConfirmacion = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (CarritoService.CarritoId != 0)
+        {
+            var carrito = await ApiService.ObtenerCarritoAsync(CarritoService.CarritoId);
+            CarritoService.Items = carrito.Items;
+        }
+    }
+
+    private async Task CambiarCantidad(ItemCarrito item, int delta)
+    {
+        if (delta > 0)
+            await ApiService.AgregarProductoAlCarrito(CarritoService.CarritoId, item.ProductoId, 1);
+        else
+            await ApiService.EliminarProductoDelCarritoAsync(CarritoService.CarritoId, item.ProductoId);
+
+        var carrito = await ApiService.ObtenerCarritoAsync(CarritoService.CarritoId);
+        CarritoService.Items = carrito.Items;
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        await ApiService.EliminarProductoDelCarritoAsync(CarritoService.CarritoId, productoId);
+        var carrito = await ApiService.ObtenerCarritoAsync(CarritoService.CarritoId);
+        CarritoService.Items = carrito.Items;
+        StateHasChanged();
+    }
+
+    private void MostrarConfirmacionVaciar()
+    {
+        mostrarConfirmacion = true;
+    }
+
+    private void CancelarVaciar()
+    {
+        mostrarConfirmacion = false;
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarritoAsync(CarritoService.CarritoId);
+        CarritoService.Limpiar();
+        mostrarConfirmacion = false;
+        StateHasChanged();
+    }
+
+
+    private void ConfirmarCompra()
+    {
+        NavigationManager.NavigateTo("/confirmacion");
+    }
+}
