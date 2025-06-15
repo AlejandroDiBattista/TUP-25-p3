@@ -89,6 +89,65 @@ app.MapDelete("/carritos/{carrito}", (string carrito) => {
     return Results.Ok();
 });
 
+app.MapPut("/carritos/{carrito}/confirmar", async (string carrito, TiendaDbContext db, [FromBody] CompraDTO datos) => {
+    if (!carritos.TryGetValue(carrito, out var items) || items.Count == 0)
+        return Results.BadRequest("El carrito está vacío.");
+
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        NombreCliente = datos.Cliente.Nombre,
+        ApellidoCliente = datos.Cliente.Apellido,
+        EmailCliente = datos.Cliente.Email,
+        Total = items.Sum(i => i.Cantidad * i.PrecioUnitario),
+        Items = items.Select(i => new ItemCompra
+        {
+            ProductoId = i.ProductoId,
+            Cantidad = i.Cantidad,
+            PrecioUnitario = i.PrecioUnitario
+        }).ToList()
+    };
+
+    foreach (var item in items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            return Results.BadRequest($"Stock insuficiente para el producto {item.ProductoId}");
+
+        producto.Stock -= item.Cantidad;
+    }
+
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+
+    carritos.TryRemove(carrito, out _);
+    return Results.Ok();
+});
 
 app.Run();
 
+public class CompraDTO
+{
+    public ClienteDto Cliente { get; set; } = new();
+    public List<ItemDTO> Items { get; set; } = new();
+}
+
+public class ClienteDto
+{
+    public string Nombre { get; set; } = "";
+    public string Apellido { get; set; } = "";
+    public string Email { get; set; } = "";
+}
+
+public class ItemDTO
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+}
+
+public class ItemCarrito
+{
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+}
