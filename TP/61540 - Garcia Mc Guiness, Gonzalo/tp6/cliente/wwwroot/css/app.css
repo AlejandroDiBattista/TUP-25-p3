@@ -112,3 +112,38 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+.fondo-productos {
+    background-image: url('/img/McLaren.jpeg'); 
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    
+    width: 100vw;
+    min-height: 100vh;
+
+    margin: 0;
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.titulos {
+    background-color: rgba(219, 40, 16, 0.863); 
+    color: white; 
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1.5rem;
+}
+.btn-agregar {
+    background-color: rgba(219, 40, 16, 0.863);
+    border: none;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn-agregar:hover {
+    background-color: rgba(200, 30, 10, 0.9); /* un poco más oscuro al pasar el mouse */
+}
