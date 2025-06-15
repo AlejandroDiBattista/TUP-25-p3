@@ -52,6 +52,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Buscador.NotifyTerminoChanged += FiltrarProductos;
+        await CarritoService.Inicializar();
 
         try
         {
@@ -90,13 +91,14 @@ else
         Buscador.NotifyTerminoChanged -= FiltrarProductos;
     }
 
-    private async Task AgregarAlCarrito(Producto producto)
+  private async Task AgregarAlCarrito(Producto producto)
+{
+    if (producto.Stock > 0)
     {
-        if (producto.Stock > 0)
-        {
-            await CarritoService.AgregarProducto(producto);
-            producto.Stock--;
-            StateHasChanged();
-        }
+        await CarritoService.AgregarProductoAsync(producto); // LLAMA AL SERVIDOR
+        StateHasChanged();
     }
+}
+
+
 }

@@ -11,7 +11,7 @@ using Servidor.Datos;
 namespace servidor.Migrations
 {
     [DbContext(typeof(TiendaDbContext))]
-    [Migration("20250614011355_InitialCreate")]
+    [Migration("20250614005342_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -175,7 +175,7 @@ namespace servidor.Migrations
                         {
                             Id = 9,
                             Descripcion = "Relleno de dulce de leche y coco rallado",
-                            ImagenUrl = "https://assets.unileversolutions.com/recipes-v3/160118-default.png",
+                            ImagenUrl = "https://via.placeholder.com/150?text=Alfajor",
                             Nombre = "Alfajor de Maicena",
                             Precio = 7000.00m,
                             Stock = 30
@@ -184,7 +184,7 @@ namespace servidor.Migrations
                         {
                             Id = 10,
                             Descripcion = "Bizcochuelo de zanahoria con frosting de queso",
-                            ImagenUrl = "https://coosol.es/wp-content/uploads/2023/05/rebanada-pastel-zanahoria-dulce-mesa-madera-1.jpg",
+                            ImagenUrl = "https://via.placeholder.com/150?text=Zanahoria",
                             Nombre = "Torta de Zanahoria",
                             Precio = 50000.00m,
                             Stock = 14

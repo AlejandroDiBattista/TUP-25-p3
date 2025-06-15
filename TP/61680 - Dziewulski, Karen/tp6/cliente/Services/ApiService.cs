@@ -16,7 +16,7 @@ public class ApiService
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/datos");
+            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
             return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
         }
         catch (Exception ex)
@@ -26,12 +26,11 @@ public class ApiService
         }
     }
 
-    public async Task<List<Producto>> ObtenerProductosAsync(string? q = null)
+    public async Task<List<Producto>> ObtenerProductosAsync()
     {
         try
         {
-            var url = string.IsNullOrWhiteSpace(q) ? "/productos" : $"/productos?q={Uri.EscapeDataString(q)}";
-            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
             return productos ?? new List<Producto>();
         }
         catch (Exception ex)
@@ -40,9 +39,25 @@ public class ApiService
             return new List<Producto>();
         }
     }
+
+public async Task<bool> ConfirmarCompraAsync(string carritoId, CompraDTO compra)
+{
+    try
+    {
+        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", compra);
+        return response.IsSuccessStatusCode;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al confirmar compra: {ex.Message}");
+        return false;
+    }
 }
 
-public class DatosRespuesta {
+
+public class DatosRespuesta
+{
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
+}
 }

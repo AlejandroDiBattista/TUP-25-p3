@@ -88,8 +88,8 @@ namespace servidor.Migrations
                     { 6, "Torta con crema de oreo y base de galletas", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8QoDdXTxTbBYqfQlOBARSbi2NMifsivPdUA&s", "Torta Oreo", 55000.00m, 6 },
                     { 7, "Cupcake con buttercream de colores", "https://storage.googleapis.com/fitia_public_images/recipes%2FGR-R-V-00001923_kh2jkptyj90wdbzs6jrjm2dn_large.jpeg", "Cupcake de Vainilla", 9000.00m, 25 },
                     { 8, "Caja con 6 macarons surtidos", "https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480/img/recipe/ras/Assets/B9FF58C7-D19C-4699-ADA6-E49760836EBB/Derivates/e1b80516-57ce-471c-bdee-eed02a742326.jpg", "Macarons", 27000.00m, 10 },
-                    { 9, "Relleno de dulce de leche y coco rallado", "https://assets.unileversolutions.com/recipes-v3/160118-default.png", "Alfajor de Maicena", 7000.00m, 30 },
-                    { 10, "Bizcochuelo de zanahoria con frosting de queso", "https://coosol.es/wp-content/uploads/2023/05/rebanada-pastel-zanahoria-dulce-mesa-madera-1.jpg", "Torta de Zanahoria", 50000.00m, 14 }
+                    { 9, "Relleno de dulce de leche y coco rallado", "https://via.placeholder.com/150?text=Alfajor", "Alfajor de Maicena", 7000.00m, 30 },
+                    { 10, "Bizcochuelo de zanahoria con frosting de queso", "https://via.placeholder.com/150?text=Zanahoria", "Torta de Zanahoria", 50000.00m, 14 }
                 });
 
             migrationBuilder.CreateIndex(
