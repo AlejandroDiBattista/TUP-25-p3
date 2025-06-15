@@ -1,16 +1,21 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using cliente;
-using cliente.Services;
+using TiendaOnline.Cliente;
+using TiendaOnline.Cliente.Services;
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
-builder.RootComponents.Add<HeadOutlet>("head::after");
+builder.Services.AddScoped(sp =>
+    new HttpClient { BaseAddress = new Uri("https://localhost:5001") });
 
-// Configurar el HttpClient para apuntar al servidor API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
 
-// Registrar el servicio API
-builder.Services.AddScoped<ApiService>();
+
+builder.Services.AddScoped<CartState>();
+
+
+
+
+
 
 await builder.Build().RunAsync();
