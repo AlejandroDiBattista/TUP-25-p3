@@ -1,0 +1,139 @@
+@page "/carrito"
+@using cliente.Modelos
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<div class="d-flex align-items-center justify-content-center mb-4" style="gap: 24px;">
+    <a href="/">
+        <img src="/logorueda.jpg" alt="Logo" style="height: 150px; cursor: pointer;" />
+    </a>
+    <h1 class="mb-0 text-center">Carrito de compras</h1>
+</div>
+
+@if (items is null || productos is null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                <tr>
+                    <td>@(producto?.Nombre ?? $"ID: {item.ProductoId}")</td>
+                    <td>
+                        <input type="number" min="1" value="@item.Cantidad" style="width:60px"
+                               @onchange="async e => await CambiarCantidad(item.ProductoId, int.Parse(e.Value.ToString()))" />
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarDelCarrito(item.ProductoId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <a class="btn btn-success" href="/confirmar">Confirmar compra</a>
+}
+
+@code {
+    List<ItemCarrito> items;
+    List<Producto> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+        await CargarCarrito();
+    }
+
+    async Task CargarProductos()
+    {
+        productos = await Http.GetFromJsonAsync<List<Producto>>("productos");
+    }
+
+    async Task<string> ObtenerOCrearCarritoId()
+    {
+        var carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (string.IsNullOrEmpty(carritoId))
+        {
+            var response = await Http.PostAsync("carritos", null);
+            carritoId = await response.Content.ReadAsStringAsync();
+            carritoId = carritoId.Replace("\"", "").Trim(); 
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
+        }
+        return carritoId;
+    }
+
+    async Task CargarCarrito()
+    {
+        var id = await ObtenerOCrearCarritoId();
+        try
+        {
+            var response = await Http.GetAsync($"carritos/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                items = await response.Content.ReadFromJsonAsync<List<ItemCarrito>>();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+             
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                id = await ObtenerOCrearCarritoId();
+                items = new List<ItemCarrito>();
+            }
+            else
+            {
+                items = new List<ItemCarrito>();
+            }
+        }
+        catch
+        {
+            items = new List<ItemCarrito>();
+        }
+    }
+
+    async Task EliminarDelCarrito(int productoId)
+    {
+        var id = await ObtenerOCrearCarritoId();
+        await Http.DeleteAsync($"carritos/{id}/{productoId}");
+        await CargarCarrito();
+    }
+
+    async Task CambiarCantidad(int productoId, int nuevaCantidad)
+    {
+        var carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        var response = await Http.PutAsync($"carritos/{carritoId}/{productoId}/cantidad?nuevaCantidad={nuevaCantidad}", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await CargarCarrito(); 
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"No se pudo actualizar la cantidad: {error}");
+            await CargarCarrito(); 
+        }
+    }
+
+    async Task VaciarCarrito()
+    {
+        var id = await ObtenerOCrearCarritoId();
+        await Http.DeleteAsync($"carritos/{id}");
+        NavigationManager.NavigateTo("/"); 
+    }
+}
