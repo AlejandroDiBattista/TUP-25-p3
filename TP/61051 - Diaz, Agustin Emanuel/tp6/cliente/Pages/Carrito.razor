@@ -1,0 +1,293 @@
+@page "/carrito"
+@using cliente
+@using cliente.Services
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="carrito-container">
+    @if (cargando)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Cargando carrito...</p>
+        </div>
+    }
+    else if (carritoData == null || !carritoData.Items.Any())
+    {
+        <div class="carrito-vacio">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Tu carrito está vacío</h2>
+            <p>¡Agrega algunos productos para comenzar!</p>
+            <button class="btn-continuar-comprando" @onclick="IrACatalogo">
+                Continuar Comprando
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="carrito-header">
+            <h1 class="carrito-titulo">Mi Carrito</h1>
+            <p class="carrito-subtitulo">@carritoData.TotalItems elemento(s) en tu carrito</p>
+        </div>
+
+        <div class="carrito-content">
+            <div class="carrito-items">
+                @foreach (var item in carritoData.Items)
+                {
+                    <div class="carrito-item">
+                        <div class="item-imagen">
+                            <img src="@(item.Producto?.ImagenUrl ?? "https://via.placeholder.com/120x80?text=Sin+Imagen")" 
+                                 alt="@(item.Producto?.Nombre ?? "Producto")" />
+                        </div>
+                        
+                        <div class="item-info">
+                            <h3 class="item-nombre">@(item.Producto?.Nombre ?? "Producto no disponible")</h3>
+                            <p class="item-descripcion">@(item.Producto?.Descripcion ?? "")</p>
+                            <p class="item-stock">Stock disponible: @(item.Producto?.Stock ?? 0)</p>
+                        </div>
+                        
+                        <div class="item-controles">
+                            <div class="cantidad-controles">
+                                <button class="btn-cantidad" 
+                                        @onclick="() => DisminuirCantidad(item)"
+                                        disabled="@(modificandoItem == item.ProductoId)">
+                                    -
+                                </button>
+                                <span class="cantidad-actual">@item.Cantidad</span>
+                                <button class="btn-cantidad" 
+                                        @onclick="() => AumentarCantidad(item)"
+                                        disabled="@(modificandoItem == item.ProductoId || item.Cantidad >= (item.Producto?.Stock ?? 0))">
+                                    +
+                                </button>
+                            </div>
+                            
+                            <div class="item-precios">
+                                <div class="precio-unitario">$@item.PrecioUnitario.ToString("N0") c/u</div>
+                                <div class="precio-subtotal">$@item.Subtotal.ToString("N0")</div>
+                            </div>
+                            
+                            <button class="btn-eliminar" 
+                                    @onclick="() => EliminarItem(item)"
+                                    disabled="@(modificandoItem == item.ProductoId)">
+                                @if (modificandoItem == item.ProductoId)
+                                {
+                                    <span class="loading-mini">⏳</span>
+                                }
+                                else
+                                {
+                                    <span>🗑️</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="carrito-resumen">
+                <div class="resumen-card">
+                    <h3>Resumen del Pedido</h3>
+                    
+                    <div class="resumen-linea">
+                        <span>Subtotal (@carritoData.TotalItems items):</span>
+                        <span>$@carritoData.Total.ToString("N0")</span>
+                    </div>
+                    
+                    <div class="resumen-linea envio">
+                        <span>Envío:</span>
+                        <span>Gratis</span>
+                    </div>
+                    
+                    <div class="resumen-total">
+                        <span>Total:</span>
+                        <span>$@carritoData.Total.ToString("N0")</span>
+                    </div>
+                    
+                    <div class="botones-carrito">
+                        <button class="btn-vaciar" 
+                                @onclick="VaciarCarrito"
+                                disabled="@vaciandoCarrito">
+                            @if (vaciandoCarrito)
+                            {
+                                <span>⏳ Vaciando...</span>
+                            }
+                            else
+                            {
+                                <span>🗑️ Vaciar Carrito</span>
+                            }
+                        </button>
+                        
+                        <button class="btn-confirmar-compra" 
+                                @onclick="IrAConfirmacion">
+                            <span>✅ Confirmar Compra</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="btn-continuar-comprando-small" @onclick="IrACatalogo">
+                    ← Continuar Comprando
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private cliente.Services.Carrito? carritoData;
+    private bool cargando = true;
+    private int? modificandoItem = null;
+    private bool vaciandoCarrito = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            carritoData = await ApiService.ObtenerCarritoConProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar carrito: {ex.Message}");
+            carritoData = null;
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AumentarCantidad(CarritoItem item)
+    {
+        if (item.Producto == null || item.Cantidad >= item.Producto.Stock || modificandoItem == item.ProductoId)
+            return;
+
+        modificandoItem = item.ProductoId;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.AgregarProductoAsync(item.ProductoId, 1);
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al aumentar cantidad: {ex.Message}");
+        }
+        finally
+        {
+            modificandoItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DisminuirCantidad(CarritoItem item)
+    {
+        if (item.Cantidad <= 1 || modificandoItem == item.ProductoId)
+            return;
+
+        modificandoItem = item.ProductoId;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.AgregarProductoAsync(item.ProductoId, -1);
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al disminuir cantidad: {ex.Message}");
+        }
+        finally
+        {
+            modificandoItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task EliminarItem(CarritoItem item)
+    {
+        if (modificandoItem == item.ProductoId)
+            return;
+
+        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", 
+            $"¿Estás seguro de que quieres eliminar {item.Producto?.Nombre} del carrito?");
+        
+        if (!confirmar)
+            return;
+
+        modificandoItem = item.ProductoId;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.EliminarProductoAsync(item.ProductoId);
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al eliminar item: {ex.Message}");
+        }
+        finally
+        {
+            modificandoItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", 
+            "¿Estás seguro de que quieres vaciar todo el carrito?");
+        
+        if (!confirmar)
+            return;
+
+        vaciandoCarrito = true;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.VaciarCarritoAsync();
+            if (exito)
+            {
+                await CargarCarrito();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al vaciar carrito: {ex.Message}");
+        }
+        finally
+        {
+            vaciandoCarrito = false;
+            StateHasChanged();
+        }
+    }
+
+    private void IrACatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}

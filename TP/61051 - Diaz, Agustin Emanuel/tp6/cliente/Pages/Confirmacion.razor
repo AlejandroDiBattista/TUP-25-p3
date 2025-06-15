@@ -1,0 +1,264 @@
+@page "/confirmacion"
+@using cliente
+@using cliente.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<div class="confirmacion-container">
+    @if (cargando)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Cargando datos de compra...</p>
+        </div>
+    }
+    else if (carritoData == null || !carritoData.Items.Any())
+    {
+        <div class="carrito-vacio">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>No hay productos para confirmar</h2>
+            <p>Tu carrito está vacío. Agrega algunos productos antes de confirmar la compra.</p>
+            <button class="btn-ir-catalogo" @onclick="IrACatalogo">
+                Ir al Catálogo
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="confirmacion-header">
+            <h1 class="confirmacion-titulo">Confirmar Compra</h1>
+            <p class="confirmacion-subtitulo">Revisa tu pedido y completa tus datos</p>
+        </div>
+
+        <div class="confirmacion-content">
+            <div class="resumen-pedido">
+                <div class="resumen-card">
+                    <h3>📋 Resumen del Pedido</h3>
+                    
+                    <div class="productos-resumen">
+                        @foreach (var item in carritoData.Items)
+                        {
+                            <div class="producto-resumen">
+                                <div class="producto-info-mini">
+                                    <img src="@(item.Producto?.ImagenUrl ?? "https://via.placeholder.com/60x40?text=Sin+Imagen")" 
+                                         alt="@(item.Producto?.Nombre ?? "Producto")" 
+                                         class="producto-imagen-mini" />
+                                    <div class="producto-detalles-mini">
+                                        <span class="producto-nombre-mini">@(item.Producto?.Nombre ?? "Producto")</span>
+                                        <span class="producto-cantidad-mini">Cantidad: @item.Cantidad</span>
+                                    </div>
+                                </div>
+                                <div class="producto-precio-mini">
+                                    <span class="precio-unitario-mini">$@item.PrecioUnitario.ToString("N0") c/u</span>
+                                    <span class="subtotal-mini">$@item.Subtotal.ToString("N0")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="totales-resumen">
+                        <div class="total-linea">
+                            <span>Total de items:</span>
+                            <span>@carritoData.TotalItems</span>
+                        </div>
+                        <div class="total-linea">
+                            <span>Envío:</span>
+                            <span class="envio-gratis">Gratis</span>
+                        </div>
+                        <div class="total-final">
+                            <span>Total a pagar:</span>
+                            <span>$@carritoData.Total.ToString("N0")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="formulario-cliente">
+                <div class="formulario-card">
+                    <h3>👤 Datos del Cliente</h3>
+                    
+                    <EditForm Model="@datosCompra" OnValidSubmit="@ConfirmarCompra" class="cliente-form">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="form-group">
+                          <label for="nombre" class="form-label">Nombre *</label>
+                          <InputText id="nombre" 
+                                  @bind-Value="datosCompra.NombreCliente" 
+                                  class="@(GetFieldCssClass(nameof(datosCompra.NombreCliente)))" 
+                                  placeholder="Ingresa tu nombre" />
+                          <ValidationMessage For="@(() => datosCompra.NombreCliente)" class="validation-message" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="apellido" class="form-label">Apellido *</label>
+                            <InputText id="apellido" 
+                                      @bind-Value="datosCompra.ApellidoCliente" 
+                                      class="@(GetFieldCssClass(nameof(datosCompra.ApellidoCliente)))" 
+                                      placeholder="Ingresa tu apellido" />
+                            <ValidationMessage For="@(() => datosCompra.ApellidoCliente)" class="validation-message" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email *</label>
+                            <InputText id="email" 
+                                      @bind-Value="datosCompra.EmailCliente" 
+                                      class="@(GetFieldCssClass(nameof(datosCompra.EmailCliente)))" 
+                                      placeholder="tu@email.com" 
+                                      type="email" />
+                            <ValidationMessage For="@(() => datosCompra.EmailCliente)" class="validation-message" />
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancelar" @onclick="VolverAlCarrito">
+                                ← Volver al Carrito
+                            </button>
+                            
+                            <button type="submit" 
+                                    class="btn-confirmar @(procesandoCompra ? "processing" : "")" 
+                                    disabled="@procesandoCompra">
+                                @if (procesandoCompra)
+                                {
+                                    <span class="btn-loading">⏳</span>
+                                    <span>Procesando...</span>
+                                }
+                                else
+                                {
+                                    <span>✅</span>
+                                    <span>Confirmar Compra</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private cliente.Services.Carrito? carritoData;
+    private bool cargando = true;
+    private bool procesandoCompra = false;
+    private Compra datosCompra = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosCompra();
+    }
+
+    private async Task CargarDatosCompra()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            carritoData = await ApiService.ObtenerCarritoConProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar datos de compra: {ex.Message}");
+            carritoData = null;
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        if (carritoData == null || !carritoData.Items.Any())
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "No hay productos en el carrito para confirmar.");
+            return;
+        }
+
+        procesandoCompra = true;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.ConfirmarCompraAsync(datosCompra);
+            
+            if (exito)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    $"¡Compra confirmada exitosamente!\n\n" +
+                    $"Cliente: {datosCompra.NombreCliente} {datosCompra.ApellidoCliente}\n" +
+                    $"Email: {datosCompra.EmailCliente}\n" +
+                    $"Total: ${carritoData.Total:N0}\n" +
+                    $"Items: {carritoData.TotalItems}\n\n" +
+                    $"Recibirás un email de confirmación pronto.");
+                
+                datosCompra = new Compra();
+                
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", 
+                    "Error al procesar la compra. Por favor, inténtalo nuevamente.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al confirmar compra: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", 
+                "Error al procesar la compra. Verifica tu conexión e inténtalo nuevamente.");
+        }
+        finally
+        {
+            procesandoCompra = false;
+            StateHasChanged();
+        }
+    }
+
+    private void VolverAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+
+    private void IrACatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private string GetFieldCssClass(string fieldName)
+    {
+        var field = fieldName switch
+        {
+            nameof(datosCompra.NombreCliente) => datosCompra.NombreCliente,
+            nameof(datosCompra.ApellidoCliente) => datosCompra.ApellidoCliente,
+            nameof(datosCompra.EmailCliente) => datosCompra.EmailCliente,
+            _ => ""
+        };
+
+        if (string.IsNullOrWhiteSpace(field))
+            return "form-input";
+
+        var validationClass = fieldName switch
+        {
+            nameof(datosCompra.EmailCliente) => IsValidEmail(field) ? "valid" : "invalid",
+            _ => field.Length >= 2 ? "valid" : "invalid"
+        };
+
+        return $"form-input {validationClass}";
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}

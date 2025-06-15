@@ -1,4 +1,88 @@
-﻿@inherits LayoutComponentBase
+﻿@using cliente.Services
+@inherits LayoutComponentBase 
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@implements IDisposable
+
 <div class="page">
-    @Body
+    <header class="header-fixed">
+        <nav class="navbar">
+            <div class="nav-brand" @onclick="IrAHome">
+                <span class="logo">🛒 Saint TecnoStore</span>
+            </div>
+            
+            <div class="nav-search">
+                <input type="text" @bind="terminoBusqueda" @onkeypress="OnBusquedaKeyPress" 
+                       placeholder="Buscar productos..." class="search-input" />
+                <button @onclick="RealizarBusqueda" class="search-btn">🔍</button>
+            </div>
+            
+            <div class="nav-cart" @onclick="IrACarrito">
+                <span class="cart-icon">🛒</span>
+                @if (cantidadItems > 0)
+                {
+                    <span class="cart-badge">@cantidadItems</span>
+                }
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        @Body
+    </main>
 </div>
+
+@code {
+    private string terminoBusqueda = "";
+    private int cantidadItems = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ApiService.OnCarritoActualizado += () => InvokeAsync(ActualizarContadorCarrito);
+            await ActualizarContadorCarrito();
+        }
+    }
+
+    private async Task ActualizarContadorCarrito()
+    {
+        cantidadItems = await ApiService.ObtenerCantidadItemsAsync();
+        StateHasChanged();
+    }
+
+    private void IrAHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void IrACarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+
+    private void RealizarBusqueda()
+    {
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+        {
+            Navigation.NavigateTo($"/?query={Uri.EscapeDataString(terminoBusqueda)}");
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private void OnBusquedaKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            RealizarBusqueda();
+        }
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnCarritoActualizado -= () => InvokeAsync(ActualizarContadorCarrito);
+    }
+}
