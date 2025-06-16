@@ -2,17 +2,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Servidor.Modelos;
 using Servidor.Stock;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var carrito = new Dictionary<Guid, List<ItemCompra>>();
-
 builder.Services.AddDbContext<Tienda>(options =>
-    options.UseSqlite("Data Source=tienda.db"));
-
-builder.Services.AddScoped<Tienda>();
+    options.UseInMemoryDatabase("Tienda"));
 
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
@@ -26,7 +23,6 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<Tienda>();
@@ -36,9 +32,8 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
 }
-app.UseCors("AllowClientApp");
 
-app.MapControllers();
+app.UseCors("AllowClientApp");
 
 app.UseStaticFiles();
 app.MapFallbackToFile("index.html");
@@ -56,11 +51,56 @@ app.MapGet("/productos", async (Tienda db, string? q) =>
     var productos = await query.ToListAsync();
     return Results.Ok(productos);
 });
-app.MapPost("/carrito", () =>
+
+var carritos = new Dictionary<Guid, List<ItemCompra>>();
+
+app.MapPost("/carritos", () =>
 {
-    var nuevoId = Guid.NewGuid(); 
-    carrito[nuevoId] = new List<ItemCompra>();
+    var nuevoId = Guid.NewGuid();
+    carritos[nuevoId] = new List<ItemCompra>();
     return Results.Ok(nuevoId);
 });
-app.MapGet("/", () => "Servidor API está en funcionamiento");
+app.MapPut("/carritos/{carritoId}/{productoId}", async (
+    Guid carritoId,
+    int productoId,
+    [FromBody] int cantidad,
+    Tienda db) =>
+{
+    if (cantidad <= 0)
+        return Results.BadRequest("La cantidad debe ser mayor a 0.");
+
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto is null)
+        return Results.NotFound("Producto no encontrado.");
+
+    if (producto.Stock < cantidad)
+        return Results.BadRequest("No hay suficiente stock.");
+
+    if (!carritos.ContainsKey(carritoId))
+        return Results.NotFound("Carrito no encontrado.");
+
+    var carrito = carritos[carritoId];
+    var item = carrito.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (item == null)
+    {
+        item = new ItemCompra
+        {
+            ProductoId = productoId,
+            Cantidad = cantidad,
+            PrecioUnitario = producto.Precio
+        };
+        carrito.Add(item);
+    }
+    else
+    {
+        item.Cantidad += cantidad;
+    }
+
+    return Results.Ok("Producto agregado al carrito.");
+});
+
+app.MapGet("/", () => "Servidor API está en funcionamiento ✅");
+app.UseAuthorization();
+app.MapControllers();
 app.Run();

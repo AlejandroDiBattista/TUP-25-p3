@@ -12,7 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Configurar el HttpClient para apuntar al backend API
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("http://localhost:5184") // Cambialo si usás otro puerto
+    BaseAddress = new Uri("http://localhost:5184") 
 });
 
 builder.Services.AddScoped<ApiService>();

@@ -103,23 +103,24 @@ a, .btn-link {
 .productos {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 20px;
     justify-content: center;
-    margin-top: 1rem;
 }
 
 .producto {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 1rem;
-    width: 250px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px;
     text-align: center;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    width: 250px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .producto img {
     max-width: 100%;
-    border-radius: 5px;
+    height: auto;
+    margin-bottom: 10px;
 }
 
 code {
@@ -133,4 +134,34 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+.header {
+    background-color: #007BFF; /* Azul */
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-box {
+    width: 300px;
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.carrito {
+    display: flex;
+    align-items: center;
+}
+
+.carrito .badge {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 5px 10px;
+    margin-left: 5px;
 }

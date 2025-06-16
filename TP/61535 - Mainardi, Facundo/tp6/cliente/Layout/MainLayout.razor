@@ -1,13 +1,101 @@
 ﻿@inherits LayoutComponentBase
-@using cliente.Pages
+@using Cliente.Services
+@inject CarritoFinal CarritoFinal
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoFinal.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoFinal.OnChange -= StateHasChanged;
+    }
+
+    private string search = "";
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        search = e.Value?.ToString() ?? "";
+        Navigation.NavigateTo($"/?search={Uri.EscapeDataString(search)}");
+    }
+}
+
 <div class="page">
-    <main style="margin-top: 70px;">
+    <header class="header">
+        <div class="logo" @onclick="@(() => Navigation.NavigateTo("/"))">
+            <i class="fa-solid fa-shop"></i>
+        </div>
+        <div class="carrito" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span class="badge">@CarritoFinal.TotalItems</span>
+        </div>
+        <input value="@search" @oninput="OnSearchChanged" placeholder="Buscar productos..." class="search-box" />
+    </header>
+
+    <main class="contenido">
         @Body
-        <style>
-            .contenido {
-                margin-top: 80px;
-                padding: 20px;
-            }
-</style>
     </main>
 </div>
+
+<style>
+    .header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: #5ebcff;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(31, 31, 34, 0.1);
+        z-index: 1000;
+    }
+
+    .logo {
+        font-size: 1.5em;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .search-box {
+        width: 300px;
+        padding: 5px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .carrito {
+        position: right;
+        font-size: 1.5em;
+        cursor: pointer;
+    }
+
+    .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.8em;
+    }
+
+    .contenido {
+        margin-top: 80px;
+        padding: 20px;
+    }
+
+    .producto {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px;
+        text-align: center;
+    }
+</style>

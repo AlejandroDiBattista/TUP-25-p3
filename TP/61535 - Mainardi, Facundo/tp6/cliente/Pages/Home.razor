@@ -4,147 +4,64 @@
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject CarritoFinal CarritoFinal
-@inject IJSRuntime JS
 @using Microsoft.AspNetCore.WebUtilities
 
-<header class="header">
-    <div class="logo" @onclick="@(() => Navigation.NavigateTo("/"))">
-        <i class="fa-solid fa-shop"></i>
-    </div>
-    <div>
-        <input value="@search" @oninput="OnSearchChanged" placeholder="Buscar productos..." class="search-box" />
-    </div>
-    <div class="cart" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span class="badge">@CarritoFinal.TotalItems</span>
-    </div>
-</header>
-<div class="contenedor-productos">
-    <h1>Productos disponibles</h1>
+<h3>Productos</h3>
 
-    @if (productosFiltrados == null)
-    {
-        <p><em>Ups, ocurrió un error inesperado...</em></p>
-    }
-    else if (!productosFiltrados.Any())
-    {
-        <p>No se encontraron productos con ese nombre.</p>
-    }
-    else
-    {
-        <div class="productos">
-            @foreach (var producto in productosFiltrados)
-            {
-                <div class="producto">
-                    <img src="@producto.ImagenUrl" alt="@producto.Nombre" width="200" />
-                    <h3>@producto.Nombre</h3>
-                    <p>@producto.Descripcion</p>
-                    <p><strong>Precio:</strong> $@producto.Precio</p>
-                    <p><strong>Stock:</strong> @producto.Stock</p>
-                </div>
-            }
-        </div>
-    }
-</div>
-
-@code {
-    private List<Producto> productosFiltrados;
-    private string search = "";
-
-    protected override async Task OnInitializedAsync()
-    {
-        await JS.InvokeVoidAsync("alert", $"Carrito inicializado: {CarritoFinal.CarritoId}");
-        await CargarProductos();
-    }
-
-    private async Task CargarProductos()
-    {
-        try
+@if (productosFiltrados == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (!productosFiltrados.Any())
+{
+    <p>No se encontraron productos.</p>
+}
+else
+{
+    <div class="productos">
+        @foreach (var producto in productosFiltrados)
         {
-            Console.WriteLine($"🔍 Buscando productos con filtro: '{search}'");
-
-            var productos = await ApiService.BuscarProductos(search);
-            Console.WriteLine($"🔄 Resultados recibidos: {productos.Count}");
-
-            productosFiltrados = productos;
+            <div class="producto">
+                <h4>@producto.Nombre</h4>
+                <p>@producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@producto.Precio</p>
+                <button class="btn btn-primary" @onclick="@(() => AgregarProducto(producto))">
+                    <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                </button>
+            </div>
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error al cargar productos: {ex.Message}");
-            productosFiltrados = null;
-        }
-
-        StateHasChanged();
-    }
-
-    private async Task OnSearchChanged(ChangeEventArgs e)
-    {
-        search = e.Value?.ToString() ?? "";
-        await CargarProductos();
-    }
+    </div>
 }
 
-<style>
-    .header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        background-color: #5ebcff;
-        box-shadow: 0 2px 4px rgba(31, 31, 34, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 20px;
-        z-index: 1000;
-    }
-    .logo {
-        font-size: 1.5em;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .search-box {
-        flex-grow: 1;
-        max-width: 400px;
-        margin: 0 20px;
-        padding: 5px 10px;
-        font-size: 1em;
-    }
-    .cart {
-        position: relative;
-        font-size: 1.5em;
-        cursor: pointer;
+@code {
+    private List<Producto> productosFiltrados = new();
+    private string search = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("search", out var query))
+        {
+            search = query;
+        }
+        else
+        {
+            search = "";
+        }
+
+        productosFiltrados = await ApiService.BuscarProductos(search);
     }
 
-    .badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background-color: red;
-        color: white;
-        border-radius: 50%;
-        padding: 2px 6px;
-        font-size: 0.8em;
-    }
-</style>
-<style>
-    .contenedor-productos {
-        max-width: 1200px;
-        margin: 0 auto;
-        text-align: center;
-    }
-</style>
-<style>
-    .contenedor-productos {
-        max-width: 1200px;
-        margin: 0 auto;
-        text-align: center;
-    }
+    private async Task AgregarProducto(Producto producto)
+    {
+        var item = new CarritoFinal.ItemCarrito
+        {
+            ProductoId = producto.Id,
+            Nombre = producto.Nombre,
+            Precio = producto.Precio,
+            Cantidad = 1
+        };
 
-    .grilla-productos {
-        display: auto;
-        flex-wrap: wrap;
-        justify-content: left;
-        gap: 20px;
-        margin-top: 20px;
+        await CarritoFinal.AgregarProductoAsync(item);
     }
-</style>
+}

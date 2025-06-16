@@ -5,18 +5,38 @@ namespace Cliente.Services
 {
     public class ApiService
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient http;
 
-        public ApiService(HttpClient httpClient)
+        public ApiService(HttpClient http)
         {
-            _httpClient = httpClient;
+            this.http = http;
+            this.http.BaseAddress = new Uri("http://localhost:5184/");
         }
+          public async Task<List<Producto>> ObtenerProductosAsync()
+        {
+            var productos = await http.GetFromJsonAsync<List<Producto>>("http://localhost:5177/productos");
+            return productos ?? new List<Producto>();
+        }
+        public async Task<bool> AgregarAlCarrito(Guid carritoId, int productoId, int cantidad)
+        {
+            try
+            {
+                var response = await http.PutAsJsonAsync(
+                    $"/carritos/{carritoId}/{productoId}", cantidad);
 
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error al agregar al carrito: {ex.Message}");
+                return false;
+            }
+        }
         public async Task<DatosRespuesta> ObtenerDatosAsync()
         {
             try
             {
-                var respuesta = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
+                var respuesta = await http.GetFromJsonAsync<DatosRespuesta>("/api/datos");
                 return respuesta ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
             }
             catch (Exception ex)
@@ -25,7 +45,6 @@ namespace Cliente.Services
                 return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
             }
         }
-
         public async Task<List<Producto>> BuscarProductos(string filtro)
         {
             try
@@ -34,7 +53,18 @@ namespace Cliente.Services
                     ? "/productos"
                     : $"/productos?q={Uri.EscapeDataString(filtro)}";
 
-                var response = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+                Console.WriteLine($"🔍 URL de búsqueda: {url}");
+                var response = await http.GetFromJsonAsync<List<Producto>>(url);
+
+                if (response != null && response.Any())
+                {
+                    Console.WriteLine($"✅ Productos obtenidos: {response.Count}");
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ No se encontraron productos en la respuesta.");
+                }
+
                 return response ?? new List<Producto>();
             }
             catch (Exception ex)
@@ -44,12 +74,11 @@ namespace Cliente.Services
             }
         }
 
-        // 🔧 Este método estaba fuera de la clase, ahora está bien
         public async Task<Guid> CrearCarritoAsync()
         {
             try
             {
-                var response = await _httpClient.PostAsync("/carritos", null);
+                var response = await http.PostAsync("/carritos", null);
                 if (response.IsSuccessStatusCode)
                 {
                     var id = await response.Content.ReadFromJsonAsync<Guid>();

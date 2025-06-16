@@ -22,7 +22,13 @@ public class Compra
 
     public ICollection<ItemCompra> ItemsCompra { get; set; }
 }
-
+public class ItemCarrito
+ {
+    public int ProductoId { get; set; }
+    public string Nombre { get; set; }
+    public decimal Precio { get; set; }
+    public int Cantidad { get; set; }
+}
 public class ItemCompra
 {
     public int Id { get; set; }
