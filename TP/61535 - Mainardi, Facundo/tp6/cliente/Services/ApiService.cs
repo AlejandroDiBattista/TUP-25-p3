@@ -45,25 +45,17 @@ namespace Cliente.Services
                 return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
             }
         }
-        public async Task<List<Producto>> BuscarProductos(string filtro)
+       public async Task<List<Producto>> BuscarProductos(string filtro)
         {
             try
             {
                 string url = string.IsNullOrWhiteSpace(filtro)
-                    ? "/productos"
-                    : $"/productos?q={Uri.EscapeDataString(filtro)}";
+                    ? "productos" 
+                    : $"productos?q={Uri.EscapeDataString(filtro)}";
 
                 Console.WriteLine($"🔍 URL de búsqueda: {url}");
-                var response = await http.GetFromJsonAsync<List<Producto>>(url);
 
-                if (response != null && response.Any())
-                {
-                    Console.WriteLine($"✅ Productos obtenidos: {response.Count}");
-                }
-                else
-                {
-                    Console.WriteLine("⚠️ No se encontraron productos en la respuesta.");
-                }
+                var response = await http.GetFromJsonAsync<List<Producto>>(url);
 
                 return response ?? new List<Producto>();
             }
@@ -73,7 +65,6 @@ namespace Cliente.Services
                 return new List<Producto>();
             }
         }
-
         public async Task<Guid> CrearCarritoAsync()
         {
             try
@@ -93,7 +84,6 @@ namespace Cliente.Services
             return Guid.Empty;
         }
     }
-
     public class DatosRespuesta
     {
         public string Mensaje { get; set; }

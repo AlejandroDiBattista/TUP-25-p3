@@ -5,7 +5,7 @@
 @implements IDisposable
 
 @code {
-    protected override void OnInitialized()
+  protected override void OnInitialized()
     {
         CarritoFinal.OnChange += StateHasChanged;
     }
@@ -15,12 +15,14 @@
         CarritoFinal.OnChange -= StateHasChanged;
     }
 
-    private string search = "";
+  private string search = "";
 
-    private async Task OnSearchChanged(ChangeEventArgs e)
+    private void OnSearchChanged(ChangeEventArgs e)
     {
         search = e.Value?.ToString() ?? "";
-        Navigation.NavigateTo($"/?search={Uri.EscapeDataString(search)}");
+
+        var uri = Navigation.GetUriWithQueryParameter("search", search);
+        Navigation.NavigateTo(uri, forceLoad: false); 
     }
 }
 

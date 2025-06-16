@@ -37,12 +37,22 @@ else
 }
 
 @code {
+    [Inject] private NavigationManager NavigationManager { get; set; }
+
+    private IDisposable locationChangedHandler;
+
+    protected override void OnInitialized()
+    {
+        locationChangedHandler = NavigationManager.RegisterLocationChangingHandler(OnLocationChanged);
+    }
+
     private List<Producto> productosFiltrados = new();
     private string search = "";
 
     protected override async Task OnParametersSetAsync()
     {
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
         if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("search", out var query))
         {
             search = query;
@@ -54,19 +64,14 @@ else
 
         productosFiltrados = await ApiService.BuscarProductos(search);
     }
-        protected override void OnInitialized()
-    {
-        CarritoFinal.OnChange += CarritoActualizado;
-    }
-
     private void CarritoActualizado()
     {
-        InvokeAsync(StateHasChanged); // refresca el componente cuando cambia el carrito
+        InvokeAsync(StateHasChanged); 
     }
 
     public void Dispose()
     {
-        CarritoFinal.OnChange -= CarritoActualizado; // evitamos fugas de memoria
+        CarritoFinal.OnChange -= CarritoActualizado; 
     }
 
  private async Task AgregarProducto(Producto producto)
@@ -88,5 +93,18 @@ else
     };
 
     await CarritoFinal.AgregarProductoAsync(item); 
+}
+  private async ValueTask OnLocationChanged(LocationChangingContext context)
+{
+    var uri = new Uri(context.TargetLocation);
+    if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("search", out var nuevaBusqueda))
+    {
+        if (search != nuevaBusqueda)
+        {
+            search = nuevaBusqueda;
+            productosFiltrados = await ApiService.BuscarProductos(search);
+            StateHasChanged();
+        }
+    }
 }
 }
