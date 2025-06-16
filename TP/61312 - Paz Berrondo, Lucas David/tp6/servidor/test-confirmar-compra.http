@@ -1,0 +1,159 @@
+### Pruebas de Endpoint de Confirmación de Compra
+### Archivo de pruebas para validar el endpoint PUT /carritos/{carrito}/confirmar
+
+###
+### ESCENARIO 1: Flujo completo exitoso de confirmación de compra
+###
+
+### PASO 1: Crear un carrito
+POST http://localhost:5184/api/carritos
+Content-Type: application/json
+
+###
+### PASO 2: Agregar productos al carrito (usar el carritoId del paso anterior)
+### Reemplazar {carritoId} con el ID obtenido en el paso 1
+
+PUT http://localhost:5184/api/carritos/{carritoId}/1
+Content-Type: application/json
+
+{
+    "cantidad": 2
+}
+
+###
+### PASO 3: Agregar otro producto al carrito
+PUT http://localhost:5184/api/carritos/{carritoId}/5
+Content-Type: application/json
+
+{
+    "cantidad": 1
+}
+
+###
+### PASO 4: Ver el carrito antes de confirmar la compra
+GET http://localhost:5184/api/carritos/{carritoId}
+Content-Type: application/json
+
+###
+### PASO 5: Confirmar la compra con datos válidos del cliente
+PUT http://localhost:5184/api/carritos/{carritoId}/confirmar
+Content-Type: application/json
+
+{
+    "nombreCliente": "Juan",
+    "apellidoCliente": "Pérez",
+    "emailCliente": "juan.perez@email.com"
+}
+
+###
+### PASO 6: Intentar ver el carrito después de la confirmación (debe fallar - carrito eliminado)
+GET http://localhost:5184/api/carritos/{carritoId}
+Content-Type: application/json
+
+###
+### ESCENARIO 2: Casos de error - Validación de datos del cliente
+###
+
+### PASO 7: Crear nuevo carrito para casos de error
+POST http://localhost:5184/api/carritos
+Content-Type: application/json
+
+###
+### PASO 8: Agregar producto al nuevo carrito
+PUT http://localhost:5184/api/carritos/{carritoId2}/3
+Content-Type: application/json
+
+{
+    "cantidad": 1
+}
+
+###
+### PASO 9: Intentar confirmar sin nombre (debería fallar)
+PUT http://localhost:5184/api/carritos/{carritoId2}/confirmar
+Content-Type: application/json
+
+{
+    "nombreCliente": "",
+    "apellidoCliente": "González",
+    "emailCliente": "maria@email.com"
+}
+
+###
+### PASO 10: Intentar confirmar con email inválido (debería fallar)
+PUT http://localhost:5184/api/carritos/{carritoId2}/confirmar
+Content-Type: application/json
+
+{
+    "nombreCliente": "María",
+    "apellidoCliente": "González",
+    "emailCliente": "email-invalido"
+}
+
+###
+### ESCENARIO 3: Casos de error - Carrito y stock
+###
+
+### PASO 11: Intentar confirmar compra de carrito inexistente
+PUT http://localhost:5184/api/carritos/carrito-inexistente/confirmar
+Content-Type: application/json
+
+{
+    "nombreCliente": "Test",
+    "apellidoCliente": "User",
+    "emailCliente": "test@email.com"
+}
+
+###
+### PASO 12: Crear carrito vacío
+POST http://localhost:5184/api/carritos
+Content-Type: application/json
+
+###
+### PASO 13: Intentar confirmar carrito vacío (debería fallar)
+PUT http://localhost:5184/api/carritos/{carritoId3}/confirmar
+Content-Type: application/json
+
+{
+    "nombreCliente": "Test",
+    "apellidoCliente": "Empty",
+    "emailCliente": "empty@email.com"
+}
+
+###
+### ESCENARIO 4: Verificación de stock actualizado
+###
+
+### PASO 14: Ver productos para verificar stock antes de crear otro carrito
+GET http://localhost:5184/api/productos
+Content-Type: application/json
+
+###
+### PASO 15: Crear último carrito de prueba
+POST http://localhost:5184/api/carritos
+Content-Type: application/json
+
+###
+### PASO 16: Intentar agregar más stock del disponible
+### (verificar primero cuánto stock tiene el producto que compramos antes)
+PUT http://localhost:5184/api/carritos/{carritoId4}/1
+Content-Type: application/json
+
+{
+    "cantidad": 100
+}
+
+###
+### PASO 17: Confirmar compra válida final
+PUT http://localhost:5184/api/carritos/{carritoId4}/confirmar
+Content-Type: application/json
+
+{
+    "nombreCliente": "Ana",
+    "apellidoCliente": "López",
+    "emailCliente": "ana.lopez@gmail.com"
+}
+
+###
+### PASO 18: Verificar stock final después de todas las compras
+GET http://localhost:5184/api/productos
+Content-Type: application/json

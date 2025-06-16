@@ -1,0 +1,265 @@
+@page "/carrito"
+@inject Cliente.Services.ApiService ApiService
+@inject Cliente.Services.CarritoService CarritoService
+@inject Cliente.Services.ToastService ToastService
+@inject NavigationManager Navigation
+
+<div class="container py-4 fade-in-up">    @if (cargando)
+    {
+        <div class="loader-container fullscreen">
+            <span class="loader loader-lg"></span>
+            <p class="loading-text">Cargando tu carrito...</p>
+        </div>
+    }
+    else if (items == null || items.Count == 0)
+    {
+        <div class="text-center my-5">
+            <div class="alert alert-info shadow-orange">
+                <i class="bi bi-cart-x fs-1 d-block mb-3 text-gradient"></i>
+                <h4>Tu carrito está vacío</h4>
+                <p>¡Explora nuestro catálogo y encuentra productos increíbles!</p>
+                <a href="/" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al catálogo
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-orange">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-cart-check me-2"></i>Productos en tu carrito</h5>
+                    </div>
+                    <div class="card-body p-0">                        @foreach (var item in items)
+                        {
+                            <div class="cart-item border-bottom p-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h6 class="mb-1 text-gradient">@item.Producto?.Nombre</h6>
+                                        <small class="text-muted">$@item.PrecioUnitario c/u</small>
+                                    </div><div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <button class="btn btn-outline-secondary" 
+                                                    type="button" 
+                                                    @onclick="() => ModificarCantidad(item.ProductoId, item.Cantidad - 1)"
+                                                    disabled="@(item.Cantidad <= 1)">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                            <input type="text" class="form-control text-center" value="@item.Cantidad" readonly>
+                                            <button class="btn btn-outline-secondary" 
+                                                    type="button" 
+                                                    @onclick="() => ModificarCantidad(item.ProductoId, item.Cantidad + 1)">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Stock: @item.Producto?.Stock</small>
+                                    </div>                                    <div class="col-md-2 text-end">
+                                        <span class="price-tag">$@(item.PrecioUnitario * item.Cantidad)</span>
+                                    </div>
+                                    <div class="col-md-1 text-end">
+                                        <button class="btn btn-outline-danger btn-sm" @onclick="() => EliminarProducto(item.ProductoId)" title="Eliminar producto">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>            <div class="col-lg-4">
+                <div class="card shadow-orange">
+                    <div class="card-header bg-gradient-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Resumen de compra</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-semibold">Total de productos:</span>
+                            <span class="badge bg-primary">@items.Sum(i => i.Cantidad)</span>
+                        </div>
+                        <hr class="border-orange">
+                        <div class="cart-total text-center mb-3">
+                            <div>Total a pagar</div>
+                            <div class="fs-4 fw-bold">$@total</div>
+                        </div>                        <button class="btn btn-success w-100 mb-3" @onclick="ProcesarCompra">
+                            <i class="bi bi-credit-card me-2"></i>Procesar compra
+                        </button>
+                        <button class="btn btn-outline-danger w-100 mb-3" @onclick="VaciarCarrito">
+                            <i class="bi bi-trash me-2"></i>Vaciar carrito
+                        </button>
+                        <a href="/" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-arrow-left me-2"></i>Seguir comprando
+                        </a>
+                    </div>
+                </div>
+            </div></div>
+    }
+</div>
+
+<!-- Modal de confirmación para vaciar carrito -->
+@if (mostrarModalConfirmacion)
+{
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar acción</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalConfirmacion"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea vaciar el carrito?</p>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalConfirmacion">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmarVaciarCarrito">Vaciar carrito</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] public Action<int>? ActualizarCarrito { get; set; }
+    
+    private Cliente.Models.Compra? carrito;
+    private List<Cliente.Models.ItemCompra> items = new();
+    private decimal total = 0;
+    private bool cargando = true;
+    private bool mostrarModalConfirmacion = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }    private async Task CargarCarrito()
+    {
+        try
+        {
+            cargando = true;
+            carrito = await CarritoService.ObtenerCarritoAsync();
+            items = carrito?.Items ?? new List<Cliente.Models.ItemCompra>();
+            total = items.Sum(i => i.PrecioUnitario * i.Cantidad);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar carrito: {ex.Message}");
+            items = new List<Cliente.Models.ItemCompra>();
+            total = 0;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }    private async Task InicializarCarrito()
+    {
+
+        items = new List<Cliente.Models.ItemCompra>();
+        total = 0;
+    }private async Task ModificarCantidad(int productoId, int nuevaCantidad)
+    {
+        if (nuevaCantidad <= 0)
+        {
+            await EliminarProducto(productoId);
+            return;
+        }
+
+        try
+        {
+            var exito = await CarritoService.ModificarCantidadAsync(productoId, nuevaCantidad);
+            if (exito)
+            {
+                await CargarCarrito();
+                await ActualizarContadorCarrito();
+                ToastService.ShowSuccess("Cantidad actualizada correctamente");
+            }
+            else
+            {
+                ToastService.ShowError("Error al actualizar la cantidad. Verifique el stock disponible.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al modificar cantidad: {ex.Message}");
+            ToastService.ShowError("Error al actualizar la cantidad");
+        }
+    }    private async Task EliminarProducto(int productoId)
+    {
+        try
+        {
+            var exito = await CarritoService.EliminarProductoAsync(productoId);
+            if (exito)
+            {
+                await CargarCarrito();
+                await ActualizarContadorCarrito();
+                ToastService.ShowSuccess("Producto eliminado del carrito");
+            }
+            else
+            {
+                ToastService.ShowError("Error al eliminar el producto");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar producto: {ex.Message}");
+            ToastService.ShowError("Error al eliminar el producto");
+        }
+    }    private Task VaciarCarrito()
+    {
+        mostrarModalConfirmacion = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void CerrarModalConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmarVaciarCarrito()
+    {
+        try
+        {
+            mostrarModalConfirmacion = false;
+            StateHasChanged();
+
+            var exito = await CarritoService.VaciarCarritoAsync();
+            if (exito)
+            {
+                await CargarCarrito();
+                await ActualizarContadorCarrito();
+                ToastService.ShowSuccess("Carrito vaciado exitosamente");
+            }
+            else
+            {
+                ToastService.ShowError("Error al vaciar el carrito");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al vaciar carrito: {ex.Message}");
+            ToastService.ShowError("Error al vaciar el carrito");
+        }
+    }private async Task ActualizarContadorCarrito()
+    {
+        try
+        {
+            var totalItems = await CarritoService.ObtenerCantidadItemsAsync();
+            ActualizarCarrito?.Invoke(totalItems);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar contador: {ex.Message}");
+        }    }private Task ProcesarCompra()
+    {
+        if (!items.Any())
+        {
+            ToastService.ShowWarning("El carrito está vacío");
+            return Task.CompletedTask;
+        }
+
+
+        Navigation.NavigateTo("/confirmacion");
+        return Task.CompletedTask;
+    }
+}

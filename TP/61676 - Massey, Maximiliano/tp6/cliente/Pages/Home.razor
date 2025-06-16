@@ -1,59 +1,23 @@
-﻿@page "/"
+@page "/"
 @using cliente.Services
-@inject ApiService ApiService
+@inject NotificationService NotificationService
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+<div class="home-container">
+    <div class="bienvenida-box p-4 shadow-lg rounded-4 text-center fade-in">
+        <h1 class="display-5 mb-3" style="color: #ff9800; text-shadow: 1px 1px 4px #b36b00;">Bienvenido a la tienda de juegos digitales</h1>
+        <p class="lead">Por favor, disfruta de nuestro catálogo existente
+                        y siéntete libre de explorar los productos disponibles.
+        </p>
     </div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
-
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+    protected override void OnInitialized()
+    {
+        // Mostrar notificación de bienvenida con un pequeño delay
+        Task.Delay(500).ContinueWith(_ => 
+        {
+            NotificationService.ShowWelcome();
+        });
     }
 }

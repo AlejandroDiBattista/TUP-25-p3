@@ -1,0 +1,75 @@
+@page "/carrito"
+@inject ApiService ApiService
+
+<div class="container">
+    <h2>Carrito de Compras</h2>
+    @if (items == null)
+    {
+        <div class="alert alert-info">Cargando carrito...</div>
+    }
+    else if (items.Count == 0)
+    {
+        <div class="alert alert-warning">El carrito está vacío.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Importe</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@item.NombreProducto</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, -1)">-</button>
+                            @item.Cantidad
+                            <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item, 1)">+</button>
+                        </td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                        <td><button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item)">Eliminar</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="mb-3">
+            <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
+        </div>
+        <button class="btn btn-warning me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <a href="/confirmar" class="btn btn-success">Confirmar compra</a>
+    }
+</div>
+
+@code {
+    private List<ItemCarritoDto> items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await ApiService.ObtenerCarritoAsync();
+    }
+
+    private async Task CambiarCantidad(ItemCarritoDto item, int delta)
+    {
+        await ApiService.ActualizarCantidadAsync(item.ProductoId, item.Cantidad + delta);
+        items = await ApiService.ObtenerCarritoAsync();
+    }
+
+    private async Task EliminarItem(ItemCarritoDto item)
+    {
+        await ApiService.EliminarDelCarritoAsync(item.ProductoId);
+        items = await ApiService.ObtenerCarritoAsync();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarritoAsync();
+        items = await ApiService.ObtenerCarritoAsync();
+    }
+}

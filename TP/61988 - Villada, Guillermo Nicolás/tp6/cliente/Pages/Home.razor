@@ -1,59 +1,21 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using cliente.Shared
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<div class="container main-content">
+    <div class="home-animated-text">
+        Bienvenido a <span style="color:#ff0080;">Nickz Online Store</span>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+    <div class="home-animated-subtext">
+        ¡Explorá nuestros productos y agregá lo que quieras al carrito!
     </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+    <div class="home-gallery">
+        <img src="NickzOriginal.jpg" class="home-image" alt="Imagen 1" />
+        <img src="InicioImagen2.jpg" class="home-image" alt="Imagen 2" />
+        <img src="InicioImagen.jpg" class="home-image" alt="Imagen 3" />
+    </div>
+    <div class="text-center" style="margin:32px 0 0 0">
+        <a href="/productos" class="btn btn-primary btn-lg">Ver productos</a>
     </div>
 </div>
-
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
-
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
-    }
-}

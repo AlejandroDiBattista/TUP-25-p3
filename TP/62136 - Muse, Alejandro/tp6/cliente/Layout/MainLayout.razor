@@ -1,4 +1,26 @@
 ﻿@inherits LayoutComponentBase
+@inject cliente.Services.CarritoService CarritoService
+
+<nav style="background: #eee; padding: 10px; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+        <a href="productos" style="margin-right: 15px; font-size: 1.3em; font-weight: bold;">Catálogo</a>
+        <a href="carrito" style="margin-right: 15px; font-size: 1.3em; font-weight: bold;">
+            Carrito <span style="background: #28a745; color: white; border-radius: 50%; padding: 2px 8px;">@CarritoService.Cantidad</span>
+        </a>
+    </div>
+    <a href="/productos">
+        <img src="SMARTPHONE.png" alt="Logo" style="height:70px; box-shadow: 0 0 10px #888; border-radius: 10px;" />
+    </a>
+</nav>
+
 <div class="page">
     @Body
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+    
+}

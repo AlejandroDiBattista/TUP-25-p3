@@ -1,4 +1,47 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@inject NavigationManager Navigation
+
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-logo">
+                <Icon Name="gamepad-2" Size="24" Class="icon-primary" /> DualTech
+            </a>
+        </div>
+          <div class="sidebar-menu">
+            <a href="/" class="sidebar-item @(IsActive("/") ? "active" : "")">
+                <Icon Name="home" Size="16" />
+                <span>Tienda</span>
+            </a>
+            <a href="/carrito" class="sidebar-item @(IsActive("/carrito") ? "active" : "")">
+                <Icon Name="shopping-cart" Size="16" />
+                <span>Mi Carrito</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div><Icon Name="gamepad-2" Size="16" Class="icon-primary" /> DualTech Gaming</div>
+            <div style="font-size: 0.75rem; margin-top: 0.5rem;">
+                Powered by Dual Athloner
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        @Body
+    </main>
 </div>
+
+@code {
+    private bool IsActive(string href)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        if (href == "/" && currentPath == "/")
+            return true;
+        if (href != "/" && currentPath.StartsWith(href))
+            return true;
+        return false;
+    }
+}

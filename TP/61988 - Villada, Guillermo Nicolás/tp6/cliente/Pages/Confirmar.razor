@@ -1,0 +1,113 @@
+@page "/confirmar"
+@inject cliente.Services.ApiService ApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Nav
+
+@using cliente.Models
+@using cliente.Shared
+
+<h3>Confirmar compra</h3>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger">@mensajeError</div>
+}
+else if (items is null)
+{
+    <p>Cargando resumen...</p>
+}
+else if (!items.Any())
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.ProductoId</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        <b>Total: $@items.Sum(i => i.PrecioUnitario * i.Cantidad)</b>
+    </div>
+
+    @if (!compraExitosa)
+    {
+        <EditForm Model="cliente" OnValidSubmit="ConfirmarCompraAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-2">
+                <label>Nombre:</label>
+                <InputText class="form-control" @bind-Value="cliente.Nombre" required />
+            </div>
+            <div class="mb-2">
+                <label>Apellido:</label>
+                <InputText class="form-control" @bind-Value="cliente.Apellido" required />
+            </div>
+            <div class="mb-2">
+                <label>Email:</label>
+                <InputText class="form-control" @bind-Value="cliente.Telefono" required />
+            </div>
+            <button class="btn btn-success" type="submit">Confirmar compra</button>
+        </EditForm>
+    }
+    else
+    {
+        <div class="alert alert-success mt-4 text-center">
+            <h4>¡Gracias por tu compra, @cliente.Nombre!</h4>
+            <p>vos sabes lo que es flow</p>
+        </div>
+    }
+}
+
+@code {
+    List<ItemCarrito>? items;
+    Cliente cliente = new();
+    string mensajeError = "";
+    bool compraExitosa = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        (Guid carritoId, List<ItemCarrito> itemsList, bool recreated) =
+            await CarritoHelper.ObtenerOCrearCarritoValidoAsync(LocalStorage, ApiService);
+        items = itemsList;
+        if (recreated)
+            mensajeError = "Tu carrito anterior expiró o fue eliminado. Se creó uno nuevo. Agregá productos antes de confirmar la compra.";
+        else if (items == null || !items.Any())
+            mensajeError = "El carrito está vacío. Agregá productos antes de confirmar la compra.";
+    }
+
+    private async Task ConfirmarCompraAsync()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        try
+        {
+            var compra = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
+            compraExitosa = true;
+            await LocalStorage.RemoveItemAsync("carritoId");
+            StateHasChanged();
+            await Task.Delay(7000); // 7 segundos antes de redirigir
+            Nav.NavigateTo("/");
+        }
+        catch (Exception)
+        {
+            mensajeError = "No se pudo confirmar la compra. El carrito puede haber expirado o estar vacío.";
+        }
+    }
+}

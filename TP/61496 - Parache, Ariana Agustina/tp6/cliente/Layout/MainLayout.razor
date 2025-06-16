@@ -1,4 +1,35 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
+
+<div class="header">
+    <a href="/">🛒 Mi Tienda</a>
+    <input placeholder="Buscar productos..." @bind="searchTerm" @bind:event="oninput" />
+
+
+    <a href="/carrito">Carrito (@carritoService.CantidadTotal)</a>
+</div>
+
+<div class="body">
     @Body
 </div>
+
+@code {
+    private string searchTerm = "";
+
+    [Inject] public ProductoService productoService { get; set; }
+    [Inject] public CarritoService carritoService { get; set; }
+
+    protected override void OnInitialized()
+    {
+        productoService.OnSearchUpdated += ActualizarBusqueda;
+    }
+
+    private void ActualizarBusqueda()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        productoService.FiltrarProductos(searchTerm);
+    }
+}
