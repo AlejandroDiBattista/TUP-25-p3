@@ -32,8 +32,8 @@
             <i class="fa-solid fa-shop"></i>
         </div>
         <input value="@search" @oninput="OnSearchChanged" placeholder="Buscar productos..." class="search-box" />
-             <div class="carrito" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
-            <i class="fa-solid fa-cart-shopping"></i>
+             <div class="carrito-container" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
+            <i class="fa-solid fa-cart-shopping carrito-icon"></i>
             <span class="badge">@CarritoFinal.TotalItems</span>
         </div>
     </header>
@@ -72,21 +72,35 @@
         border-radius: 5px;
     }
 
-    .carrito {
-        position: right;
-        font-size: 1.5em;
+    .carrito-container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
+        margin-left: 20px;
+        margin-right: 10px;
+    }
+
+    .carrito-icon {
+        font-size: 24px;
+        color: white;
     }
 
     .badge {
         position: absolute;
-        top: -8px;
-        right: -8px
+        top: 0;
+        right: 0;
+        transform: translate(50%, -50%);
         background-color: red;
         color: white;
         border-radius: 50%;
         padding: 2px 6px;
-        font-size: 0.8em;
+        font-size: 0.75em;
+        font-weight: bold;
+        line-height: 1;
     }
 
     .contenido {
