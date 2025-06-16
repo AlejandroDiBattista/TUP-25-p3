@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cliente.Modelos;
 
 namespace Cliente.Services
 {
@@ -40,15 +41,5 @@ namespace Cliente.Services
             Console.WriteLine("Carrito vaciado.");
             OnChange?.Invoke();
         }
-
-    public class ItemCarrito
-{
-    public int ProductoId { get; set; }
-    public string Nombre { get; set; }
-    public decimal Precio { get; set; }
-    public int Cantidad { get; set; }
-
-    public decimal Total => Precio * Cantidad;
-}
 }
 }

@@ -67,7 +67,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ApiService.BuscarProductos(""); // traer todos los productos
+        productos = await ApiService.BuscarProductos(""); 
     }
 
     private void VaciarCarrito()
@@ -91,13 +91,11 @@ else
 
         item.Cantidad = nuevaCantidad;
 
-        StateHasChanged(); // actualiza la vista
+        StateHasChanged(); 
     }
 
-    private async void Comprar()
+    private void Comprar()
     {
-        CarritoFinal.Vaciar();
-        await Task.Delay(100); // opcional
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/confirmar");
     }
 }
