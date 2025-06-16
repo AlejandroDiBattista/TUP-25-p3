@@ -10,7 +10,6 @@
 <h2 style="text-align: center; font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: #333;">
     Productos disponibles
 </h2>
-
 @if (productosFiltrados == null)
 {
     <p>Cargando productos...</p>
@@ -85,8 +84,7 @@ else
         Console.WriteLine($"⚠️ No se puede agregar más del stock disponible ({producto.Stock}).");
         return;
     }
-
-    var item = new CarritoFinal.ItemCarrito
+    var item = new ItemCarrito
     {
         ProductoId = producto.Id,
         Nombre = producto.Nombre,

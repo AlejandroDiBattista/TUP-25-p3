@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Servidor.Modelos;
 using Servidor.Stock;
+using Servidor.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +99,50 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
     }
 
     return Results.Ok("Producto agregado al carrito.");
+});
+
+app.MapPut("/carritos/{carritoId}/confirmar", async (Guid carritoId, ConfirmacionCompraDto dto, Tienda db) =>
+
+{
+    var errores = new List<string>();
+
+    foreach (var item in dto.Items)
+    {
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        if (producto == null || producto.Stock < item.Cantidad)
+            errores.Add($"Stock insuficiente para {item.Nombre}");
+    }
+
+    if (errores.Any())
+        return Results.BadRequest(new { errores });
+
+    var compra = new Compra
+    {
+        Fecha = DateTime.Now,
+        Total = dto.Items.Sum(i => i.Precio * i.Cantidad),
+        NombreCliente = dto.Nombre,
+        ApellidoCliente = dto.Apellido,
+        EmailCliente = dto.Email,
+        ItemsCompra = new List<ItemCompra>()
+    };
+
+    foreach (var item in dto.Items)
+    {
+        compra.ItemsCompra.Add(new ItemCompra
+        {
+            ProductoId = item.ProductoId,
+            Cantidad = item.Cantidad,
+            PrecioUnitario = item.Precio
+        });
+
+        var producto = await db.Productos.FindAsync(item.ProductoId);
+        producto.Stock -= item.Cantidad;
+    }
+
+    db.Compras.Add(compra);
+    await db.SaveChangesAsync();
+
+    return Results.Ok();
 });
 
 app.MapGet("/", () => "Servidor API está en funcionamiento ✅");

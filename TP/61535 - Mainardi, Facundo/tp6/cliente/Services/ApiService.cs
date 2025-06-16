@@ -12,7 +12,7 @@ namespace Cliente.Services
             this.http = http;
             this.http.BaseAddress = new Uri("http://localhost:5184/");
         }
-          public async Task<List<Producto>> ObtenerProductosAsync()
+        public async Task<List<Producto>> ObtenerProductosAsync()
         {
             var productos = await http.GetFromJsonAsync<List<Producto>>("http://localhost:5177/productos");
             return productos ?? new List<Producto>();
@@ -45,12 +45,12 @@ namespace Cliente.Services
                 return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
             }
         }
-       public async Task<List<Producto>> BuscarProductos(string filtro)
+        public async Task<List<Producto>> BuscarProductos(string filtro)
         {
             try
             {
                 string url = string.IsNullOrWhiteSpace(filtro)
-                    ? "productos" 
+                    ? "productos"
                     : $"productos?q={Uri.EscapeDataString(filtro)}";
 
                 Console.WriteLine($"🔍 URL de búsqueda: {url}");
@@ -83,7 +83,21 @@ namespace Cliente.Services
 
             return Guid.Empty;
         }
-    }
+
+        public async Task<bool> ConfirmarCompra(Guid carritoId, ConfirmacionCompraDto datos)
+        {
+            try
+            {
+                var response = await http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datos);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error al confirmar compra: {ex.Message}");
+                return false;
+            }
+        }
+    } 
     public class DatosRespuesta
     {
         public string Mensaje { get; set; }
