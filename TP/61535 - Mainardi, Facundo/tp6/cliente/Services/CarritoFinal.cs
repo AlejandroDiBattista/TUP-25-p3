@@ -29,12 +29,16 @@ namespace Cliente.Services
             Console.WriteLine($"Producto agregado. TotalItems: {TotalItems}");
             OnChange?.Invoke(); 
         }
-
+        public bool PuedeAgregar(int productoId, int stockMaximo)
+        {
+            var item = items.FirstOrDefault(i => i.ProductoId == productoId);
+            return item == null || item.Cantidad < stockMaximo;
+        }
         public void Vaciar()
         {
             items.Clear();
             Console.WriteLine("Carrito vaciado.");
-            OnChange?.Invoke(); 
+            OnChange?.Invoke();
         }
 
     public class ItemCarrito

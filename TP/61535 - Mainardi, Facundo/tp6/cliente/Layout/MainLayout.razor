@@ -29,11 +29,11 @@
         <div class="logo" @onclick="@(() => Navigation.NavigateTo("/"))">
             <i class="fa-solid fa-shop"></i>
         </div>
-        <div class="carrito" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
+        <input value="@search" @oninput="OnSearchChanged" placeholder="Buscar productos..." class="search-box" />
+             <div class="carrito" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
             <i class="fa-solid fa-cart-shopping"></i>
             <span class="badge">@CarritoFinal.TotalItems</span>
         </div>
-        <input value="@search" @oninput="OnSearchChanged" placeholder="Buscar productos..." class="search-box" />
     </header>
 
     <main class="contenido">

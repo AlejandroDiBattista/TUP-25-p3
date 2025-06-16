@@ -4,6 +4,7 @@
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject CarritoFinal CarritoFinal
+@implements IDisposable
 @using Microsoft.AspNetCore.WebUtilities
 
 <h3>Productos</h3>
@@ -22,9 +23,11 @@ else
         @foreach (var producto in productosFiltrados)
         {
             <div class="producto">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="img-fluid" />
                 <h4>@producto.Nombre</h4>
                 <p>@producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@producto.Precio</p>
+                <p><strong>Stock:</strong> @producto.Stock</p>
                 <button class="btn btn-primary" @onclick="@(() => AgregarProducto(producto))">
                     <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
                 </button>
@@ -51,17 +54,39 @@ else
 
         productosFiltrados = await ApiService.BuscarProductos(search);
     }
-
-    private async Task AgregarProducto(Producto producto)
+        protected override void OnInitialized()
     {
-        var item = new CarritoFinal.ItemCarrito
-        {
-            ProductoId = producto.Id,
-            Nombre = producto.Nombre,
-            Precio = producto.Precio,
-            Cantidad = 1
-        };
-
-        await CarritoFinal.AgregarProductoAsync(item);
+        CarritoFinal.OnChange += CarritoActualizado;
     }
+
+    private void CarritoActualizado()
+    {
+        InvokeAsync(StateHasChanged); // refresca el componente cuando cambia el carrito
+    }
+
+    public void Dispose()
+    {
+        CarritoFinal.OnChange -= CarritoActualizado; // evitamos fugas de memoria
+    }
+
+ private async Task AgregarProducto(Producto producto)
+{
+    var existente = CarritoFinal.Items.FirstOrDefault(i => i.ProductoId == producto.Id);
+
+    if (existente != null && existente.Cantidad >= producto.Stock)
+    {
+        Console.WriteLine($"⚠️ No se puede agregar más del stock disponible ({producto.Stock}).");
+        return;
+    }
+
+    var item = new CarritoFinal.ItemCarrito
+    {
+        ProductoId = producto.Id,
+        Nombre = producto.Nombre,
+        Precio = producto.Precio,
+        Cantidad = 1
+    };
+
+    await CarritoFinal.AgregarProductoAsync(item); 
+}
 }

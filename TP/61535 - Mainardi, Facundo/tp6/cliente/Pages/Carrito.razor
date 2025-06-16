@@ -28,6 +28,10 @@ else
             </tr>
         </thead>
         <tbody>
+            @{
+                total = 0; 
+            }
+
             @foreach (var item in CarritoFinal.Items)
             {
                 var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
@@ -39,7 +43,11 @@ else
                     <tr>
                         <td>@producto.Nombre</td>
                         <td>$@producto.Precio</td>
-                        <td>@item.Cantidad</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad <= 1)">-</button>
+                            <span class="mx-2">@item.Cantidad</span>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item.ProductoId, 1)" disabled="@(item.Cantidad >= producto.Stock)">+</button>
+                        </td>
                         <td>$@subtotal</td>
                     </tr>
                 }
@@ -55,67 +63,41 @@ else
 
 @code {
     private List<Producto> productos;
-    private decimal total = 0;
+    private decimal total;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ApiService.BuscarProductos(""); // trae todos
+        productos = await ApiService.BuscarProductos(""); // traer todos los productos
     }
 
     private void VaciarCarrito()
     {
         CarritoFinal.Vaciar();
-        total = 0;
         Navigation.NavigateTo("/carrito", forceLoad: true);
+    }
+
+    private async Task CambiarCantidad(int productoId, int delta)
+    {
+        var item = CarritoFinal.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+
+        if (item == null || producto == null)
+            return;
+
+        var nuevaCantidad = item.Cantidad + delta;
+
+        if (nuevaCantidad < 1 || nuevaCantidad > producto.Stock)
+            return;
+
+        item.Cantidad = nuevaCantidad;
+
+        StateHasChanged(); // actualiza la vista
     }
 
     private async void Comprar()
     {
         CarritoFinal.Vaciar();
-        total = 0;
         await Task.Delay(100); // opcional
         Navigation.NavigateTo("/");
     }
 }
-<style>
-    .header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        background-color: #5ebcff;
-        box-shadow: 0 2px 4px rgba(31, 31, 34, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 20px;
-        z-index: 1000;
-    }
-    .logo {
-        font-size: 1.5em;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .search-box {
-        flex-grow: 1;
-        max-width: 400px;
-        margin: 0 20px;
-        padding: 5px 10px;
-        font-size: 1em;
-    }
-    .cart {
-        position: relative;
-        font-size: 1.5em;
-        cursor: pointer;
-    }
-
-    .badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background-color: red;
-        color: white;
-        border-radius: 50%;
-        padding: 2px 6px;
-        font-size: 0.8em;
-    }
-</style>
