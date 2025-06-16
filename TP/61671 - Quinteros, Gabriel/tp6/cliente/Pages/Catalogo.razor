@@ -1,0 +1,109 @@
+@page "/"
+@using cliente.Modelos
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-4" style="min-height:100px;">
+        <h1 class="mb-0">Catálogo de Autos</h1>
+        <img src="/logorueda.jpg" alt="Logo" class="logo-catalogo" />
+    </div>
+
+    <div style="max-width: 400px; margin-top: 1cm;">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input @bind="buscar" @bind:event="oninput" class="form-control border-start-0" placeholder="Buscar autos..." />
+        </div>
+    </div>
+
+    <div style="max-width: 400px; margin-top: 1cm;">
+        <button class="btn btn-outline-primary w-100" @onclick="IrAlCarrito">Ver carrito</button>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
+        @if (productos is null)
+        {
+            <p>Buscando autos...</p>
+        }
+        else if (productos.Count == 0)
+        {
+            <p>No se encontraron productos.</p>
+        }
+        else
+        {
+            @foreach (var p in productos)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="http://localhost:5184/@p.ImagUrl" class="card-img-top" style="height:180px;object-fit:cover;" alt="@p.Nombre" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <p class="card-text text-muted" style="min-height:48px;">@p.Descripcion</p>
+                            <span class="fw-bold text-primary mb-1">$@p.Precio</span>
+                            <span class="badge bg-secondary mb-2">Stock: @p.Stock</span>
+                            <button class="btn btn-outline-success btn-sm mt-auto align-self-end" @onclick="() => AgregarAlCarrito(p.Id)">
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    List<Producto> productos;
+    string _buscar = "";
+    string buscar
+    {
+        get => _buscar;
+        set
+        {
+            if (_buscar != value)
+            {
+                _buscar = value;
+                _ = BuscarProductos();
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BuscarProductos();
+    }
+
+    async Task BuscarProductos()
+    {
+        var url = string.IsNullOrWhiteSpace(buscar) ? "productos" : $"productos?buscar={buscar}";
+        productos = await Http.GetFromJsonAsync<List<Producto>>(url);
+    }
+
+    async Task<string> ObtenerOCrearCarritoId()
+    {
+        var carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (string.IsNullOrEmpty(carritoId))
+        {
+            var response = await Http.PostAsync("carritos", null);
+            carritoId = await response.Content.ReadAsStringAsync();
+            carritoId = carritoId.Replace("\"", "").Trim(); 
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
+        }
+        return carritoId;
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        var carritoId = await ObtenerOCrearCarritoId();
+        await Http.PutAsync($"carritos/{carritoId}/{productoId}?cantidad=1", null);
+        await BuscarProductos(); 
+    }
+
+    void IrAlCarrito()
+    {
+        NavigationManager.NavigateTo("/carrito");
+    }
+}

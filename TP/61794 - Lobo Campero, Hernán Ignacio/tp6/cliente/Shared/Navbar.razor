@@ -1,0 +1,75 @@
+@* Cabecera fija con Bootstrap y contador de carrito funcional y búsqueda global - TUC BYTE Style *@
+@inject Cliente.Services.ApiService ApiService
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components.Web
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">    <div class="container-fluid">        <a class="navbar-brand fw-bold d-flex align-items-center gap-2 brand-title" href="/">
+            <img src="images/logotucbyte.png" alt="TUC BYTE Logo" width="32" height="32" class="d-inline-block align-text-top">
+            TUC BYTE        </a><form class="d-flex mx-auto" role="search" style="max-width:500px; width:60%;" @onsubmit="Buscar" @onsubmit:preventDefault="true">
+            <div class="input-group">
+                <span class="input-group-text border-orange"><i class="bi bi-search"></i></span>
+                <input class="form-control border-orange" type="search" placeholder="Buscar productos..." aria-label="Buscar" @bind="busqueda" @onkeypress="OnKeyPress">
+            </div>
+        </form><a href="/carrito" class="btn btn-outline-light position-relative @(mostrarGlowCarrito ? "cart-glow" : "")">
+            <i class="bi bi-cart3 fs-5"></i>            @if (CarritoCantidad > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge bg-danger" style="font-size:0.7rem;">
+                    @CarritoCantidad
+                    <span class="visually-hidden">productos en carrito</span>
+                </span>
+            }
+        </a>
+    </div>
+</nav>
+
+@code {
+    [Parameter] public EventCallback<string?> OnBuscar { get; set; }
+    [Parameter] public int CarritoCantidad { get; set; } = 0;
+    [Parameter] public EventCallback OnProductoAgregado { get; set; }
+    
+    private string? busqueda;
+    private bool mostrarGlowCarrito = false;
+    private int cantidadAnterior = 0;
+
+    protected override void OnParametersSet()
+    {
+
+        if (CarritoCantidad > cantidadAnterior)
+        {
+            _ = Task.Run(async () => await MostrarGlowCarrito());
+        }
+        cantidadAnterior = CarritoCantidad;
+    }
+
+    private async Task MostrarGlowCarrito()
+    {
+        try
+        {
+            mostrarGlowCarrito = true;
+            await InvokeAsync(StateHasChanged);
+            
+
+            await Task.Delay(2000);
+            
+            mostrarGlowCarrito = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en efecto glow: {ex.Message}");
+        }
+    }    private Task Buscar()
+    {
+
+        var encodedQuery = string.IsNullOrWhiteSpace(busqueda) ? "" : Uri.EscapeDataString(busqueda);
+        var targetUrl = string.IsNullOrWhiteSpace(busqueda) ? "/" : $"/?q={encodedQuery}";
+        Navigation.NavigateTo(targetUrl);
+        return Task.CompletedTask;
+    }    private async Task OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Task.Run(() => Buscar());
+        }
+    }
+}

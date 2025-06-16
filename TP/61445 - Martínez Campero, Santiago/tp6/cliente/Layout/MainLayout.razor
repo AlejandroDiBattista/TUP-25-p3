@@ -1,4 +1,44 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+@inherits LayoutComponentBase
+
+<header class="fixed-top bg-light border-bottom">
+    <nav class="navbar navbar-expand-lg navbar-light container">
+        <a class="navbar-brand" href="#">
+            <img src="" alt="Mi Logo" style="height: 40px;" />
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                
+            </ul>
+            <form class="d-flex me-3">
+                <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Buscar</button>
+            </form>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="carrito">
+                        <i class="bi bi-cart"></i> Carrito <span class="badge bg-secondary">0</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<div class="page" style="padding-top: 56px;"> 
     @Body
 </div>
+
+<style>
+    .page {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    main {
+        flex: 1;
+    }
+</style>

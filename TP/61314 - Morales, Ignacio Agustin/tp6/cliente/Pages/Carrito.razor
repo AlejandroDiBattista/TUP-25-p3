@@ -1,0 +1,73 @@
+@using cliente.Models
+@using cliente.Services
+@page "/carrito"
+@inject NavigationManager Navigation
+@inject CarritoService micarrito
+
+<h2 class="titulo-carrito">Carrito de Compras</h2>
+
+@if (micarrito.Items.Count == 0)
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="tabla-carrito">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in micarrito.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>
+                        <button @onclick="() => CambiarCantidad(item.Producto.Id, -1)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => CambiarCantidad(item.Producto.Id, 1)">+</button>
+                    </td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button @onclick="() => Remover(item.Producto.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p class="total">Total: <strong>$@micarrito.CalcularTotal()</strong></p>
+
+    <div class="acciones">
+        <button @onclick="VaciarCarrito" class="boton-vaciar">🗑️ Vaciar Carrito</button>
+        <button @onclick="IrAConfirmacion" class="boton-confirmar">✅ Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    void CambiarCantidad(int productoId, int cambio)
+    {
+        micarrito.CambiarCantidad(productoId, cambio);
+    }
+
+    void Remover(int productoId)
+    {
+        micarrito.Remover(productoId);
+    }
+
+    void VaciarCarrito()
+    {
+        micarrito.Vaciar();
+    }
+
+    void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}

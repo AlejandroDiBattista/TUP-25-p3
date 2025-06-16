@@ -1,0 +1,78 @@
+@page "/"
+@using Cliente.Models
+@using Microsoft.AspNetCore.WebUtilities
+@inject TiendaService ServiceTienda
+@inject NavigationManager Nav
+
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <div class="alert alert-warning">No hay productos :(</div>
+}
+else
+{
+
+<div class="container">
+    <div class="row justify-content-center">
+        @foreach (var producto in productosFiltrados)
+        {
+            <div class="col-12 col-md-4 d-flex justify-content-center mb-4">
+                <div class="tarjeta-producto">
+                    <img src="@producto.ImagenUrl"
+                         alt="@producto.Titulo"
+                         class="tarjeta-img" />
+                    <div class="p-3 d-flex flex-column">
+                        <h5>@producto.Titulo</h5>
+                        <p>@producto.Detalle</p>
+                        <p><strong>$@producto.Valor</strong></p>
+                        <button class="btn btn-primary mt-auto" @onclick="() => Agregar(producto.ProductoId)">Agregar al carrito</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+}
+
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? q { get; set; }
+
+    List<Producto> productos = new();
+    List<Producto> productosFiltrados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ServiceTienda.ObtenerProductosAsync() ?? new List<Producto>();
+        FiltrarProductos();
+    }
+
+    protected override void OnParametersSet()
+    {
+        FiltrarProductos();
+    }
+
+    void FiltrarProductos()
+    {
+        if (!string.IsNullOrWhiteSpace(q))
+            productosFiltrados = productos
+                .Where(p => p.Titulo.Contains(q, StringComparison.OrdinalIgnoreCase)
+                         || p.Detalle.Contains(q, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        else
+            productosFiltrados = productos;
+    }
+    async Task Agregar(int id)
+    {
+        await ServiceTienda.AgregarAlCarrito(id);
+        StateHasChanged();
+    }
+
+}

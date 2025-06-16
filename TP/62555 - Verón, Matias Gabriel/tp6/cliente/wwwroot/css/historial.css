@@ -1,0 +1,36 @@
+.historial-wrapper {
+    max-width: 1100px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    padding: 32px 24px;
+}
+
+.table {
+    background: #f9f9f9;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+}
+
+.detalle-compra-card {
+    background: #f8fcff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(67,198,172,0.10);
+    padding: 18px 20px;
+    margin-top: 0;
+    min-width: 260px;
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 900px) {
+    .historial-wrapper {
+        padding: 16px 4px;
+    }
+    .detalle-compra-card {
+        max-width: 100%;
+    }
+}

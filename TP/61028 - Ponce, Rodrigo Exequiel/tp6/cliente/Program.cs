@@ -15,7 +15,5 @@ builder.Services.AddScoped<ServicioProductos>();
 builder.Services.AddScoped<ServicioCarrito>();
 builder.Services.AddSingleton<cliente.Services.BusquedaService>();
 
-
-
 await builder.Build().RunAsync();
 

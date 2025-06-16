@@ -1,59 +1,143 @@
 ﻿@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject Cliente.Services.ProductoService ProductoService
+@inject Cliente.Services.CarritoService CarritoService
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+
+<div style="max-width:1500px; margin:0 auto; padding:0 1.5rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <h1 style="margin:0; font-size:2rem; color:#00796b; flex:1 1 300px;">ElectroShop</h1>
+        <div style="position:relative; flex:0 0 auto;">
+            <a href="/carrito" style="text-decoration:none; color:inherit;">
+                <span style="font-size:1.5rem; cursor:pointer;">
+                    🛒
+                    <span class="@(carritoAnim ? "carrito-badge" : null)" style="position:absolute; top:-10px; right:-15px; background:#b71c1c; color:white; border-radius:50%; padding:2px 8px; font-size:0.9rem; font-weight:bold; min-width:24px; text-align:center;">@carritoCantidad</span>
+                </span>
+            </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+    <div style="margin-bottom:1.5rem; display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+        <input type="text" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." style="padding:0.5rem; width:250px; border-radius:4px; border:1px solid #ccc;" />
+        <button @onclick="Buscar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#00796b; color:#fff; border:none;">Buscar</button>
+        <button @onclick="Limpiar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#bdbdbd; color:#333; border:none;">Limpiar</button>
+    </div>
+
+
+    <div style="display: flex; justify-content: center;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 1100px; width: 100%; margin: 0 auto;">
+            @if (productos is null)
+            {
+                <p style="grid-column: 1/-1; text-align:center;">Cargando productos...</p>
+            }
+            else if (productos.Count == 0)
+            {
+                <p style="grid-column: 1/-1; text-align:center;">No hay productos disponibles.</p>
+            }
+            else
+            {
+                @foreach (var prod in productos)
+                {
+                    <div class="card-anim" style="background:white; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:1.2rem; display:flex; flex-direction:column; align-items:center; transition:box-shadow 0.2s;">
+                        <img src="@prod.ImagenUrl" alt="@prod.Nombre" style="max-height:180px; object-fit:contain; margin-bottom:1rem; border-radius:8px; background:#f5f5f5; width:100%; max-width:220px;" />
+                        <h5 style="margin:0 0 0.5rem 0; color:#00796b; font-size:1.2rem;">@prod.Nombre</h5>
+                        <p style="color:#444; margin-bottom:0.5rem; text-align:center; min-height:48px;">@prod.Descripcion</p>
+                        <p style="margin:0.2rem 0;"><b>Precio:</b> $@prod.Precio</p>
+                        <p style="margin:0.2rem 0;"><b>Stock:</b> @prod.Stock</p>
+                        <button @onclick="() => AgregarAlCarrito(prod.Id)" class="btn-anim" style="margin-top:0.7rem; padding:0.5rem 1.2rem; border-radius:6px; background:#388e3c; color:#fff; border:none; font-weight:bold; font-size:1rem; transition:background 0.2s;">Agregar al carrito</button>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
+                }
             }
         </div>
     </div>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div style="
+            margin-top:1rem;
+            background: linear-gradient(90deg, #a8ff79 0%, #78ffd6 100%);
+            color: #155724;
+            border: 2px solid #388e3c;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(56,142,60,0.08);
+            transition: opacity 0.5s;
+            opacity: @(mensajeVisible ? "1" : "0");
+            ">
+            @mensaje
+        </div>
+    }
 </div>
 
 @code {
+
     private DatosRespuesta datos;
     private string error;
-    private bool cargando = false;
+    List<Cliente.Services.ProductoDto>? productos;
+    string busqueda = string.Empty;
+    string mensaje = string.Empty;
+    bool mensajeVisible = false;
+    int carritoCantidad = 0;
+    bool carritoAnim = false;
 
     private async Task ObtenerDatosDelServidor() {
         try {
-            cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
         } catch (Exception ex) {
             error = ex.Message;
             datos = null;
-        } finally {
-            cargando = false;
         }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.GetProductosAsync();
+        await ActualizarCantidadCarrito();
+    }
+
+    private async Task ActualizarCantidadCarrito()
+    {
+        var items = await CarritoService.ObtenerItemsAsync();
+        int nuevaCantidad = items.Sum(x => x.Cantidad);
+        if (nuevaCantidad > carritoCantidad) {
+            carritoAnim = true;
+            StateHasChanged();
+            await Task.Delay(400);
+            carritoAnim = false;
+        }
+        carritoCantidad = nuevaCantidad;
+        StateHasChanged();
+    }
+
+    async Task Buscar()
+    {
+        productos = await ProductoService.GetProductosAsync(busqueda);
+    }
+
+    async Task Limpiar()
+
+    {
+        busqueda = string.Empty;
+        productos = await ProductoService.GetProductosAsync();
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        var ok = await CarritoService.AgregarProductoAsync(productoId, 1);
+        mensaje = ok ? "Producto agregado al carrito" : "No se pudo agregar el producto";
+        mensajeVisible = true;
+        await ActualizarCantidadCarrito();
+        StateHasChanged();
+        await Task.Delay(1500);
+        mensajeVisible = false;
+        mensaje = string.Empty;
+        StateHasChanged();
     }
 }

@@ -1,59 +1,205 @@
 ﻿@page "/"
 @using cliente.Services
-@inject ApiService ApiService
+@using cliente.Models
+@inject ApiService Api
+@inject CarritoService CarritoSrv
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+<div class="main-content">
+    <div class="catalogo-header">
+        <h1>CATÁLOGO DE PRODUCTOS</h1>
+        <div class="buscador-box">
+            <input class="buscador" @bind="busqueda" placeholder="Buscar producto…" />
+            <button class="boton-buscar" @onclick="Buscar">Buscar</button>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
+    @if (productos == null)
+    {
+        <p class="loading">Cargando…</p>
+    }
+    else
+    {
+        <div class="productos-grid">
+            @foreach (var prod in productos)
+            {
+                <div class="producto-card">
+                    <img src="@prod.ImagenUrl" alt="@prod.Nombre" class="producto-img" />
+                    <h2>@prod.Nombre</h2>
+                    <p class="desc">@prod.Descripcion</p>
+                    <p><b>Precio:</b> $@prod.Precio.ToString("N0")</p>
+                    <p><b>Stock:</b> @prod.Stock</p>
+                    <button class="btn-carrito" @onclick="() => AgregarAlCarrito(prod)">Agregar al carrito</button>
                 </div>
             }
         </div>
-    </div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    List<Producto> productos = new();
+    string busqueda = "";
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    async Task CargarProductos()
+    {
+        try
+        {
+            productos = await Api.ObtenerProductos(busqueda);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al cargar productos: " + ex.Message);
+        }
+    }
+
+    async Task Buscar()
+    {
+        await CargarProductos();
+    }
+
+    async Task AgregarAlCarrito(Producto p)
+    {
+        if (p.Stock > 0)
+        {
+            await CarritoSrv.Agregar(p.Id, 1);
+            StateHasChanged();
         }
     }
 }
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Poppins", "Segoe UI", sans-serif;
+        background: #fafafa;
+    }
+
+    .main-content {
+        padding: 30px;
+    }
+
+    .catalogo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .catalogo-header h1 {
+        font-size: 2rem;
+        color: #333;
+        margin: 0;
+    }
+
+    .buscador-box {
+        display: flex;
+        gap: 10px;
+    }
+
+    .buscador {
+        width: 250px;
+        height: 35px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .boton-buscar {
+        height: 35px;
+        padding: 0 15px;
+        border: none;
+        border-radius: 6px;
+        background: #7c3aed;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .boton-buscar:hover {
+        background: #5b21b6;
+    }
+
+    .loading {
+        text-align: center;
+        margin: 40px 0;
+        font-size: 1.1rem;
+        color: #777;
+    }
+
+    .productos-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        justify-content: flex-start;
+    }
+
+    .producto-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        padding: 22px 18px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: box-shadow 0.2s;
+        width: 340px;
+    }
+
+    .producto-card:hover {
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+    }
+
+    .producto-img {
+        width: 180px;
+        height: 160px;
+        object-fit: contain;
+        margin-bottom: 14px;
+        background: #f3f3f3;
+        border-radius: 8px;
+    }
+
+    .producto-card h2 {
+        font-size: 1.15rem;
+        margin: 0 0 6px;
+        font-weight: 600;
+        color: #222;
+        text-align: center;
+    }
+
+    .desc {
+        font-size: 0.97rem;
+        color: #555;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .producto-card p {
+        margin: 3px 0;
+        font-size: 0.95rem;
+    }
+
+    .btn-carrito {
+        margin-top: 18px;
+        width: 100%;
+        height: 44px;
+        border: none;
+        border-radius: 6px;
+        background: #0074f8;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-carrito:hover {
+        background: #005dc1;
+    }
+</style>

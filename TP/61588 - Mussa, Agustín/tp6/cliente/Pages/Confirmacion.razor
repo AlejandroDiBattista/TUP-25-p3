@@ -1,0 +1,54 @@
+﻿@page "/confirmacion"
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h1>Confirmar Compra</h1>
+<div class="FondoDePantalla">
+    <div class="container mt-4"> 
+        @if (CarritoService.Items.Count == 0)
+        {
+            <p>No hay productos en el carrito.</p>
+        }
+        else
+        {
+            <h3>Resumen</h3>
+            <ul>
+                @foreach (var item in CarritoService.Items)
+                {
+                    <li>@item.ProductoId - Cantidad: @item.Cantidad - Subtotal: @(item.PrecioUnitario * item.Cantidad)</li>
+                }
+            </ul>
+            <p><b>Total:</b> @CarritoService.Items.Sum(i => i.PrecioUnitario * i.Cantidad)</p>
+
+            <EditForm Model="confirmacion" OnValidSubmit="OnConfirmar">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="mb-3">
+                    <label>Nombre</label>
+                    <InputText class="form-control" @bind-Value="confirmacion.Nombre" required />
+                </div>
+                <div class="mb-3">
+                    <label>Apellido</label>
+                    <InputText class="form-control" @bind-Value="confirmacion.Apellido" required />
+                </div>
+                <div class="mb-3">
+                    <label>Email</label>
+                    <InputText class="form-control" @bind-Value="confirmacion.Email" />
+                    <ValidationMessage For="@(() => confirmacion.Email)" />
+                </div>
+                <button class="btn btn-success" type="submit">Confirmar compra</button>
+            </EditForm>
+        }
+    </div>
+</div>    
+@code {
+    cliente.Modelos.CompraConfirmacionDto confirmacion = new();
+
+    private async Task OnConfirmar()
+    {
+        await ApiService.ConfirmarCompraAsync(CarritoService.CarritoId, confirmacion);
+        CarritoService.Limpiar();
+        NavigationManager.NavigateTo("/");
+    }
+}

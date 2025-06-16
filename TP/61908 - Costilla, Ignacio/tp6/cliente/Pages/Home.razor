@@ -1,59 +1,104 @@
 ﻿@page "/"
+@page "/search/{TerminoBusqueda}"
+
+@using cliente.Modelos
 @using cliente.Services
-@inject ApiService ApiService
+@inject ApiService Api
+@inject CarritoStateService CarritoState
+@inject NavigationManager Navigation
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Catálogo de Productos</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+<h3>Catálogo de Productos</h3>
+
+@if (!string.IsNullOrEmpty(errorMensaje))
+{
+    <div class="alert alert-danger">
+        <h4>Error al Cargar</h4>
+        <p>@errorMensaje</p>
+    </div>
+}
+else if (productos == null)
+{
+    <div class="d-flex justify-content-center mt-5">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando productos...</span>
         </div>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+}
+else if (!productos.Any())
+{
+    <div class="alert alert-info">No hay productos disponibles en este momento.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var producto in productos)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <img src="@(string.IsNullOrEmpty(producto.ImagenUrl) ? "https://placehold.co/300x200/DEE2E6/6C757D?text=Sin+Imagen" : producto.ImagenUrl)" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text flex-grow-1">@producto.Descripcion</p>
+                        <h6 class="card-subtitle mb-2 text-muted">Stock: @producto.Stock</h6>
+                        <h4>@producto.Precio.ToString("C")</h4>
+                        <button class="btn btn-primary mt-auto" @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
+                            <i class="bi bi-cart-plus me-2"></i>
+                            @(producto.Stock > 0 ? "Agregar al Carrito" : "Sin Stock")
+                        </button>
                     </div>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    [Parameter]
+    public string? TerminoBusqueda { get; set; }
+    private List<Producto>? productos;
+    private string? errorMensaje;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnParametersSetAsync()
+    {
+        Console.WriteLine("Index.razor: Empezando a cargar productos...");
+        errorMensaje = null;
+        productos = null;
+
+        try
+        {
+            productos = await Api.GetProductosAsync(TerminoBusqueda);
+            Console.WriteLine($"Index.razor: Llamada a la API exitosa. Productos recibidos: {productos?.Count ?? 0}");
+
+            if (productos == null || !productos.Any())
+            {
+                errorMensaje = "No se encontraron productos o el catálogo está vacío. El servidor respondió pero no devolvió items.";
+                Console.WriteLine("Index.razor: La lista de productos es nula o está vacía.");
+            }
         }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Ha ocurrido un error al intentar cargar el catálogo. Detalles: {ex.Message}";
+            Console.WriteLine($"Index.razor: EXCEPCIÓN al llamar a la API: {ex.Message}");
+            Console.WriteLine(ex.StackTrace); 
+        }
+    }
+
+    private async Task AgregarAlCarrito(Producto producto)
+    {
+        if (CarritoState.CarritoId == null)
+        {
+            var nuevoCarritoId = await Api.CrearCarritoAsync();
+            CarritoState.SetCarritoId(nuevoCarritoId);
+        }
+
+        await Api.AgregarAlCarritoAsync(CarritoState.CarritoId.Value, producto.Id);
+
+        producto.Stock--;
+        var items = await Api.GetCarritoAsync(CarritoState.CarritoId.Value);
+        CarritoState.SetNumeroDeItems(items.Sum(i => i.Cantidad));
+
+        Navigation.NavigateTo("/carrito");
     }
 }
