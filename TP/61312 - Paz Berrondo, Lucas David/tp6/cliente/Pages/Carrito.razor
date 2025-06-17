@@ -100,7 +100,7 @@
                                         {
                                             <small class="text-muted d-flex align-items-center gap-1">
                                                 <div class="loading-spinner" style="width: 12px; height: 12px; border-width: 1px;"></div>
-                                                Actualizando...
+                                               
                                             </small>
                                         }
                                     </div>
@@ -155,115 +155,19 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-4">                        <strong>Total:</strong>
                         <strong class="cart-total">AR$ @carrito.Total.ToString("N2")</strong>
-                    </div>                    <!-- Formulario de datos del cliente -->
-                    <div class="form-modern">
-                        <h6 class="mb-3">📋 Datos del Cliente</h6>
-                        
-                        <!-- Campo Nombre -->
-                        <div class="mb-3">
-                            <input type="text" class="form-control @(ObtenerErrorNombre() != "" ? "is-invalid" : "")" 
-                                   placeholder="Nombre (solo letras, máx 50 caracteres)" 
-                                   @bind="datosCliente.NombreCliente" 
-                                   @bind:event="oninput"
-                                   maxlength="50">
-                            @if (!string.IsNullOrEmpty(ObtenerErrorNombre()))
-                            {
-                                <div class="invalid-feedback">
-                                    <Icon Name="alert-circle" Size="14" /> @ObtenerErrorNombre()
-                                </div>
-                            }
-                        </div>
-
-                        <!-- Campo Apellido -->
-                        <div class="mb-3">
-                            <input type="text" class="form-control @(ObtenerErrorApellido() != "" ? "is-invalid" : "")" 
-                                   placeholder="Apellido (solo letras, máx 50 caracteres)" 
-                                   @bind="datosCliente.ApellidoCliente" 
-                                   @bind:event="oninput"
-                                   maxlength="50">
-                            @if (!string.IsNullOrEmpty(ObtenerErrorApellido()))
-                            {
-                                <div class="invalid-feedback">
-                                    <Icon Name="alert-circle" Size="14" /> @ObtenerErrorApellido()
-                                </div>
-                            }
-                        </div>
-
-                        <!-- Campo Email -->
-                        <div class="mb-3">
-                            <input type="email" class="form-control @(ObtenerErrorEmail() != "" ? "is-invalid" : "")" 
-                                   placeholder="Email (ejemplo@dominio.com, máx 100 caracteres)" 
-                                   @bind="datosCliente.EmailCliente" 
-                                   @bind:event="oninput"
-                                   maxlength="100">
-                            @if (!string.IsNullOrEmpty(ObtenerErrorEmail()))
-                            {
-                                <div class="invalid-feedback">
-                                    <Icon Name="alert-circle" Size="14" /> @ObtenerErrorEmail()
-                                </div>
-                            }
-                        </div>
-                    </div>                    <button class="btn btn-success-modern w-100 btn-lg" 
-                            @onclick="ConfirmarCompra" 
-                            disabled="@(confirmandoCompra || !DatosClienteValidos())">                        @if (confirmandoCompra)
-                        {
-                            <div class="loading-spinner me-2" style="width: 20px; height: 20px; border-width: 2px;"></div>
-                            <span>Procesando...</span>
-                        }
-                        else
-                        {
-                            <span><Icon Name="check-circle" Size="16" /> Confirmar Compra</span>
-                        }
+                    </div><button class="btn btn-success-modern w-100 btn-lg" 
+                            @onclick="ProcederAlCheckout">
+                        <Icon Name="credit-card" Size="16" /> Proceder al Checkout
                     </button>
-
-                    @if (!DatosClienteValidos())
-                    {
-                        <small class="text-muted d-block mt-2 text-center">
-                            Por favor completa todos los campos
-                        </small>
-                    }
+                    
+                    <small class="text-muted d-block mt-2 text-center">
+                        Revisa tu pedido antes de finalizar la compra
+                    </small>
                 </div>
             </div>
         </div>
     }
 </div>
-
-<!-- Modal de confirmación de compra -->
-@if (compraConfirmada != null)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-success">                <div class="modal-header">
-                    <h5 class="modal-title"><Icon Name="check-circle" Size="20" Class="icon-success" /> ¡Compra Confirmada en DualTech!</h5>
-                </div>
-                <div class="modal-body">
-                    <span class="modal-icon success">🎉</span>
-                    <h4 class="text-gradient mb-3">¡Gracias por confiar en DualTech!</h4>
-                    
-                    <div class="purchase-summary">
-                        <div class="summary-row">
-                            <span class="summary-label">Número de compra:</span>
-                            <span class="summary-value">#@compraConfirmada.CompraId</span>
-                        </div>
-                        <div class="summary-row">                            <span class="summary-label">Total:</span>
-                            <span class="summary-value summary-total">AR$ @compraConfirmada.Total.ToString("N2")</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Fecha:</span>
-                            <span class="summary-value">@compraConfirmada.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
-                        </div>
-                    </div>
-                    
-                    <p class="text-muted mt-3">@compraConfirmada.Mensaje</p>
-                </div>                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-modern" @onclick="VolverAlCatalogo">
-                        <Icon Name="shopping-bag" Size="16" /> Seguir Comprando en DualTech
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
 
 <!-- Modal de confirmación para eliminar producto -->
 @if (mostrarModalEliminar)
@@ -326,7 +230,7 @@
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">
+            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : tipoNotificacion == "warning" ? "modal-warning" : "modal-error")">
                 <div class="modal-header">
                     <h5 class="modal-title">@tituloNotificacion</h5>
                 </div>                <div class="modal-body">
@@ -334,6 +238,10 @@
                         @if (tipoNotificacion == "success")
                         {
                             <Icon Name="check-circle" Size="48" Class="icon-success" />
+                        }
+                        else if (tipoNotificacion == "warning")
+                        {
+                            <Icon Name="alert-triangle" Size="48" Class="icon-warning" />
                         }
                         else
                         {
@@ -352,7 +260,7 @@
     </div>
 }
 
-@code {
+@code {    // Estado del carrito
     private CarritoDto? carrito;
     private string? carritoId;
     private string? error;
@@ -362,11 +270,6 @@
     private int? actualizandoItem;
     private int? eliminandoItem;
     private bool vaciandoCarrito = false;
-    private bool confirmandoCompra = false;
-    
-    // Datos del cliente
-    private ConfirmarCompraDto datosCliente = new();
-    private CompraConfirmadaDto? compraConfirmada;
 
     // Variables para modales
     private bool mostrarModalEliminar = false;
@@ -418,9 +321,7 @@
         {
             error = $"Error al inicializar carrito: {ex.Message}";
         }
-    }
-
-    private async Task CargarCarrito()
+    }    private async Task CargarCarrito()
     {
         if (string.IsNullOrEmpty(carritoId)) return;
 
@@ -444,15 +345,23 @@
         {
             cargando = false;
         }
-    }
-
-    private async Task IncrementarCantidad(int productoId)
+    }private async Task IncrementarCantidad(int productoId)
     {
         if (carrito == null) return;
         
         var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
         if (item != null)
         {
+            // Validar stock disponible antes de incrementar usando la API
+            var (esValido, stockDisponible, nombreProducto) = await ApiService.ValidarStockDisponibleAsync(productoId, item.Cantidad + 1);
+            
+            if (!esValido)
+            {
+                MostrarNotificacion("Stock Limitado", 
+                    $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "warning");
+                return;
+            }
+            
             await ActualizarCantidad(productoId, item.Cantidad + 1);
         }
     }
@@ -466,34 +375,52 @@
         {
             await ActualizarCantidad(productoId, item.Cantidad - 1);
         }
-    }
-
-    private async Task ActualizarCantidad(int productoId, int nuevaCantidad)
+    }    private async Task ActualizarCantidad(int productoId, int nuevaCantidad)
     {
-        if (string.IsNullOrEmpty(carritoId) || nuevaCantidad < 1) return;        try
+        if (string.IsNullOrEmpty(carritoId) || nuevaCantidad < 1 || carrito == null) return;
+        
+        var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        if (item == null) return;
+        
+        try
         {
             actualizandoItem = productoId;
             
-            var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, nuevaCantidad);
+            // Validar stock disponible antes de proceder
+            var (esValido, stockDisponible, nombreProducto) = await ApiService.ValidarStockDisponibleAsync(productoId, nuevaCantidad);
             
-            if (exito)
+            if (!esValido)
             {
+                MostrarNotificacion("Stock Limitado", 
+                    $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "warning");
                 await CargarCarrito(); // Recargar para obtener datos actualizados
+                return;
             }
-            else
+            
+            // Eliminar el producto del carrito y agregarlo con la nueva cantidad
+            var exitoEliminar = await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoId);
+            if (exitoEliminar && nuevaCantidad > 0)
             {
-                MostrarNotificacion("Error", "No se pudo actualizar la cantidad. Verifica el stock disponible.", "error");
+                var exitoAgregar = await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, nuevaCantidad);
+                if (!exitoAgregar)
+                {
+                    MostrarNotificacion("Error", "No se pudo actualizar la cantidad.", "error");
+                }
             }
+            
+            // Recargar carrito para obtener datos actualizados
+            await CargarCarrito();
         }
         catch (Exception ex)
         {
             MostrarNotificacion("Error", $"Error al actualizar la cantidad: {ex.Message}", "error");
+            await CargarCarrito(); // Recargar para revertir cambios
         }
         finally
         {
             actualizandoItem = null;
         }
-    }    private async Task EliminarProducto(int productoId)
+    }private async Task EliminarProducto(int productoId)
     {
         productoAEliminar = productoId;
         mostrarModalEliminar = true;
@@ -601,129 +528,26 @@
         mensajeNotificacion = mensaje;
         tipoNotificacion = tipo;
         mostrarNotificacion = true;
-    }
-
-    private void CerrarNotificacion()
+    }    private void CerrarNotificacion()
     {
         mostrarNotificacion = false;
-    }    private bool DatosClienteValidos()
+    }private async Task ProcederAlCheckout()
     {
-        return ValidarNombre(datosCliente.NombreCliente) &&
-               ValidarApellido(datosCliente.ApellidoCliente) &&
-               ValidarEmail(datosCliente.EmailCliente);
-    }
-
-    private bool ValidarNombre(string nombre)
-    {
-        if (string.IsNullOrWhiteSpace(nombre)) return false;
-        if (nombre.Length > 50) return false;
-        
-        // Solo letras, espacios, acentos y caracteres latinos
-        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$");
-        return regex.IsMatch(nombre);
-    }
-
-    private bool ValidarApellido(string apellido)
-    {
-        if (string.IsNullOrWhiteSpace(apellido)) return false;
-        if (apellido.Length > 50) return false;
-        
-        // Solo letras, espacios, acentos y caracteres latinos
-        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$");
-        return regex.IsMatch(apellido);
-    }
-
-    private bool ValidarEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email)) return false;
-        if (email.Length > 100) return false;
-        
-        // Validación de email más robusta
-        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-        return regex.IsMatch(email);
-    }
-
-    private string ObtenerErrorNombre()
-    {
-        if (string.IsNullOrWhiteSpace(datosCliente.NombreCliente))
-            return "";
-        if (datosCliente.NombreCliente.Length > 50)
-            return "El nombre no puede tener más de 50 caracteres";
-        if (!ValidarNombre(datosCliente.NombreCliente))
-            return "El nombre solo puede contener letras y espacios";
-        return "";
-    }
-
-    private string ObtenerErrorApellido()
-    {
-        if (string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente))
-            return "";
-        if (datosCliente.ApellidoCliente.Length > 50)
-            return "El apellido no puede tener más de 50 caracteres";
-        if (!ValidarApellido(datosCliente.ApellidoCliente))
-            return "El apellido solo puede contener letras y espacios";
-        return "";
-    }
-
-    private string ObtenerErrorEmail()
-    {
-        if (string.IsNullOrWhiteSpace(datosCliente.EmailCliente))
-            return "";
-        if (datosCliente.EmailCliente.Length > 100)
-            return "El email no puede tener más de 100 caracteres";
-        if (!ValidarEmail(datosCliente.EmailCliente))
-            return "Ingrese un email válido (ejemplo@dominio.com)";
-        return "";
-    }    private async Task ConfirmarCompra()
-    {
-        if (string.IsNullOrEmpty(carritoId) || !DatosClienteValidos()) return;
+        if (string.IsNullOrEmpty(carritoId) || carrito == null || !carrito.Items.Any()) return;
 
         try
         {
-            confirmandoCompra = true;
-            
-            compraConfirmada = await ApiService.ConfirmarCompraAsync(carritoId, datosCliente);
-              if (compraConfirmada != null)
-            {
-                // Limpiar carrito del localStorage de forma segura
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "carritoId");
-                }
-                catch (Exception jsEx)
-                {
-                    // Ignorar errores de JavaScript/localStorage - no afectan la funcionalidad
-                    Console.WriteLine($"Advertencia localStorage: {jsEx.Message}");
-                }
-                
-                // Crear nuevo carrito para futuras compras
-                var nuevoCarritoId = await ApiService.CrearCarritoAsync();
-                if (!string.IsNullOrEmpty(nuevoCarritoId))
-                {
-                    try
-                    {
-                        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoId", nuevoCarritoId);
-                    }
-                    catch (Exception jsEx)
-                    {
-                        // Ignorar errores de JavaScript/localStorage - no afectan la funcionalidad
-                        Console.WriteLine($"Advertencia localStorage: {jsEx.Message}");
-                    }
-                }
-            }
-            else
-            {
-                MostrarNotificacion("Error", "No se pudo confirmar la compra. Intenta nuevamente.", "error");
-            }
+            // Guardar el estado del carrito en localStorage antes de ir al resumen
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "carritoParaResumen", 
+                System.Text.Json.JsonSerializer.Serialize(carrito));
         }
         catch (Exception ex)
         {
-            MostrarNotificacion("Error", $"Error al procesar la compra: {ex.Message}", "error");
+            Console.WriteLine($"Advertencia localStorage: {ex.Message}");
         }
-        finally
-        {
-            confirmandoCompra = false;
-        }
+        
+        // Navegar al resumen de compra
+        Navigation.NavigateTo("/resumen-compra");
     }
 
     private void VolverAlCatalogo()
