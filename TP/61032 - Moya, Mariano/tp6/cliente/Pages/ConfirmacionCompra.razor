@@ -8,8 +8,7 @@
 {
     <div style="background:white; border-radius:12px; box-shadow:0 6px 32px rgba(0,0,0,0.18); padding:2.5rem 2.5rem 2rem 2.5rem; min-width:320px; text-align:center; margin:2rem auto; max-width:400px;">
         <div style="font-size:1.35rem; color:#388e3c; font-weight:bold; margin-bottom:1.2rem;">¡Compra confirmada!</div>
-        <div style="font-size:1.08rem; color:#444; margin-bottom:2rem;">Tu compra fue realizada con éxito.</div>
-        <button @onclick="VolverAlCatalogo" style="background:#388e3c; color:white; border:none; border-radius:6px; padding:0.7rem 2.2rem; font-size:1.08rem; font-weight:600;">Volver al catálogo</button>
+        <div style="font-size:1.08rem; color:#444; margin-bottom:2rem;">Tu compra fue realizada con éxito. Serás redirigido al catálogo...</div>
     </div>
 }
 else
@@ -79,6 +78,9 @@ else
         if (ok)
         {
             compraExitosa = true;
+            // Redirigir automáticamente al catálogo después de 2 segundos
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/");
         }
         else
         {
