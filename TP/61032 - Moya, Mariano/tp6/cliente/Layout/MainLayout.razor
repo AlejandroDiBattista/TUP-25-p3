@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject Cliente.Services.BusquedaService BusquedaService
 <nav style="background:var(--color-principal,#b71c1c); color:white; padding:0.7rem 1.5rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(183,28,28,0.10);">
     <div style="display:flex; align-items:center; gap:1.2rem;">
         <a href="/" style="display:flex; align-items:center; text-decoration:none; color:white; font-weight:bold; font-size:1.3rem;">
@@ -8,13 +9,48 @@
         <a href="/" style="color:white; text-decoration:none; margin-left:1.5rem; font-size:1.1rem;">Catálogo</a>
         <a href="/carrito" style="color:white; text-decoration:none; margin-left:1.2rem; font-size:1.1rem;">Carrito</a>
     </div>
-    <div style="font-size:1.5rem;">
-        <!-- Aquí puedes agregar íconos, usuario, etc. -->
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <input type="text" @bind="SearchText" @bind:event="oninput" placeholder="Buscar productos..." style="padding:0.4rem 1rem; border-radius:5px; border:none; font-size:1rem; min-width:180px; color:#333; outline:none;" />
     </div>
 </nav>
 <div class="page" style="padding-top:1.2rem; min-height:80vh;">
     @Body
 </div>
+
+@code {
+    private string searchText = string.Empty;
+    private System.Timers.Timer? debounceTimer;
+
+    private void OnSearchTextChanged()
+    {
+        debounceTimer?.Stop();
+        debounceTimer = new System.Timers.Timer(300) { AutoReset = false };
+        debounceTimer.Elapsed += (_, __) =>
+        {
+            InvokeAsync(() => BusquedaService.TextoBusqueda = searchText);
+        };
+        debounceTimer.Start();
+    }
+
+    protected override void OnInitialized()
+    {
+        // Si se recarga la página, mantener búsqueda
+        searchText = BusquedaService.TextoBusqueda;
+    }
+
+    private string SearchText
+    {
+        get => searchText;
+        set
+        {
+            if (searchText != value)
+            {
+                searchText = value;
+                OnSearchTextChanged();
+            }
+        }
+    }
+}
 <footer>
     © 2025 Mariano Moya · ElectroShop · <a href="mailto:mariano@email.com">Contacto</a>
 </footer>
