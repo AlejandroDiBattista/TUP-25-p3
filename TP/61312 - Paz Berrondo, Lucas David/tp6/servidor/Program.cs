@@ -52,7 +52,7 @@ app.MapGet("/", () => "Servidor API de Tienda Online está en funcionamiento");
 // === ENDPOINTS DE PRODUCTOS ===
 
 // GET /api/productos - Obtiene todos los productos o busca por nombre usando el parámetro 'buscar'
-app.MapGet("/api/productos", async (TiendaContext context, string? buscar) =>
+app.MapGet("/api/productos", async (TiendaContext context, CarritoService carritoService, string? buscar) =>
 {
     try
     {
@@ -63,24 +63,31 @@ app.MapGet("/api/productos", async (TiendaContext context, string? buscar) =>
             query = query.Where(p => p.Nombre.ToLower().Contains(buscar.ToLower()));
         }
         
-        var productos = await query
-            .Select(p => new ProductoDto
+        var productosEnBD = await query.ToListAsync();
+        
+        // Calcular stock disponible para cada producto considerando carritos activos
+        var productos = new List<ProductoDto>();
+        foreach (var p in productosEnBD)
+        {
+            var stockDisponible = await carritoService.CalcularStockDisponibleAsync(p.Id);
+            productos.Add(new ProductoDto
             {
                 Id = p.Id,
                 Nombre = p.Nombre,
                 Descripcion = p.Descripcion,
                 Precio = p.Precio,
-                Stock = p.Stock,
+                Stock = stockDisponible, // Stock disponible real
                 ImagenUrl = p.ImagenUrl
-            })
-            .ToListAsync();
+            });
+        }
             
         return Results.Ok(new 
         { 
             Productos = productos,
             Total = productos.Count,
             TerminoBusqueda = buscar ?? "todos"
-        });    }
+        });
+    }
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener productos: {ex.Message}");

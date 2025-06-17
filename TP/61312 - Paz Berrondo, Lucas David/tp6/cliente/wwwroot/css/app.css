@@ -13,6 +13,53 @@
     --sidebar-width: 280px;
 }
 
+/* ===========================
+   CROSS-PLATFORM COMPATIBILITY
+   ========================== */
+* {
+    box-sizing: border-box;
+}
+
+/* Webkit scrollbar styling para macOS/Safari */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Safari/macOS specific fixes */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+    .card {
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn {
+        min-height: 44px; /* Apple HIG minimum touch target */
+        min-width: 44px;
+    }
+    
+    .quantity-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
 /* Base Styles */
 html, body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -20,6 +67,9 @@ html, body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .app-container {
@@ -273,6 +323,12 @@ html, body {
     color: #dc2626;
 }
 
+/* Estado de stock limitado */
+.stock-limited {
+    background: rgba(251, 191, 36, 0.1);
+    color: #d97706;
+}
+
 /* ===========================
    QUANTITY SELECTOR
    ========================== */
@@ -305,6 +361,19 @@ html, body {
     background: #3498db;
     color: white;
     transform: scale(1.1);
+}
+
+.quantity-btn:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.quantity-btn:disabled:hover {
+    background: #e2e8f0;
+    color: #94a3b8;
+    transform: none;
 }
 
 .quantity-input {
@@ -354,6 +423,20 @@ html, body {
     transform: translateY(-2px);
     box-shadow: var(--card-shadow-hover);
     color: white;
+}
+
+/* Botones deshabilitados por stock */
+.btn-primary-modern:disabled {
+    background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+    color: #64748b;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-primary-modern:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-success-modern {
@@ -593,9 +676,36 @@ html, body {
 /* ===========================
    RESPONSIVE DESIGN
    ========================== */
+
+/* MacBook Pro 13" y similares */
+@media (max-width: 1440px) and (min-width: 1200px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Tablets y MacBook Air/Pro menores */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+    
+    .sidebar {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-left: 240px;
+    }
+}
+
+/* Mobile y tablets pequeñas */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        width: 280px;
     }
     
     .sidebar.show {
@@ -604,6 +714,7 @@ html, body {
     
     .main-content {
         margin-left: 0;
+        padding: 0.5rem;
     }
     
     .content-header {
@@ -613,6 +724,11 @@ html, body {
     
     .page-title {
         font-size: 2rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .cart-summary {
@@ -1119,4 +1235,68 @@ html, body {
     width: 48px;
     height: 48px;
     margin: 0 auto;
+}
+
+/* ===========================
+   APPLE/RETINA DEVICE OPTIMIZATIONS
+   ========================== */
+
+/* Retina displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .brand-name {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .card {
+        border: 0.5px solid rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Safari specific fixes */
+@supports (-webkit-appearance: none) {
+    .quantity-input {
+        -webkit-appearance: textfield;
+    }
+    
+    .quantity-input::-webkit-outer-spin-button,
+    .quantity-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+}
+
+/* MacBook Pro specific breakpoints */
+@media screen and (min-width: 1024px) and (max-width: 1366px) and (-webkit-min-device-pixel-ratio: 2) {
+    .main-content {
+        padding: 1.5rem;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .sidebar {
+        width: 260px;
+    }
+}
+
+/* MacBook Air 13" */
+@media screen and (width: 1440px) and (height: 900px) {
+    .content-header {
+        padding: 1.5rem 2rem;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* Force hardware acceleration on Apple devices */
+@supports (-webkit-backdrop-filter: blur(1px)) {
+    .card, .sidebar, .navbar {
+        transform: translateZ(0);
+        will-change: transform;
+    }
 }
