@@ -1,0 +1,21 @@
+@page "/productos"
+@inject CartService Cart
+
+@code {
+    List<Product> products = new()
+    {
+        new Product { Name = "Producto 1", Price = 100 },
+        new Product { Name = "Producto 2", Price = 200 }
+    };
+}
+
+<h3>Productos</h3>
+@foreach (var product in products)
+{
+    <div class="mb-2">
+        <span>@product.Name - $@product.Price</span>
+        <button class="btn btn-primary btn-sm" @onclick="() => Cart.AddToCart(product)">Agregar al carrito</button>
+    </div>
+}
+
+<a href="/carrito">Ver carrito (@Cart.Items.Count)</a>

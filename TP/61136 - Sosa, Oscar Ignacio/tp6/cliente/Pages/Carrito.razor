@@ -1,0 +1,22 @@
+@page "/carrito"
+@inject CartService Cart
+
+<h3>Carrito de compras</h3>
+
+@if (Cart.Items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <ul>
+        @foreach (var item in Cart.Items)
+        {
+            <li>
+                @item.Name - $@item.Price
+                <button class="btn btn-danger btn-sm" @onclick="() => Cart.RemoveFromCart(item)">Quitar</button>
+            </li>
+        }
+    </ul>
+    <button class="btn btn-warning" @onclick="Cart.ClearCart">Vaciar carrito</button>
+}
