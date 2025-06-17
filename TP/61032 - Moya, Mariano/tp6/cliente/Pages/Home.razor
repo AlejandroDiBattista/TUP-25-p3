@@ -88,6 +88,7 @@
     private string error;
     List<Cliente.Services.ProductoDto>? productos;
     [Inject] Cliente.Services.BusquedaService BusquedaService { get; set; }
+    [Inject] Cliente.Services.StockService StockService { get; set; }
     string busqueda = string.Empty;
     string mensaje = string.Empty;
     bool mensajeVisible = false;
@@ -105,10 +106,26 @@
     }
 
 
+
     protected override async Task OnInitializedAsync()
     {
         BusquedaService.OnBusquedaChanged += BusquedaChangedHandler;
+        StockService.OnStockChanged += StockChangedHandler;
         productos = await ProductoService.GetProductosAsync();
+        await ActualizarCantidadCarrito();
+    }
+
+    private async void StockChangedHandler()
+    {
+        productos = await ProductoService.GetProductosAsync(busqueda);
+        await ActualizarCantidadCarrito();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Siempre refresca productos y carrito al navegar a Home
+        productos = await ProductoService.GetProductosAsync(busqueda);
         await ActualizarCantidadCarrito();
     }
 
@@ -143,8 +160,8 @@
         var ok = await CarritoService.AgregarProductoAsync(productoId, 1);
         if (ok)
         {
-            prod.Stock--;
-            StateHasChanged(); // Forzar refresco inmediato
+            // Refrescar productos desde el backend para obtener el stock actualizado
+            productos = await ProductoService.GetProductosAsync(busqueda);
             mensaje = "Producto agregado al carrito";
         }
         else
@@ -157,5 +174,9 @@
         mensajeVisible = false;
         mensaje = string.Empty;
         StateHasChanged();
+    }
+    public void Dispose()
+    {
+        StockService.OnStockChanged -= StockChangedHandler;
     }
 }

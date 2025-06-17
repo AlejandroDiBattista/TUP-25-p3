@@ -1,6 +1,7 @@
 @page "/carrito"
 @inject Cliente.Services.CarritoService CarritoService
 @inject NavigationManager Navigation
+@inject Cliente.Services.StockService StockService
 
 <h2 style="color:#00796b;">🛒 Mi Carrito</h2>
 
@@ -73,6 +74,7 @@ else
             await CarritoService.AgregarProductoAsync(item.ProductoId, 1);
         }
         await CargarCarrito();
+        StockService.NotificarCambioStock();
     }
 
     async Task VaciarCarrito()
@@ -82,6 +84,7 @@ else
         {
             mensaje = "Carrito vaciado correctamente.";
             await CargarCarrito();
+            StockService.NotificarCambioStock();
         }
         else
         {

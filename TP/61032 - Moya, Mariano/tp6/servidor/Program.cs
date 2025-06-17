@@ -149,21 +149,32 @@ app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoI
     if (carrito is null || producto is null) return Results.NotFound();
     var item = db.ItemsCarrito.FirstOrDefault(i => i.CarritoId == carritoId && i.ProductoId == productoId);
     int cantidadFinal = cantidad;
+    int cantidadOriginal = item?.Cantidad ?? 0;
     if (item != null)
     {
         cantidadFinal = item.Cantidad + cantidad;
     }
-    // Si la cantidad final es menor a 1, eliminar el item
+    // Si la cantidad final es menor a 1, eliminar el item y devolver stock
     if (cantidadFinal < 1)
     {
         if (item != null)
         {
+            producto.Stock += item.Cantidad; // Devolver stock
             db.ItemsCarrito.Remove(item);
             db.SaveChanges();
         }
         return Results.Ok();
     }
-    if (producto.Stock < cantidadFinal) return Results.BadRequest("Stock insuficiente.");
+    int diferencia = cantidadFinal - cantidadOriginal;
+    if (diferencia > 0)
+    {
+        if (producto.Stock < diferencia) return Results.BadRequest("Stock insuficiente.");
+        producto.Stock -= diferencia;
+    }
+    else if (diferencia < 0)
+    {
+        producto.Stock += -diferencia;
+    }
     if (item is null)
     {
         item = new ItemCarrito { CarritoId = carritoId, ProductoId = productoId, Cantidad = cantidad };
@@ -183,7 +194,9 @@ app.MapPut("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoI
 app.MapDelete("/carritos/{carritoId}/{productoId}", (TiendaContext db, int carritoId, int productoId) =>
 {
     var item = db.ItemsCarrito.FirstOrDefault(i => i.CarritoId == carritoId && i.ProductoId == productoId);
-    if (item is null) return Results.NotFound();
+    var producto = db.Productos.FirstOrDefault(p => p.Id == productoId);
+    if (item is null || producto is null) return Results.NotFound();
+    producto.Stock += item.Cantidad; // Devolver stock
     db.ItemsCarrito.Remove(item);
     db.SaveChanges();
     return Results.Ok();
@@ -215,12 +228,7 @@ app.MapPost("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId,
     if (carrito is null || !carrito.Items.Any())
         return Results.BadRequest("Carrito vacío o no encontrado");
 
-    // Validar stock de todos los productos
-    foreach (var item in carrito.Items)
-    {
-        if (item.Producto.Stock < item.Cantidad)
-            return Results.BadRequest($"Stock insuficiente para {item.Producto.Nombre}");
-    }
+    // Ya no se valida stock aquí, porque el stock ya fue descontado al agregar al carrito
 
     // Calcular total
     decimal total = carrito.Items.Sum(i => i.Producto.Precio * i.Cantidad);
@@ -242,11 +250,7 @@ app.MapPost("/carritos/{carritoId}/confirmar", (TiendaContext db, int carritoId,
     };
     db.Compras.Add(compra);
 
-    // Descontar stock
-    foreach (var item in carrito.Items)
-    {
-        item.Producto.Stock -= item.Cantidad;
-    }
+    // Ya no se descuenta stock aquí, porque se descuenta al agregar al carrito
 
     // Limpiar el carrito
     var itemsCarrito = db.ItemsCarrito.Where(i => i.CarritoId == carritoId);
