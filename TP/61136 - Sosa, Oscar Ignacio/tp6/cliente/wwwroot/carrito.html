@@ -37,6 +37,11 @@
                 </tr>
             </tfoot>
         </table>
+
+        <div class="carrito-botones">
+            <button onclick="vaciarCarrito()" class="btn btn-danger">Vaciar carrito</button>
+            <button onclick="window.location.href='confirmacion.html'" class="btn btn-success">Confirmar compra</button>
+        </div>
     </div>
     <script>
         let stockDisponible = [5]; // Stock para cada producto
@@ -62,6 +67,16 @@
                 total += cantidades[i] * precios[i];
             }
             document.getElementById('total').innerText = '$' + total;
+        }
+
+        function vaciarCarrito() {
+            // Aquí puedes agregar lógica para vaciar el carrito si es necesario
+            window.location.href = '/confirmacion'; // Cambia la ruta si tu confirmación está en otra URL
+        }
+
+        function confirmarCompra() {
+            // Aquí puedes agregar lógica para confirmar la compra si es necesario
+            window.location.href = '/confirmacion'; // Cambia la ruta si tu confirmación está en otra URL
         }
     </script>
 </body>
