@@ -1,1 +1,52 @@
-window.location.href = 'catalogo.html';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de compra</title>
+    <style>
+        .resumen { margin-bottom: 20px; }
+        form { display: flex; flex-direction: column; max-width: 300px; }
+        label { margin-top: 10px; }
+        button { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Confirmación de compra</h1>
+    <div class="resumen">
+        <p>Total de ítems: <span id="total-items">0</span></p>
+        <p>Importe total: $<span id="total-importe">0.00</span></p>
+    </div>
+    <form id="form-confirmacion">
+        <label>
+            Nombre:
+            <input type="text" name="nombre" required>
+        </label>
+        <label>
+            Apellido:
+            <input type="text" name="apellido" required>
+        </label>
+        <label>
+            Email:
+            <input type="email" name="email" required>
+        </label>
+        <button type="submit">Confirmar</button>
+    </form>
+    <script>
+        // Obtener datos del carrito (simulación)
+        const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+        const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+        const totalImporte = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+
+        document.getElementById('total-items').textContent = totalItems;
+        document.getElementById('total-importe').textContent = totalImporte.toFixed(2);
+
+        document.getElementById('form-confirmacion').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Aquí puedes registrar la compra (enviar datos al servidor, etc.)
+            localStorage.removeItem('carrito'); // Limpia el carrito
+            alert('¡Compra confirmada!');
+            window.location.href = 'catalogo.html'; // Cambia la ruta si tu catálogo tiene otro nombre
+        });
+    </script>
+</body>
+</html>

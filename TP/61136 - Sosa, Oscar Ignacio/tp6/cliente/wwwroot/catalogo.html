@@ -2,51 +2,51 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Confirmación de compra</title>
+    <title>Catálogo de productos</title>
     <style>
-        .resumen { margin-bottom: 20px; }
-        form { display: flex; flex-direction: column; max-width: 300px; }
-        label { margin-top: 10px; }
-        button { margin-top: 20px; }
+        .producto { border: 1px solid #ccc; padding: 10px; margin: 10px; }
+        .catalogo { display: flex; flex-wrap: wrap; }
+        button { margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>Confirmación de compra</h1>
-    <div class="resumen">
-        <p>Total de ítems: <span id="total-items">0</span></p>
-        <p>Importe total: $<span id="total-importe">0.00</span></p>
+    <h1>Catálogo de productos</h1>
+    <div class="catalogo" id="catalogo">
+        <!-- Los productos se cargarán aquí -->
     </div>
-    <form id="form-confirmacion">
-        <label>
-            Nombre:
-            <input type="text" name="nombre" required>
-        </label>
-        <label>
-            Apellido:
-            <input type="text" name="apellido" required>
-        </label>
-        <label>
-            Email:
-            <input type="email" name="email" required>
-        </label>
-        <button type="submit">Confirmar</button>
-    </form>
+    <button onclick="window.location.href='confirmacion.html'">Ir a Confirmación de compra</button>
     <script>
-        // Simulación de datos del carrito (puedes reemplazar por tus datos reales)
-        const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-        const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-        const totalImporte = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+        // Ejemplo de productos (puedes reemplazar por tus datos reales)
+        const productos = [
+            { id: 1, nombre: "Producto 1", precio: 100 },
+            { id: 2, nombre: "Producto 2", precio: 150 },
+            { id: 3, nombre: "Producto 3", precio: 200 }
+        ];
 
-        document.getElementById('total-items').textContent = totalItems;
-        document.getElementById('total-importe').textContent = totalImporte.toFixed(2);
-
-        document.getElementById('form-confirmacion').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Aquí puedes registrar la compra (enviar datos al servidor, etc.)
-            localStorage.removeItem('carrito'); // Limpia el carrito
-            alert('¡Compra confirmada!');
-            window.location.href = 'catalogo.html'; // Cambia la ruta según tu catálogo
+        const catalogoDiv = document.getElementById('catalogo');
+        productos.forEach(prod => {
+            const div = document.createElement('div');
+            div.className = 'producto';
+            div.innerHTML = `
+                <h3>${prod.nombre}</h3>
+                <p>Precio: $${prod.precio}</p>
+                <button onclick="agregarAlCarrito(${prod.id})">Agregar al carrito</button>
+            `;
+            catalogoDiv.appendChild(div);
         });
+
+        function agregarAlCarrito(id) {
+            let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            const producto = productos.find(p => p.id === id);
+            const existente = carrito.find(item => item.id === id);
+            if (existente) {
+                existente.cantidad += 1;
+            } else {
+                carrito.push({ ...producto, cantidad: 1 });
+            }
+            localStorage.setItem('carrito', JSON.stringify(carrito));
+            alert('Producto agregado al carrito');
+        }
     </script>
 </body>
 </html>
