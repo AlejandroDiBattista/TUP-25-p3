@@ -1,5 +1,6 @@
 @page "/carrito"
 @inject Cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
 
 <h2 style="color:#00796b;">🛒 Mi Carrito</h2>
 
@@ -35,63 +36,17 @@ else
         <div style="text-align:right; font-size:1.25rem; font-weight:bold; color:#00796b; margin-bottom:2rem;">Total: $@items.Sum(x => x.Precio * x.Cantidad)</div>
         <div style="display:flex; justify-content:flex-end; gap:1.5rem; margin-bottom:2.5rem;">
             <button @onclick="VaciarCarrito" style="background:linear-gradient(90deg,#ff8a80 0%,#e57373 100%); color:white; border:none; border-radius:8px; padding:1rem 2.5rem; font-size:1.13rem; font-weight:600; letter-spacing:0.01em; box-shadow:0 2px 8px #ffcdd2; transition:background 0.2s;">Vaciar carrito</button>
-            <button @onclick="() => mostrarFormulario = !mostrarFormulario" style="background:linear-gradient(90deg,#43e97b 0%,#38f9d7 100%); color:#155724; border:none; border-radius:8px; padding:1rem 2.5rem; font-size:1.13rem; font-weight:600; letter-spacing:0.01em; box-shadow:0 2px 8px #b2dfdb; transition:background 0.2s;">Confirmar compra</button>
+            <button @onclick="IrAConfirmacionCompra" style="background:linear-gradient(90deg,#43e97b 0%,#38f9d7 100%); color:#155724; border:none; border-radius:8px; padding:1rem 2.5rem; font-size:1.13rem; font-weight:600; letter-spacing:0.01em; box-shadow:0 2px 8px #b2dfdb; transition:background 0.2s;">Confirmar compra</button>
         </div>
     </div>
 }
 
-@if (mostrarFormulario)
-{
-    <div style="background:#f1f8e9; border:1px solid #388e3c; border-radius:8px; padding:1.5rem; max-width:400px; margin:2rem auto;">
-        <h3 style="color:#388e3c;">Datos del cliente</h3>
-        <EditForm Model="datosCliente" OnValidSubmit="OnConfirmarCompra">
-            <div style="margin-bottom:1rem;">
-                <label>Nombre:</label><br />
-                <InputText @bind-Value="datosCliente.Nombre" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
-                @if (!string.IsNullOrEmpty(nombreError))
-                {
-                    <div style="color:#d32f2f; font-size:0.95rem;">@nombreError</div>
-                }
-            </div>
-            <div style="margin-bottom:1rem;">
-                <label>Apellido:</label><br />
-                <InputText @bind-Value="datosCliente.Apellido" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
-                @if (!string.IsNullOrEmpty(apellidoError))
-                {
-                    <div style="color:#d32f2f; font-size:0.95rem;">@apellidoError</div>
-                }
-            </div>
-            <div style="margin-bottom:1rem;">
-                <label>Email:</label><br />
-                <InputText @bind-Value="datosCliente.Email" type="email" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
-            </div>
-            <button type="submit" style="background:#388e3c; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Confirmar</button>
-            <button type="button" @onclick="() => mostrarFormulario = false" style="margin-left:1rem; background:#bdbdbd; color:#333; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Cancelar</button>
-        </EditForm>
-    </div>
-}
-
-
-@if (mostrarPopup)
-{
-    <div style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:1000; display:flex; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:12px; box-shadow:0 6px 32px rgba(0,0,0,0.18); padding:2.5rem 2.5rem 2rem 2.5rem; min-width:320px; text-align:center;">
-            <div style="font-size:1.35rem; color:#388e3c; font-weight:bold; margin-bottom:1.2rem;">¡Compra confirmada!</div>
-            <div style="font-size:1.08rem; color:#444; margin-bottom:2rem;">Tu compra fue realizada con éxito.</div>
-            <button @onclick="CerrarPopup" style="background:#388e3c; color:white; border:none; border-radius:6px; padding:0.7rem 2.2rem; font-size:1.08rem; font-weight:600;">Aceptar</button>
-        </div>
-    </div>
-}
 
 @code {
     List<Cliente.Services.CarritoService.ItemCarritoDto> items = new();
     bool cargando = true;
     string mensaje = string.Empty;
-    bool mostrarPopup = false;
-    bool mostrarFormulario = false;
-    Cliente.Services.CarritoService.DatosClienteDto datosCliente = new();
-    string nombreError = string.Empty;
-    string apellidoError = string.Empty;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,41 +89,9 @@ else
         }
     }
 
-    async Task OnConfirmarCompra()
-    {
-        nombreError = string.Empty;
-        apellidoError = string.Empty;
-        bool valido = true;
-        if (string.IsNullOrWhiteSpace(datosCliente.Nombre) || datosCliente.Nombre.Any(char.IsDigit))
-        {
-            nombreError = "El nombre no puede estar vacío ni contener números.";
-            valido = false;
-        }
-        if (string.IsNullOrWhiteSpace(datosCliente.Apellido) || datosCliente.Apellido.Any(char.IsDigit))
-        {
-            apellidoError = "El apellido no puede estar vacío ni contener números.";
-            valido = false;
-        }
-        if (!valido)
-        {
-            StateHasChanged();
-            return;
-        }
-        var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
-        if (ok)
-        {
-            mostrarFormulario = false;
-            mostrarPopup = true;
-            await CargarCarrito();
-        }
-        else
-        {
-            mensaje = "No se pudo confirmar la compra.";
-        }
-    }
 
-    void CerrarPopup()
+    void IrAConfirmacionCompra()
     {
-        mostrarPopup = false;
+        Navigation.NavigateTo("/confirmacion-compra");
     }
 }
