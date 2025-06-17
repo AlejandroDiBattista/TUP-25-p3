@@ -1,4 +1,24 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components
+@inherits LayoutComponentBase
+@inject cliente.Services.CarritoService CarritoService
+
+<header class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
+        <i class="bi bi-gem fs-3 me-2"></i>
+        <span>🏆Fútbol Retro🏆</span>
+    </a>
+    <a class="nav-link position-relative" href="/carrito">
+        <i class="bi bi-cart fs-3"></i>
+        
+    </a>
+    <a class="nav-link ms-3" href="/historial" title="Historial de compras">
+        <i class="bi bi-clock-history fs-3"></i>
+    </a>
+</header>
+
+<div class="frase-historia">Reviví la historia de fútbol</div>
+
 <div class="page">
-    @Body
+    @Body 
 </div>

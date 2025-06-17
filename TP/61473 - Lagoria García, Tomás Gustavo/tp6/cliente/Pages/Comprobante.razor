@@ -1,0 +1,106 @@
+@page "/comprobante/{CompraId:int}"
+@using cliente.Services
+@using CompraModel = cliente.Services.ComprobanteService
+
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject ComprobanteService ComprobanteService
+@inject NavigationManager Nav
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="m-0">Comprobante de Compra</h3>
+        <button class="btn btn-secondary" @onclick="NavegarRegreso">
+            <i class="bi bi-arrow-left"></i> Volver al catálogo
+        </button>
+    </div>
+
+    @if (compra == null)
+    {
+        <div class="alert alert-info">Cargando comprobante...</div>
+    }
+    else
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Datos del Cliente</h5>
+                <p class="mb-1"><strong>Fecha:</strong> @compra.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-1"><strong>Cliente:</strong> @compra.NombreCliente @compra.ApellidoCliente</p>
+                <p class="mb-1"><strong>Email:</strong> @compra.EmailCliente</p>
+                <p class="mb-0"><strong>Total:</strong> $@compra.Total</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Detalle de Productos</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in compra.Items)
+                            {
+                                <tr>
+                                    <td>@item.ProductoNombre</td>
+                                    <td>@item.Cantidad</td>
+                                    <td>$@item.PrecioUnitario</td>
+                                    <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int CompraId { get; set; }
+
+    private CompraModel.Compra compra;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        compra = await ComprobanteService.ObtenerComprobantesAsync(CompraId);
+    }
+private void NavegarRegreso()
+    {
+     Nav.NavigateTo($"/catalogo");
+    }
+ 
+    public class Compra
+{
+    public int Id { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public string NombreCliente { get; set; } = "";
+    public string ApellidoCliente { get; set; } = "";
+    public string EmailCliente { get; set; } = "";
+
+    public List<ItemCompra> Items { get; set; } = new();
+}
+
+public class ItemCompra
+{
+    public int Id { get; set; }
+    public int ProductoId { get; set; }
+    public Producto? Producto { get; set; }
+    public int CompraId { get; set; }
+    public Compra? Compra { get; set; }
+    public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; }
+    public string ProductoNombre => Producto?.Nombre ?? "Producto no encontrado";
+
+}
+
+}

@@ -1,0 +1,63 @@
+/* MainLayout */
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1 0 auto;
+    padding-top: 56px; /* altura del navbar */
+}
+
+.footer {
+    flex-shrink: 0;
+    padding: 1rem 0;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    margin-top: 2rem;
+}
+
+/* NavMenu */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+}
+
+.search-container input {
+    padding-right: 40px;
+}
+
+.clear-search {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 0 10px;
+    border: none;
+    background: none;
+}
+
+.clear-search:hover {
+    color: #dc3545 !important;
+}
+
+/* Carrito */
+.nav-link .badge {
+    position: relative;
+    top: -8px;
+    right: -8px;
+    font-size: 0.75em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .search-container {
+        margin: 1rem 0;
+    }
+}

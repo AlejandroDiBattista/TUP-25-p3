@@ -267,6 +267,15 @@ class Program {
         }
     }
 
+    static void ProbarTP6(Clase clase)
+    {
+        Consola.Limpiar();
+        Consola.Escribir("=== Probar TP6 ===", ConsoleColor.Cyan);
+
+        int legajo = Consola.LeerEntero("Ingrese el legajo a controlar: ");
+        clase.EjecutarSistema(legajo);
+    }
+
     static void Main(string[] args)
     {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
@@ -282,6 +291,7 @@ class Program {
         menu.Agregar("Registrar Asistencia & Notas", () => RegistrarTodo(clase, practico));
         menu.Agregar("Faltan presentar TP", () => ListarNoPresentaron(clase, practico));
         menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
+        menu.Agregar("Correr TP6", () => ProbarTP6(clase));
 
         menu.Ejecutar();
 

@@ -1,0 +1,82 @@
+@page "/carrito"
+@using cliente.Models
+@inject CartService CartService
+
+<h2> Carrito de Compras</h2>
+
+@if (CartService.Items.Count == 0)
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CartService.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => Restar(item)">–</button>
+                        @item.Cantidad
+                        <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => Sumar(item)">+</button>
+                    </td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p><strong>Total general:</strong> $@TotalGeneral()</p>
+
+    <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
+    <NavLink class="btn btn-success" href="/confirmacion">Confirmar compra</NavLink>
+}
+
+@code {
+    private void Sumar(ItemCarrito item)
+    {
+        item.Cantidad++;
+    }
+
+    private void Restar(ItemCarrito item)
+    {
+        item.Cantidad--;
+        if (item.Cantidad <= 0)
+        {
+            CartService.Items.Remove(item);
+        }
+    }
+
+    private void Eliminar(ItemCarrito item)
+    {
+        CartService.Items.Remove(item);
+    }
+
+    private void Vaciar()
+    {
+        CartService.Items.Clear();
+    }
+
+    private void Confirmar()
+    {
+        // Por ahora solo vaciamos y mostramos mensaje
+        CartService.Items.Clear();
+        Console.WriteLine("Compra confirmada.");
+    }
+
+    private decimal TotalGeneral() => CartService.Items.Sum(i => i.Producto.Precio * i.Cantidad);
+}

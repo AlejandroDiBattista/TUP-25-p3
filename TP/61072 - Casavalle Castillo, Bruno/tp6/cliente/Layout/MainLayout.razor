@@ -1,4 +1,63 @@
 ﻿@inherits LayoutComponentBase
+@inject BusquedaService busquedaService
+@inject CarritoService carritoService
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/"><img src="image/logo.png" alt="" style="width: 120px;">Techno Store</a>
+
+        <input class="form-control me-2" style="max-width: 300px;" placeholder="Buscar productos..."
+            @bind="TerminoBusqueda" @bind:event="oninput" />
+
+        <div class="d-flex align-items-center">
+            <a href="/carrito" class="btn btn-outline-primary position-relative">
+                <i class="bi bi-cart"></i>
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                    @cantidadTotal
+                </span>
+            </a>
+        </div>
+    </div>
+</nav>
+
 <div class="page">
     @Body
 </div>
+
+@code {
+    private string terminoBusqueda = "";
+
+    private int cantidadTotal;
+
+    protected override void OnInitialized()
+    {
+        cantidadTotal = carritoService.ObtenerItems().Sum(i => i.Cantidad);
+        carritoService.OnChange += ActualizarCantidad;
+
+        terminoBusqueda = busquedaService.TerminoBusqueda;
+    }
+
+    private void ActualizarCantidad()
+    {
+        cantidadTotal = carritoService.ObtenerItems().Sum(i => i.Cantidad);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string TerminoBusqueda
+    {
+        get => terminoBusqueda;
+        set
+        {
+            if (terminoBusqueda != value)
+            {
+                terminoBusqueda = value;
+                busquedaService.TerminoBusqueda = value;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        carritoService.OnChange -= ActualizarCantidad;
+    }
+}

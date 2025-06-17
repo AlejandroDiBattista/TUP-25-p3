@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+
 using TUP;
 
 class Clase : IEnumerable<Alumno>
@@ -287,20 +288,36 @@ class Clase : IEnumerable<Alumno>
         }
     }
 
-    public void CopiarPractico(int practico, bool forzar = false) {
+    public void EjecutarSistema(int legajo)
+    {
+        string? carpeta = CarpetaDeAlumnoPorLegajo(legajo);
+        if (carpeta is null) {
+            Console.WriteLine("No se encontró la carpeta del alumno.");
+            return;
+        }
+        string Base = Path.Combine("../TP",carpeta, "tp6");
+        Consola.Escribir($"▶︎ Ejecutando sistema para el alumno {legajo} en {Base}", ConsoleColor.Cyan);
+        Corredor.CorrerSistema(Base).GetAwaiter().GetResult();
+    }
+
+    public void CopiarPractico(int practico, bool forzar = false)
+    {
         const string Base = "../TP";
         const string Enunciados = "../enunciados";
         Consola.Escribir($" ▶︎ Copiando trabajo práctico de TP{practico}", ConsoleColor.Cyan);
         var carpetaOrigen = Path.Combine(Enunciados, $"tp{practico}");
 
-        if (!Directory.Exists(carpetaOrigen)) {
+        if (!Directory.Exists(carpetaOrigen))
+        {
             Consola.Escribir($"Error: No se encontró el enunciado del trabajo práctico '{practico}' en {carpetaOrigen}", ConsoleColor.Red);
             return;
         }
 
-        foreach (var alumno in Alumnos.OrderBy(a => a.Legajo)) {
+        foreach (var alumno in Alumnos.OrderBy(a => a.Legajo))
+        {
             var carpetaDestino = Path.Combine(Base, alumno.Carpeta, $"tp{practico}");
-            if (forzar && Directory.Exists(carpetaDestino)) {
+            if (forzar && Directory.Exists(carpetaDestino))
+            {
                 Directory.Delete(carpetaDestino, true);
             }
             Directory.CreateDirectory(carpetaDestino);
@@ -559,6 +576,15 @@ class Clase : IEnumerable<Alumno>
         }
 
         return mapeo;
+    }
+
+    public string? CarpetaDeAlumnoPorLegajo(int legajo) {
+        var alumno = Buscar(legajo);
+        if (alumno != null) {
+            return alumno.Carpeta;
+        } else {
+            return null;
+        }
     }
 
 }

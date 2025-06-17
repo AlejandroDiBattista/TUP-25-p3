@@ -1,0 +1,58 @@
+.producto-card {
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.producto-card:hover {
+    transform: scale(1.02);
+}
+
+.producto-card img {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    display: block;
+    margin: 1rem auto 0 auto;
+    background-color: #f8f9fa;
+}
+
+.producto-info {
+    padding: 1rem;
+    text-align: center;
+    width: 100%;
+}
+
+.producto-info h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.producto-info .descripcion {
+    font-size: 0.95rem;
+    color: #666;
+    margin: 0.5rem 0;
+}
+
+.btn-agregar {
+    background-color: #ff66a3;
+    border: none;
+    padding: 0.5rem 1rem;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.btn-agregar:hover {
+    background-color: #e05590;
+    cursor: pointer;
+}
