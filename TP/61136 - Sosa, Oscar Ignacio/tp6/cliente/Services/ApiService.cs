@@ -91,6 +91,12 @@ public class ApiService {
             return false;
         }
     }
+
+    // Ejemplo para obtener datos simples (ajusta según tu API)
+    public async Task<DatosRespuesta?> ObtenerDatosAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
+    }
 }
 
 // Modelos de ejemplo
@@ -122,4 +128,11 @@ public class ConfirmacionDatos {
     public string Apellido { get; set; }
     public string Email { get; set; }
     // Puedes agregar más campos si tu API lo requiere
+}
+
+// Modelo para la respuesta de datos simples (ajusta según tu API)
+public class DatosRespuesta
+{
+    public string Info { get; set; }
+    // Agrega más propiedades según la estructura de tu respuesta
 }

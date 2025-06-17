@@ -7,7 +7,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Registro del servicio del carrito
-builder.Services.AddSingleton<CartService>();
+builder.Services.AddScoped<CartService>();
 
 // ...puedes registrar otros servicios aquí...
 
