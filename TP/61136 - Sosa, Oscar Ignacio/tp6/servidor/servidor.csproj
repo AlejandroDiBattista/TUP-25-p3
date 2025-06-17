@@ -11,8 +11,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
   </ItemGroup>
 
+  <!--
   <ItemGroup>
     <ProjectReference Include="..\Compartido\Compartido.csproj" />
   </ItemGroup>
+  -->
 
 </Project>
