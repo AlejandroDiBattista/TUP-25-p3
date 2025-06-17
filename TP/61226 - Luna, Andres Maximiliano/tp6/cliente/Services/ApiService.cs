@@ -47,5 +47,11 @@ public class ApiService
         }
     }
 
+    public async Task<bool> ConfirmarCompraAsync(Orden orden)
+    {
+            var response = await _httpClient.PostAsJsonAsync("ordenes", orden);
+            return response.IsSuccessStatusCode;       
+    }
+
     
 }
