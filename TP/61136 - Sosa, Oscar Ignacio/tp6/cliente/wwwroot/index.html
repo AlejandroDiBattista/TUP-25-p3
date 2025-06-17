@@ -21,11 +21,34 @@
         <div class="loading-progress-text"></div>
     </div>
 
+    <!-- Botón Agregar al carrito -->
+    <div style="margin: 2rem;">
+        <h2>Nombre del producto</h2>
+        <p>Descripción del producto</p>
+        <button id="addToCartBtn" class="btn btn-primary">Agregar al carrito</button>
+    </div>
+
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    <script>
+        let stockDisponible = 5; // Cambia este valor según tu lógica
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn = document.getElementById('addToCartBtn');
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    if (stockDisponible > 0) {
+                        window.location.href = '/carrito'; // Cambia la ruta según tu app
+                    } else {
+                        alert('No hay stock disponible');
+                    }
+                });
+            }
+        });
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

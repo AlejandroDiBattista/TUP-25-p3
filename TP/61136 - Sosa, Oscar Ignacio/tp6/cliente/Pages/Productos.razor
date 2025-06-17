@@ -2,21 +2,40 @@
 @using Cliente.Services
 @inject CartService Cart
 
-@code {
-    List<Product> products = new()
+<h2>Catálogo de Productos</h2>
+
+<div class="row">
+    @foreach (var producto in productos)
     {
-        new Product { Name = "Producto 1", Price = 100 },
-        new Product { Name = "Producto 2", Price = 200 }
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">@producto.Nombre</h5>
+                    <p class="card-text">@producto.Descripcion</p>
+                    <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
+                    <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    public class Producto
+    {
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public string ImagenUrl { get; set; }
+        public int Stock { get; set; }
+        public decimal Precio { get; set; }
+    }
+
+    // Ejemplo de productos
+    List<Producto> productos = new()
+    {
+        new Producto { Nombre = "Camiseta", Descripcion = "Camiseta 100% algodón", ImagenUrl = "camiseta.jpg", Stock = 10, Precio = 20 },
+        new Producto { Nombre = "Pantalón", Descripcion = "Pantalón de jean", ImagenUrl = "pantalon.jpg", Stock = 5, Precio = 35 },
+        new Producto { Nombre = "Zapatos", Descripcion = "Zapatos de cuero", ImagenUrl = "zapatos.jpg", Stock = 8, Precio = 50 }
     };
 }
-
-<h3>Productos</h3>
-@foreach (var product in products)
-{
-    <div class="mb-2">
-        <span>@product.Name - $@product.Price</span>
-        <button class="btn btn-primary btn-sm" @onclick="() => Cart.AddToCart(product)">Agregar al carrito</button>
-    </div>
-}
-
-<a href="/carrito">Ver carrito (@Cart.Items.Count)</a>

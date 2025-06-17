@@ -1,0 +1,33 @@
+@page "/catalogo"
+
+<h1>Catálogo de Productos</h1>
+
+<input @bind="busqueda" placeholder="Buscar productos..." />
+
+<ul>
+    @foreach (var producto in ProductosFiltrados)
+    {
+        <li>@producto.Nombre - @producto.Precio.ToString("C")</li>
+    }
+</ul>
+
+@code {
+    private string busqueda = "";
+    private List<Producto> productos = new()
+    {
+        new Producto { Nombre = "Camiseta", Precio = 20 },
+        new Producto { Nombre = "Pantalón", Precio = 35 },
+        new Producto { Nombre = "Zapatos", Precio = 50 }
+    };
+
+    private IEnumerable<Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? productos
+            : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
+
+    public class Producto
+    {
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+    }
+}
