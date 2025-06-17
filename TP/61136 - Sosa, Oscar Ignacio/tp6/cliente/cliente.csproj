@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\TP\61136 - Sosa, Oscar Ignacio\TP6\Servidor\Servidor.csproj" />
+    <ProjectReference Include="..\Compartido\Compartido.csproj" />
   </ItemGroup>
 
 </Project>
