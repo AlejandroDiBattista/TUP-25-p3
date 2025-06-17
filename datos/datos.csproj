@@ -17,6 +17,7 @@
     <Compile Include="Alumno.cs" />
     <Compile Include="Clase.cs" />
     <Compile Include="Menu.cs" />
+    <Compile Include="Corredor.cs" />
     <Compile Include="EstadoPractico.cs" />
     <Compile Include="Asistencias.cs" />
   </ItemGroup>

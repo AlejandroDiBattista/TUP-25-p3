@@ -1,4 +1,19 @@
-﻿@inherits LayoutComponentBase
+﻿@using Cliente.Services
+@inherits LayoutComponentBase
+@using Cliente.Layout
+
 <div class="page">
-    @Body
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">Acerca de</a>
+        </div>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
 </div>

@@ -1,0 +1,65 @@
+# Evaluacion 2do Parcial
+- 61667 : ok no descuenta stock al agregar al carrito
+ok 
+- 62055 : ok no descuenta stock al agregar al carrito
+- 61141 : no presentado
+- 61626 : ok debe mostrar directamente la lista de productos, no descuenta stock
+- 61271 : ok no descuenta stock, pesima presentacion
+- 61221 : ok no descuenta stock, no controla stock, el carrito no dice la cantidad de unidades
+- 62093 : ok no descuenta stock, no funciona confirmar venta.
+- 61450 : ok - ejemplo
+- 61627 : error
+- 61473 : no presentado
+- 61794 : ok No descuenta stock, al agregar al carrito comienza de 1.
+- 61818 : ok no muestra imagen, no descuenta stock, mala presentacion
+- 61579 : error - no muestra ningun producto
+- 61445 : no descuenta stock, al agregar vuelve a 1, doble busqueda
+- 61676 : no muestra productos al iniciar, no descuenta stock, no controla stock
+- 61032 : ok no descuenta stock al agregar al carrito
+- 62263 : no actualiza stock al agregar, mal presentacion
+- 61572 : no muestra productos, IGUAL que 61579
+- 61037 : no agrega al carrito
+- 61312 : no funciona
+- 61028 : no controla stock, no actualiza stock, no muestra imagen
+- 61197 : ok no actualiza stock
+- 61478 : no agrega al carrito
+- 61129 : ok no actualiza stock - ejemplo
+- 62555 : ok no actualiza stock, mejorar presentacion
+- 61189 : solo funciona una vez, al confirmar carrito deja de funcionar
+- 61345 : ok no actualiza stock, la presentacion se tiene que mejorar
+- 61611 : ok no actualiza stock, mejorar presentacion
+- 61908 : ok no puedo ir al carrito, mejora estetica
+- 61673 : no funciona, no muestra productos
+- 61051 : ok no actualiza stock, 
+- 61050 : no funciona la primera vez hay que refrescar, no tiene forma de volver al catalogo, no actualiza stock
+- 61680 : no funciona la primera vez hay que refrescar, me da error al confirmar la compra, no actualiza stock
+- 61060 : ok no actualiza stock al agregar al carrito, estetica muy cuidada
+- 61540 : no muestra imagen de producto, confirma compra no funciona, no actualiza stock
+- 61688 : no realiza busqueda, no actualiza stock
+- 61042 : no tiene imagenes, no actualiza stock, en el carrito no controla stock
+- 61652 : no busca, se rompe al pasar del carrito al catalogo
+- 61041 : ok cuando no esta agregado al carrito la cantidad representa cuanto se va agregar, cuando esta agregado pmodifica la cantidad a comprar. 
+- 61218 : no tiene imagen, no va al carrito al comprar, me dice: no de puede confirmar la compra
+- 61535 : ok no actualiza stock
+- 61905 : no muestra imagenes, no confirma compra
+- 61053 :  no actualiza stock, no vacia el carrito al confirmar la compra
+- 61848 : ok no actualiza el stock
+- 61247 : error
+- 61048 : ok no actualiza stock, al agregar un producto al carrito lo reinicia
+- 61122 : no agrega al carrito
+- 61314 : ok no controla stock en el carrito
+- 61328 : error 'internal server error'
+- 62136 : no presentado
+- 61588 : ok
+- 61985 : ok no actualiza stock
+- 61644 : no actualiza stock, no controla stock, me da mensaje al confimar
+- 61732 : no funciona, no muestra productos
+- 61422 : no agrega al carrito, error 404
+- 61671 : ok
+- 61064 : no agrega al carrito
+- 62104 : ok
+- 61125 : no muestra imagen, no agrega al carrito, doble navegacion
+- 61128 : ok imagenes desprorcionadas, no actualiza stock
+- 61340 : ok no actualiza stock, ejemplo
+- 61227 : ok cuando confirma no vuelve al catalogo, no carga toda las imagenes
+- 61988 : no agrega al carrito

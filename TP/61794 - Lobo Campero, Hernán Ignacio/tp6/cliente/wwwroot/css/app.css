@@ -1,23 +1,1426 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+/* Importar fuente Zero Athletics */
+@font-face {
+    font-family: "Zero Athletics";
+    src: url("https://db.onlinewebfonts.com/t/e52053cc63a09c123dd4370ed9943e3e.eot");
+    src: url("https://db.onlinewebfonts.com/t/e52053cc63a09c123dd4370ed9943e3e.eot?#iefix") format("embedded-opentype"),
+         url("https://db.onlinewebfonts.com/t/e52053cc63a09c123dd4370ed9943e3e.woff2") format("woff2"),
+         url("https://db.onlinewebfonts.com/t/e52053cc63a09c123dd4370ed9943e3e.woff") format("woff"),
+         url("https://db.onlinewebfonts.com/t/e52053cc63a09c123dd4370ed9943e3e.ttf") format("truetype"),
+         url("https://db.onlinewebfonts.com/t/e52053cc63a09c123dd4370ed9943e3e.svg#Zero Athletics") format("svg");
 }
+
+/* ==============================
+   VARIABLES CSS GLOBALES - TUC BYTE
+   ============================== */
+:root {
+    --primary-black: #000000;
+    --primary-dark-gray: #1a1a1a;
+    --primary-medium-gray: #333333;
+    --primary-orange: #ff6b35;
+    --primary-orange-light: #ff8555;
+    --primary-orange-dark: #ff4500;
+    --primary-red-orange: #e03e00;
+    
+    --secondary-gray-light: #f8f9fa;
+    --secondary-gray-medium: #6c757d;
+    --secondary-white: #ffffff;
+    
+    --success-color: #28a745;
+    --success-light: #d4edda;
+    --warning-color: #ffc107;
+    --warning-light: #fff3cd;
+    --danger-color: #dc3545;
+    --danger-light: #f8d7da;
+    --info-color: #17a2b8;
+    --info-light: #d1ecf1;
+    
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.2);
+    --shadow-orange: 0 4px 15px rgba(255, 107, 53, 0.3);
+    --shadow-orange-lg: 0 8px 25px rgba(255, 107, 53, 0.4);
+    
+    --border-radius-sm: 6px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 18px;
+    
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    --font-family-primary: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-family-brand: "Zero Athletics", sans-serif;
+}
+
+/* ==============================
+   ESTILOS BASE Y TIPOGRAFÍA
+   ============================== */
+html, body {
+    font-family: var(--font-family-primary);
+    color: var(--primary-medium-gray);
+    background-color: var(--secondary-gray-light);
+    line-height: 1.6;
+    scroll-behavior: smooth;
+}
+
+/* Mejora del contraste y legibilidad */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-black);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+p {
+    margin-bottom: 1rem;
+    color: var(--secondary-gray-medium);
+}
+
+/* ==============================
+   BRANDING - TUC BYTE
+   ============================== */
+.brand-title {
+    font-family: var(--font-family-brand);
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: var(--transition-medium);
+    background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand-title:hover {
+    text-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+.brand-title img {
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-medium);
+    filter: brightness(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    animation: pulse-logo 3s infinite;
+}
+
+.brand-title:hover img {
+    transform: scale(1.1);
+    filter: brightness(1.2) drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+/* ==============================
+   NAVBAR MEJORADO
+   ============================== */
+.navbar {
+    backdrop-filter: blur(10px);
+    background: linear-gradient(to right, var(--primary-black) 0%, var(--primary-dark-gray) 50%, var(--primary-orange) 100%);
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    box-shadow: var(--shadow-lg);
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.navbar-brand {
+    transition: var(--transition-medium);
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.navbar .input-group-text {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.navbar .form-control {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar .form-control:focus {
+    background: transparent;
+    box-shadow: none;
+    color: var(--secondary-white);
+}
+
+.navbar .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.navbar .border-orange {
+    border-color: transparent;
+}
+
+/* Especificidad alta para cards */
+.card-header {
+    background: linear-gradient(to bottom, var(--primary-black) 0%, var(--primary-orange) 100%);
+    color: var(--secondary-white);
+}
+
+.card-header.bg-gradient-primary,
+.card-header.bg-gradient-secondary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border: none;
+}
+
+/* Especificidad alta para badges */
+.badge.bg-primary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+}
+
+.badge.bg-success {
+    background: linear-gradient(to bottom, var(--success-color) 0%, #20c997 100%);
+}
+
+.badge.bg-danger {
+    background: linear-gradient(to bottom, var(--danger-color) 0%, #c82333 100%);
+}
+
+.badge.bg-warning {
+    background: linear-gradient(to bottom, var(--warning-color) 0%, #fd7e14 100%);
+    color: var(--primary-black);
+}
+
+/* Especificidad alta para tablas */
+.table {
+    color: var(--secondary-white);
+    background-color: transparent;
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    border: none;
+    overflow: visible;
+}
+
+.table th {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border: none;
+}
+
+.table td {
+    color: var(--secondary-white);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.table tbody tr {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.table tfoot tr {
+    background: linear-gradient(to bottom, var(--primary-orange-light) 0%, var(--primary-orange) 100%);
+}
+
+.table tfoot td {
+    color: var(--secondary-white);
+    font-weight: 700;
+    border: none;
+    font-size: 1.1rem;
+}
+
+/* Especificidad alta para formularios */
+.form-label {
+    color: var(--secondary-white);
+}
+
+.form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #919191;
+}
+
+.form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-orange);
+    color: #919191;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
+}
+
+.form-control::placeholder {
+    color: rgba(145, 145, 145, 0.6);
+}
+
+.form-control.border-orange {
+    color: #919191;
+}
+
+.form-control.border-orange:focus {
+    color: #919191;
+    border-color: var(--primary-orange);
+    box-shadow: none;
+}
+
+.form-control.border-orange::placeholder {
+    color: #919191;
+}
+
+/* Especificidad alta para text-muted con mejor contraste */
+.text-muted {
+    color: #919191;
+}
+
+.card-text.small.text-muted {
+    color: #919191;
+}
+
+/* Especificidad alta para botones primarios */
+.btn-primary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    border: none;
+    color: var(--secondary-white);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to bottom, var(--primary-orange-dark) 0%, var(--primary-red-orange) 100%);
+    color: var(--secondary-white);
+    box-shadow: var(--shadow-orange-lg);
+}
+
+/* Especificidad alta para botones outline-secondary */
+.btn-outline-secondary {
+    background: linear-gradient(to bottom, #6c757d 0%, #495057 100%);
+    border: 1px solid #495057;
+    color: #ffffff;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(to bottom, #5a6268 0%, #343a40 100%);
+    border-color: #343a40;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-secondary:active,
+.btn-outline-secondary:focus {
+    background: linear-gradient(to bottom, #495057 0%, #343a40 100%);
+    border-color: #343a40;
+    color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(108, 117, 125, 0.25);
+}
+
+/* Especificidad alta para elementos responsive */
+@media (max-width: 768px) {
+    .navbar form[role="search"] {
+        max-width: 280px;
+        margin: 0.5rem auto;
+    }
+    
+    .brand-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar form[role="search"] {
+        max-width: 240px;
+    }
+    
+    .brand-title {
+        font-size: 1.3rem;
+    }
+    
+    .navbar .btn-outline-light {
+        padding: 0.5rem;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .navbar .btn-outline-light .bi-cart3 {
+        font-size: 1.1rem;
+    }
+    
+    .navbar .badge {
+        font-size: 0.55rem;
+        padding: 0.2rem 0.35rem;
+        min-width: 20px;
+        height: 20px;
+    }
+}
+
+@media print {
+    .navbar,
+    .btn,
+    .toast-container {
+        display: none;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .text-gradient {
+        color: var(--primary-black);
+    }
+}
+
+.navbar-brand {
+    transition: var(--transition-medium);
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+/* Asegurar especificidad alta para elementos específicos del navbar */
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-brand {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    transition: var(--transition-fast);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: var(--primary-orange);
+    text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+}
+
+/* Especificidad alta para botones del carrito en navbar */
+.navbar .btn-outline-light {
+    color: var(--secondary-white);
+    border: 2px solid var(--secondary-white);
+    background: linear-gradient(to bottom, var(--primary-black) 0%, var(--primary-dark-gray) 100%);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    padding: 0.6rem;
+    font-weight: 600;
+    transition: all var(--transition-medium);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar .btn-outline-light:hover {
+    color: var(--primary-black);
+    border-color: var(--primary-orange);
+    background: linear-gradient(to bottom, var(--secondary-white) 0%, var(--secondary-gray-light) 100%);
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+}
+
+.navbar .btn-outline-light:active {
+    transform: translateY(0) scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Especificidad alta para badge del carrito */
+.navbar .badge {
+    background: linear-gradient(to bottom, #dc3545 0%, #c82333 100%);
+    color: var(--secondary-white);
+    border: 2px solid var(--secondary-white);
+    font-size: 0.6rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 50%;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
+    min-width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Especificidad alta para icono del carrito */
+.navbar .btn-outline-light .bi-cart3 {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    font-size: 1.2rem;
+    background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar .btn-outline-light:hover .bi-cart3 {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transform: scale(1.1);
+    color: var(--primary-orange);
+    background: none;
+    -webkit-text-fill-color: var(--primary-orange);
+}
+
+/* ==============================
+   BOTÓN CARRITO MEJORADO EN NAVBAR
+   ============================== */
+.navbar .btn-outline-light {
+    color: var(--secondary-white);
+    border: 2px solid var(--secondary-white);
+    background: linear-gradient(to bottom, var(--primary-black) 0%, var(--primary-dark-gray) 100%);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    padding: 0.6rem;
+    font-weight: 600;
+    transition: all var(--transition-medium);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar .btn-outline-light:hover {
+    color: var(--primary-black);
+    border-color: var(--primary-orange);
+    background: linear-gradient(to bottom, var(--secondary-white) 0%, var(--secondary-gray-light) 100%);
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+}
+
+.navbar .btn-outline-light:active {
+    transform: translateY(0) scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Badge del carrito mejorado - SIN animación */
+.navbar .badge {
+    background: linear-gradient(to bottom, #dc3545 0%, #c82333 100%);
+    color: var(--secondary-white);
+    border: 2px solid var(--secondary-white);
+    font-size: 0.6rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 50%;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
+    min-width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Efecto de glow nítido para el botón carrito cuando se agrega un producto */
+.navbar .btn-outline-light.cart-glow {
+    animation: cart-sharp-glow 2s ease-in-out;
+}
+
+/* Animación de glow nítido para todo el contorno del botón carrito */
+@keyframes cart-sharp-glow {
+    0% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        border-color: var(--secondary-white);
+        transform: translateY(0) scale(1);
+    }
+    25% {
+        box-shadow: 0 0 15px rgba(255, 107, 53, 1), 
+                    0 0 25px rgba(255, 107, 53, 0.8);
+        border-color: var(--primary-orange);
+        border-width: 3px;
+        transform: translateY(-2px) scale(1.05);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 107, 53, 1), 
+                    0 0 30px rgba(255, 107, 53, 0.9);
+        border-color: #ff4500;
+        border-width: 4px;
+        transform: translateY(-3px) scale(1.1);
+    }
+    75% {
+        box-shadow: 0 0 15px rgba(255, 107, 53, 1), 
+                    0 0 25px rgba(255, 107, 53, 0.8);
+        border-color: var(--primary-orange);
+        border-width: 3px;
+        transform: translateY(-2px) scale(1.05);
+    }
+    100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        border-color: var(--secondary-white);
+        border-width: 2px;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animación de latido para el logo */
+@keyframes pulse-logo {
+    0%, 70%, 100% {
+        transform: scale(1);
+    }
+    35% {
+        transform: scale(1.1);
+        filter: brightness(1.3) drop-shadow(0 4px 12px rgba(255, 255, 255, 0.4));
+    }
+}
+
+/* Icono del carrito mejorado */
+.navbar .btn-outline-light .bi-cart3 {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    font-size: 1.2rem;
+    background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar .btn-outline-light:hover .bi-cart3 {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transform: scale(1.1);
+    color: var(--primary-orange);
+    background: none;
+    -webkit-text-fill-color: var(--primary-orange);
+}
+
+/* ==============================
+   SISTEMA DE BOTONES MEJORADO
+   ============================== */
+.btn {
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    transition: var(--transition-medium);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.875rem;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: var(--transition-slow);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+/* Botón Primario - Gradiente tipo Price-Tag */
+.btn-primary {
+    color: var(--secondary-white);
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    box-shadow: var(--shadow-orange);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to bottom, var(--primary-orange-dark) 0%, var(--primary-red-orange) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-orange-lg);
+    color: var(--secondary-white);
+}
+
+.btn-primary:active {
+    background: linear-gradient(to bottom, var(--primary-red-orange) 0%, var(--primary-orange-dark) 100%);
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Botón Secundario - Gradiente tipo Price-Tag */
+.btn-secondary {
+    color: var(--secondary-white);
+    background: linear-gradient(to bottom, var(--secondary-gray-medium) 0%, var(--primary-medium-gray) 100%);
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(to bottom, var(--primary-medium-gray) 0%, var(--primary-black) 100%);
+    transform: translateY(-1px);
+    color: var(--secondary-white);
+}
+
+.btn-secondary:active {
+    background: linear-gradient(to bottom, var(--primary-black) 0%, var(--primary-medium-gray) 100%);
+    transform: translateY(0);
+}
+
+/* Botón Success - Gradiente tipo Price-Tag */
+.btn-success {
+    color: var(--secondary-white);
+    background: linear-gradient(to bottom, var(--success-color) 0%, #20c997 100%);
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(to bottom, #20c997 0%, #1e7e34 100%);
+    transform: translateY(-1px);
+    color: var(--secondary-white);
+}
+
+.btn-success:active {
+    background: linear-gradient(to bottom, #1e7e34 0%, #20c997 100%);
+    transform: translateY(0);
+}
+
+/* Botón Warning - Gradiente tipo Price-Tag */
+.btn-warning {
+    color: var(--primary-black);
+    background: linear-gradient(to bottom, var(--warning-color) 0%, #fd7e14 100%);
+    font-weight: 600;
+    border: none;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(to bottom, #fd7e14 0%, #e0a800 100%);
+    transform: translateY(-1px);
+    color: var(--primary-black);
+}
+
+.btn-warning:active {
+    background: linear-gradient(to bottom, #e0a800 0%, #fd7e14 100%);
+    transform: translateY(0);
+}
+
+/* Botón Danger */
+.btn-danger {
+    color: var(--secondary-white);
+    background: linear-gradient(to bottom, #dc3545 0%, #c82333 100%);
+    border: none;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(to bottom, #c82333 0%, #bd2130 100%);
+    transform: translateY(-1px);
+    color: var(--secondary-white);
+}
+
+.btn-danger:active {
+    background: linear-gradient(to bottom, #bd2130 0%, #dc3545 100%);
+    transform: translateY(0);
+}
+
+/* Botones Outline */
+.btn-outline-primary {
+    color: var(--primary-orange);
+    border: 2px solid var(--primary-orange);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    border-color: var(--primary-orange-dark);
+    color: var(--secondary-white);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary:active {
+    background: linear-gradient(to bottom, var(--primary-orange-dark) 0%, var(--primary-orange) 100%);
+    transform: translateY(0);
+}
+
+.btn-outline-secondary {
+    color: var(--primary-medium-gray);
+    border: 2px solid var(--primary-medium-gray);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(to bottom, var(--primary-medium-gray) 0%, var(--primary-black) 100%);
+    border-color: var(--primary-medium-gray);
+    color: var(--secondary-white);
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary:active {
+    background: linear-gradient(to bottom, var(--primary-black) 0%, var(--primary-medium-gray) 100%);
+    transform: translateY(0);
+}
+
+.btn-outline-success {
+    color: var(--success-color);
+    border: 2px solid var(--success-color);
+    background: transparent;
+}
+
+.btn-outline-success:hover {
+    background: linear-gradient(to bottom, var(--success-color) 0%, #20c997 100%);
+    border-color: var(--success-color);
+    color: var(--secondary-white);
+    transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+    color: var(--danger-color);
+    border: 2px solid var(--danger-color);
+    background: transparent;
+}
+
+.btn-outline-danger:hover {
+    background: linear-gradient(to bottom, var(--danger-color) 0%, #c82333 100%);
+    border-color: var(--danger-color);
+    color: var(--secondary-white);
+    transform: translateY(-1px);
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+/* ==============================
+   CARDS Y CONTENEDORES
+   ============================== */
+.card {
+    border: none;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-medium);
+    background: var(--secondary-white);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    background: linear-gradient(to bottom, var(--primary-black) 0%, var(--primary-orange) 100%);
+    color: var(--secondary-white);
+    border-bottom: none;
+    padding: 1.25rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    background: var(--secondary-gray-light);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 1rem 1.5rem;
+}
+
+/* ==============================
+   PRODUCTOS Y CATÁLOGO
+   ============================== */
+.product-card {
+    transition: var(--transition-medium);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-orange-lg);
+    border-color: var(--primary-orange);
+}
+
+.product-image {
+    transition: var(--transition-medium);
+    border-radius: var(--border-radius-sm);
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.price-tag {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-lg);
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.stock-badge {
+    background: linear-gradient(to bottom, var(--success-color) 0%, #20c997 100%);
+    color: var(--secondary-white);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-lg);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* ==============================
+   FORMULARIOS MEJORADOS
+   ============================== */
+.form-control,
+.form-select {
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1rem;
+    transition: var(--transition-fast);
+    background-color: var(--secondary-white);
+    font-size: 1rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+    background-color: var(--secondary-white);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--primary-medium-gray);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-group-text {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border: 2px solid var(--primary-orange);
+    font-weight: 600;
+}
+
+/* ==============================
+   ALERTAS Y NOTIFICACIONES
+   ============================== */
+.alert {
+    border: none;
+    border-radius: var(--border-radius-md);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background: linear-gradient(to bottom, var(--success-light) 0%, #d1e7dd 100%);
+    color: #0f5132;
+    border-left-color: var(--success-color);
+}
+
+.alert-warning {
+    background: linear-gradient(to bottom, var(--warning-light) 0%, #fff3cd 100%);
+    color: #664d03;
+    border-left-color: var(--warning-color);
+}
+
+.alert-danger {
+    background: linear-gradient(to bottom, var(--danger-light) 0%, #f8d7da 100%);
+    color: #842029;
+    border-left-color: var(--danger-color);
+}
+
+.alert-info {
+    background: linear-gradient(to bottom, var(--info-light) 0%, #cff4fc 100%);
+    color: #055160;
+    border-left-color: var(--info-color);
+}
+
+/* ==============================
+   BADGES Y ETIQUETAS
+   ============================== */
+.badge {
+    border-radius: var(--border-radius-lg);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+}
+
+.badge.bg-success {
+    background: linear-gradient(to bottom, var(--success-color) 0%, #20c997 100%);
+}
+
+.badge.bg-danger {
+    background: linear-gradient(to bottom, var(--danger-color) 0%, #c82333 100%);
+}
+
+.badge.bg-warning {
+    background: linear-gradient(to bottom, var(--warning-color) 0%, #fd7e14 100%);
+    color: var(--primary-black);
+}
+
+/* ==============================
+   TABLAS MEJORADAS
+   ============================== */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.table thead th {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border: none;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.875rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    position: relative;
+}
+
+.table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-orange-dark) 0%, var(--primary-red-orange) 100%);
+}
+
+.table tbody tr {
+    transition: var(--transition-fast);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 107, 53, 0.1);
+    transform: scale(1.01);
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* ==============================
+   PAGINACIÓN
+   ============================== */
+.pagination {
+    gap: 0.5rem;
+}
+
+.page-link {
+    color: var(--primary-orange);
+    border: 2px solid var(--primary-orange);
+    border-radius: var(--border-radius-md);
+    padding: 0.5rem 1rem;
+    transition: var(--transition-medium);
+    font-weight: 500;
+}
+
+.page-link:hover {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    border-color: var(--primary-orange-dark);
+    color: var(--secondary-white);
+    transform: translateY(-1px);
+}
+
+.page-item.active .page-link {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    border-color: var(--primary-orange-dark);
+    color: var(--secondary-white);
+}
+
+/* ==============================
+   PAGINACIÓN PERSONALIZADA - TUC BYTE
+   ============================== */
+
+/* Estilos base para botones de paginación */
+.pagination .page-link {
+    color: var(--primary-orange);
+    background-color: var(--secondary-white);
+    border: 2px solid var(--primary-orange);
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem 0.75rem;
+    margin: 0 2px;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+/* Hover de botones de paginación */
+.pagination .page-link:hover {
+    color: var(--secondary-white);
+    background-color: var(--primary-orange);
+    border-color: var(--primary-orange);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-orange);
+}
+
+/* Botón activo (página actual) */
+.pagination .page-item.active .page-link {
+    color: var(--secondary-white);
+    background-color: var(--primary-orange-dark);
+    border-color: var(--primary-orange-dark);
+    box-shadow: var(--shadow-orange);
+    font-weight: 600;
+}
+
+.pagination .page-item.active .page-link:hover {
+    background-color: var(--primary-red-orange);
+    border-color: var(--primary-red-orange);
+}
+
+/* Botones deshabilitados */
+.pagination .page-item.disabled .page-link {
+    color: var(--secondary-gray-medium);
+    background-color: var(--secondary-gray-light);
+    border-color: var(--secondary-gray-light);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    color: var(--secondary-gray-medium);
+    background-color: var(--secondary-gray-light);
+    border-color: var(--secondary-gray-light);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Focus para accesibilidad */
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
+    outline: none;
+}
+
+/* Estilo compacto para móviles */
+@media (max-width: 576px) {
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        margin: 0 1px;
+    }
+}
+
+/* ==============================
+   MODALES Y POPUPS
+   ============================== */
+.modal-content {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    background: var(--secondary-white);
+}
+
+.modal-header {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+}
+
+.modal-title {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary-white);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.modal-header .btn-close {
+    background: none;
+    border: none;
+    color: var(--secondary-white);
+    font-size: 1.5rem;
+    opacity: 0.8;
+    transition: var(--transition-fast);
+    filter: invert(1);
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 2rem 1.5rem;
+    background: var(--secondary-white);
+}
+
+.modal-body p {
+    margin-bottom: 1rem;
+    color: var(--secondary-white);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.modal-body p:first-child {
+    font-weight: 600;
+    color: var(--secondary-white);
+    font-size: 1.1rem;
+}
+
+.modal-body .text-muted {
+    color: #919191;
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.modal-footer {
+    background: var(--secondary-gray-light);
+    border-top: none;
+    padding: 1.25rem 1.5rem;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.modal-footer .btn {
+    min-width: 120px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-radius: var(--border-radius-md);
+    transition: var(--transition-medium);
+}
+
+.modal-footer .btn-secondary {
+    background: linear-gradient(to bottom, var(--secondary-gray-medium) 0%, var(--primary-medium-gray) 100%);
+    border: none;
+    color: var(--secondary-white);
+}
+
+.modal-footer .btn-secondary:hover {
+    background: linear-gradient(to bottom, var(--primary-medium-gray) 0%, var(--primary-black) 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.modal-footer .btn-danger {
+    background: linear-gradient(to bottom, var(--danger-color) 0%, #c82333 100%);
+    border: none;
+    color: var(--secondary-white);
+}
+
+.modal-footer .btn-danger:hover {
+    background: linear-gradient(to bottom, #c82333 0%, #bd2130 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+/* Overlay del modal más elegante */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+}
+
+/* ==============================
+   SPINNER Y LOADING
+   ============================== */
+.spinner-border {
+    color: var(--primary-orange);
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1rem;
+}
+
+.loading-text {
+    color: var(--secondary-gray-medium);
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* ==============================
+   SPINNER DE CARGA PERSONALIZADO - TUC BYTE
+   ============================== */
+.loader {
+    transform: rotateZ(45deg);
+    perspective: 1000px;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    color: var(--primary-orange);
+    margin: 0 auto;
+}
+
+.loader:before,
+.loader:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: inherit;
+    height: inherit;
+    border-radius: 50%;
+    transform: rotateX(70deg);
+    animation: 1s spin linear infinite;
+}
+
+.loader:after {
+    color: var(--primary-orange-dark);
+    transform: rotateY(70deg);
+    animation-delay: .4s;
+}
+
+/* Variante más grande para páginas principales */
+.loader-lg {
+    width: 64px;
+    height: 64px;
+}
+
+/* Variante más pequeña para botones */
+.loader-sm {
+    width: 24px;
+    height: 24px;
+}
+
+/* Contenedor centrado para el loader */
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1rem;
+    min-height: 200px;
+}
+
+.loader-container.fullscreen {
+    min-height: 50vh;
+}
+
+/* Animaciones mejoradas */
+@keyframes rotate {
+    0% {
+        transform: translate(-50%, -50%) rotateZ(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotateZ(360deg);
+    }
+}
+
+@keyframes rotateccw {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(-360deg);
+    }
+}
+
+@keyframes spin {
+    0%, 100% {
+        box-shadow: .2em 0px 0 0px currentcolor;
+    }
+    12% {
+        box-shadow: .2em .2em 0 0 currentcolor;
+    }
+    25% {
+        box-shadow: 0 .2em 0 0px currentcolor;
+    }
+    37% {
+        box-shadow: -.2em .2em 0 0 currentcolor;
+    }
+    50% {
+        box-shadow: -.2em 0 0 0 currentcolor;
+    }
+    62% {
+        box-shadow: -.2em -.2em 0 0 currentcolor;
+    }
+    75% {
+        box-shadow: 0px -.2em 0 0 currentcolor;
+    }
+    87% {
+        box-shadow: .2em -.2em 0 0 currentcolor;
+    }
+}
+
+/* Efecto de aparición suave para el loader */
+@keyframes loaderFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.loader-container {
+    animation: loaderFadeIn 0.3s ease-out;
+}
+
+/* ==============================
+   MEJORA DE SPINNERS BOOTSTRAP EXISTENTES
+   ============================== */
+.spinner-border {
+    color: var(--primary-orange);
+    border-width: 3px;
+}
+
+.spinner-border-sm {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 2px;
+}
+
+.spinner-grow {
+    color: var(--primary-orange);
+}
+
+/* ==============================
+   ESTADOS DE LOADING MEJORADOS
+   ============================== */
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* ==============================
+   MEJORAS ADICIONALES
+   ============================== */
 
 h1:focus {
     outline: none;
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: var(--primary-orange);
+    transition: var(--transition-fast);
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+a:hover, .btn-link:hover {
+    color: var(--primary-orange-dark);
+    text-decoration: none;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--primary-orange);
 }
 
 .content {
@@ -25,90 +1428,535 @@ a, .btn-link {
 }
 
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid var(--success-color);
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 1px solid var(--danger-color);
 }
 
 .validation-message {
-    color: red;
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
-#blazor-error-ui {
-    color-scheme: light only;
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
+/* ==============================
+   RESPONSIVE DESIGN
+   ============================== */
+@media (max-width: 768px) {
+    .brand-title {
+        font-size: 1.5rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.8rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .brand-title {
+        font-size: 1.3rem;
+    }
+    
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.5rem; }
+    
+    /* Responsive para el botón del carrito circular */
+    .navbar .btn-outline-light {
+        padding: 0.5rem;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .navbar .btn-outline-light .bi-cart3 {
+        font-size: 1.1rem;
+    }
+    
+    .navbar .badge {
+        font-size: 0.55rem;
+        padding: 0.2rem 0.35rem;
+        min-width: 20px;
+        height: 20px;
+    }
+}
+
+/* ==============================
+   MEJORAS PARA DARK MODE (Futuro)
+   ============================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --secondary-gray-light: #1a1a1a;
+        --secondary-white: #2d2d2d;
+        --primary-medium-gray: #e0e0e0;
+    }
+    
+    .card {
+        background-color: var(--secondary-white);
+        color: var(--primary-medium-gray);
+    }
+}
+
+/* ==============================
+   PRINT STYLES
+   ============================== */
+@media print {
+    .navbar,
+    .btn,
+    .toast-container {
+        display: none;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .text-gradient {
+        -webkit-text-fill-color: initial;
+        color: var(--primary-black);
+    }
+}
+
+/* ==============================
+   BUSCADOR EN NAVBAR MINIMALISTA - ESTILO YOUTUBE MUSIC
+   ============================== */
+.navbar .input-group {
+    box-shadow: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition-medium);
+}
+
+.navbar .input-group:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.navbar .input-group:focus-within {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 107, 53, 0.4);
+    box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.2);
+}
+
+.navbar .input-group-text {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+    padding: 0.6rem 0.8rem;
+    font-size: 1rem;
+}
+
+.navbar .form-control {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
+}
+
+.navbar .form-control:focus {
+    background: transparent;
+    box-shadow: none;
+    color: var(--secondary-white);
+    outline: none;
+}
+
+.navbar .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: normal;
+    font-weight: 300;
+}
+
+.navbar .border-orange {
+    border-color: transparent;
+}
+
+/* Efecto sutil para el ícono */
+.navbar .input-group:focus-within .input-group-text {
+    color: var(--primary-orange);
+}
+
+/* Responsive minimalista */
+@media (max-width: 768px) {
+    .navbar form[role="search"] {
+        max-width: 280px;
+        margin: 0.5rem auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar form[role="search"] {
+        max-width: 240px;
+    }
+    
+    .navbar .input-group-text,
+    .navbar .form-control {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ==============================
+   SUBTÍTULOS DE CARDS PERSONALIZADOS
+   ============================== */
+
+/* Color personalizado para subtítulos de cards */
+.card-text.small.text-muted {
+    color: #919191;
+}
+
+/* Color personalizado para texto en input de búsqueda */
+.form-control.border-orange {
+    color: #919191;
+}
+
+/* Color cuando el input está activo/focused */
+.form-control.border-orange:focus {
+    color: #919191;
+    border-color: var(--primary-orange);
+    box-shadow: none;
+}
+
+/* Color del placeholder también */
+.form-control.border-orange::placeholder {
+    color: #919191;
+    opacity: 0.7;
+}
+
+/* ==============================
+   CLASES PERSONALIZADAS PARA TEXTO - SOLUCIÓN ELEGANTE
+   ============================== */
+
+/* Clase personalizada para texto secundario con buen contraste */
+.text-secondary-custom {
+    color: #919191;
+}
+
+/* Variantes para diferentes contextos */
+.text-muted-custom {
+    color: #919191;
+}
+
+.subtitle-text {
+    color: #919191;
+    font-size: 0.875rem;
+}
+
+.card-subtitle-custom {
+    color: #919191;
+    font-size: 0.875rem;
+}
+
+/* Para usar en lugar de Bootstrap text-muted */
+.text-readable {
+    color: #919191;
+}
+
+/* ==============================
+   OVERRIDE SIMPLE DE BOOTSTRAP - SOLUCIÓN DIRECTA
+   ============================== */
+
+/* Override directo de la clase text-muted de Bootstrap */
+.text-muted {
+    color: #919191 !important;
+}
+
+/* ==============================
+   MÁXIMA ESPECIFICIDAD PARA ELEMENTOS BLANCOS
+   ============================== */
+
+/* Selectores ultra-específicos para h6 con text-gradient */
+body .container .card .card-body h6.mb-1.text-gradient,
+body .container .row .col h6.mb-1.text-gradient,
+body main .card h6.mb-1.text-gradient,
+html body h6.mb-1.text-gradient {
+    color: #ffffff;
+    background: none;
+    background-image: none;
+    background-clip: initial;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: #ffffff;
+}
+
+/* Selectores ultra-específicos para input centrado */
+body .container .card .card-body input.form-control.text-center,
+body .container .row .col input.form-control.text-center,
+body main .card input.form-control.text-center,
+html body input.form-control.text-center {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Forzar estilo para cualquier combinación posible */
+h6[class*="text-gradient"] {
+    color: #ffffff;
+    background: none;
+    -webkit-text-fill-color: #ffffff;
+}
+
+input[class*="text-center"][class*="form-control"] {
+    color: #ffffff;
+}
+
+/* ==============================
+   CORRECCIONES PARA CARRITO
+   ============================== */
+
+/* Remover línea blanca debajo de items del carrito */
+.cart-item {
+    border-bottom: none;
+}
+
+.cart-item.border-bottom {
+    border-bottom: none;
+}
+
+/* Asegurar que el botón de borrar esté dentro del contenedor */
+.cart-item .row {
+    margin: 0;
     width: 100%;
-    z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
-
-.blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
+.cart-item .col-md-1 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    max-width: 60px;
+    flex: 0 0 60px;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
-
-.loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
+/* Ajustar las otras columnas para dar espacio */
+.cart-item .col-md-6 {
+    flex: 0 0 calc(50% - 30px);
+    max-width: calc(50% - 30px);
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+.cart-item .col-md-3 {
+    flex: 0 0 calc(25% - 15px);
+    max-width: calc(25% - 15px);
+}
 
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.cart-item .col-md-2 {
+    flex: 0 0 calc(25% - 15px);
+    max-width: calc(25% - 15px);
+}
 
-.loading-progress-text {
-    position: absolute;
+/* Botón de borrar más compacto */
+.cart-item .btn-outline-danger {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Estilo personalizado para botones de cantidad (+ y -) */
+.btn-outline-secondary {
+    background: linear-gradient(to bottom, #6c757d 0%, #495057 100%);
+    border: 1px solid #495057;
+    color: #ffffff;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(to bottom, #5a6268 0%, #343a40 100%);
+    border-color: #343a40;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-secondary:active,
+.btn-outline-secondary:focus {
+    background: linear-gradient(to bottom, #495057 0%, #343a40 100%);
+    border-color: #343a40;
+    color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(108, 117, 125, 0.25);
+}
+
+.btn-outline-secondary:disabled {
+    background: linear-gradient(to bottom, #e9ecef 0%, #dee2e6 100%);
+    border-color: #dee2e6;
+    color: #6c757d;
+    opacity: 0.65;
+}
+
+/* ==============================
+   PÁGINA DE CONFIRMACIÓN MEJORADA
+   ============================== */
+
+/* Estilos para la tabla de resumen */
+.table {
+    color: var(--secondary-white);
+    background-color: transparent;
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    border: none;
+    overflow: visible;
+}
+
+.table th {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border: none;
+    font-weight: 600;
     text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
-
-code {
-    color: #c02d76;
+.table td {
+    color: var(--secondary-white);
+    border-color: rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+    max-width: 150px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
+.table tbody tr {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-    text-align: start;
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.table tfoot tr {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+}
+
+.table tfoot td {
+    color: var(--secondary-white);
+    font-weight: 700;
+    border: none;
+    font-size: 1.1rem;
+    padding: 1rem 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Header de tabla con estilo consistente con card headers */
+.table thead th {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    color: var(--secondary-white);
+    border: none;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.875rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+    position: relative;
+}
+
+.table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-orange-dark) 0%, var(--primary-red-orange) 100%);
+}
+
+/* Primera columna alineada a la izquierda */
+.table thead th:first-child,
+.table tbody td:first-child {
+    text-align: left;
+    padding-left: 1rem;
+}
+
+/* Estilo mejorado para las celdas de la tabla */
+.table tbody td {
+    color: var(--secondary-white);
+    border-color: rgba(255, 255, 255, 0.1);
+    padding: 1rem 0.75rem;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+/* Filas alternadas para mejor legibilidad */
+.table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.table tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 107, 53, 0.1);
+    transform: none;
+}
+
+/* Footer de tabla mejorado */
+.table tfoot tr {
+    background: linear-gradient(to bottom, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+}
+
+.table tfoot td {
+    color: var(--secondary-white);
+    font-weight: 700;
+    border: none;
+    font-size: 1.1rem;
+    padding: 1rem 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Forzar color blanco en texto del modal con especificidad alta */
+.modal .modal-body p,
+.modal-content .modal-body p,
+body .modal .modal-body p,
+html body .modal .modal-body p {
+    color: #ffffff;
+}
+
+.modal .modal-body p:first-child,
+.modal-content .modal-body p:first-child,
+body .modal .modal-body p:first-child,
+html body .modal .modal-body p:first-child {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Override aún más específico para casos extremos */
+.modal-dialog .modal-content .modal-body p,
+body .modal-dialog .modal-content .modal-body p {
+    color: #ffffff;
+}
+
+.modal-dialog .modal-content .modal-body p:first-child,
+body .modal-dialog .modal-content .modal-body p:first-child {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Override directo para texto blanco en modales - solución definitiva */
+.modal-body p {
+    color: #ffffff !important;
+}
+
+.modal-body p:first-child {
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }

@@ -13,4 +13,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 // Registrar el servicio API
 builder.Services.AddScoped<ApiService>();
 
+// Registrar el servicio de notificaciones
+builder.Services.AddSingleton<NotificationService>();
+
 await builder.Build().RunAsync();

@@ -1,0 +1,101 @@
+@page "/carrito"
+@using Compartido
+@inject ApiService ApiService
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager NavigationManager
+
+<div class="container my-4">
+    <h1 class="mt-4">Tu Carrito</h1>
+
+    @if (items is null)
+    {
+        <p><em>Cargando carrito…</em></p>
+    }
+    else if (items.Count == 0)
+    {
+        <p>El carrito está vacío.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Importe</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@item.NombreProducto</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => Modificar(item, -1)">−</button>
+                            @item.Cantidad
+                            <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => Modificar(item, +1)">+</button>
+                        </td>
+                        <td>@item.PrecioUnitario.ToString("C")</td>
+                        <td>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" @onclick="() => Quitar(item)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-outline-danger" @onclick="Vaciar">Vaciar carrito</button>
+            <button class="btn btn-primary" @onclick="Confirmar">Confirmar compra</button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ItemCarritoDto>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        var id = await CarritoStateService.GetCarritoIdAsync();
+        items = await ApiService.GetCarritoAsync(id);
+    }
+
+    private async Task Modificar(ItemCarritoDto item, int delta)
+    {
+        var id = await CarritoStateService.GetCarritoIdAsync();
+        var nuevaCant = item.Cantidad + delta;
+        if (nuevaCant <= 0)
+        {
+            await ApiService.EliminarItemCarritoAsync(id, item.ProductoId);
+        }
+        else
+        {
+            await ApiService.AgregarOActualizarItemCarritoAsync(id, item.ProductoId, nuevaCant);
+        }
+        await Cargar();
+        await CarritoStateService.ActualizarCantidadItems();
+    }
+
+    private Task Quitar(ItemCarritoDto item) => Modificar(item, -item.Cantidad);
+
+    private async Task Vaciar()
+    {
+        var id = await CarritoStateService.GetCarritoIdAsync();
+        await ApiService.VaciarCarritoAsync(id);
+        await Cargar();
+        await CarritoStateService.ResetCarritoIdAsync();
+    }
+
+    private void Confirmar()
+    {
+        NavigationManager.NavigateTo("/confirmacion");
+    }
+}

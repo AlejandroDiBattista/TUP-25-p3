@@ -1,4 +1,146 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using cliente.Services
+@using Microsoft.JSInterop
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject ApiService ApiService
+@inject IJSRuntime JS
+@inject NotificationService NotificationService
+@implements IDisposable
+
+<nav class="navbar navbar-expand-lg tienda-navbar fixed-top shadow">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <img src="img/logo.png" alt="Logo" style="height: 56px; width: 56px; object-fit: contain; border-radius: 10px; box-shadow: 0 1px 4px #b36b00; background: #fff3e0;" />
+        </a>
+        <form class="d-flex ms-3 me-4" role="search" @onsubmit="BuscarProductos">
+            <input class="form-control me-2" type="search" placeholder="Buscar..." aria-label="Buscar" @bind="busqueda" style="min-width:180px;">
+            <button class="btn btn-outline-light" type="submit">🔍</button>
+        </form>
+        <div class="collapse navbar-collapse show" id="navbarNav">            <ul class="navbar-nav ms-auto d-flex flex-row gap-2">
+                <li class="nav-item">
+                    <a class="nav-link" href="/productos">
+                        <span class="me-1">🎮</span>Productos
+                    </a>
+                </li>
+                <li class="nav-item position-relative">
+                    <a class="nav-link" href="/carrito">
+                        <span class="me-1">🛒</span>Carrito
+                        @if (carritoCount > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.9rem;">@carritoCount</span>
+                        }
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="tienda-content">
     @Body
 </div>
+
+<!-- Componente de notificaciones toast -->
+<cliente.Components.NotificationToast />
+
+@code {
+    private string busqueda;
+    private int carritoCount = 0;
+    private Timer timer;
+    private DotNetObjectReference<MainLayout>? objRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarContadorCarrito();
+        
+        // Suscribirse a eventos del NotificationService
+        NotificationService.OnCartUpdated += async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await ActualizarContadorCarrito();
+                StateHasChanged();
+            });
+        };
+        
+        // Timer de respaldo para actualizar cada 10 segundos
+        timer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await ActualizarContadorCarrito();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Crear referencia para JavaScript
+            objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("setMainLayoutReference", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task UpdateCartCounter()
+    {
+        await ActualizarContadorCarrito();
+        StateHasChanged();
+    }
+
+    public async Task ActualizarContadorCarrito()
+    {
+        try
+        {
+            var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+            if (Guid.TryParse(idStr, out var carritoId) && carritoId != Guid.Empty)
+            {
+                var items = await ApiService.ObtenerCarritoAsync(carritoId);
+                if (items == null)
+                {
+                    // El carrito no existe en el servidor, limpiar localStorage
+                    await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                    carritoCount = 0;
+                }
+                else
+                {
+                    carritoCount = items.Sum(i => i.cantidad);
+                }
+            }
+            else
+            {
+                carritoCount = 0;
+            }
+        }
+        catch (Exception)
+        {
+            carritoCount = 0;
+            // En caso de error, limpiar localStorage
+            await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+        }
+    }
+
+    private void BuscarProductos()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+        {
+            var url = $"/productos?busqueda={Uri.EscapeDataString(busqueda)}";
+            Navigation.NavigateTo(url);
+        }
+        else
+        {
+            Navigation.NavigateTo("/productos");
+        }
+        // Limpiar el input después de buscar
+        busqueda = "";
+        StateHasChanged();
+    }
+    
+    public void Dispose()
+    {
+        objRef?.Dispose();
+        timer?.Dispose();
+    }
+}

@@ -1,0 +1,92 @@
+@page "/"
+@using cliente.Models
+@inject HttpClient Http
+@inject CartService CartService
+
+<h1 class="mb-4 text-center fw-bold">Catálogo de Perfumes de Diseñador</h1>
+
+@if (productos is null)
+{
+    <p class="text-center">Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <p class="text-center text-muted">No se encontraron productos.</p>
+}
+else
+{
+    <div class="container">
+        <div class="row justify-content-center mb-4">
+            <div class="col-12 col-md-6">
+                <input type="text"
+                       class="form-control shadow-sm border-primary"
+                       placeholder="🔍 Buscar por nombre..."
+                       @bind="Busqueda"
+                       @bind:event="oninput" />
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var producto in productos)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="@producto.ImagenUrl"
+                             alt="@producto.Nombre"
+                             class="card-img-top img-fluid"
+                             style="height: 200px; object-fit: cover;" />
+
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p><strong>Precio:</strong> $@producto.Precio</p>
+                            <p><strong>Stock:</strong> @producto.Stock</p>
+                            <button class="btn btn-primary w-100"
+                                    @onclick="() => AgregarAlCarrito(producto)"
+                                    disabled="@(!PuedeAgregar(producto))">
+                                Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<Producto>? productos;
+
+    private string _busqueda = "";
+    private string Busqueda
+    {
+        get => _busqueda;
+        set
+        {
+            _busqueda = value;
+            _ = CargarProductos(); // Disparar sin bloquear
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        string url = string.IsNullOrWhiteSpace(Busqueda)
+            ? "/productos"
+            : $"/productos?nombre={Uri.EscapeDataString(Busqueda)}";
+
+        productos = await Http.GetFromJsonAsync<List<Producto>>(url);
+        StateHasChanged(); // fuerza redibujado
+    }
+
+    private bool PuedeAgregar(Producto producto) => producto.Stock > 0;
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        CartService.AgregarProducto(producto);
+    }
+}

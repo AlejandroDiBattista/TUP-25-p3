@@ -1,0 +1,143 @@
+@using cliente.Models
+@using cliente.shared
+@using cliente.Services
+
+@page "/catalogo"
+@inject ApiService Api
+@inject CarritoService Carrito
+
+<h1 class="titulo-catalogo">Catálogo de Productos Apple</h1>
+
+<input type="text" value="@filtro" @oninput="FiltrarProductos" placeholder="Buscar productos..." class="input-busqueda" />
+
+@if (!string.IsNullOrEmpty(mensajeAlerta))
+{
+    <div class="alerta-exito">
+        @mensajeAlerta
+    </div>
+}
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (productosFiltrados.Count == 0)
+{
+    <p>No se encontraron productos para "<strong>@filtro</strong>".</p>
+}
+else
+{
+    <div class="grid-productos">
+        @foreach (var Producto in productosFiltrados)
+        {
+            <div class="card-producto">
+                <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" width="200"/>
+                <h3>@Producto.Nombre</h3>
+                <p>@Producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@Producto.Precio</p>
+                <p><strong>Stock:</strong> @Producto.Stock unidades</p>
+                <button @onclick="@(async () => await AgregarAlCarrito(Producto))"
+                        disabled="@(!PuedeAgregar(Producto))"
+                        class="boton-agregar">
+                    Agregar al carrito
+                </button>
+                @if (mensajeAlerta != null && mensajeAlerta.Contains(Producto.Nombre))
+                {
+                    <p class="mensaje-agregado">@mensajeAlerta</p>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<Producto> productos = new();
+    List<Producto> productosFiltrados = new();
+    string mensajeAlerta;
+    string filtro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var productosApi = await Api.ObtenerProductos();
+        productos = productosApi.Select(p => new Producto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            Precio = p.Precio,
+            Stock = p.Stock,
+            ImagenUrl = p.ImagenUrl
+        }).ToList();
+
+        productosFiltrados = productos.ToList(); // Mostrar todos al inicio
+
+        Carrito.CarritoActualizado += OnCarritoActualizado;
+    }
+
+    private async Task FiltrarProductos(ChangeEventArgs e)
+    {
+        filtro = e.Value?.ToString() ?? "";
+        productosFiltrados = string.IsNullOrWhiteSpace(filtro)
+            ? productos
+            : productos.Where(p =>
+                (!string.IsNullOrEmpty(p.Nombre) && p.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(p.Descripcion) && p.Descripcion.Contains(filtro, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task AgregarAlCarrito(Producto dto)
+    {
+        var producto = new Producto
+        {
+            Id = dto.Id,
+            Nombre = dto.Nombre,
+            Descripcion = dto.Descripcion,
+            Precio = dto.Precio,
+            Stock = dto.Stock,
+            ImagenUrl = dto.ImagenUrl
+        };
+
+        Carrito.AgregarProducto(producto);
+
+        var exito = await Api.RestarStockProducto(dto.Id);
+
+        if (exito)
+        {
+            var productoActual = productos.FirstOrDefault(p => p.Id == dto.Id);
+            if (productoActual != null && productoActual.Stock > 0)
+            {
+                productoActual.Stock--;
+            }
+
+            mensajeAlerta = $"{producto.Nombre} agregado al carrito ✅";
+        }
+        else
+        {
+            mensajeAlerta = $"❌ No se pudo actualizar el stock para {producto.Nombre}.";
+        }
+
+        StateHasChanged();
+        await Task.Delay(3000);
+        mensajeAlerta = null;
+        StateHasChanged();
+    }
+
+    bool PuedeAgregar(Producto p) => p.Stock > 0;
+
+    private void OnCarritoActualizado(int productoId)
+    {
+        var productoActual = productos.FirstOrDefault(p => p.Id == productoId);
+        if (productoActual != null)
+        {
+            productoActual.Stock++;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        Carrito.CarritoActualizado -= OnCarritoActualizado;
+    }
+}

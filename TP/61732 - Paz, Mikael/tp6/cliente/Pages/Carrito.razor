@@ -1,0 +1,137 @@
+@page "/carrito"
+@using cliente.Services
+@using cliente.Models
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject LocalStorageService LocalStorage
+@inject CarritoState CarritoState
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Carrito de compras</h2>
+        </div>
+    </div>
+    @if (carrito == null || carrito.Items.Count == 0)
+    {
+        <div class="alert alert-info">El carrito está vacío.</div>
+    }
+    else
+    {
+        <div class="row mb-3">
+            <div class="col-12">
+                <button class="btn btn-danger me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+                <button class="btn btn-success" @onclick="IrAConfirmacion">Confirmar compra</button>
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Importe</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in carrito.Items)
+                {
+                    var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                    <tr>
+                        <td>
+                            <img src="@producto?.ImagenUrl" alt="@producto?.Nombre" class="img-carrito me-2" />
+                            @producto?.Nombre
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary me-1" @onclick="() => CambiarCantidad(item, -1)">-</button>
+                            @item.Cantidad
+                            <button class="btn btn-sm btn-secondary ms-1" @onclick="() => CambiarCantidad(item, 1)">+</button>
+                        </td>
+                        <td>$@producto?.Precio</td>
+                        <td>$@(producto != null ? producto.Precio * item.Cantidad : 0)</td>
+                        <td><button class="btn btn-sm btn-danger" @onclick="() => QuitarProducto(item)">Eliminar</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="row">
+            <div class="col-12 text-end">
+                <h4>Total: $@TotalCarrito</h4>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private CarritoDto carrito;
+    private List<ProductoDto> productos = new();
+    private Guid carritoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+        await CargarProductos();
+        await ActualizarContadorCarrito();
+    }
+
+    private async Task ActualizarContadorCarrito()
+    {
+        CarritoState.Cantidad = carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
+    }
+
+    private async Task CargarCarrito()
+    {
+        // Obtener carritoId de localStorage
+        var idStr = await LocalStorage.GetItemAsync("carritoId");
+        if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+        {
+            var nuevo = await ApiService.CrearCarritoAsync();
+            carritoId = nuevo?.Id ?? Guid.NewGuid();
+            await LocalStorage.SetItemAsync("carritoId", carritoId.ToString());
+        }
+        carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await ApiService.ObtenerProductosAsync();
+    }
+
+    private async Task CambiarCantidad(ItemCarritoDto item, int delta)
+    {
+        var nuevoValor = item.Cantidad + delta;
+        if (nuevoValor < 1) return;
+        var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+        if (producto == null || nuevoValor > producto.Stock) return;
+        await ApiService.AgregarProductoAsync(carritoId, item.ProductoId, nuevoValor);
+        await CargarCarrito();
+        await ActualizarContadorCarrito();
+    }
+
+    private async Task QuitarProducto(ItemCarritoDto item)
+    {
+        await ApiService.QuitarProductoAsync(carritoId, item.ProductoId);
+        await CargarCarrito();
+        await ActualizarContadorCarrito();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarritoAsync(carritoId);
+        await CargarCarrito();
+        await ActualizarContadorCarrito();
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo($"/confirmacion/{carritoId}");
+    }
+
+    private decimal TotalCarrito =>
+        carrito?.Items?.Sum(i =>
+        {
+            var p = productos.FirstOrDefault(x => x.Id == i.ProductoId);
+            return (p?.Precio ?? 0) * i.Cantidad;
+        }) ?? 0;
+}

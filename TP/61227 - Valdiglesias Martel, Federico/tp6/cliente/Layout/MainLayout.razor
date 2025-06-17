@@ -1,4 +1,91 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@implements IDisposable
+@using cliente.Services
+@inject EstadoCarrito EstadoCarrito
+@inject NavigationManager Navigation
+
+<div class="container-fluid d-flex flex-column p-0 min-vh-100">
+
+    <header>
+        <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <img src="https://i.imgur.com/83BCc2k.png" alt="FreshCart Logo" style="height: 30px;">
+                </a>
+
+                @* --- Formulario de Búsqueda --- *@
+                <form class="d-flex w-50" @onsubmit="ManejarBusqueda">
+                    <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="terminoBusqueda" @bind:event="oninput">
+                    <button class="btn btn-outline-success" type="submit">Buscar</button>
+                </form>
+
+                <div class="d-flex align-items-center">
+                    <a href="#" class="text-reset me-3"><i class="bi bi-bell"></i></a>
+                    <a href="#" class="text-reset me-3"><i class="bi bi-person-circle"></i></a>
+                    <a href="#" class="text-reset me-3"><i class="bi bi-box-seam"></i></a>
+                    
+                    @* --- Contador del Carrito --- *@
+                    <a href="/carrito" class="btn btn-light position-relative">
+                        <i class="bi bi-cart3"></i>
+                        @if (EstadoCarrito.ItemsEnCarrito > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @EstadoCarrito.ItemsEnCarrito
+                            </span>
+                        }
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="navbar navbar-expand-lg navbar-light bg-white">
+            <div class="container">
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow-1">
+        @Body
+    </main>
+
+    <footer class="footer bg-dark text-white mt-auto py-2">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>Federico Valdiglesias &copy; 2025</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-white me-3">Terminos de servicios</a>
+                    <a href="#" class="text-white">Politicas de privacidad</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
 </div>
+
+@code {
+    private string terminoBusqueda = "";
+
+    protected override void OnInitialized()
+    {
+        EstadoCarrito.OnChange += StateHasChanged;
+    }
+
+    private void ManejarBusqueda()
+    {
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+        {
+            Navigation.NavigateTo($"/?q={terminoBusqueda}");
+        }
+    }
+    public void Dispose()
+    {
+        EstadoCarrito.OnChange -= StateHasChanged;
+    }
+}

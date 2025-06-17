@@ -1,0 +1,67 @@
+@* 
+    Componente de iconos SVG minimalistas usando Lucide Icons
+    Uso: <Icon Name="shopping-cart" Size="16" Class="custom-class" />
+*@
+
+<i data-lucide="@Name" 
+   class="lucide-icon @(Class ?? "")" 
+   style="@GetStyle()"
+   @attributes="AdditionalAttributes">
+</i>
+
+@code {
+    /// <summary>
+    /// Nombre del icono de Lucide (ej: "shopping-cart", "search", "x", etc.)
+    /// Ver todos los iconos en: https://lucide.dev/icons/
+    /// </summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>
+    /// Tamaño del icono en píxeles (por defecto 16px)
+    /// </summary>
+    [Parameter] public int Size { get; set; } = 16;
+
+    /// <summary>
+    /// Clases CSS adicionales
+    /// </summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// Color del icono (opcional)
+    /// </summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>
+    /// Atributos adicionales
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Inicializar los iconos de Lucide después del render
+            await Task.Delay(1); // Pequeño delay para asegurar que el DOM esté listo
+            await JSRuntime.InvokeVoidAsync("lucide.createIcons");
+        }
+    }
+
+    private string GetStyle()
+    {
+        var styles = new List<string>
+        {
+            $"width: {Size}px",
+            $"height: {Size}px"
+        };
+
+        if (!string.IsNullOrEmpty(Color))
+        {
+            styles.Add($"color: {Color}");
+        }
+
+        return string.Join("; ", styles);
+    }
+}
+
+@inject IJSRuntime JSRuntime

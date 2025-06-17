@@ -1,0 +1,63 @@
+﻿@page "/catalogo"
+@using Cliente.Modelo
+@using Cliente.Services
+@inject ProductoService ProductoService
+@inject CartService CartService
+
+<h3>Catálogo de Productos</h3>
+
+<input class="form-control mb-3" type="text" placeholder="Buscar producto..." @bind="busqueda" @bind:event="oninput" />
+
+@if (productos is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var producto in productosFiltrados)
+        {
+            <div class="col-4 mb-3">
+                <div class="card">
+                    <img src="@producto.ImagenUrl" class="card-img-top" style="height:200px;object-fit:cover;" alt="@producto.Nombre" />
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p>Precio: $@producto.Precio</p>
+                        <p>Stock: @producto.Stock</p>
+                        <input type="number" min="1" max="@producto.Stock" @bind="cantidades[producto.Id]" style="width:60px" />
+                        <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto.Id)">Agregar al carrito</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<Producto>? productos;
+    Dictionary<int, int> cantidades = new();
+    string busqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.ObtenerProductos();
+        if (productos != null)
+            foreach (var p in productos)
+                cantidades[p.Id] = 1;
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        int cantidad = cantidades.ContainsKey(productoId) ? cantidades[productoId] : 1;
+        await CartService.AgregarProducto(productoId, cantidad);
+    }
+
+    IEnumerable<Producto> productosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? productos ?? Enumerable.Empty<Producto>()
+            : productos?.Where(p =>
+                (p.Nombre?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Descripcion?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false)
+            ) ?? Enumerable.Empty<Producto>();
+}

@@ -1,4 +1,53 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+﻿@using cliente.Services
+@inherits LayoutComponentBase
+@inject NavigationManager NavManager
+@inject CarritoService micarrito
+
+<div class="main-layout">
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">
+                
+                <span class="store-name">Apple Store</span>
+            </a>
+
+        <a class="btn btn-dark btn-lg mt-2" href="/catalogo">📱 Ver Catálogo</a>
+            <a href="/carrito" class="carrito-icono">
+                🛒 (@CantidadCarrito)
+            </a>
+        </div>
+    </header>
+        
+    <main class="contenido">
+        @Body
+         @if (IsHomePage)
+        {
+            <div class="home-content">
+                <h3> Apple Store Tucumán</h3>
+                <h4>Descubre los últimos productos de Apple y disfruta de una experiencia única de compra.</h4>
+            </div>
+        }
+        @if (IsHomePage)
+    {
+        <div class="main-layout @(IsHomePage ? "home-background" : "")">
+            <img src="/logoaplle.jpg" alt="Apple Store Tucumán" class="img-fluid rounded" />
+        </div>
+    }
+        
+    </main>
+      
+    <footer class="footer">
+        <p>💼 Emprender con tecnología es nuestro motor, y verte feliz con tu compra es nuestro objetivo.</p>
+        <p><strong>Ubicación:</strong> San Miguel de Tucumán , Argentina</p>
+        <p>&copy; Apple Store</p>
+        
+    </footer>
 </div>
+
+@code {
+    private string busqueda = string.Empty;
+    private int CantidadCarrito => micarrito.Items.Count; 
+    private bool IsHomePage => NavManager.Uri.EndsWith("/") || NavManager.Uri.EndsWith("/home");
+}
+
+

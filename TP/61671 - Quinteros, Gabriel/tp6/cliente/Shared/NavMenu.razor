@@ -1,0 +1,70 @@
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/logorueda.jpg" alt="Logo" style="height:40px; margin-right:10px;" />
+            Tienda Online
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">Catálogo</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="/carrito">
+                        Carrito
+                        @if (cantidadCarrito > 0)
+                        {
+                            <span class="badge bg-primary ms-1">@cantidadCarrito</span>
+                        }
+                    </NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    int cantidadCarrito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCantidadCarrito();
+    }
+
+    async Task CargarCantidadCarrito()
+    {
+        var carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!string.IsNullOrEmpty(carritoId))
+        {
+            try
+            {
+                var response = await Http.GetAsync($"carritos/{carritoId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var items = await response.Content.ReadFromJsonAsync<List<cliente.Modelos.ItemCarrito>>();
+                    cantidadCarrito = items?.Sum(i => i.Cantidad) ?? 0;
+                }
+                else
+                {
+                    cantidadCarrito = 0;
+                }
+            }
+            catch
+            {
+                cantidadCarrito = 0;
+            }
+        }
+        else
+        {
+            cantidadCarrito = 0;
+        }
+        StateHasChanged();
+    }
+}

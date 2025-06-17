@@ -1,0 +1,96 @@
+@page "/catalogo"
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
+@using cliente.Models
+
+<div class="container mt-5 bg-dark text-white p-4 rounded">
+    <h1 class="mb-4 text-center text-info fw-bold">Catálogo de Productos</h1>
+
+    @if (mostrarMensaje)
+    {
+        <div class="alert alert-success alert-dismissible fade show bg-success text-white border-0" role="alert">
+            @mensaje
+            <button type="button" class="btn-close btn-close-white" @onclick="() => mostrarMensaje = false" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="text-end mb-4">
+        <a href="/carrito" class="btn btn-outline-light position-relative">
+            🛒 Ver carrito
+            @if (CarritoService.CantidadTotal > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @CarritoService.CantidadTotal
+                </span>
+            }
+        </a>
+    </div>
+
+    @if (productos == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Cargando productos...</span>
+            </div>
+        </div>
+    }
+    else if (productos.Count == 0)
+    {
+        <p class="text-warning text-center">No se encontraron productos.</p>
+    }
+    else
+    {
+        <input type="text" class="form-control mb-4 bg-secondary text-white border-0" placeholder="🔍 Buscar producto..." @bind="terminoBusqueda" />
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var producto in productosFiltrados)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm bg-secondary text-white">
+                        <img src="@producto.Imagen" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text text-light">@producto.Descripcion</p>
+                            <p><strong>Precio:</strong> $@producto.Precio</p>
+                            <p><strong>Stock:</strong> @producto.Cantidad</p>
+                            <button class="btn btn-outline-light mt-auto" @onclick="() => AgregarAlCarrito(producto.Id)">
+                                ➕ Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string terminoBusqueda = "";
+
+    private IEnumerable<Producto> productosFiltrados => productos
+        ?.Where(p => string.IsNullOrWhiteSpace(terminoBusqueda) || p.Nombre.Contains(terminoBusqueda, StringComparison.OrdinalIgnoreCase))
+        ?? Enumerable.Empty<Producto>();
+    private List<Producto> productos;
+
+    private string mensaje = "";
+    private bool mostrarMensaje = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.ObtenerProductosAsync();
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            CarritoService.AgregarProducto(producto);
+            mensaje = $"✅ {producto.Nombre} fue agregado al carrito.";
+            mostrarMensaje = true;
+
+            await Task.Delay(3000);
+            mostrarMensaje = false;
+        }
+    }
+}

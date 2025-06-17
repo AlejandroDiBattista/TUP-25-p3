@@ -69,7 +69,7 @@ public class Alumno
     public string Carpeta => $"{Legajo} - {NombreCompleto}";
     public int CantidadPresentados => Practicos.Count(p => p == EstadoPractico.Aprobado);
     public bool Abandono => Asistencias < 4 && CantidadPresentados == 0;
-
+    public bool Continuan => Asistencias >= 15 && CantidadPresentados >= 3;
 
     public EstadoPractico ObtenerPractico(int practico)
     {

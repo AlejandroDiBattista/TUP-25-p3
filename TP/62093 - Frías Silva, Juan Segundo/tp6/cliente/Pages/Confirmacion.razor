@@ -1,0 +1,101 @@
+@page "/confirmacion"
+@using cliente.Models
+@inject CartService CartService
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h2>Confirmar Compra</h2>
+
+@if (CartService.Items.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="cliente.Apellido" />
+        </div>
+        <div class="mb-3">
+            <label>Email:</label>
+            <InputText class="form-control" @bind-Value="cliente.Email" />
+        </div>
+
+        <h4>Resumen de Compra</h4>
+        <ul class="list-group mb-3">
+            @foreach (var item in CartService.Items)
+            {
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>@item.Producto.Nombre (x@item.Cantidad)</span>
+                    <span>$@(item.Producto.Precio * item.Cantidad)</span>
+                </li>
+            }
+        </ul>
+
+        <p><strong>Total:</strong> $@Total()</p>
+
+        <button class="btn btn-success">Confirmar</button>
+    </EditForm>
+}
+
+@code {
+    private ClienteDatos cliente = new();
+
+    private async Task ConfirmarCompra()
+    {
+        var compra = new CompraRequest
+        {
+            NombreCliente = cliente.Nombre,
+            ApellidoCliente = cliente.Apellido,
+            EmailCliente = cliente.Email,
+            Items = CartService.Items.Select(i => new ItemCompraRequest
+            {
+                ProductoId = i.Producto.Id,
+                Cantidad = i.Cantidad
+            }).ToList()
+        };
+
+        var response = await Http.PostAsJsonAsync("/compras", compra);
+        if (response.IsSuccessStatusCode)
+        {
+            CartService.Items.Clear();
+            Nav.NavigateTo("/");
+        }
+        else
+        {
+            Console.WriteLine("Error al confirmar compra.");
+        }
+    }
+
+    private decimal Total() =>
+        CartService.Items.Sum(i => i.Producto.Precio * i.Cantidad);
+
+    class ClienteDatos
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+
+    class CompraRequest
+    {
+        public string NombreCliente { get; set; } = "";
+        public string ApellidoCliente { get; set; } = "";
+        public string EmailCliente { get; set; } = "";
+        public List<ItemCompraRequest> Items { get; set; } = new();
+    }
+
+    class ItemCompraRequest
+    {
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+    }
+}

@@ -1,0 +1,124 @@
+@page "/confirmacion"
+
+@using System.ComponentModel.DataAnnotations
+@using cliente.Modelos
+@using cliente.Services
+@inject ApiService Api
+@inject CarritoStateService CarritoState
+@inject NavigationManager Navigation
+
+<PageTitle>Confirmar Compra</PageTitle>
+
+<h3><i class="bi bi-check2-circle me-2"></i>Confirmación de Compra</h3>
+
+@if (resumenItems == null)
+{
+    <p><em>Cargando resumen...</em></p>
+}
+else
+{
+    <div class="row g-5">
+        <div class="col-md-5 col-lg-4 order-md-last">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-primary">Resumen del Pedido</span>
+                <span class="badge bg-primary rounded-pill">@resumenItems.Sum(i => i.Cantidad)</span>
+            </h4>
+            <ul class="list-group mb-3">
+                @foreach(var item in resumenItems)
+                {
+                    <li class="list-group-item d-flex justify-content-between lh-sm">
+                        <div>
+                            <h6 class="my-0">@item.Producto.Nombre</h6>
+                            <small class="text-muted">Cantidad: @item.Cantidad</small>
+                        </div>
+                        <span class="text-muted">@((item.Cantidad * item.PrecioUnitario).ToString("C"))</span>
+                    </li>
+                }
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Total (ARS)</span>
+                    <strong>@resumenTotal.ToString("C")</strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-7 col-lg-8">
+            <h4 class="mb-3">Datos del Cliente</h4>
+            <EditForm Model="cliente" OnValidSubmit="RealizarCompra">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <InputText id="nombre" class="form-control" @bind-Value="cliente.NombreCliente" />
+                        <div class="text-danger"><ValidationMessage For="@(() => cliente.NombreCliente)" /></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="apellido" class="form-label">Apellido</label>
+                        <InputText id="apellido" class="form-control" @bind-Value="cliente.ApellidoCliente" />
+                        <div class="text-danger"><ValidationMessage For="@(() => cliente.ApellidoCliente)" /></div>
+                    </div>
+                    <div class="col-12">
+                        <label for="email" class="form-label">Email</label>
+                        <InputText type="email" id="email" class="form-control" @bind-Value="cliente.EmailCliente" />
+                        <div class="text-danger"><ValidationMessage For="@(() => cliente.EmailCliente)" /></div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <button type="submit" class="w-100 btn btn-primary btn-lg" disabled="@estaProcesando">
+                    @if (estaProcesando) {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span>Procesando...</span>
+                    } else {
+                        <span>Confirmar y Finalizar Compra</span>
+                    }
+                </button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    private ClienteForm cliente = new();
+    private List<ItemCompra>? resumenItems;
+    private decimal resumenTotal;
+    private bool estaProcesando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CarritoState.CarritoId == null)
+        {
+            Navigation.NavigateTo("/"); 
+            return;
+        }
+        resumenItems = await Api.GetCarritoAsync(CarritoState.CarritoId.Value);
+        resumenTotal = resumenItems.Sum(i => i.Cantidad * i.Producto.Precio);
+    }
+
+    private async Task RealizarCompra()
+    {
+        estaProcesando = true;
+        var datosCompra = new Compra 
+        {
+            NombreCliente = cliente.NombreCliente,
+            ApellidoCliente = cliente.ApellidoCliente,
+            EmailCliente = cliente.EmailCliente
+        };
+
+        await Api.ConfirmarCompraAsync(CarritoState.CarritoId.Value, datosCompra);
+        
+        CarritoState.LimpiarCarrito();
+        Navigation.NavigateTo("/compra-exitosa");
+    }
+
+  
+    public class ClienteForm
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        public string NombreCliente { get; set; }
+
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        public string ApellidoCliente { get; set; }
+
+        [Required(ErrorMessage = "El email es obligatorio.")]
+        [EmailAddress(ErrorMessage = "El formato del email no es válido.")]
+        public string EmailCliente { get; set; }
+    }
+}

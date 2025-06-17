@@ -1,0 +1,198 @@
+@page "/carrito"
+@using cliente.Services
+@inject CarritoService CarritoSrv
+@inject NavigationManager Nav
+
+<div class="carrito-container">
+    <div class="carrito-main">
+        <h2>🛒 Carrito de compras</h2>
+        @if (CarritoSrv.Items.Count == 0)
+        {
+            <p class="carrito-vacio">Tu carrito está vacío.</p>
+        }
+        else
+        {
+            <table class="carrito-tabla">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CarritoSrv.Items)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" class="carrito-img" />
+                            </td>
+                            <td>@item.Producto.Nombre</td>
+                            <td>$@item.Precio</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@(item.Precio * item.Cantidad)</td>
+                            <td>
+                                <button class="btn-quitar" @onclick="() => Quitar(item.ProductoId)">Quitar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    <div class="carrito-resumen">
+        <div class="resumen-box">
+            <h3>Total: $@CarritoSrv.TotalImporte()</h3>
+            <button class="btn-confirmar" @onclick="ConfirmarCompra" disabled="@(CarritoSrv.Items.Count == 0)">Confirmar compra</button>
+            <button class="btn-vaciar" @onclick="VaciarCarrito" disabled="@(CarritoSrv.Items.Count == 0)">Vaciar carrito</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CarritoSrv.ActualizarItems();
+    }
+
+    async Task Quitar(int productoId)
+    {
+        await CarritoSrv.Quitar(productoId);
+        StateHasChanged();
+    }
+    async Task VaciarCarrito()
+    {
+        await CarritoSrv.Vaciar();
+        StateHasChanged();
+    }
+    void ConfirmarCompra() => Nav.NavigateTo("/confirmar");
+    async Task AgregarAlCarrito(Producto p)
+    {
+        await CarritoSrv.Agregar(p.Id, 1);
+        StateHasChanged();
+    }
+}
+
+<style>
+.carrito-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    padding: 36px 40px;
+    background: #f8fafc;
+    min-height: 80vh;
+}
+.carrito-main {
+    flex: 2 1 600px;
+    min-width: 340px;
+}
+.carrito-resumen {
+    flex: 1 1 260px;
+    min-width: 260px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+.resumen-box {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(25,118,210,0.07);
+    padding: 28px 22px;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: stretch;
+    border: 1.5px solid #eee;
+}
+.carrito-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(25,118,210,0.07);
+}
+.carrito-tabla th, .carrito-tabla td {
+    padding: 12px 10px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+.carrito-tabla th {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+}
+.carrito-tabla tr:last-child td {
+    border-bottom: none;
+}
+.carrito-img {
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #f3f3f3;
+}
+.btn-quitar {
+    background: #e53935;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-quitar:hover {
+    background: #b71c1c;
+}
+.btn-confirmar {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-weight: 700;
+    font-size: 1.08rem;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background 0.2s;
+}
+.btn-confirmar:disabled {
+    background: #bdbdbd;
+    cursor: not-allowed;
+}
+.btn-confirmar:hover:enabled {
+    background: #1251a3;
+}
+.btn-vaciar {
+    background: #fff;
+    color: #1976d2;
+    border: 2px solid #1976d2;
+    border-radius: 6px;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-vaciar:disabled {
+    color: #bdbdbd;
+    border-color: #bdbdbd;
+    cursor: not-allowed;
+}
+.btn-vaciar:hover:enabled {
+    background: #1976d2;
+    color: #fff;
+}
+.carrito-vacio {
+    color: #888;
+    font-size: 1.1rem;
+    margin: 32px 0;
+}
+
+</style>
