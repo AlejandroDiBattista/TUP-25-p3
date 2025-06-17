@@ -86,6 +86,12 @@ app.MapPost("/api/carrito", async (AppDbContext db, Carrito item) =>
     return Results.Created($"/api/carrito/{item.Id}", item);
 });
 
+app.MapPost("/api/ordenes", async (Orden orden, AppDbContext db) =>
+{
+    db.Ordenes.Add(orden);
+    await db.SaveChangesAsync();
+    return Results.Ok(new { mensaje = "Orden confirmada", orden.Id });
+});
 
 
 app.Run();

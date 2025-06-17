@@ -1,40 +1,113 @@
 @page "/carrito"
+@using cliente.Models
+@using cliente.Services
 @inject CarritoService CarritoService
-@using Shared
-@using cliente.Models;
 
-<h2>🛒 Mi Carrito</h2>
+@inject NavigationManager Navigation
+@inject ApiService ApiService
 
-@if (CarritoService.ObtenerCarrito().Any())
+<h2>Carrito de Compras</h2>
+
+@if (CarritoService.ObtenerCarrito().Count == 0)
 {
-    @foreach (var producto in CarritoService.ObtenerCarrito())
-    {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@producto.Nombre</h5>
-                <p class="card-text">@producto.Descripcion</p>
-                <p class="fw-bold">$@producto.Precio</p>
-                <p class="text-muted">Stock disponible: @producto.Stock</p>
-                <button class="btn btn-danger" @onclick="() => EliminarProducto(producto)">❌ Quitar</button>
-            </div>
-        </div>
-    }
+    <p>El carrito está vacío.</p>
 }
 else
 {
-    <p>Tu carrito está vacío.</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.ObtenerCarrito())
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Cantidad * item.Producto.Precio)</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => DisminuirCantidad(item.Producto.Id)">-</button>
+                        <button class="btn btn-sm btn-secondary mx-1" @onclick="() => AumentarCantidad(item.Producto.Id)">+</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarDelCarrito(item.Producto.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Total</strong></td>
+                <td colspan="2"><strong>$@CarritoService.CalcularTotal()</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="mt-3">
+        <button class="btn btn-secondary me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo("/confirmacion"))">Confirmar compra</button>
+    </div>
 }
 
-<button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar Carrito</button>
+
 
 @code {
-    void EliminarProducto(Producto producto)
-    {
-        CarritoService.EliminarDelCarrito(producto);
-    }
-
-    void VaciarCarrito()
+    private void VaciarCarrito()
     {
         CarritoService.VaciarCarrito();
     }
+    private string mensaje = string.Empty;
+
+    private async Task ProcesarCompra()
+    {
+        var carrito = CarritoService.ObtenerCarrito();
+
+        var orden = new Orden
+        {
+            Items = carrito.Select(p => new ItemOrden
+            {
+                ProductoId = p.Id,
+                NombreProducto = p.Nombre,
+                Precio = p.Precio,
+                Cantidad = p.Cantidad
+            }).ToList(),
+            Total = carrito.Sum(p => p.Precio * p.Cantidad)
+        };
+
+        var exito = await ApiService.ConfirmarCompraAsync(orden);
+
+        if (exito)
+        {
+            mensaje = "Compra confirmada con éxito.";
+            CarritoService.VaciarCarrito();
+        }
+        else
+        {
+            mensaje = "Ocurrió un error al confirmar la compra.";
+        }
+    }
+
+    private void AumentarCantidad(int productoId)
+    {
+    CarritoService.AumentarCantidad(productoId);
+    StateHasChanged(); 
+    }
+
+    private void DisminuirCantidad(int productoId)
+    {
+        CarritoService.DisminuirCantidad(productoId);
+        StateHasChanged();
+    }
+
+    private void EliminarDelCarrito(int productoId)
+    {
+        CarritoService.EliminarDelCarrito(productoId);
+        StateHasChanged();
+    }
+
 }

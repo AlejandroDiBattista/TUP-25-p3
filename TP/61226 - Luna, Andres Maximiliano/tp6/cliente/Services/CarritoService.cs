@@ -1,24 +1,60 @@
-using System.Collections.Generic;
 using cliente.Models;
+
+namespace cliente.Services;
 
 public class CarritoService
 {
-    private List<Producto> _items = new();
+    private List<ItemCarrito> _items = new();
 
-    public IReadOnlyList<Producto> ObtenerCarrito() => _items;
+    public List<ItemCarrito> ObtenerCarrito() => _items;
 
     public void AgregarAlCarrito(Producto producto)
     {
-        _items.Add(producto);
+        var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+
+        if (item != null)
+        {
+            if (item.Cantidad < producto.Stock)
+                item.Cantidad++;
+        }
+        else
+        {
+            _items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
+        }
     }
 
-    public void EliminarDelCarrito(Producto producto)
+    public void AumentarCantidad(int productoId)
     {
-        _items.Remove(producto);
+        var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null && item.Cantidad < item.Producto.Stock)
+            item.Cantidad++;
     }
 
-    public void VaciarCarrito()
+    public void DisminuirCantidad(int productoId)
     {
-        _items.Clear();
+        var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+        {
+            item.Cantidad--;
+            if (item.Cantidad <= 0)
+                _items.Remove(item);
+        }
     }
+
+    public void EliminarDelCarrito(int productoId)
+    {
+        var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+            _items.Remove(item);
+    }
+
+    public void VaciarCarrito() => _items.Clear();
+
+    public decimal CalcularTotal() =>
+        _items.Sum(i => i.Cantidad * i.Producto.Precio);
+
+    public int ObtenerCantidadTotalEnCarrito()
+    {
+        return _items.Sum(p => p.Cantidad);
+    } 
 }
