@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Servidor.Models; // Asegúrate de usar el namespace correcto para TiendaContext
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -8,6 +11,10 @@ builder.Services.AddCors(options => {
               .AllowAnyMethod();
     });
 });
+
+// Configuración de Entity Framework Core con SQLite
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
