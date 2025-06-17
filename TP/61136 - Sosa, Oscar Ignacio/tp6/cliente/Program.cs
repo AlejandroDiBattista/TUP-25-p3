@@ -8,7 +8,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Registro del servicio del carrito
 builder.Services.AddScoped<CartService>();
-
-// ...puedes registrar otros servicios aquí...
+builder.Services.AddScoped<ApiService>();
 
 await builder.Build().RunAsync();
