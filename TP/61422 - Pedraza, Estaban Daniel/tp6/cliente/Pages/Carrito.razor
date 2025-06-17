@@ -34,7 +34,7 @@ else
                     <td>@item.Producto?.Nombre</td>
                     <td>$@item.PrecioUnitario</td>
                     <td>
-                        <button class="btn btn-secondary btn-sm" @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad == 1)">-</button>
+                        <button class="btn btn-secondary btn-sm" @onclick="() => DisminuirCantidad(item)">-</button>
                         @item.Cantidad
                         <button class="btn btn-secondary btn-sm" @onclick="() => CambiarCantidad(item.ProductoId, 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
                     </td>
@@ -62,6 +62,21 @@ else
         {
             carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
         }
+    }
+
+    private async Task DisminuirCantidad(ItemCarrito item)
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        if (item.Cantidad > 1)
+        {
+            await CarritoService.AgregarProductoAsync(carritoId, item.ProductoId, -1);
+        }
+        else
+        {
+            await CarritoService.EliminarProductoAsync(carritoId, item.ProductoId);
+        }
+        carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        CarritoStateService.NotificarCambio();
     }
 
     private async Task CambiarCantidad(int productoId, int delta)
