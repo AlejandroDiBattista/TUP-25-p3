@@ -1,0 +1,37 @@
+body {
+    background-color: #000000;
+    color: white;
+}
+
+.product-image {
+    height: 200px;
+    object-fit: cover;
+}
+
+.product-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    border: 1px solid #333;
+    color: white;
+}
+
+.btn-add-cart {
+    background-color: crimson;
+    color: white;
+    border-radius: 20px;
+    font-weight: bold;
+    border: none;
+}
+
+.btn-add-cart:hover {
+    background-color: darkred;
+}
+
+.btn-out-stock {
+    background-color: #555;
+    color: #ccc;
+    border-radius: 20px;
+    font-weight: bold;
+    border: none;
+    cursor: not-allowed;
+}
