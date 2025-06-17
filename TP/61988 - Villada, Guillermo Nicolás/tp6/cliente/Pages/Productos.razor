@@ -48,9 +48,6 @@
                                 <button class="btn btn-primary btn-sm w-100 mb-1" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@((producto.Stock < 1))">
                                     Agregar al carrito
                                 </button>
-                                <button class="btn btn-outline-info btn-sm w-100" @onclick="() => MostrarDialogoStock(producto.Id)">
-                                    Agregar stock
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -58,50 +55,12 @@
             }
         </div>
     }
-
-    @if (mostrarDialogoStock)
-    {
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Agregar stock</h5>
-                        <button type="button" class="btn-close" @onclick="CerrarDialogoStock"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-2">
-                            <label>Palabra clave:</label>
-                            <input type="password" class="form-control" @bind="claveStock" />
-                        </div>
-                        <div class="mb-2">
-                            <label>Cantidad a agregar:</label>
-                            <input type="number" class="form-control" @bind="cantidadStock" min="1" />
-                        </div>
-                        @if (!string.IsNullOrEmpty(errorStock))
-                        {
-                            <div class="alert alert-danger">@errorStock</div>
-                        }
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" @onclick="CerrarDialogoStock">Cancelar</button>
-                        <button class="btn btn-success" @onclick="ConfirmarAgregarStock">Agregar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-backdrop fade show"></div>
-    }
 </div>
 
 @code {
     List<Producto>? productos;
     string busqueda = "";
     string mensaje = "";
-    string errorStock = "";
-    bool mostrarDialogoStock = false;
-    int productoIdStock = 0;
-    int cantidadStock = 1;
-    string claveStock = "";
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "q")]
@@ -149,39 +108,5 @@
         StateHasChanged();
 
         Nav.NavigateTo(Nav.Uri, forceLoad: true);
-    }
-
-    private void MostrarDialogoStock(int productoId)
-    {
-        productoIdStock = productoId;
-        cantidadStock = 1;
-        claveStock = "";
-        errorStock = "";
-        mostrarDialogoStock = true;
-    }
-
-    private void CerrarDialogoStock()
-    {
-        mostrarDialogoStock = false;
-        errorStock = "";
-    }
-
-    private async Task ConfirmarAgregarStock()
-    {
-        if (claveStock != "jefedelprograma")
-        {
-            errorStock = "Palabra clave incorrecta.";
-            return;
-        }
-        if (cantidadStock < 1)
-        {
-            errorStock = "La cantidad debe ser mayor a 0.";
-            return;
-        }
-        await ApiService.AgregarStockAsync(productoIdStock, cantidadStock);
-        mostrarDialogoStock = false;
-        errorStock = "";
-        productos = await ApiService.GetProductosAsync(busqueda);
-        StateHasChanged();
     }
 }
