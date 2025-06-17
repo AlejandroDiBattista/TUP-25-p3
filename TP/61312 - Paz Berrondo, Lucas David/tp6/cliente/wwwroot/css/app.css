@@ -176,6 +176,9 @@ body {
   padding: 2rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .page-title {
@@ -719,10 +722,14 @@ body {
     margin-left: 0;
     padding: 0.5rem;
   }
-
   .content-header {
     padding: 1rem;
     text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .page-title {
@@ -1325,4 +1332,14 @@ body {
     transform: translateZ(0);
     will-change: transform;
   }
+}
+
+/* Contenedor principal con espaciado para header sticky */
+.container-fluid {
+  padding-top: 0;
+  transition: var(--transition);
+}
+
+/* JavaScript adicional para efectos de header sticky */
+.content-header {  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
