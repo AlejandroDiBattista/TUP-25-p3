@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using cliente.Services
 @using cliente.Models
+@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @inject ApiService ApiService
 @inject CarritoService CarritoService
  
@@ -8,57 +10,54 @@
 <PageTitle>Productos</PageTitle>
 
 
-<h2>Productos</h2>
 
-@if (!string.IsNullOrWhiteSpace(error))
-{
-    <div class="alert alert-danger">
-        Error : @error
+<header>
+    <h2>Productos</h2>
+<div class="contenedor-principal">
+    <div class="header-barra">
+        <input type="text" placeholder="Buscar productos..." @bind="busqueda" class="form-control" style="max-width: 300px;" />
+        <button class="btn btn-primary" @onclick="BuscarProductos">Buscar</button>
+        <button class="btn btn-light" @onclick="IrAlCarrito">
+            🛒 Total en carrito: @CarritoService.ObtenerCantidadTotalEnCarrito() productos
+        </button>
     </div>
-}
-
-<div class="input-group mb-3">
-    <input class="form-control" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
-    <button class="btn btn-outline-secondary" type="button" @onclick="BuscarProductos">
-        Buscar
-    </button>
 </div>
+</header>
+
+<body>
+<div class="productos-grid">
+    @foreach (var producto in productosFiltrados)
+    {
+        <div class="producto-card">
+            <strong>@producto.Nombre</strong>
+            <p>Precio: $@producto.Precio</p>
+            <p>Descripción: @producto.Descripcion</p>
+            <p>Stock: @producto.Stock</p>
 
 
-@if (cargando)
-{
-    <p>Cargando productos...</p>
-}
-else if (productosFiltrados.Count == 0)
-{
-    <p>No se encontraron productos.</p>
-}
-else
-{
-    <div class="row">
-        @foreach (var producto in productosFiltrados)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" />
-                    <div class="card-body">
-                        <h5 class="card-title">@producto.Nombre</h5>
-                        <p class="card-text">@producto.Descripcion</p>
-                        <p class="card-text text-muted">Stock disponible: @producto.Stock</p>
-                        <p class="card-text fw-bold">$@producto.Precio</p>
-                        <button class="btn btn-primary" @onclick="() => AgregarProducto(producto)">Agregar al carrito</button>
-                    </div>
-                </div>
+            
+            <img src="@producto.ImagenUrl" alt="imagen de @producto.Nombre" style="max-width: 100%; height: auto;" />
+            
+
+            <div class="controles-cantidad">
+                <button @onclick="() => DisminuirCantidad(producto)">-</button>
+                <span>@producto.Cantidad</span>
+                <button @onclick="() => AumentarCantidad(producto)">+</button>
             </div>
-        }
-    </div>
-}
+
+            <button class="btn btn-success mt-2" @onclick="() => AgregarProducto(producto)">
+            Agregar al carrito
+            </button>
+        </div>
+    }
+</div>
+</body>
 
 @code {
     
     private List<Producto> productos = new(); 
     private List<Producto> productosFiltrados = new();
-    private string busqueda = string.Empty;
+    private string busqueda = "";
     private string error;
     private bool cargando = false;
 
@@ -80,10 +79,29 @@ else
         }
     }
  
+     void AumentarCantidad(Producto producto)
+    {
+        producto.Cantidad++;
+    }
+
+        void DisminuirCantidad(Producto producto)
+    {
+        if (producto.Cantidad > 0)
+            producto.Cantidad--;
+    }
+
+     void IrAlCarrito()
+    {
+        NavigationManager.NavigateTo("/carrito");
+    }
 
     void AgregarProducto(Producto producto)
     {
-        CarritoService.AgregarAlCarrito(producto);
+        for (int i = 0; i < producto.Cantidad; i++)
+        {
+            CarritoService.AgregarAlCarrito(producto);
+        }
+        producto.Cantidad = 0;
     }
 
     private void BuscarProductos()
@@ -93,4 +111,9 @@ else
             .ToList();
     }
 
+    private void CompraYRedirigir()
+    {
+        CarritoService.VaciarCarrito();
+        Navigation.NavigateTo("/", true);
+    }
 }

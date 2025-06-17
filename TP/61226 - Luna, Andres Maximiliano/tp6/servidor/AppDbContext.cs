@@ -28,5 +28,10 @@ namespace servidor
                 .WithMany(p => p.ItemsCompra)
                 .HasForeignKey(ic => ic.ProductoId);
         }
+
+
+        public DbSet<Orden> Ordenes { get; set; }
+        public DbSet<ItemOrden> ItemsOrden { get; set; }
+
     }
 }
