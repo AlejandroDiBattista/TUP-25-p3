@@ -1,4 +1,5 @@
 @page "/confirmar"
+@using Microsoft.AspNetCore.Components.Forms
 @inject TiendaService Tienda
 @inject NavigationManager Nav
 
@@ -26,6 +27,11 @@
                     <InputText class="form-control" @bind-Value="cliente.email" />
                 </div>
 
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger text-center">@error</div>
+                }
+
                 <p class="text-center"><strong>Total a pagar: $@Tienda.CalcularTotal()</strong></p>
 
                 <div class="d-flex justify-content-center">
@@ -38,10 +44,18 @@
 
 @code {
     DatosCliente cliente = new();
+    string error;
 
     async Task Confirmar()
     {
+    if (string.IsNullOrWhiteSpace(cliente.email) || !System.Text.RegularExpressions.Regex.IsMatch(cliente.email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        {
+            error = "El email no es válido";
+            return;
+        }
+        error = null;
         await Tienda.ConfirmarCompra(cliente);
+        await Tienda.VaciarCarrito();
         Nav.NavigateTo("/");
     }
 }

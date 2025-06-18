@@ -7,43 +7,55 @@
 
     @if (Tienda.Carrito == null || !Tienda.Carrito.Any())
     {
-        <p class="text-center">El carrito está vacío.</p>
+        <div class="alert alert-info text-center">El carrito está vacío.</div>
     }
     else
     {
         <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Precio</th>
-                            <th>Cantidad</th>
-                            <th>Subtotal</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Tienda.Carrito)
-                        {
-                            <tr>
-                                <td>@item.producto.Titulo</td>
-                                <td>$@(item.producto?.Valor ?? 0)</td>
-                                <td>@item.Cantidad</td>
-                                <td>$@((item.producto?.Valor ?? 0) * item.Cantidad)</td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger" @onclick="@(() => Quitar(item.producto?.ProductoId ?? 0))">Quitar</button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-                <div class="text-end mb-3">
-                    <strong>Total: $@Tienda.CalcularTotal()</strong>
-                </div>
-                <div class="d-flex justify-content-center gap-3 mt-4">
-                    <button class="btn btn-secondary px-4" @onclick="Vaciar">Cancelar</button>
-                    <button class="btn btn-primary px-4" @onclick="ConfirmarCompra">Confirmar</button>
+            <div class="col-lg-8">
+        <table class="table table-dark table-striped align-middle text-center">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th style="width: 180px;">Cantidad</th>
+                    <th>Total</th>
+                    <th></th> <!-- Columna para el botón quitar -->
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Tienda.Carrito)
+                {
+                    <tr>
+                        <td class="align-middle">@item.producto.Titulo</td>
+                        <td class="align-middle">$@item.producto.Valor</td>
+                        <td class="align-middle">
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <button class="btn btn-sm btn-secondary"
+                                        @onclick="() => Quitar(item.producto.ProductoId)"
+                                        disabled="@(item.Cantidad <= 1)">-</button>
+                                <span class="mx-2">@item.Cantidad</span>
+                                <button class="btn btn-sm btn-secondary"
+                                        @onclick="() => Agregar(item.producto.ProductoId)"
+                                        disabled="@(item.producto.CantidadDisponible == 0)">+</button>
+                            </div>
+                        </td>
+                        <td class="align-middle">$@(item.producto.Valor * item.Cantidad)</td>
+                        <td class="align-middle">
+                            <button class="btn btn-sm btn-danger"
+                                    title="Quitar producto"
+                                    @onclick="() => Quitar(item.producto.ProductoId)">
+                                <i class="bi bi-trash"></i> 
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <button class="btn btn-outline-danger px-4" @onclick="Vaciar">Cancelar</button>
+                    <h4 class="mb-0">Total: $@Tienda.CalcularTotal()</h4>
+                    <button class="btn btn-success px-4" @onclick="ConfirmarCompra">Confirmar</button>
                 </div>
             </div>
         </div>
@@ -70,5 +82,10 @@
     {
         Nav.NavigateTo("/confirmar");
         await Task.CompletedTask;
+    }
+    async Task Agregar(int productoId)
+    {
+        await Tienda.AgregarAlCarrito(productoId);
+        StateHasChanged();
     }
 }

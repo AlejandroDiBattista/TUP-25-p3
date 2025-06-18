@@ -10,8 +10,17 @@
             <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" @bind="busqueda" />
             <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
-        <a class="btn btn-primary ms-3" href="/carrito">
-            🛒 Carrito (@Tienda.CantidadTotal())
+        @{
+            int totalProductos = Tienda.Carrito?.Sum(item => item.Cantidad) ?? 0;
+        }
+        <a class="btn position-relative ms-3 me-2" style="color: rgb(255, 255, 255);" href="/carrito">
+            <i class="bi bi-cart" style="font-size: 1rem;"></i>
+            @if (Tienda.Carrito?.Count > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-dark">
+                    @Tienda.Carrito.Count
+                </span>
+            }
         </a>
 
         <button class="btn btn-outline-secondary ms-2" @onclick="ToggleDarkMode">
@@ -36,7 +45,6 @@
 
     [Inject] NavigationManager NavigationManager { get; set; }
 
-    //pa saber q funca el carrito 
         protected override void OnInitialized()
     {
         Tienda.OnCarritoChanged += StateHasChanged;
