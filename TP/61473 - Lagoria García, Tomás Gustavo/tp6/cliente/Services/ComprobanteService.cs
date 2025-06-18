@@ -44,7 +44,7 @@ public class ItemCompra
     public Compra? Compra { get; set; }
     public int Cantidad { get; set; }
     public decimal PrecioUnitario { get; set; }
-public string ProductoNombre => Producto?.Nombre ?? "Producto no encontrado";
+ public string ProductoNombre { get; set; }
 
 }
 }

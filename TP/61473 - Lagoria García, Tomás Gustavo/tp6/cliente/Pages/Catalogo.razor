@@ -1,4 +1,4 @@
-@page "/catalogo"
+@page "/"
 @using cliente.Services
 @inject ProductoService ProductoService
 @inject CarritoService CarritoService
@@ -6,7 +6,10 @@
 @inject NavigationManager Nav
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div class="navbar-container sticky-top bg-white shadow-sm py-3">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
         <button class="btn btn-link m-0 p-0 text-decoration-none" style="font-size:2rem;" @onclick="CargarProductosAsync">
             Tienda Online
         </button>
@@ -27,6 +30,10 @@
             </button>
         </div>
     </div>
+    </div>
+</div>
+
+    
 
     @if (Productos is null)
     {
@@ -82,9 +89,6 @@
     private List<ItemCarrito>? Carrito;
     private string Busqueda = string.Empty;
      private bool _productosCargados = false;
-    // ID del carrito simulado, en una aplicación real esto podría ser dinámico o provenir de un servicio de usuario
-  //  private readonly Guid carritoId = Guid.Parse("11111111-1111-1111-1111-111111111111");
- // Se puede inyectar o pasar como parámetro
     //[Parameter]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -147,7 +151,6 @@ private void NavegarCarrito()
     }
 */   
   await CarritoService.AumentarItemAsync(_carritoId.Value, producto.Id);
-        await JS.InvokeVoidAsync("alert", $"{producto.Nombre} agregado al carrito.");
         // Refrescar productos para actualizar stock
     Productos = await ProductoService.ObtenerProductosAsync(Busqueda); // refresca stock
  var items = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);
