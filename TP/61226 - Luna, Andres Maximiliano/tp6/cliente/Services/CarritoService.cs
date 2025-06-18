@@ -12,16 +12,21 @@ public class CarritoService
     {
         var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
 
+        if (producto.StockDisponible <= 0)
+            return;
+
         if (item != null)
         {
-            if (item.Cantidad < producto.Stock)
-                item.Cantidad++;
+            item.Cantidad++;
         }
         else
         {
             _items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
         }
+
+        producto.StockDisponible--;
     }
+
 
     public void AumentarCantidad(int productoId)
     {
