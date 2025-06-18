@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cliente</title>
+    <title>Bienvenido a tienda online</title>
     <base href="/" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
@@ -135,14 +135,35 @@
         <span class="dismiss">🗙</span>
     </div>
     <script>
-        let stockDisponible = 5; // Cambia este valor según tu lógica
-
         document.addEventListener('DOMContentLoaded', function () {
             const btn = document.getElementById('addToCartBtn');
             if (btn) {
                 btn.addEventListener('click', function () {
+                    const stockDisponible = 5; // Cambia este valor según tu lógica
+
                     if (stockDisponible > 0) {
+                        const producto = {
+                            id: 1,
+                            nombre: "Nombre del producto",
+                            precio: 100,
+                            cantidad: 1
+                        };
+
+                        let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+                        const existente = carrito.find(item => item.id === producto.id);
+                        if (existente) {
+                            existente.cantidad += 1;
+                        } else {
+                            carrito.push(producto);
+                        }
+
+                        localStorage.setItem('carrito', JSON.stringify(carrito));
+
+                        alert("Producto agregado al carrito.");
+
                         window.location.href = 'carrito.html';
+
                     } else {
                         alert('No hay stock disponible');
                     }

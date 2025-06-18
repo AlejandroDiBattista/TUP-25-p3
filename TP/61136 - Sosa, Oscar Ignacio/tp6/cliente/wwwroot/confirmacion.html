@@ -63,28 +63,6 @@
                 text-align: center;
             }
         }
-        .producto {
-            border: 1px solid #610202;
-            border-radius: 4px;
-            padding: 16px;
-            margin-bottom: 20px;
-            background: #064be0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .producto h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-            color: #ecca08;
-        }
-        .producto p {
-            margin: 5px 0;
-            color: #f3efef;
-        }
-        .producto img {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-        }
         .resumen {
             background: #fff;
             padding: 16px;
@@ -131,23 +109,34 @@
         button[type="submit"]:hover {
             background: #218838;
         }
-        @media (max-width: 600px) {
-            .resumen, form {
-                max-width: 100%;
-                padding: 12px;
-            }
-            button[type="submit"] {
-                font-size: 16px;
-            }
+        #volver {
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Confirmación de compra</h1>
+
+    <table id="tabla-carrito">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body">
+            <!-- Se llenará por JS -->
+        </tbody>
+    </table>
+
     <div class="resumen">
-        <p>Total de ítems: <span id="total-items">0</span></p>
-        <p>Importe total: $<span id="total-importe">0.00</span></p>
+        <p>🛒 Has comprado <strong><span id="total-items">0</span></strong> productos en total.</p>
+        <p>Importe total: <strong>$<span id="total-importe">0.00</span></strong></p>
     </div>
+
     <form id="form-confirmacion">
         <label>
             Nombre:
@@ -163,21 +152,44 @@
         </label>
         <button type="submit">Confirmar</button>
     </form>
+
+    <div id="volver">
+        <button class="btn btn-secondary" onclick="window.location.href='carrito.html'">← Volver al carrito</button>
+    </div>
+
     <script>
-        // Obtener datos del carrito (simulación)
         const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-        const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-        const totalImporte = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+
+        const tablaBody = document.getElementById('tabla-body');
+        let totalItems = 0;
+        let totalImporte = 0;
+
+        carrito.forEach(item => {
+            const fila = document.createElement('tr');
+            const subtotal = item.precio * item.cantidad;
+            fila.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>${item.cantidad}</td>
+                <td>$${item.precio.toFixed(2)}</td>
+                <td>$${subtotal.toFixed(2)}</td>
+            `;
+            tablaBody.appendChild(fila);
+            totalItems += item.cantidad;
+            totalImporte += subtotal;
+        });
 
         document.getElementById('total-items').textContent = totalItems;
-        document.getElementById('total-importe').textContent = totalImporte.toFixed(2);
+        document.getElementById('total-importe').textContent = totalImporte.toLocaleString('es-AR', {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 
         document.getElementById('form-confirmacion').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Aquí puedes registrar la compra (enviar datos al servidor, etc.)
-            localStorage.removeItem('carrito'); // Limpia el carrito
+            localStorage.removeItem('carrito');
             alert('¡Compra confirmada!');
-            window.location.href = 'catalogo.html'; // Cambia la ruta si tu catálogo tiene otro nombre
+            window.location.href = 'catalogo.html';
         });
     </script>
 </body>
