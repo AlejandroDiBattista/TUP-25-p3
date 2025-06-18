@@ -3,17 +3,11 @@
 @inject HttpClient Http
 
 <div class="header">
-    <h1 class="logo" style="cursor:pointer" @onclick="MostrarCatalogo">tecknoLich</h1>
-
-    @if (vista == "catalogo")
-    {
-        <div style="flex: 1; display: flex; flex-direction: column;">
-            <input class="buscador" value="@busqueda" @oninput="OnBusquedaChanged" placeholder="Buscar productos..." />
-            <div class="carrito-icono" style="align-self: flex-start; margin-top: 10px;" @onclick="MostrarCarrito">
-                🛒 <span class="carrito-contador">@TotalCarrito</span>
-            </div>
-        </div>
-    }
+    <h1 class="logo" style="cursor:pointer" @onclick="MostrarCatalogo">TechStore</h1>
+    <input class="buscador" value="@busqueda" @oninput="OnBusquedaChanged" placeholder="Buscar productos..." />
+    <div class="carrito-icono" style="float:right;cursor:pointer" @onclick="MostrarCarrito">
+        🛒 <span class="carrito-contador">@TotalCarrito</span>
+    </div>
 </div>
 
 @if (vista == "catalogo")
@@ -121,6 +115,7 @@ else if (vista == "confirmacion")
         StateHasChanged();
     }
 
+    // CORRECCIÓN: recargar productos al cambiar el buscador
     private async Task OnBusquedaChanged(ChangeEventArgs e)
     {
         busqueda = e.Value?.ToString() ?? "";

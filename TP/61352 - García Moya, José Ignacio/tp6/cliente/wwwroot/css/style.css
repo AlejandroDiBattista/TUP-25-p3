@@ -1,70 +1,77 @@
 body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0d1117; 
-    color: #c9d1d9;
+    font-family: Arial, sans-serif; 
+    background: #f9fafb; 
     margin: 0; 
+    color: #333;
 }
 
 header { 
-    background: #161b22; 
-    color: #58a6ff; 
-    padding: 1rem; 
+    background: #d32f2f; /* rojo oscuro más moderno */
+    color: #fff; 
+    padding: 1rem 2rem; 
     display: flex; 
     align-items: center; 
     gap: 1rem; 
     position: sticky; 
-    top: 0; 
-    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.1);
+    top: 0;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+    z-index: 100;
 }
 
 .logo { 
     font-size: 2rem;
-    font-weight: bold;
+    font-weight: 700;
     margin-right: 2rem;
-    color: #58a6ff;
-    cursor: pointer;
+    user-select: none;
 }
 
-.buscador {
-    max-width: 300px;
-    flex: none;  /* para que no tome todo el espacio */
-    padding: 0.6rem;
-    border-radius: 6px;
-    border: 1px solid #30363d;
-    background-color: #0d1117;
-    color: #c9d1d9;
+.buscador { 
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
 }
 
+.buscador:focus {
+    outline: none;
+    border-color: #d32f2f;
+    box-shadow: 0 0 5px #d32f2f88;
+}
 
-.carrito-icono {
-    position: relative; /* para posicionar contador */
-    cursor: pointer;
-    font-size: 1.6rem;
-    color: #58a6ff;
-    display: inline-block;
+.carrito-icono { 
+    cursor: pointer; 
+    position: relative; 
+    font-size: 1.8rem;
     margin-left: 1rem;
+    transition: color 0.3s ease;
 }
 
-.carrito-contador {
-    top: -8px;
-    right: -18px;  /* más a la derecha */
-    background: #ff5555;
-    color: white;
-    border-radius: 50%;
-    padding: 0.2em 0.6em;
-    font-size: 0.9em;
-    font-weight: bold;
-    box-shadow: 0 0 3px rgba(0,0,0,0.3);
-    pointer-events: none;
+.carrito-icono:hover {
+    color: #d32f2f;
+}
+
+.carrito-contador { 
+    background: #ff4136; 
+    color: #fff; 
+    border-radius: 50%; 
+    padding: 0.3em 0.7em; 
+    font-size: 0.85em; 
+    position: absolute; 
+    top: -12px; 
+    right: -12px; 
+    font-weight: 700;
+    user-select: none;
 }
 
 .contenedor { 
     margin: 2rem auto;
-    max-width: 1000px;
-    background: #161b22; 
-    border-radius: 10px; 
-    box-shadow: 0 4px 16px rgba(0, 255, 255, 0.1); 
-    padding: 2em; 
+    max-width: 900px;
+    background: #fff; 
+    border-radius: 8px; 
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.12);
+    padding: 2rem 3rem; 
 }
 
 .productos { 
@@ -75,129 +82,149 @@ header {
 }
 
 .producto { 
-    background: #0d1117;
-    border: 1px solid #30363d; 
-    border-radius: 12px; 
-    box-shadow: 0 2px 10px rgba(0, 255, 255, 0.05);
-    padding: 1rem; 
+    background: #fff;
+    border: 1px solid #eee; 
+    border-radius: 10px; 
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+    padding: 1.2rem; 
     width: 220px; 
     text-align: center; 
-    transition: transform 0.2s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: default;
 }
+
 .producto:hover {
-    transform: scale(1.03);
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 0.15);
 }
 
 .producto-img {
     width: 120px;
     height: 120px;
     object-fit: contain;
-    margin-bottom: 0.5rem;
-    filter: brightness(1.1);
+    margin-bottom: 0.6rem;
+    user-select: none;
 }
 
 .producto-desc {
     font-size: 0.95rem;
-    color: #c9d1d9;
+    color: #555;
     min-height: 40px;
 }
 
 .precio { 
-    color: #00ffff;
-    font-weight: bold;
+    color: #d32f2f;
+    font-weight: 700;
     margin: 0.5rem 0;
 }
 
 .stock { 
     font-size: 0.9rem; 
-    color: #3fb950; 
+    color: #388e3c;
+    font-weight: 600;
 }
 
 .btn-agregar, .btn-confirmar, .btn-vaciar, .btn-cantidad, .btn-eliminar {
-    margin: 0.2rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
+    margin: 0.25rem 0.2rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 5px;
     border: none;
-    background: #238636;
+    background: #d32f2f;
     color: #fff;
     cursor: pointer;
     font-size: 1rem;
-    transition: background 0.3s;
-}
-
-.btn-agregar:hover, .btn-confirmar:hover, .btn-vaciar:hover, .btn-cantidad:hover, .btn-eliminar:hover {
-    background: #2ea043;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
 .btn-agregar:disabled {
-    background: #555;
+    background: #aaa; 
     cursor: not-allowed; 
+}
+
+.btn-agregar:hover:not(:disabled),
+.btn-confirmar:hover,
+.btn-vaciar:hover,
+.btn-cantidad:hover,
+.btn-eliminar:hover {
+    background-color: #9b2424;
 }
 
 .tabla-carrito {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 1rem;
-    background-color: #0d1117;
 }
 
 .tabla-carrito th, .tabla-carrito td { 
-    border: 1px solid #30363d; 
-    padding: 0.5rem; 
+    border: 1px solid #ddd; 
+    padding: 0.6rem; 
     text-align: center; 
-    color: #c9d1d9;
 }
 
 .acciones-carrito button { 
-    margin: 0 0.2em; 
+    margin: 0 0.3em; 
 }
 
 .formulario { 
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    max-width: 300px;
+    gap: 0.6rem;
+    max-width: 320px;
     margin: 1rem auto;
 }
 
 .formulario label { 
     display: block; 
-    margin-top: 1em; 
+    margin-top: 1rem; 
+    font-weight: 600;
 }
 
 .input-form {
     padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid #30363d;
-    background: #0d1117;
-    color: #c9d1d9;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.input-form:focus {
+    outline: none;
+    border-color: #d32f2f;
+    box-shadow: 0 0 6px #d32f2f88;
 }
 
 .formulario button { 
-    margin-top: 1em; 
-    background: #58a6ff; 
-    color: #0d1117; 
+    margin-top: 1.2rem; 
+    background: #388e3c; 
+    color: #fff; 
     border: none; 
-    border-radius: 6px; 
-    padding: 0.7em 1.5em; 
+    border-radius: 5px; 
+    padding: 0.8rem 1.8rem; 
     cursor: pointer; 
-    transition: background 0.3s;
+    font-weight: 700;
+    transition: background-color 0.3s ease;
 }
 
 .formulario button:hover {
-    background: #1f6feb;
+    background: #2e7d32;
 }
 
 .resumen { 
     margin: 1rem 0;
-    font-size: 1.2rem;
-    color: #c9d1d9;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #222;
 }
 
 .volver { 
-    margin-top: 1em; 
+    margin-top: 1.2rem; 
     display: inline-block; 
-    color: #58a6ff;
+    color: #0071c1;
     cursor: pointer; 
+    font-weight: 600;
     text-decoration: underline;
+}
+
+.volver:hover {
+    color: #004a87;
 }
