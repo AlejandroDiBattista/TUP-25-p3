@@ -13,19 +13,20 @@
 
 
 <header>
+    <div class="header-superior">
     <h2>Productos</h2>
-<div class="contenedor-principal">
-    <div class="header-barra">
-        <input type="text" placeholder="Buscar productos..." @bind="busqueda" class="form-control" style="max-width: 300px;" />
-        <button class="btn btn-primary" @onclick="BuscarProductos">Buscar</button>
-        <button class="btn btn-light" @onclick="IrAlCarrito">
+    <button class="btn btn-light" @onclick="IrAlCarrito">
             🛒 Total en carrito: @CarritoService.ObtenerCantidadTotalEnCarrito() productos
         </button>
     </div>
-</div>
+
+    <div class="header-barra">
+        <input type="text" placeholder="Buscar productos..." @bind="busqueda" class="form-control" style="max-width: 300px;" />
+        <button class="btn btn-primary" @onclick="BuscarProductos">Buscar</button>
+    </div>
+
 </header>
 
-<body>
 <div class="productos-grid">
     @foreach (var producto in productosFiltrados)
     {
@@ -51,7 +52,6 @@
         </div>
     }
 </div>
-</body>
 
 @code {
     
