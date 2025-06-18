@@ -5,9 +5,10 @@
 @inject NavigationManager Navigation
 @inject ApiService ApiService
 @inject CarritoService CarritoService
+@inject ProductoService ProductoService
  
 
-<PageTitle>Productos</PageTitle>
+<PageTitle>Tienda online</PageTitle>
 
 
 
@@ -62,25 +63,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        if (ProductoService.Productos.Count == 0)
         {
-            cargando = true;
-            productos = await ApiService.ObtenerProductosAsync();
+            var productos = await ApiService.ObtenerProductosAsync();
             foreach (var producto in productos)
-            {
                 producto.StockDisponible = producto.Stock;
-            }
-            productosFiltrados = productos;
-
+            ProductoService.Productos = productos;
         }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-        }
-        finally
-        {
-            cargando = false;
-        }
+        productos = ProductoService.Productos;
+        productosFiltrados = productos;
     }
  
      void AumentarCantidad(Producto producto)
@@ -130,4 +121,6 @@
         CarritoService.VaciarCarrito();
         Navigation.NavigateTo("/", true);
     }
+
+    
 }

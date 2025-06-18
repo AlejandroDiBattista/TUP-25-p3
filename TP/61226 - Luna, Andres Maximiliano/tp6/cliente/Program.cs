@@ -15,5 +15,7 @@ builder.Services.AddScoped<ApiService>();
 
 builder.Services.AddScoped<CarritoService>();
 
+builder.Services.AddScoped<ProductoService>();
+
 await builder.Build().RunAsync();
 

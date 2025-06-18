@@ -6,7 +6,9 @@
 @inject NavigationManager Navigation
 @inject ApiService ApiService
 
-<h2>Carrito de Compras</h2>
+<NavLink href="/" class="text-decoration-none text-dark">
+    <h2 style="cursor: pointer;">Tienda online</h2>
+</NavLink>
 
 @if (CarritoService.ObtenerCarrito().Count == 0)
 {
@@ -35,7 +37,7 @@ else
                     <td>
                         <button class="btn btn-sm btn-secondary" @onclick="() => DisminuirCantidad(item.Producto.Id)">-</button>
                         <button class="btn btn-sm btn-secondary mx-1" @onclick="() => AumentarCantidad(item.Producto.Id)">+</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarDelCarrito(item.Producto.Id)">Eliminar</button>
+                        
                     </td>
                 </tr>
             }
@@ -103,11 +105,4 @@ else
         CarritoService.DisminuirCantidad(productoId);
         StateHasChanged();
     }
-
-    private void EliminarDelCarrito(int productoId)
-    {
-        CarritoService.EliminarDelCarrito(productoId);
-        StateHasChanged();
-    }
-
 }

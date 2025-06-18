@@ -53,7 +53,16 @@ public class CarritoService
             _items.Remove(item);
     }
 
-    public void VaciarCarrito() => _items.Clear();
+    public void VaciarCarrito()
+    {
+        foreach (var item in _items)
+        {
+            item.Producto.Stock += item.Cantidad;
+            item.Producto.StockDisponible += item.Cantidad;
+        }
+
+        _items.Clear();
+    }
 
     public decimal CalcularTotal() =>
         _items.Sum(i => i.Cantidad * i.Producto.Precio);
