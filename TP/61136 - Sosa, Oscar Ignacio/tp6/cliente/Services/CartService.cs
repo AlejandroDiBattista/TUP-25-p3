@@ -7,32 +7,37 @@ namespace Cliente.Services
 {
     public class CartService
     {
-        public List<CartItem> Items { get; } = new();
+        private readonly List<CartItem> _items = new();
+
+        public IReadOnlyList<CartItem> Items => _items.AsReadOnly();
 
         public event Action? OnChange;
 
         public void AddToCart(Producto producto)
         {
-            var existingItem = Items.FirstOrDefault(ci => ci.Producto.Id == producto.Id);
+            if (producto == null) return;
+
+            var existingItem = _items.FirstOrDefault(ci => ci.Producto.Id == producto.Id);
             if (existingItem != null)
             {
                 existingItem.Cantidad++;
             }
             else
             {
-                Items.Add(new CartItem { Producto = producto, Cantidad = 1 });
+                _items.Add(new CartItem { Producto = producto, Cantidad = 1 });
             }
+
             OnChange?.Invoke();
         }
 
         public void RemoveFromCart(int productoId)
         {
-            var existingItem = Items.FirstOrDefault(ci => ci.Producto.Id == productoId);
+            var existingItem = _items.FirstOrDefault(ci => ci.Producto.Id == productoId);
             if (existingItem != null)
             {
                 existingItem.Cantidad--;
                 if (existingItem.Cantidad <= 0)
-                    Items.Remove(existingItem);
+                    _items.Remove(existingItem);
 
                 OnChange?.Invoke();
             }
@@ -40,24 +45,20 @@ namespace Cliente.Services
 
         public void ClearCart()
         {
-            Items.Clear();
+            _items.Clear();
             OnChange?.Invoke();
         }
 
-        public decimal GetTotal()
-        {
-            return Items.Sum(ci => ci.Producto.Precio * ci.Cantidad);
-        }
+        public decimal GetTotal() =>
+            _items.Sum(ci => ci.Producto.Precio * ci.Cantidad);
 
-        public int GetCantidadTotal()
-        {
-            return Items.Sum(ci => ci.Cantidad);
-        }
+        public int GetCantidadTotal() =>
+            _items.Sum(ci => ci.Cantidad);
     }
 
     public class CartItem
     {
-        public Producto Producto { get; set; } = new Producto();
+        public Producto Producto { get; set; } = new();
         public int Cantidad { get; set; } = 1;
     }
 }
