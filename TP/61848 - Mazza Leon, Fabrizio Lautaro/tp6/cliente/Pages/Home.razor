@@ -4,7 +4,7 @@
 @inject NavigationManager Navigation
 @inject ApiService ApiService
 @inject CarritoService CarritoService
-
+@inject StockLocalService StockLocalService
 
 <PageTitle>TiendaOnline</PageTitle>
 
@@ -48,7 +48,7 @@
                                 max="@producto.Stock"
                                 @bind="cantidades[producto.Id]" />
                             <div/>
-                            <button class="btn btn-primary w-100" disabled="@(producto.Stock == 0)" @onclick="@(() => AgregarAlCarrito(producto))">
+                            <button class="btn btn-primary w-100" disabled="@(producto.Stock == 0)" @onclick="async () => await AgregarAlCarrito(producto)">
                                 Agregar al carrito
                             </button>
                             </div>
@@ -72,31 +72,37 @@
 
     protected override async Task OnInitializedAsync()
     {
-
-        productos = await ApiService.ObtenerProductosAsync();
+        productos = await StockLocalService.LeerStockAsync();
+        if (productos == null)
+        {
+            productos = await ApiService.ObtenerProductosAsync();
+            await StockLocalService.GuardarStockAsync(productos);
+        }
         await CarritoService.InicializarCarritoAsync(ApiService);
 
         foreach (var producto in productos)
         {
-        cantidades[producto.Id] = 1;
+            cantidades[producto.Id] = 1;
         }
     }
     
-    void AgregarAlCarrito(Producto producto)
+    async Task AgregarAlCarrito(Producto producto)
     { 
-
         if (cantidades.TryGetValue(producto.Id, out int cantidad))
         {
-            for (int i = 0; i < cantidad && i < producto.Stock; i++)
+            int cantidadAAgregar = Math.Min(cantidad, producto.Stock);
+
+            for (int i = 0; i < cantidadAAgregar; i++)
             {
                 CarritoService.AgregarProducto(producto);
             }
+
+            producto.Stock -= cantidadAAgregar;
+            if (producto.Stock < 0) producto.Stock = 0;
+            await StockLocalService.GuardarStockAsync(productos);
         }
 
         StateHasChanged();
-
         Navigation.NavigateTo("/carrito");
-        
     }
-
 }
