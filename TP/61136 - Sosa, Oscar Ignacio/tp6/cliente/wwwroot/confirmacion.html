@@ -4,6 +4,143 @@
     <meta charset="UTF-8">
     <title>Confirmación de compra</title>
     <link rel="stylesheet" href="css/app.css" />
+    <style>
+        body {
+            background: #085caf;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #db1616;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #4db5cf;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(241, 125, 16, 0.05);
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #066613;
+        }
+        th {
+            background: #5c0832;
+            color: #7015a5;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 2px;
+        }
+        .btn-secondary {
+            background: #0c0a8f;
+            color: #b8bb1c;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: #32ee19;
+        }
+        .btn-success {
+            background: #28a745;
+            color: #68b6e4;
+        }
+        .carrito-botones {
+            text-align: right;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            table, th, td {
+                font-size: 14px;
+            }
+            .carrito-botones {
+                text-align: center;
+            }
+        }
+        .producto {
+            border: 1px solid #610202;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 20px;
+            background: #064be0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .producto h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #ecca08;
+        }
+        .producto p {
+            margin: 5px 0;
+            color: #f3efef;
+        }
+        .producto img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+        .resumen {
+            background: #fff;
+            padding: 16px;
+            margin: 0 auto 24px auto;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        form {
+            background: #fff;
+            padding: 24px;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="email"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-size: 16px;
+        }
+        button[type="submit"] {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 0;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        button[type="submit"]:hover {
+            background: #218838;
+        }
+        @media (max-width: 600px) {
+            .resumen, form {
+                max-width: 100%;
+                padding: 12px;
+            }
+            button[type="submit"] {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Confirmación de compra</h1>
