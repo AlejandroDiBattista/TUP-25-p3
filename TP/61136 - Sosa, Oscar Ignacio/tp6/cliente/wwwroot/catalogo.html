@@ -6,17 +6,26 @@
     <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-    <h1>Catálogo de productos</h1>
-    <div class="catalogo" id="catalogo">
-        <!-- Los productos se cargarán aquí -->
-    </div>
-    <button onclick="window.location.href='confirmacion.html'">Ir a Confirmación de compra</button>
+    <h1>Catálogo de Productos</h1>
+    <div id="catalogo"></div>
+
     <script>
-        // Ejemplo de productos (puedes reemplazar por tus datos reales)
         const productos = [
-            { id: 1, nombre: "Producto 1", precio: 100 },
-            { id: 2, nombre: "Producto 2", precio: 150 },
-            { id: 3, nombre: "Producto 3", precio: 200 }
+            { id: 1, nombre: "Chocolate Milka", descripcion: "Tableta de chocolate con leche 100g", precio: 950, imagen: "https://images.example.com/milka.jpg" },
+            { id: 2, nombre: "Bon o Bon", descripcion: "Bombón de chocolate relleno", precio: 120, imagen: "https://images.example.com/bonobon.jpg" },
+            { id: 3, nombre: "Sugus", descripcion: "Caramelos masticables surtidos", precio: 80, imagen: "https://images.example.com/sugus.jpg" },
+            { id: 4, nombre: "Rocklets", descripcion: "Confites de chocolate 40g", precio: 250, imagen: "https://images.example.com/rocklets.jpg" },
+            { id: 5, nombre: "Mogul", descripcion: "Gomitas frutales 50g", precio: 180, imagen: "https://images.example.com/mogul.jpg" },
+            { id: 6, nombre: "Tita", descripcion: "Galletita bañada en chocolate", precio: 90, imagen: "https://images.example.com/tita.jpg" },
+            { id: 7, nombre: "Rhodesia", descripcion: "Galletita bañada en chocolate", precio: 90, imagen: "https://images.example.com/rhodesia.jpg" },
+            { id: 8, nombre: "Menta Cristal", descripcion: "Caramelos de menta", precio: 70, imagen: "https://images.example.com/mentacristal.jpg" },
+            { id: 9, nombre: "Caramelos Arcor", descripcion: "Caramelos duros surtidos", precio: 60, imagen: "https://images.example.com/arcor.jpg" },
+            { id: 10, nombre: "Chocolinas", descripcion: "Galletitas de chocolate 170g", precio: 350, imagen: "https://images.example.com/chocolinas.jpg" },
+            { id: 11, nombre: "Alfajor Jorgito", descripcion: "Alfajor de dulce de leche", precio: 180, imagen: "https://images.example.com/jorgito.jpg" },
+            { id: 12, nombre: "Bananita Dolca", descripcion: "Dulce de banana bañado en chocolate", precio: 100, imagen: "https://images.example.com/bananita.jpg" },
+            { id: 13, nombre: "Kinder Bueno", descripcion: "Barra de chocolate con leche y avellanas", precio: 400, imagen: "https://images.example.com/kinderbueno.jpg" },
+            { id: 14, nombre: "KitKat", descripcion: "Barra de chocolate con obleas", precio: 350, imagen: "https://images.example.com/kitkat.jpg" },
+            { id: 15, nombre: "M&M's", descripcion: "Confites de chocolate 45g", precio: 300, imagen: "https://images.example.com/mms.jpg" }
         ];
 
         const catalogoDiv = document.getElementById('catalogo');
@@ -25,7 +34,9 @@
             div.className = 'producto';
             div.innerHTML = `
                 <h3>${prod.nombre}</h3>
+                <p>${prod.descripcion}</p>
                 <p>Precio: $${prod.precio}</p>
+                <img src="${prod.imagen}" alt="${prod.nombre}" width="100" />
                 <button onclick="agregarAlCarrito(${prod.id})">Agregar al carrito</button>
             `;
             catalogoDiv.appendChild(div);

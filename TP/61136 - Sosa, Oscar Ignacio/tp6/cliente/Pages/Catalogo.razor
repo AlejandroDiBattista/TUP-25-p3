@@ -7,17 +7,34 @@
 <ul>
     @foreach (var producto in ProductosFiltrados)
     {
-        <li>@producto.Nombre - @producto.Precio.ToString("C")</li>
+        <li>
+            <strong>@producto.Nombre</strong> - @producto.Descripcion - $@producto.Precio
+            <br />
+            <img src="@producto.ImagenUrl" alt="@producto.Nombre" width="100" />
+        </li>
     }
 </ul>
 
 @code {
-    private string busqueda = "";
+    private string busqueda = string.Empty;
+
     private List<Producto> productos = new()
     {
-        new Producto { Nombre = "Camiseta", Precio = 20 },
-        new Producto { Nombre = "Pantalón", Precio = 35 },
-        new Producto { Nombre = "Zapatos", Precio = 50 }
+        new Producto { Nombre = "Chocolate Milka", Descripcion = "Tableta de chocolate con leche 100g", Precio = 950, ImagenUrl = "https://images.example.com/milka.jpg" },
+        new Producto { Nombre = "Bon o Bon", Descripcion = "Bombón de chocolate relleno", Precio = 120, ImagenUrl = "https://images.example.com/bonobon.jpg" },
+        new Producto { Nombre = "Sugus", Descripcion = "Caramelos masticables surtidos", Precio = 80, ImagenUrl = "https://images.example.com/sugus.jpg" },
+        new Producto { Nombre = "Rocklets", Descripcion = "Confites de chocolate 40g", Precio = 250, ImagenUrl = "https://images.example.com/rocklets.jpg" },
+        new Producto { Nombre = "Mogul", Descripcion = "Gomitas frutales 50g", Precio = 180, ImagenUrl = "https://images.example.com/mogul.jpg" },
+        new Producto { Nombre = "Tita", Descripcion = "Galletita bañada en chocolate", Precio = 90, ImagenUrl = "https://images.example.com/tita.jpg" },
+        new Producto { Nombre = "Rhodesia", Descripcion = "Galletita bañada en chocolate", Precio = 90, ImagenUrl = "https://images.example.com/rhodesia.jpg" },
+        new Producto { Nombre = "Menta Cristal", Descripcion = "Caramelos de menta", Precio = 70, ImagenUrl = "https://images.example.com/mentacristal.jpg" },
+        new Producto { Nombre = "Caramelos Arcor", Descripcion = "Caramelos duros surtidos", Precio = 60, ImagenUrl = "https://images.example.com/arcor.jpg" },
+        new Producto { Nombre = "Chocolinas", Descripcion = "Galletitas de chocolate 170g", Precio = 350, ImagenUrl = "https://images.example.com/chocolinas.jpg" },
+        new Producto { Nombre = "Alfajor Jorgito", Descripcion = "Alfajor de dulce de leche", Precio = 180, ImagenUrl = "https://images.example.com/jorgito.jpg" },
+        new Producto { Nombre = "Bananita Dolca", Descripcion = "Dulce de banana bañado en chocolate", Precio = 100, ImagenUrl = "https://images.example.com/bananita.jpg" },
+        new Producto { Nombre = "Kinder Bueno", Descripcion = "Barra de chocolate con leche y avellanas", Precio = 400, ImagenUrl = "https://images.example.com/kinderbueno.jpg" },
+        new Producto { Nombre = "KitKat", Descripcion = "Barra de chocolate con obleas", Precio = 350, ImagenUrl = "https://images.example.com/kitkat.jpg" },
+        new Producto { Nombre = "M&M's", Descripcion = "Confites de chocolate 45g", Precio = 300, ImagenUrl = "https://images.example.com/mms.jpg" }
     };
 
     private IEnumerable<Producto> ProductosFiltrados =>
@@ -28,6 +45,8 @@
     public class Producto
     {
         public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
         public decimal Precio { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
     }
 }

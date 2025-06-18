@@ -1,4 +1,5 @@
 @page "/carrito"
+@using Cliente.Services
 @inject CartService Cart
 
 <h3>Carrito de compras</h3>
@@ -12,11 +13,15 @@ else
     <ul>
         @foreach (var item in Cart.Items)
         {
-            <li>
-                @item.Name - $@item.Price
-                <button class="btn btn-danger btn-sm" @onclick="() => Cart.RemoveFromCart(item)">Quitar</button>
-            </li>
+            <li>@item.Name - $@item.Price</li>
         }
     </ul>
-    <button class="btn btn-warning" @onclick="Cart.ClearCart">Vaciar carrito</button>
+    <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+}
+
+@code {
+    private void VaciarCarrito()
+    {
+        Cart.ClearCart();
+    }
 }
