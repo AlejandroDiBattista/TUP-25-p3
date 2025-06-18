@@ -13,6 +13,14 @@
 else if (items.Count == 0)
 {
     <div class="card shadow p-4 text-center" style="max-width:500px;margin:2rem auto;">
+        <div class="d-flex flex-column align-items-center mb-3">
+            <div class="icon-success-circle mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                    <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            </div>
+        </div>
         <h4>El carrito está vacío.</h4>
         <button class="btn btn-primary mt-3" @onclick="VolverAlCatalogo">Volver al catálogo</button>
     </div>
@@ -21,11 +29,12 @@ else
 {
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-8">
+            <div class="col-md-10 col-lg-8">
                 <div class="card shadow p-4 mb-4">
                     <h3 class="mb-4">Detalle del Carrito</h3>
                     @foreach (var item in items)
                     {
+                        var stockVisual = item.Stock - item.Cantidad;
                         <div class="card flex-row flex-wrap flex-md-nowrap align-items-center shadow border border-primary bg-light p-2 mb-3"
                             style="min-height:180px; max-height:240px;">
                             <div class="d-flex align-items-center justify-content-center bg-white border-end border-2 border-primary"
@@ -41,12 +50,12 @@ else
                                     style="font-size:1.1rem;">Subtotal: $@item.Subtotal.ToString("N2")</p>
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge bg-success me-2" style="font-size:1.25rem;">$@item.Precio.ToString("N2")</span>
-                                    <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @item.Stock</span>
+                                    <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @stockVisual</span>
                                 </div>
                                 <div class="d-flex gap-2 mt-1 align-items-center">
                                     <button class="btn btn-sm btn-secondary me-1"
                                         @onclick="() => CambiarCantidad(item, item.Cantidad - 1)"
-                                        disabled="@(item.Cantidad <= 1)">−</button>
+                                        disabled="@(item.Cantidad <= 0)">−</button>
                                     <span class="mx-1" style="font-size:1.1rem;">@item.Cantidad</span>
                                     <button class="btn btn-sm btn-secondary ms-1"
                                         @onclick="() => CambiarCantidad(item, item.Cantidad + 1)"
@@ -61,10 +70,57 @@ else
                         <span class="badge bg-warning text-dark" style="font-size:1.3rem;">Total: $@items.Sum(i => i.Subtotal).ToString("N2")</span>
                     </div>
                     <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
-                        <button class="btn btn-vaciar me-md-2 mb-2 mb-md-0" @onclick="VaciarCarrito">Vaciar carrito</button>
+                        <button class="btn btn-vaciar me-md-2 mb-2 mb-md-0" @onclick="MostrarModalVaciarCarrito">Vaciar carrito</button>
                         <button class="btn btn-confirmar me-md-2 mb-2 mb-md-0" @onclick="ConfirmarCompra">Confirmar compra</button>
                         <button class="btn btn-modificar" @onclick="ContinuarAgregando">Modificar compra</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarModalConfirmarEliminar)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:1rem;">
+                <div class="modal-header">
+                    <h5 class="modal-title">¿Está seguro de reducir la cantidad a cero?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>El carrito quedará vacío. ¿Desea continuar?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @onclick="ConfirmarEliminarProducto">Aceptar</button>
+                    <button class="btn btn-secondary" @onclick="CancelarEliminarProducto">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Modal de confirmación para vaciar carrito *@
+@if (mostrarModalConfirmarVaciar)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#dc3545"/>
+                            <path d="M8 8l8 8M16 8l-8 8" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">¿Está seguro de vaciar el carrito?</h5>
+                    <p>Esta acción eliminará todos los productos del carrito.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button class="btn btn-danger" @onclick="ConfirmarVaciarCarrito">Aceptar</button>
+                    <button class="btn btn-secondary" @onclick="CancelarVaciarCarrito">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -75,6 +131,9 @@ else
     #nullable enable
     List<CarritoItemDto>? items;
     Guid carritoId;
+    bool mostrarModalConfirmarEliminar = false;
+    bool mostrarModalConfirmarVaciar = false;
+    CarritoItemDto? itemAEliminar;
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,32 +150,77 @@ else
     async Task CargarCarrito()
     {
         items = await Api.GetCarritoAsync(carritoId);
+        StateHasChanged();
     }
 
     async Task CambiarCantidad(CarritoItemDto item, int nuevaCantidad)
     {
-        if (nuevaCantidad < 1 || nuevaCantidad > item.Stock)
+        if (nuevaCantidad < 0)
+            return;
+        if (nuevaCantidad == 0)
+        {
+            // Si solo queda este producto en el carrito, mostrar modal de confirmación
+            if (items != null && items.Count == 1)
+            {
+                itemAEliminar = item;
+                mostrarModalConfirmarEliminar = true;
+                StateHasChanged();
+                return;
+            }
+            else
+            {
+                await EliminarProducto(item);
+                return;
+            }
+        }
+        if (nuevaCantidad > item.Stock)
             return;
 
         await Api.PutCarritoItemAsync(carritoId, item.Id, nuevaCantidad);
-        items = await Api.GetCarritoAsync(carritoId);
+        await CargarCarrito();
         await ActualizarContadorCarrito();
+    }
+
+    async Task ConfirmarEliminarProducto()
+    {
+        if (itemAEliminar != null)
+        {
+            await EliminarProducto(itemAEliminar);
+            mostrarModalConfirmarEliminar = false;
+            itemAEliminar = null;
+            StateHasChanged();
+        }
+    }
+
+    void CancelarEliminarProducto()
+    {
+        mostrarModalConfirmarEliminar = false;
+        itemAEliminar = null;
         StateHasChanged();
     }
 
     async Task EliminarProducto(CarritoItemDto item)
     {
         await Api.DeleteCarritoItemAsync(carritoId, item.Id);
-        items = await Api.GetCarritoAsync(carritoId);
+        await CargarCarrito();
         await ActualizarContadorCarrito();
-        StateHasChanged();
     }
 
-    async Task VaciarCarrito()
+    void MostrarModalVaciarCarrito()
     {
+        mostrarModalConfirmarVaciar = true;
+    }
+    void CancelarVaciarCarrito()
+    {
+        mostrarModalConfirmarVaciar = false;
+    }
+    async Task ConfirmarVaciarCarrito()
+    {
+        mostrarModalConfirmarVaciar = false;
         await Api.VaciarCarritoAsync(carritoId);
         await ActualizarContadorCarrito();
-        Navigation.NavigateTo("/catalogo", forceLoad: true, replace: true);
+        await CargarCarrito();
+        StateHasChanged();
     }
 
     async Task ActualizarContadorCarrito()
@@ -185,5 +289,14 @@ else
 .btn-confirmar:hover, .btn-confirmar:focus {
     background-color: #145c32;
     color: #fff;
+}
+.icon-success-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    background: none;
+    margin: 0 auto 8px auto;
 }
 </style>
