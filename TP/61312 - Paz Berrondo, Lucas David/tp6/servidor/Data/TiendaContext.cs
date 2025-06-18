@@ -36,6 +36,18 @@ public class TiendaContext : DbContext
     public DbSet<ItemCompra> ItemsCompra { get; set; }
 
     /// <summary>
+    /// Tabla de carritos temporales.
+    /// Almacena carritos de compra antes de confirmar la compra.
+    /// </summary>
+    public DbSet<Carrito> Carritos { get; set; }
+
+    /// <summary>
+    /// Tabla de items de carrito.
+    /// Productos agregados a carritos temporales.
+    /// </summary>
+    public DbSet<ItemCarrito> ItemsCarrito { get; set; }
+
+    /// <summary>
     /// Configura el modelo de datos y las relaciones entre entidades.
     /// Se ejecuta cuando EF construye el modelo interno de la base de datos.
     /// </summary>
@@ -134,6 +146,42 @@ public class TiendaContext : DbContext
             // Índices para mejorar consultas
             entity.HasIndex(i => i.ProductoId);
             entity.HasIndex(i => i.CompraId);
+        });
+
+        // Configuración de la entidad Carrito
+        modelBuilder.Entity<Carrito>(entity =>
+        {
+            // Clave primaria
+            entity.HasKey(c => c.Id);
+
+            // El Id se genera automáticamente
+        });
+
+        // Configuración de la entidad ItemCarrito
+        modelBuilder.Entity<ItemCarrito>(entity =>
+        {
+            // Clave primaria
+            entity.HasKey(i => i.Id);
+
+            // Configuración de propiedades
+            entity.Property(i => i.Cantidad)
+                .IsRequired();
+
+            // Relación con Producto (muchos ItemCarrito -> un Producto)
+            entity.HasOne(i => i.Producto)
+                .WithMany()
+                .HasForeignKey(i => i.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relación con Carrito (muchos ItemCarrito -> un Carrito)
+            entity.HasOne(i => i.Carrito)
+                .WithMany(c => c.Items)
+                .HasForeignKey(i => i.CarritoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Índices para mejorar consultas
+            entity.HasIndex(i => i.ProductoId);
+            entity.HasIndex(i => i.CarritoId);
         });
     }
 }

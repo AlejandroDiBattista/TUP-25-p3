@@ -65,7 +65,6 @@ public class CompraConfirmadaDto
 {
     public int CompraId { get; set; }
     public decimal Total { get; set; }
-    public DateTime Fecha { get; set; }
     public string Mensaje { get; set; } = "Compra confirmada exitosamente";
 }
 
@@ -99,4 +98,16 @@ public class RespuestaOperacion
     public int ProductoId { get; set; }
     public int CantidadFinal { get; set; }
     public DateTime FechaActualizacion { get; set; }
+}
+
+/// <summary>
+/// DTO para respuesta de stock disponible considerando carrito.
+/// </summary>
+public class StockDisponibleDto
+{
+    public int ProductoId { get; set; }
+    public string NombreProducto { get; set; } = string.Empty;
+    public int StockTotal { get; set; }
+    public int CantidadEnCarrito { get; set; }
+    public int StockDisponible { get; set; }
 }

@@ -1,16 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using servidor.Data;
-using servidor.Services;
 using servidor.DTOs;
+using servidor.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurar Entity Framework con SQLite
 builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Registrar servicios de la aplicación
-builder.Services.AddScoped<CarritoService>();
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
@@ -21,7 +18,6 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -34,25 +30,39 @@ using (var scope = app.Services.CreateScope())
     // Crear la base de datos si no existe
     context.Database.EnsureCreated();
     
-    // Poblar la base de datos con datos iniciales
-    DatabaseSeeder.SeedDatabase(context);
+    // Verificar si ya hay productos en la base de datos
+    if (!context.Productos.Any())
+    {        // Poblar la base de datos con productos de ejemplo
+        var productos = new List<Producto>
+        {
+            new Producto { Nombre = "NVIDIA RTX 4080 Super", Descripcion = "Tarjeta gráfica de alto rendimiento para gaming y diseño profesional. 16GB GDDR6X, Ray Tracing de 3ra generación, DLSS 3.0", Precio = 1199999.99M, Stock = 8, ImagenUrl = "/images/rtx4080.png" },
+            new Producto { Nombre = "AMD Ryzen 7 7800X3D", Descripcion = "Procesador gaming de 8 núcleos y 16 hilos con tecnología 3D V-Cache. Ideal para gaming en alta resolución", Precio = 549999.99M, Stock = 12, ImagenUrl = "/images/ryzen7-9800x3d.png" },
+            new Producto { Nombre = "Corsair Vengeance DDR5-6000", Descripcion = "Memoria RAM 32GB (2x16GB) DDR5-6000 MHz CL30. Optimizada para AMD EXPO y Intel XMP 3.0", Precio = 299999.99M, Stock = 15, ImagenUrl = "/images/gskill-ddr5.webp" },
+            new Producto { Nombre = "Samsung 980 PRO NVMe SSD", Descripcion = "SSD NVMe M.2 1TB PCIe 4.0 con velocidades de hasta 7,000 MB/s. Incluye disipador térmico", Precio = 149999.99M, Stock = 20, ImagenUrl = "/images/samsung-980pro.png" },
+            new Producto { Nombre = "MSI MAG B650 Tomahawk WiFi", Descripcion = "Motherboard ATX para AMD AM5. PCIe 5.0, WiFi 6E, DDR5-6000+, RGB Mystic Light", Precio = 219999.99M, Stock = 10, ImagenUrl = "/images/asus-z790.png" },
+            new Producto { Nombre = "Corsair RM850x Gold", Descripcion = "Fuente de poder modular 850W 80+ Gold. Completamente modular, ventilador de 135mm con control de temperatura", Precio = 169999.99M, Stock = 18, ImagenUrl = "/images/corsair-rm1000x.png" },
+            new Producto { Nombre = "NZXT H7 Flow RGB", Descripcion = "Gabinete ATX mid-tower con panel frontal de malla, 3 ventiladores RGB incluidos y panel lateral de vidrio templado", Precio = 129999.99M, Stock = 14, ImagenUrl = "/images/h7-flow.webp" },
+            new Producto { Nombre = "Cooler Master Hyper 212 RGB", Descripcion = "Cooler de CPU con ventilador RGB de 120mm. Compatible con Intel LGA 1700 y AMD AM5", Precio = 45999.99M, Stock = 25, ImagenUrl = "/images/nzxt-kraken-x73.png" },
+            new Producto { Nombre = "Logitech G Pro X Superlight", Descripcion = "Mouse gaming inalámbrico ultraliviano de 63g con sensor HERO 25K. Hasta 70 horas de batería", Precio = 109999.99M, Stock = 22, ImagenUrl = "/images/pro-x-superlight-black.png" },
+            new Producto { Nombre = "Razer BlackWidow V4 Pro", Descripcion = "Teclado mecánico gaming con switches Green, RGB Chroma, dial de comandos y reposamuñecas magnético", Precio = 219999.99M, Stock = 16, ImagenUrl = "/images/razer-v4-pro.png" }
+        };
+
+        context.Productos.AddRange(productos);
+        context.SaveChanges();
+        
+        Console.WriteLine("✅ Base de datos inicializada con 10 productos de gaming de PC.");
+    }
 }
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
-    app.UseDeveloperExceptionPage();
-}
-
-// Usar CORS con la política definida
+// Configurar CORS
 app.UseCors("AllowClientApp");
 
-// Mapear rutas básicas
 app.MapGet("/", () => "Servidor API de Tienda Online está en funcionamiento");
 
 // === ENDPOINTS DE PRODUCTOS ===
 
-// GET /api/productos - Obtiene todos los productos o busca por nombre usando el parámetro 'buscar'
-app.MapGet("/api/productos", async (TiendaContext context, CarritoService carritoService, string buscar = null) =>
+// GET /api/productos - Obtiene todos los productos o busca por nombre
+app.MapGet("/api/productos", async (TiendaContext context, string buscar = null) =>
 {
     try
     {
@@ -63,23 +73,15 @@ app.MapGet("/api/productos", async (TiendaContext context, CarritoService carrit
             query = query.Where(p => p.Nombre.ToLower().Contains(buscar.ToLower()));
         }
         
-        var productosEnBD = await query.ToListAsync();
-        
-        // Calcular stock disponible para cada producto considerando carritos activos
-        var productos = new List<ProductoDto>();
-        foreach (var p in productosEnBD)
+        var productos = await query.Select(p => new ProductoDto
         {
-            var stockDisponible = await carritoService.CalcularStockDisponibleAsync(p.Id);
-            productos.Add(new ProductoDto
-            {
-                Id = p.Id,
-                Nombre = p.Nombre,
-                Descripcion = p.Descripcion,
-                Precio = p.Precio,
-                Stock = stockDisponible, // Stock disponible real
-                ImagenUrl = p.ImagenUrl
-            });
-        }
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            Precio = p.Precio,
+            Stock = p.Stock,
+            ImagenUrl = p.ImagenUrl
+        }).ToListAsync();
             
         return Results.Ok(new 
         { 
@@ -91,301 +93,349 @@ app.MapGet("/api/productos", async (TiendaContext context, CarritoService carrit
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener productos: {ex.Message}");
-        return Results.Problem(
-            title: "Error al obtener productos",
-            detail: "Ocurrió un error interno del servidor al procesar la solicitud.",
-            statusCode: 500
-        );
+        return Results.Problem("Error interno del servidor", statusCode: 500);
     }
-})
-.WithName("ObtenerProductos");
+});
 
 // GET /api/productos/{id} - Obtiene un producto específico por ID
 app.MapGet("/api/productos/{id:int}", async (TiendaContext context, int id) =>
 {
     try
     {
-        var producto = await context.Productos
-            .Where(p => p.Id == id)
-            .Select(p => new ProductoDto
-            {
-                Id = p.Id,
-                Nombre = p.Nombre,
-                Descripcion = p.Descripcion,
-                Precio = p.Precio,
-                Stock = p.Stock,
-                ImagenUrl = p.ImagenUrl
-            })
-            .FirstOrDefaultAsync();
-            
+        var producto = await context.Productos.FindAsync(id);
         if (producto == null)
         {
-            return Results.NotFound(new { 
-                Mensaje = $"Producto con ID {id} no encontrado",
-                ProductoId = id 
-            });
+            return Results.NotFound(new { Mensaje = "Producto no encontrado" });
         }
-        
-        return Results.Ok(producto);
+
+        var productoDto = new ProductoDto
+        {
+            Id = producto.Id,
+            Nombre = producto.Nombre,
+            Descripcion = producto.Descripcion,
+            Precio = producto.Precio,
+            Stock = producto.Stock,
+            ImagenUrl = producto.ImagenUrl
+        };
+
+        return Results.Ok(productoDto);
     }
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener producto {id}: {ex.Message}");
-        return Results.Problem(
-            title: "Error al obtener producto",
-            detail: $"Ocurrió un error al buscar el producto con ID {id}.",
-            statusCode: 500
-        );    }
-})
-.WithName("ObtenerProductoPorId");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
+    }
+});
 
-// === ENDPOINTS DE CARRITO ===
-
-// POST /api/carritos - Crea un nuevo carrito vacío y retorna su ID único
-app.MapPost("/api/carritos", (CarritoService carritoService) =>
+// GET /api/productos/{id}/stock-disponible/{carritoId} - Obtiene stock disponible considerando carrito
+app.MapGet("/api/productos/{id:int}/stock-disponible/{carritoId:int}", async (TiendaContext context, int id, int carritoId) =>
 {
     try
     {
-        var carritoId = carritoService.CrearCarrito();
-        return Results.Created($"/api/carritos/{carritoId}", new 
+        var producto = await context.Productos.FindAsync(id);
+        if (producto == null)
         {
-            CarritoId = carritoId,
-            Mensaje = "Carrito creado exitosamente",
-            FechaCreacion = DateTime.Now
+            return Results.NotFound(new { Mensaje = "Producto no encontrado" });
+        }
+
+        // Obtener cantidad actual en el carrito
+        var cantidadEnCarrito = await context.ItemsCarrito
+            .Where(i => i.CarritoId == carritoId && i.ProductoId == id)
+            .Select(i => i.Cantidad)
+            .FirstOrDefaultAsync();
+
+        var stockDisponible = producto.Stock - cantidadEnCarrito;
+
+        return Results.Ok(new { 
+            ProductoId = id,
+            NombreProducto = producto.Nombre,
+            StockTotal = producto.Stock,
+            CantidadEnCarrito = cantidadEnCarrito,
+            StockDisponible = Math.Max(0, stockDisponible)
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al obtener stock disponible: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
+    }
+});
+
+// GET /api/productos/stock/{productoId} - Obtiene stock disponible de un producto
+app.MapGet("/api/productos/stock/{productoId:int}", async (TiendaContext context, int productoId) =>
+{
+    try
+    {
+        var producto = await context.Productos.FindAsync(productoId);
+        if (producto == null)
+        {
+            return Results.NotFound(new { Mensaje = "Producto no encontrado" });
+        }
+
+        return Results.Ok(new { Stock = producto.Stock });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al obtener stock: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
+    }
+});
+
+// === ENDPOINTS DE CARRITO ===
+
+// POST /api/carritos - Crear un nuevo carrito
+app.MapPost("/api/carritos", async (TiendaContext context) =>
+{
+    try
+    {
+        var carrito = new Carrito();
+        context.Carritos.Add(carrito);
+        await context.SaveChangesAsync();
+        
+        return Results.Created($"/api/carritos/{carrito.Id}", new 
+        {
+            CarritoId = carrito.Id.ToString(),
+            Mensaje = "Carrito creado exitosamente"
         });
     }
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al crear carrito: {ex.Message}");
-        return Results.Problem(
-            title: "Error al crear carrito",
-            detail: "Ocurrió un error interno al crear el carrito de compras.",
-            statusCode: 500
-        );
+        return Results.Problem("Error interno del servidor", statusCode: 500);
     }
-})
-.WithName("CrearCarrito");
+});
 
-// GET /api/carritos/{carritoId} - Obtiene todos los items del carrito específico
-app.MapGet("/api/carritos/{carritoId}", async (CarritoService carritoService, string carritoId) =>
+// GET /api/carritos/{carritoId} - Obtener carrito con sus items
+app.MapGet("/api/carritos/{carritoId:int}", async (TiendaContext context, int carritoId) =>
 {
     try
     {
-        var carrito = await carritoService.ObtenerCarritoAsync(carritoId);
+        var carrito = await context.Carritos
+            .Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.Id == carritoId);
         
         if (carrito == null)
         {
-            return Results.NotFound(new 
-            {
-                Mensaje = $"Carrito con ID {carritoId} no encontrado",
-                CarritoId = carritoId
-            });
+            return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
         }
-          var carritoDto = carritoService.ConvertirADto(carrito);
+
+        var carritoDto = new CarritoDto
+        {
+            Id = carrito.Id.ToString(),
+            Items = carrito.Items.Select(i => new ItemCarritoDto
+            {
+                ProductoId = i.ProductoId,
+                NombreProducto = i.Producto.Nombre,
+                Cantidad = i.Cantidad,
+                PrecioUnitario = i.Producto.Precio,
+                Subtotal = i.Cantidad * i.Producto.Precio,
+                ImagenUrl = i.Producto.ImagenUrl
+            }).ToList(),
+            Total = carrito.Items.Sum(i => i.Cantidad * i.Producto.Precio),
+            TotalItems = carrito.Items.Sum(i => i.Cantidad)
+        };
+
         return Results.Ok(carritoDto);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error al obtener carrito {carritoId}: {ex.Message}");
-        return Results.Problem(
-            title: "Error al obtener carrito",
-            detail: $"Ocurrió un error al buscar el carrito con ID {carritoId}.",
-            statusCode: 500
-        );
+        Console.WriteLine($"❌ Error al obtener carrito: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
     }
-})
-.WithName("ObtenerCarrito");
+});
 
-// DELETE /api/carritos/{carritoId} - Elimina todos los items del carrito
-app.MapDelete("/api/carritos/{carritoId}", (CarritoService carritoService, string carritoId) =>
+// PUT /api/carritos/{carritoId}/productos/{productoId} - Agregar/actualizar producto en carrito
+app.MapPut("/api/carritos/{carritoId:int}/productos/{productoId:int}", async (TiendaContext context, int carritoId, int productoId, int cantidad) =>
 {
     try
     {
-        var vaciado = carritoService.VaciarCarrito(carritoId);
+        var carrito = await context.Carritos
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.Id == carritoId);
         
-        if (!vaciado)
+        if (carrito == null)
         {
-            return Results.NotFound(new 
-            {
-                Mensaje = $"Carrito con ID {carritoId} no encontrado",
-                CarritoId = carritoId
-            });
+            return Results.NotFound(new { Mensaje = "Carrito no encontrado" });
         }
-        
-        return Results.Ok(new 
-        {
-            Mensaje = "Carrito vaciado exitosamente",
-            CarritoId = carritoId,
-            FechaVaciado = DateTime.Now        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error al vaciar carrito {carritoId}: {ex.Message}");
-        return Results.Problem(
-            title: "Error al vaciar carrito",
-            detail: $"Ocurrió un error al vaciar el carrito con ID {carritoId}.",
-            statusCode: 500
-        );
-    }
-})
-.WithName("VaciarCarrito");
 
-// PUT /api/carritos/{carritoId}/{productoId} - Agrega/actualiza producto en carrito (Body: { "cantidad": 2 })
-app.MapPut("/api/carritos/{carritoId}/{productoId:int}", async (
-    CarritoService carritoService, 
-    string carritoId, 
-    int productoId, 
-    ActualizarItemCarritoDto request) =>
-{
-    try
-    {
-        if (request.Cantidad <= 0)
+        var producto = await context.Productos.FindAsync(productoId);
+        if (producto == null)
         {
-            return Results.BadRequest(new 
-            {
-                Mensaje = "La cantidad debe ser mayor a cero",
-                Cantidad = request.Cantidad
+            return Results.NotFound(new { Mensaje = "Producto no encontrado" });
+        }        if (cantidad <= 0)
+        {
+            return Results.BadRequest(new { Mensaje = "La cantidad debe ser mayor a 0" });
+        }
+
+        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        var cantidadActualEnCarrito = itemExistente?.Cantidad ?? 0;
+        var nuevaCantidadTotal = cantidadActualEnCarrito + cantidad;
+
+        // Validar stock disponible considerando lo que ya está en el carrito
+        if (producto.Stock < nuevaCantidadTotal)
+        {
+            var stockDisponible = producto.Stock - cantidadActualEnCarrito;
+            return Results.BadRequest(new { 
+                Mensaje = $"Stock insuficiente. Disponible para agregar: {stockDisponible}, solicitado: {cantidad}" 
             });
         }
 
-        var resultado = await carritoService.AgregarProductoAsync(carritoId, productoId, request.Cantidad);
-        
-        if (!resultado.Exito)
+        if (itemExistente != null)
         {
-            return resultado.Mensaje.Contains("no encontrado") ? 
-                Results.NotFound(new { Mensaje = resultado.Mensaje, CarritoId = carritoId, ProductoId = productoId }) :
-                Results.BadRequest(new { Mensaje = resultado.Mensaje, CarritoId = carritoId, ProductoId = productoId });
+            // SUMAR la cantidad, no reemplazar
+            itemExistente.Cantidad = nuevaCantidadTotal;
         }
-        
-        return Results.Ok(new 
+        else
         {
-            Mensaje = "Producto agregado/actualizado exitosamente en el carrito",
-            CarritoId = carritoId,
-            ProductoId = productoId,
-            CantidadFinal = request.Cantidad,
-            FechaActualizacion = DateTime.Now        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error al agregar producto {productoId} al carrito {carritoId}: {ex.Message}");
-        return Results.Problem(
-            title: "Error al actualizar carrito",
-            detail: $"Ocurrió un error al agregar el producto {productoId} al carrito {carritoId}.",
-            statusCode: 500
-        );
-    }
-})
-.WithName("AgregarProductoAlCarrito");
-
-// DELETE /api/carritos/{carritoId}/{productoId} - Elimina un producto específico del carrito
-app.MapDelete("/api/carritos/{carritoId}/{productoId:int}", async (
-    CarritoService carritoService, 
-    string carritoId, 
-    int productoId) =>
-{
-    try
-    {
-        var resultado = await carritoService.EliminarProductoCompletoAsync(carritoId, productoId);
-        
-        if (!resultado.Exito)
-        {
-            return Results.NotFound(new 
-            { 
-                Mensaje = resultado.Mensaje, 
-                CarritoId = carritoId, 
-                ProductoId = productoId 
-            });
-        }
-        
-        return Results.Ok(new 
-        {
-            Mensaje = "Producto eliminado exitosamente del carrito",
-            CarritoId = carritoId,
-            ProductoId = productoId,
-            FechaEliminacion = DateTime.Now
-        });    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error al eliminar producto {productoId} del carrito {carritoId}: {ex.Message}");
-        return Results.Problem(
-            title: "Error al eliminar producto del carrito",
-            detail: $"Ocurrió un error al eliminar el producto {productoId} del carrito {carritoId}.",
-            statusCode: 500
-        );
-    }
-})
-.WithName("EliminarProductoDelCarrito");
-
-// GET /api/carritos/estadisticas - Información general del sistema de carritos (debugging)
-app.MapGet("/api/carritos/estadisticas", (CarritoService carritoService) =>
-{
-    try
-    {
-        var estadisticas = carritoService.ObtenerEstadisticas();
-        return Results.Ok(new 
-        {
-            Mensaje = "Estadísticas de carritos activos",
-            Fecha = DateTime.Now,
-            Estadisticas = estadisticas
-        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Error al obtener estadísticas: {ex.Message}");
-        return Results.Problem(
-            title: "Error al obtener estadísticas",
-            detail: "Ocurrió un error al generar las estadísticas de carritos.",
-            statusCode: 500
-        );
-    }
-})
-.WithName("EstadisticasCarritos");
-
-// PUT /api/carritos/{carritoId}/confirmar - Confirma la compra con datos del cliente
-/// Cuerpo de la solicitud: { "nombreCliente": "Juan", "apellidoCliente": "Pérez", "emailCliente": "juan@email.com" }
-/// </summary>
-app.MapPut("/api/carritos/{carritoId}/confirmar", async (
-    CarritoService carritoService,
-    string carritoId,
-    ConfirmarCompraDto datosCliente) =>
-{
-    try
-    {
-        var resultado = await carritoService.ConfirmarCompraAsync(carritoId, datosCliente);
-          if (!resultado.Exito)
-        {
-            if (resultado.Mensaje.Contains("no encontrado") || 
-                resultado.Mensaje.Contains("carrito vacío"))
+            var nuevoItem = new ItemCarrito
             {
-                return Results.NotFound(new 
-                { 
-                    Mensaje = resultado.Mensaje, 
-                    CarritoId = carritoId 
-                });
+                CarritoId = carritoId,
+                ProductoId = productoId,
+                Cantidad = cantidad
+            };
+            context.ItemsCarrito.Add(nuevoItem);
+        }
+
+        await context.SaveChangesAsync();
+        return Results.Ok(new { Mensaje = "Producto agregado exitosamente" });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al agregar producto: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
+    }
+});
+
+// DELETE /api/carritos/{carritoId}/productos/{productoId} - Eliminar producto del carrito
+app.MapDelete("/api/carritos/{carritoId:int}/productos/{productoId:int}", async (TiendaContext context, int carritoId, int productoId) =>
+{
+    try
+    {
+        var item = await context.ItemsCarrito
+            .FirstOrDefaultAsync(i => i.CarritoId == carritoId && i.ProductoId == productoId);
+        
+        if (item == null)
+        {
+            return Results.NotFound(new { Mensaje = "Producto no encontrado en el carrito" });
+        }
+
+        context.ItemsCarrito.Remove(item);
+        await context.SaveChangesAsync();
+        
+        return Results.Ok(new { Mensaje = "Producto eliminado del carrito" });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al eliminar producto: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
+    }
+});
+
+// DELETE /api/carritos/{carritoId} - Vaciar carrito
+app.MapDelete("/api/carritos/{carritoId:int}", async (TiendaContext context, int carritoId) =>
+{
+    try
+    {
+        var items = await context.ItemsCarrito
+            .Where(i => i.CarritoId == carritoId)
+            .ToListAsync();
+        
+        context.ItemsCarrito.RemoveRange(items);
+        await context.SaveChangesAsync();
+        
+        return Results.Ok(new { Mensaje = "Carrito vaciado exitosamente" });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al vaciar carrito: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
+    }
+});
+
+// POST /api/carritos/{carritoId}/confirmar - Confirmar compra
+app.MapPost("/api/carritos/{carritoId:int}/confirmar", async (TiendaContext context, int carritoId, ConfirmarCompraDto datosCliente) =>
+{
+    try
+    {
+        var carrito = await context.Carritos
+            .Include(c => c.Items)
+            .ThenInclude(i => i.Producto)
+            .FirstOrDefaultAsync(c => c.Id == carritoId);
+        
+        if (carrito == null || !carrito.Items.Any())
+        {
+            return Results.BadRequest(new { Mensaje = "Carrito vacío o no encontrado" });
+        }
+
+        // Validar datos del cliente
+        if (string.IsNullOrWhiteSpace(datosCliente.NombreCliente) ||
+            string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente) ||
+            string.IsNullOrWhiteSpace(datosCliente.EmailCliente))
+        {
+            return Results.BadRequest(new { Mensaje = "Todos los datos del cliente son obligatorios" });
+        }
+
+        // Validar stock disponible
+        foreach (var item in carrito.Items)
+        {
+            if (item.Producto.Stock < item.Cantidad)
+            {
+                return Results.BadRequest(new { Mensaje = $"Stock insuficiente para {item.Producto.Nombre}" });
             }
-            
-            return Results.BadRequest(new 
+        }
+
+        using var transaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            // Crear la compra
+            var compra = new Compra
+            {
+                Fecha = DateTime.Now,
+                NombreCliente = datosCliente.NombreCliente,
+                ApellidoCliente = datosCliente.ApellidoCliente,
+                EmailCliente = datosCliente.EmailCliente,
+                Items = carrito.Items.Select(i => new ItemCompra
+                {
+                    ProductoId = i.ProductoId,
+                    Cantidad = i.Cantidad,
+                    PrecioUnitario = i.Producto.Precio
+                }).ToList()
+            };
+
+            compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+            context.Compras.Add(compra);
+
+            // Actualizar stock
+            foreach (var item in carrito.Items)
+            {
+                item.Producto.Stock -= item.Cantidad;
+            }
+
+            // Limpiar carrito
+            context.ItemsCarrito.RemoveRange(carrito.Items);
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Results.Ok(new 
             { 
-                Mensaje = resultado.Mensaje, 
-                CarritoId = carritoId 
+                CompraId = compra.Id,
+                Total = compra.Total,
+                Mensaje = "Compra confirmada exitosamente"
             });
         }
-        
-        return Results.Ok(resultado.Compra);
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error al confirmar compra del carrito {carritoId}: {ex.Message}");
-        return Results.Problem(
-            title: "Error al confirmar compra",
-            detail: $"Ocurrió un error interno al procesar la compra del carrito {carritoId}.",
-            statusCode: 500
-        );
+        Console.WriteLine($"❌ Error al confirmar compra: {ex.Message}");
+        return Results.Problem("Error interno del servidor", statusCode: 500);
     }
-})
-.WithName("ConfirmarCompra");
-
-// Endpoint de ejemplo (mantenido para referencia)
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+});
 
 app.Run();

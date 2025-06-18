@@ -131,6 +131,28 @@ public class ApiService
             Console.WriteLine($"❌ Error al validar stock del producto {productoId}: {ex.Message}");
             return (false, 0, "Error de validación");
         }
+    }    /// <summary>
+    /// Obtiene el stock disponible considerando lo que ya está en el carrito.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <param name="carritoId">ID del carrito</param>
+    /// <returns>Información de stock disponible</returns>
+    public async Task<(int stockTotal, int cantidadEnCarrito, int stockDisponible, string nombreProducto)> ObtenerStockDisponibleAsync(int productoId, string carritoId)
+    {
+        try 
+        {
+            var response = await _httpClient.GetFromJsonAsync<StockDisponibleDto>($"/api/productos/{productoId}/stock-disponible/{carritoId}", _jsonOptions);
+            if (response != null)
+            {
+                return (response.StockTotal, response.CantidadEnCarrito, response.StockDisponible, response.NombreProducto);
+            }
+            return (0, 0, 0, "Error");
+        } 
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"❌ Error al obtener stock disponible del producto {productoId}: {ex.Message}");
+            return (0, 0, 0, "Error de conexión");
+        }
     }
 
     // ========================================
@@ -212,11 +234,8 @@ public class ApiService
     {
         try 
         {
-            var requestDto = new ActualizarItemCarritoDto { Cantidad = cantidad };
-            var json = JsonSerializer.Serialize(requestDto, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}", content);
+            // Usar la nueva sintaxis de endpoints con query parameter
+            var response = await _httpClient.PutAsync($"/api/carritos/{carritoId}/productos/{productoId}?cantidad={cantidad}", null);
             
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -231,9 +250,7 @@ public class ApiService
             Console.WriteLine($"❌ Error al agregar producto {productoId} al carrito {carritoId}: {ex.Message}");
             return false;
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Elimina un producto específico del carrito.
     /// </summary>
     /// <param name="carritoId">ID del carrito</param>
@@ -243,7 +260,8 @@ public class ApiService
     {
         try 
         {
-            var response = await _httpClient.DeleteAsync($"/api/carritos/{carritoId}/{productoId}");
+            // Usar la nueva sintaxis de endpoints
+            var response = await _httpClient.DeleteAsync($"/api/carritos/{carritoId}/productos/{productoId}");
             return response.IsSuccessStatusCode;
         } 
         catch (Exception ex) 
@@ -251,9 +269,7 @@ public class ApiService
             Console.WriteLine($"❌ Error al eliminar producto {productoId} del carrito {carritoId}: {ex.Message}");
             return false;
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Confirma una compra convirtiendo el carrito en una compra persistente.
     /// </summary>
     /// <param name="carritoId">ID del carrito</param>
@@ -266,7 +282,8 @@ public class ApiService
             var json = JsonSerializer.Serialize(datosCliente, _jsonOptions);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
-            var response = await _httpClient.PutAsync($"/api/carritos/{carritoId}/confirmar", content);
+            // Usar POST en lugar de PUT según la implementación del servidor
+            var response = await _httpClient.PostAsync($"/api/carritos/{carritoId}/confirmar", content);
             
             if (response.IsSuccessStatusCode)
             {
