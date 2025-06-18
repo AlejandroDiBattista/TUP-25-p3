@@ -1,14 +1,19 @@
-@page "/carrito"
-@using cliente.Services
-@inject CarritoService CarritoService
-@inject NavigationManager Navigation
+@* --------------------------------------------------------------------------------------
+   Carrito.razor - Página para ver y modificar el carrito de compras
+   Explicación muy detallada, línea por línea, como para un niño de 5 años.
+   -------------------------------------------------------------------------------------- *@
 
-<PageTitle>Carrito de Compras</PageTitle>
+@page "/carrito"  
+@using cliente.Services 
+@inject CarritoService CarritoService 
+@inject NavigationManager Navigation  
 
-<div class="container-fluid">
- <nav class="navbar navbar-expand-lg bg-body-tertiary">
+<PageTitle>Carrito de Compras</PageTitle>  
+
+<div class="container-fluid" style="margin-top: 50px;">  
+ <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top"> 
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">NextGen</a>
+    <a class="navbar-brand" href="#">NextGen</a> 
     <button
       class="navbar-toggler"
       type="button"
@@ -20,25 +25,25 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-     <a class="nav-link active mt-1" aria-current="page" href="#">Carrito de compras</a>
+     <a class="nav-link active mt-1" aria-current="page" href="#">Carrito de compras</a> 
     
-    <div class="d-flex ms-auto align-items-center gap-3">
+    <div class="d-flex ms-auto align-items-center gap-3"> 
       <a class="nav-link" href="/confirmacion">
-        <i class="bi bi-bag-fill fs-3"></i>
+        <i class="bi bi-bag-fill fs-3"></i>  
       </a>
-      <a class="btn btn-primary" href="/">Volver</a>
+      <a class="btn btn-primary" href="/">Volver</a>  
     </div>
   </div>
 </nav>
 
-  <div class="container-fluid mt-4">
-    @if (CarritoService.Items.Count == 0)
+  <div class="container-fluid mt-4">  
+    @if (CarritoService.Items.Count == 0) 
     {
-        <p class="mt-2 mx-5">No hay productos en el carrito.</p>
+        <p class="mt-2 mx-5">No hay productos en el carrito.</p> 
     }
-    else
+    else  
     {
-        <table class="table">
+        <table class="table"> 
           <thead>
             <tr>
               <th>Producto</th>
@@ -49,74 +54,74 @@
             </tr>
           </thead>
           <tbody>
-            @foreach (var item in CarritoService.Items)
+            @foreach (var item in CarritoService.Items)  
             {
                 <tr>
-                  <td>@item.Producto.Nombre</td>
-                  <td>$@item.Producto.Precio</td>
+                  <td>@item.Producto.Nombre</td>  
+                  <td>$@item.Producto.Precio</td> 
                   <td>
-                    <button class="btn btn-secondary btn-sm me-1" @onclick="() => CambiarCantidad(item.Producto.Id, -1)">-</button>
-                    @item.Cantidad
-                    <button class="btn btn-secondary btn-sm ms-1" @onclick="() => CambiarCantidad(item.Producto.Id, 1)">+</button>
+                    <button class="btn btn-secondary btn-sm me-1" @onclick="() => CambiarCantidad(item.Producto.Id, -1)">-</button> 
+                    @item.Cantidad 
+                    <button class="btn btn-secondary btn-sm ms-1" @onclick="() => CambiarCantidad(item.Producto.Id, 1)">+</button>  
                   </td>
-                  <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                  <td>$@(item.Producto.Precio * item.Cantidad)</td> 
                   <td>
                     <button
                       class="btn btn-danger btn-sm"
                       @onclick="() => EliminarDelCarrito(item.Producto.Id)"
                     >
                       Eliminar
-                    </button>
+                    </button> 
                   </td>
                 </tr>
             }
           </tbody>
         </table>
 
-        <h4>Total: $@CarritoService.CalcularTotal()</h4>
+        <h4>Total: $@CarritoService.CalcularTotal()</h4> 
         <button class="btn btn-warning me-2" @onclick="VaciarCarrito">
           Vaciar Carrito
-        </button>
+        </button> 
         <button class="btn btn-success" @onclick="ConfirmarCompra">
           Confirmar compra
-        </button>
+        </button>  
     }
   </div>
 </div>
 
 @code {
+    // Función para eliminar un producto del carrito
     private void EliminarDelCarrito(int productoId)
     {
-        CarritoService.EliminarProducto(productoId);
+        CarritoService.EliminarProducto(productoId);  // Le decimos al servicio que lo saque
     }
 
+    // Función para vaciar todo el carrito
     private void VaciarCarrito()
     {
         CarritoService.VaciarCarrito();
+        Navigation.NavigateTo("/", true); // Navega a Home y fuerza recarga para ver el stock actualizado
     }
 
+    // Función para sumar o restar cantidad de un producto
     private void CambiarCantidad(int productoId, int delta)
     {
-        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null)
-        {
-            if (delta == 1)
-            {
-                CarritoService.AgregarProducto(item.Producto);
-            }
-            else if (delta == -1 && item.Cantidad > 1)
-            {
-                item.Cantidad--;
-            }
-            else if (delta == -1 && item.Cantidad == 1)
-            {
-                CarritoService.EliminarProducto(productoId);
-            }
-        }
+        CarritoService.CambiarCantidad(productoId, delta);
     }
 
+    // Función para ir a la página de confirmación de compra
     private void ConfirmarCompra()
     {
-        Navigation.NavigateTo("/confirmacion");
+        Navigation.NavigateTo("/confirmacion");  // Cambiamos de página
+    }
+
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
     }
 }

@@ -1,6 +1,5 @@
 @page "/confirmacion"
 @using cliente.Services
-@using cliente.Dtos
 @using System.ComponentModel.DataAnnotations
 @inject CarritoService CarritoService
 @inject ApiService ApiService
@@ -42,58 +41,6 @@
     {
         <div class="alert alert-info mt-3">@mensaje</div>
     }
-    <!-- Historial de compras SIEMPRE debajo del formulario y resumen -->
-    <div class="mt-5">
-        <h4>Historial de compras</h4>
-        @if (!string.IsNullOrEmpty(errorCompras))
-        {
-            <div class="alert alert-danger">@errorCompras</div>
-        }
-        else if (compras == null)
-        {
-            <div>Cargando compras...</div>
-        }
-        else if (compras.Count == 0)
-        {
-            <div>No hay compras registradas.</div>
-        }
-        else
-        {
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Cliente</th>
-                        <th>Email</th>
-                        <th>Total</th>
-                        <th>Productos</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var compra in compras)
-                    {
-                        <tr>
-                            <td>@compra.Fecha.ToString("g")</td>
-                            <td>@compra.NombreCliente @compra.ApellidoCliente</td>
-                            <td>@compra.EmailCliente</td>
-                            <td>$@compra.Total</td>
-                            <td>
-                                <ul>
-                                    @if (compra.Items != null)
-                                    {
-                                        @foreach (var item in compra.Items)
-                                        {
-                                            <li>@(item.Producto?.Nombre ?? "") x @item.Cantidad = $@(item.PrecioUnitario * item.Cantidad)</li>
-                                        }
-                                    }
-                                </ul>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    </div>
 </div>
 @if (compraExitosa)
 {
@@ -119,27 +66,6 @@
     private bool compraExitosa = false;
     private decimal totalCompra = 0;
     private List<(string Nombre, int Cantidad, decimal Precio)> productosComprados = new();
-    private List<CompraDto> compras;
-    private string errorCompras;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await CargarHistorialComprasAsync();
-    }
-
-    private async Task CargarHistorialComprasAsync()
-    {
-        try
-        {
-            compras = await ApiService.ObtenerComprasAsync();
-            errorCompras = null;
-        }
-        catch (Exception ex)
-        {
-            errorCompras = "No se pudieron cargar las compras: " + ex.Message;
-            compras = null;
-        }
-    }
 
     private async Task ConfirmarCompra()
     {
@@ -150,9 +76,10 @@
             compraExitosa = true;
             totalCompra = CarritoService.CalcularTotal();
             productosComprados = CarritoService.Items.Select(i => (i.Producto.Nombre, i.Cantidad, i.Producto.Precio)).ToList();
-            await CargarHistorialComprasAsync();
             CarritoService.VaciarCarrito();
             await ApiService.ResetCarritoIdAsync();
+            // Redirigir al catálogo (Home) después de confirmar la compra
+            NavigationManager.NavigateTo("/");
         }
     }
 
