@@ -136,6 +136,7 @@ public class ApiService
     {
 
         _listaProductos.Clear();
+        Compra = null;
         NotifyStateChanged();
     }
 

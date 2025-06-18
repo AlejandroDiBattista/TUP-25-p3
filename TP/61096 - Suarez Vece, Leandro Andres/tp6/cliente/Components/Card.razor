@@ -34,8 +34,7 @@
                             <button type="button" class="btn btn-outline-primary"
                                 @onclick="()=>ModificarCantidad(p.Id, -1)">-</button>
 
-                            <input type="number" meta-id="@p.Id" min="0" max="@p.Stock"
-                                value="@((p is ItemCompraGtDto c ? c.Cantidad : cantidades[p.Id]))"
+                            <input type="number" meta-id="@p.Id" min="0" max="@p.Stock" value="@cantidades[p.Id]"
                                 @onchange="(e) => CapturarCantidad(p.Id, e.Value)"
                                 class="form-control text-center w-auto border-bottom border-primary" style="max-width: 80px;">
 
@@ -104,11 +103,14 @@
 
     void ModificarCantidad(int productoId, int cambio)
     {
+
         if (!cantidades.ContainsKey(productoId))
         {
             cantidades[productoId] = 0;
         }
         cantidades[productoId] = Math.Max(0, cantidades[productoId] + cambio);
+
+
     }
 
     public void InicializarListaCantidades()
@@ -117,7 +119,14 @@
         {
             if (!cantidades.ContainsKey(p.Id))
             {
-                cantidades[p.Id] = 0; // Inicializa con 0
+                if (p is ItemCompraGtDto itemConCantidad)
+                {
+                    cantidades[p.Id] = itemConCantidad.Cantidad;
+                }
+                else
+                {
+                    cantidades[p.Id] = 0;
+                }
             }
         }
     }
