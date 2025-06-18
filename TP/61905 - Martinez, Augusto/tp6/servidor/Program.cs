@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using servidor.Data;
 using servidor.Services;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,11 +15,15 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
 });
 
-// Configurar la conexión a la base de datos SQLite
+// ✅ Agregar soporte para controladores API
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+// ✅ Configurar la conexión a la base de datos SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
-// Configurar CORS para permitir solicitudes desde el frontend
+// ✅ Configurar CORS para permitir solicitudes desde el frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApp", policy =>
@@ -27,34 +34,37 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ✅ 🔥 Registrar servicios necesarios para la API
+// ✅ Registrar servicios necesarios para la API
 builder.Services.AddScoped<ProductoService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<CarritoService>();
-builder.Services.AddScoped<CarritoItemService>();
-builder.Services.AddScoped<VentaItemService>();
-
-// Agregar soporte para controladores API
-builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configuración en modo desarrollo
+// 🛠️ Configuración en modo desarrollo
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+else
+{
+    app.UseExceptionHandler("/error");
+}
 
-// Aplicar CORS
+// 🔥 Aplicar CORS
 app.UseCors("AllowClientApp");
 
-// Mapear controladores API
+// 📌 Habilitar enrutamiento y autorización
+app.UseRouting();
+app.UseAuthorization();
+
+// 🛠️ Mapear controladores API
 app.MapControllers();
 
-// Ruta base para verificar que el servidor está corriendo
+// ✅ Ruta base para verificar que el servidor está en funcionamiento
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
-// 🛒 Ruta para obtener productos desde el servicio
+// 🔥 Ruta para obtener productos desde el servicio
 app.MapGet("/api/productos", async (ProductoService servicio) =>
 {
     try
@@ -74,8 +84,8 @@ app.MapPost("/api/comprar", async (VentaService ventaService, servidor.Models.Ve
 {
     try
     {
-        await ventaService.RegistrarVentaAsync(venta);
-        return Results.Ok("Compra confirmada");
+        var resultado = await ventaService.RegistrarVentaAsync(venta);
+        return resultado ? Results.Ok("Compra confirmada") : Results.Problem("Error al procesar la compra.");
     }
     catch (Exception ex)
     {
@@ -84,7 +94,7 @@ app.MapPost("/api/comprar", async (VentaService ventaService, servidor.Models.Ve
     }
 });
 
-// Inicializar productos en la base de datos si aún no existen
+// 🔥 Inicializar productos en la base de datos si aún no existen
 using (var scope = app.Services.CreateScope())
 {
     var servicios = scope.ServiceProvider;
@@ -92,5 +102,5 @@ using (var scope = app.Services.CreateScope())
     await productoService.AgregarProductosInicialesAsync();
 }
 
-// Ejecutar la aplicación
+// 🚀 Ejecutar la aplicación
 app.Run();

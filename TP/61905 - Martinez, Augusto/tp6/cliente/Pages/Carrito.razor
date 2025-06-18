@@ -1,73 +1,121 @@
 @page "/carrito"
-@using Cliente.Models
 @using Cliente.Services
+@using Cliente.Models
 @inject CarritoService CarritoService
+@inject VentaService VentaService
 @inject NavigationManager Navigation
 
-<h3>Carrito de Compras</h3>
+<PageTitle>Carrito de compras</PageTitle>
 
-@if (CarritoService.Items.Any())
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Importe</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in CarritoService.Items)
+<header class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow p-3">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🛍️ Tienda Gamer</a>
+        <button class="btn btn-outline-primary" @onclick="IrAInicio">🏠 Volver al catálogo</button>
+    </div>
+</header>
+
+<div class="container mt-4">
+    <h2>Carrito de compras</h2>
+
+    @if (cargando)
+    {
+        <div class="alert alert-info">Cargando carrito...</div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">Error: @error</div>
+    }
+    else if (carrito != null && carrito.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var item in carrito)
             {
-                <tr>
-                    <td>@item.Nombre</td>
-                    <td>@item.PrecioUnitario.ToString("C")</td>
-                    <td>@item.Cantidad</td>
-                    <td>@item.Importe.ToString("C")</td>
-                    <td>
-                        <button class="btn btn-sm btn-success" @onclick="() => CambiarCantidad(item.ProductoId, 1)">+</button>
-                        <button class="btn btn-sm btn-warning" @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad <= 1)">-</button>
-                    </td>
-                </tr>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Producto.Nombre</h5>
+                            <p class="card-text">@item.Producto.Descripcion</p>
+                            <p><strong>Precio:</strong> $@item.Producto.Precio</p>
+                            <p><strong>Cantidad:</strong> @item.Cantidad</p>
+                        </div>
+                        <div class="card-footer text-end">
+                            <button class="btn btn-danger" @onclick="() => EliminarDelCarrito(item)">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
 
-    <h5>Total: @CarritoService.Total.ToString("C")</h5>
-
-    <button class="btn btn-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
-    <button class="btn btn-success me-2" @onclick="IrAConfirmar">Finalizar compra</button>
-
-    <!-- Botón para volver al catálogo -->
-    <button class="btn btn-secondary mt-3" @onclick="VolverAlCatalogo">🔙 Volver al catálogo</button>
-}
-else
-{
-    <p>El carrito está vacío.</p>
-
-    <!-- También mostrar el botón para volver cuando el carrito está vacío -->
-    <button class="btn btn-secondary mt-3" @onclick="VolverAlCatalogo">🔙 Volver al catálogo</button>
-}
+        <div class="mt-4 d-flex justify-content-between">
+            <button class="btn btn-outline-danger" @onclick="VaciarCarrito">Vaciar carrito</button>
+            <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">No hay productos en tu carrito.</div>
+    }
+</div>
 
 @code {
-    void CambiarCantidad(int productoId, int cambio)
+    private List<CarritoItem> carrito = new();
+    private bool cargando = true;
+    private string error;
+
+    protected override async Task OnInitializedAsync()
     {
-        CarritoService.ModificarCantidad(productoId, cambio);
+        await CargarCarrito();
     }
 
-    void VaciarCarrito()
+    private async Task CargarCarrito()
     {
-        CarritoService.Vaciar();
+        try
+        {
+            cargando = true;
+            carrito = await CarritoService.ObtenerCarritoAsync(usuarioId) ?? new List<CarritoItem>();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
     }
 
-     private void IrAConfirmar()
+    private async Task EliminarDelCarrito(CarritoItem item)
     {
-        Navigation.NavigateTo("/confirmar");
+        await CarritoService.EliminarProductoAsync(item);
+        carrito.Remove(item);
+        StateHasChanged();
     }
 
-    void VolverAlCatalogo()
+    private async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarritoAsync(usuarioId);
+        carrito.Clear();
+        StateHasChanged();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var venta = new Venta { VentaItems = carrito };
+        var resultado = await VentaService.RegistrarVentaAsync(venta);
+
+        if (resultado)
+        {
+            await VaciarCarrito();
+            Navigation.NavigateTo("/confirmacion");
+        }
+        else
+        {
+            error = "Hubo un problema al procesar la compra.";
+        }
+    }
+
+    private void IrAInicio()
     {
         Navigation.NavigateTo("/");
     }

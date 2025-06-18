@@ -1,45 +1,36 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using servidor.Models;
-using servidor.Services;
+using Microsoft.AspNetCore.Mvc; // Permite usar ControllerBase y atributos como [ApiController] y [Route]
+using servidor.Data; // Permite el uso de AppDbContext
+using servidor.Models; // Permite el uso de modelos como Producto, Carrito, Venta
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace servidor.Controllers
+
+[Route("api/[controller]")]
+[ApiController]
+public class ProductosController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductoController : ControllerBase
+    private readonly AppDbContext _context;
+
+    public ProductosController(AppDbContext context)
     {
-        private readonly ProductoService _productoService;
-        private readonly ILogger<ProductoController> _logger;
+        _context = context;
+    }
 
-        public ProductoController(ProductoService productoService, ILogger<ProductoController> logger)
-        {
-            _productoService = productoService;
-            _logger = logger;
-        }
+    // Obtener todos los productos
+    [HttpGet]
+    public async Task<ActionResult<List<Producto>>> GetProductos()
+    {
+        return await _context.Productos.ToListAsync();
+    }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Producto>>> ObtenerProductos()
-        {
-            try
-            {
-                var productos = await _productoService.ObtenerProductosAsync();
-
-                if (productos == null || productos.Count == 0)
-                {
-                    _logger.LogWarning("No se encontraron productos en la base de datos.");
-                    return NotFound("No hay productos disponibles.");
-                }
-
-                return Ok(productos);
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError($"Error en ObtenerProductos: {ex.Message}");
-                return StatusCode(500, $"Error interno al obtener productos: {ex.Message}");
-            }
-        }
+    // Obtener un producto por ID
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Producto>> GetProducto(int id)
+    {
+        var producto = await _context.Productos.FindAsync(id);
+        if (producto == null) return NotFound();
+        return producto;
     }
 }

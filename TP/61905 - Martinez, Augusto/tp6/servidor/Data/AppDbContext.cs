@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using servidor.Models;  
+using servidor.Models;
 
 namespace servidor.Data
 {
@@ -7,35 +7,40 @@ namespace servidor.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<Producto> Productos { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Carrito> Carritos { get; set; }
         public DbSet<CarritoItem> CarritoItems { get; set; }
-        public DbSet<Venta> Ventas { get; set; } 
-        public DbSet<VentaItem> VentaItems { get; set; } 
+        public DbSet<Venta> Ventas { get; set; }
+        public DbSet<VentaItem> VentaItems { get; set; }
+        public DbSet<Producto> Productos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 🔥 Configurar relaciones en la base de datos
             modelBuilder.Entity<VentaItem>()
-                .HasOne(v => v.Producto) 
-                .WithMany()
+                .HasOne(v => v.Producto)
+                .WithMany(p => p.VentaItems)
                 .HasForeignKey(v => v.ProductoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<VentaItem>()
                 .HasOne(v => v.Venta)
-                .WithMany(v => v.Items)
+                .WithMany(v => v.VentaItems) // ✅ Cambio de Items a VentaItems
                 .HasForeignKey(v => v.VentaId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CarritoItem>()
                 .HasOne(ci => ci.Carrito)
-                .WithMany(c => c.Items)
+                .WithMany(c => c.CarritoItems) // ✅ Cambio de Items a CarritoItems
                 .HasForeignKey(ci => ci.CarritoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Carrito>()
-                .HasKey(c => c.Id); // ✅ Corrección: Movido aquí
+                .HasKey(c => c.Id); // ✅ Definir clave primaria de Carrito
+
+            // ✅ Definir clave primaria de Venta
+            modelBuilder.Entity<Venta>()
+                .HasKey(v => v.Id);
 
             // 🔹 Opcional: Inicialización de productos si la tabla está vacía
             modelBuilder.Entity<Producto>().HasData(

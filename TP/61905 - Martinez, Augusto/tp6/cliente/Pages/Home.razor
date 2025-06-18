@@ -5,8 +5,7 @@
 @inject NavigationManager Navigation
 @inject CarritoService CarritoService
 
-
-<PageTitle>Catalogo de productos</PageTitle>
+<PageTitle>Catálogo de productos</PageTitle>
 
 <header class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow p-3">
     <div class="container-fluid">
@@ -64,7 +63,7 @@
 </div>
 
 @code {
-    private List<Producto> productos;
+    private List<Producto> productos = new();
     private string error;
     private bool cargando = true;
     private int contadorCarrito = 0;
@@ -73,40 +72,38 @@
     protected override async Task OnInitializedAsync()
     {
         await CargarProductos();
-        contadorCarrito = CarritoService.ContadorProductos(); // Inicializa contador
+        contadorCarrito = await CarritoService.ObtenerContadorProductosAsync(); // ✅ Obtiene el contador real
     }
 
     private async Task CargarProductos()
     {
-    try
-    {
-        cargando = true;
-        productos = await ApiService.ObtenerProductosAsync();
+        try
+        {
+            cargando = true;
+            productos = await ApiService.ObtenerProductosAsync() ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
     }
-    catch (Exception ex)
-    {
-        error = ex.Message;
-    }
-    finally
-    {
-        cargando = false;
-        StateHasChanged(); // 🔥 Refresca la UI para que el stock refleje la compra
-    }
-}
 
     private IEnumerable<Producto> productosFiltrados => string.IsNullOrWhiteSpace(busqueda)
         ? productos
         : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 
-    private void AgregarAlCarrito(Producto producto)
+    private async Task AgregarAlCarrito(Producto producto)
     {
         if (producto.Stock > 0)
         {
-            CarritoService.AgregarProducto(producto);      // Agrega el producto y actualiza stock
-            contadorCarrito = CarritoService.ContadorProductos();  // Actualiza contador con total real
-            StateHasChanged();                             // Refresca la UI para mostrar stock actualizado
-
-            // Navigation.NavigateTo("/carrito"); // Descomenta si querés navegar
+            await CarritoService.AgregarProductoAsync(producto); // ✅ Usa un método asíncrono
+            contadorCarrito = await CarritoService.ObtenerContadorProductosAsync();
+            StateHasChanged();
         }
         else
         {
@@ -119,4 +116,3 @@
         Navigation.NavigateTo("/carrito");
     }
 }
-
