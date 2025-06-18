@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Catálogo de productos</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #085caf;
+      color: #f3efef;
+    }
+
+    header {
+      background: #042f66;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ffdb4d;
+    }
+
+    .search-container {
+      flex-grow: 1;
+      margin: 0 20px;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+      font-size: 16px;
+    }
+
+    .carrito-icon {
+      position: relative;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .carrito-icon::after {
+      content: attr(data-count);
+      position: absolute;
+      top: -5px;
+      right: -10px;
+      background: red;
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      padding: 2px 5px;
+    }
+
+    .productos {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+      justify-content: center;
+    }
+
+    .producto {
+      background: #064be0;
+      border-radius: 8px;
+      margin: 10px;
+      padding: 16px;
+      width: 250px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .producto img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .producto h3 {
+      margin: 0 0 5px;
+      color: #fdd835;
+      text-align: center;
+    }
+
+    .producto p {
+      margin: 3px 0;
+      text-align: center;
+    }
+
+    .producto .stock {
+      color: #00ff99;
+    }
+
+    .producto .precio {
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .producto button {
+      margin-top: auto;
+      background: #28a745;
+      color: white;
+      padding: 8px;
+      width: 100%;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .producto button:disabled {
+      background: #888;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍬 Dulces Online</h1>
+    <div class="search-container">
+      <input type="text" id="buscador" placeholder="Buscar productos..." />
+    </div>
+    <div class="carrito-icon" onclick="window.location.href='carrito.html'" data-count="0">🛒</div>
+  </header>
+
+  <main class="productos" id="productos-container"></main>
+
+  <script>
+    const productos = [
+      { id: 1, nombre: "Chocolate Milka", descripcion: "Chocolate suave con leche", precio: 950, stock: 10, imagen: "img/milka.jpg" },
+      { id: 2, nombre: "Bon o Bon", descripcion: "Bombón de maní", precio: 120, stock: 20, imagen: "img/bonobon.jpg" },
+      { id: 3, nombre: "Sugus", descripcion: "Caramelos masticables", precio: 80, stock: 30, imagen: "img/sugus.jpg" },
+      { id: 4, nombre: "Rocklets", descripcion: "Grageas de chocolate", precio: 250, stock: 15, imagen: "img/rocklets.jpg" },
+      { id: 5, nombre: "Mogul", descripcion: "Gomitas frutales", precio: 180, stock: 12, imagen: "img/mogul.jpg" },
+      { id: 6, nombre: "Tita", descripcion: "Galletita rellena con chocolate", precio: 90, stock: 25, imagen: "img/tita.jpg" },
+      { id: 7, nombre: "Rhodesia", descripcion: "Galletita con dulce de leche y chocolate", precio: 90, stock: 22, imagen: "img/rhodesia.jpg" },
+      { id: 8, nombre: "Menta Cristal", descripcion: "Caramelo de menta", precio: 70, stock: 35, imagen: "img/menta.jpg" },
+      { id: 9, nombre: "Caramelos Arcor", descripcion: "Surtido de caramelo duro", precio: 60, stock: 50, imagen: "img/arcor.jpg" },
+      { id: 10, nombre: "Chocolinas", descripcion: "Galletitas de chocolate", precio: 350, stock: 18, imagen: "img/chocolinas.jpg" },
+      { id: 11, nombre: "Alfajor Jorgito", descripcion: "Alfajor clásico de dulce de leche", precio: 180, stock: 40, imagen: "img/jorgito.jpg" },
+      { id: 12, nombre: "Bananita Dolca", descripcion: "Banana bañada en chocolate", precio: 100, stock: 30, imagen: "img/bananita.jpg" },
+      { id: 13, nombre: "Kinder Bueno", descripcion: "Chocolate con crema de avellanas", precio: 400, stock: 8, imagen: "img/kinder.jpg" },
+      { id: 14, nombre: "KitKat", descripcion: "Barra de chocolate con galleta", precio: 350, stock: 16, imagen: "img/kitkat.jpg" },
+      { id: 15, nombre: "M&M's", descripcion: "Confites de chocolate", precio: 300, stock: 10, imagen: "img/mms.jpg" }
+    ];
+
+    const carritoIcon = document.querySelector('.carrito-icon');
+    const cont = document.getElementById('productos-container');
+    const buscador = document.getElementById('buscador');
+
+    function obtenerCarrito() {
+      return JSON.parse(localStorage.getItem('carrito')) || [];
+    }
+
+    function guardarCarrito(carrito) {
+      localStorage.setItem('carrito', JSON.stringify(carrito));
+      actualizarContadorCarrito();
+    }
+
+    function actualizarContadorCarrito() {
+      const cart = obtenerCarrito();
+      const total = cart.reduce((sum, p) => sum + p.cantidad, 0);
+      carritoIcon.setAttribute('data-count', total);
+    }
+
+    function agregarAlCarrito(p) {
+      const carrito = obtenerCarrito();
+      const idx = carrito.findIndex(x => x.id === p.id);
+
+      if (idx !== -1) {
+        if (carrito[idx].cantidad + 1 > p.stock) {
+          alert('No hay más stock disponible.');
+          return;
+        }
+        carrito[idx].cantidad++;
+      } else {
+        carrito.push({ ...p, cantidad: 1 });
+      }
+
+      guardarCarrito(carrito);
+    }
+
+    function renderizar(filtro = '') {
+      cont.innerHTML = '';
+      productos
+        .filter(p => p.nombre.toLowerCase().includes(filtro.toLowerCase()))
+        .forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'producto';
+          card.innerHTML = `
+            <img src="${p.imagen}" alt="${p.nombre}">
+            <h3>${p.nombre}</h3>
+            <p>${p.descripcion}</p>
+            <p class="stock">Stock: ${p.stock}</p>
+            <p class="precio">$${p.precio}</p>
+            <button ${p.stock <= 0 ? 'disabled' : ''}>Agregar al carrito</button>
+          `;
+          const btn = card.querySelector('button');
+          btn.addEventListener('click', () => agregarAlCarrito(p));
+          cont.appendChild(card);
+        });
+    }
+
+    buscador.addEventListener('input', (e) => renderizar(e.target.value));
+    renderizar();
+    actualizarContadorCarrito();
+  </script>
+</body>
+</html>
