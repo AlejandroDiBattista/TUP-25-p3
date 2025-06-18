@@ -1,5 +1,7 @@
 @page "/"
 @inject ApiService ApiService
+@using System.Timers
+@implements IDisposable
 
 <div class="container">
     <div class="row mb-4">
@@ -38,10 +40,9 @@
                             <div class="input-group mb-2">
                                 <span class="input-group-text">Cantidad</span>
                                 <input type="number" class="form-control" min="1" max="@p.Stock" value="@GetCantidad(p.Id)" @oninput="e => CambiarCantidad(p.Id, e.Value?.ToString())" disabled="@(p.Stock == 0)" />
-                            </div>
-                            @if (GetCantidadEnCarrito(p.Id) > 0)
+                            </div>                            @if (mensajesTemporales.ContainsKey(p.Id) && mensajesTemporales[p.Id])
                             {
-                                <div class="alert alert-info py-1 px-2 mb-2">Ya estás llevando este producto.</div>
+                                <div class="alert alert-success py-1 px-2 mb-2">¡Lo agregaste al carrito!</div>
                             }
                             <button class="btn btn-success" @onclick="() => AgregarAlCarrito(p)" disabled="@(p.Stock == 0)">
                                 @(p.Stock == 0 ? "Sin stock" : "Agregar al carrito")
@@ -57,6 +58,10 @@
 @code {
     private List<ProductoDto> productos;
     private string _busqueda = "";
+    // Diccionario para manejar los mensajes temporales por producto
+    private Dictionary<int, bool> mensajesTemporales = new();
+    private Dictionary<int, Timer> temporizadores = new();
+    
     private string busqueda
     {
         get => _busqueda;
@@ -78,62 +83,176 @@
         return item?.Cantidad ?? 0;
     }
 
-    private List<ItemCarritoDto> carrito;
-
-    protected override async Task OnInitializedAsync()
+    private List<ItemCarritoDto> carrito;    protected override async Task OnInitializedAsync()
     {
         await CargarProductos();
         carrito = await ApiService.ObtenerCarritoAsync();
-    }
-
-    private int GetCantidad(int productoId)
+        
+        // Suscribirse al evento de cambio de stock
+        ApiService.OnStockChanged += ActualizarStockEnUI;
+    }    private int GetCantidad(int productoId)
     {
+        // Siempre retornar la cantidad del diccionario o 1 como valor predeterminado
         if (cantidades.TryGetValue(productoId, out var c) && c > 0)
             return c;
-        var enCarrito = GetCantidadEnCarrito(productoId);
-        return enCarrito > 0 ? enCarrito : 1;
-    }
-
-    private async void CambiarCantidad(int productoId, string? value)
+        return 1;
+    }private void CambiarCantidad(int productoId, string? value)
     {
+        // Encontrar el producto para obtener el stock actual
+        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+        var stockActual = producto?.Stock ?? 0;
+        
         if (int.TryParse(value, out var cantidad) && cantidad > 0)
+        {
+            // Asegurar que la cantidad no exceda el stock disponible
+            if (cantidad > stockActual)
+                cantidad = stockActual > 0 ? stockActual : 1;
+                
             cantidades[productoId] = cantidad;
+        }
         else
             cantidades[productoId] = 1;
             
-        if (GetCantidadEnCarrito(productoId) > 0)
-        {
-            _ = ApiService.AgregarAlCarritoAsync(productoId, cantidades[productoId]);
-            _ = RefrescarCarrito();
-        }
+        // Ya no actualizamos el carrito al cambiar la cantidad
     }
 
     private async Task RefrescarCarrito()
     {
         carrito = await ApiService.ObtenerCarritoAsync();
         StateHasChanged();
-    }
-
-    private async Task AgregarAlCarrito(ProductoDto producto)
+    }    private async Task AgregarAlCarrito(ProductoDto producto)
     {
-        var cantidad = GetCantidad(producto.Id);
-        await ApiService.AgregarAlCarritoAsync(producto.Id, cantidad);
-        await CargarProductos();
-    }
-
-    private async Task CargarProductos()
-    {
-        productos = await ApiService.ObtenerProductosAsync(busqueda);
-        carrito = await ApiService.ObtenerCarritoAsync();
-        if (productos != null)
+        var nuevaCantidad = GetCantidad(producto.Id);
+        var cantidadEnCarrito = GetCantidadEnCarrito(producto.Id);
+        
+        // Verificar que hay stock suficiente
+        if (producto.Stock < nuevaCantidad)
         {
-            foreach (var p in productos)
+            nuevaCantidad = producto.Stock; // Limitar a stock disponible
+            if (nuevaCantidad <= 0)
             {
-                var enCarrito = GetCantidadEnCarrito(p.Id);
-                if (!cantidades.ContainsKey(p.Id) || cantidades[p.Id] < 1)
-                    cantidades[p.Id] = enCarrito > 0 ? enCarrito : 1;
+                return; // No hay stock, no hacer nada
             }
         }
+        
+        // Sumar la nueva cantidad a la cantidad existente en el carrito
+        var cantidadTotal = nuevaCantidad + cantidadEnCarrito;
+        
+        // El ApiService se encargará de actualizar el stock local
+        await ApiService.AgregarAlCarritoAsync(producto.Id, cantidadTotal, cantidadEnCarrito);
+        MostrarMensajeTemporal(producto.Id);
+        
+        // Solo actualizamos el carrito, no todos los productos
+        carrito = await ApiService.ObtenerCarritoAsync();
+        
+        // No actualizamos el stock aquí, se actualizará a través del evento OnStockChanged
+        
         StateHasChanged();
+    }private async Task CargarProductos()
+    {
+        // Utilizamos el método común para cargar los datos
+        await ActualizarDatosTrasModificarCarrito();
+    }
+
+    private void MostrarMensajeTemporal(int productoId)
+    {
+        mensajesTemporales[productoId] = true;
+        if (temporizadores.ContainsKey(productoId))
+        {
+            temporizadores[productoId]?.Stop();
+            temporizadores[productoId]?.Dispose();
+            temporizadores.Remove(productoId);
+        }
+
+        var timer = new Timer(3000);
+        timer.Elapsed += (s, e) => OcultarMensajeTemporal(productoId);
+        timer.AutoReset = false;
+        timer.Start();
+        temporizadores[productoId] = timer;
+    }    private void OcultarMensajeTemporal(int productoId)
+    {
+        InvokeAsync(() => {
+            bool cambioRealizado = false;
+            
+            if (mensajesTemporales.ContainsKey(productoId) && mensajesTemporales[productoId])
+            {
+                mensajesTemporales[productoId] = false;
+                cambioRealizado = true;
+            }
+            
+            // Limpiar el temporizador
+            if (temporizadores.ContainsKey(productoId))
+            {
+                temporizadores[productoId]?.Dispose();
+                temporizadores.Remove(productoId);
+            }
+            
+            // Solo actualizamos la UI si realmente ocurrió un cambio
+            if (cambioRealizado)
+                StateHasChanged();
+        });
+    }
+
+    private async Task ActualizarDatosTrasModificarCarrito()
+    {
+        // Cargamos en paralelo los productos y el carrito para optimizar
+        var productosTask = ApiService.ObtenerProductosAsync(busqueda);
+        var carritoTask = ApiService.ObtenerCarritoAsync();
+        
+        await Task.WhenAll(productosTask, carritoTask);
+        
+        productos = await productosTask;
+        carrito = await carritoTask;
+          if (productos != null)
+        {
+            // Inicializar cantidades para productos nuevos sin afectar las existentes
+            foreach (var p in productos)
+            {
+                if (!cantidades.ContainsKey(p.Id) || cantidades[p.Id] < 1)
+                    cantidades[p.Id] = 1;
+            }
+        }
+        
+        StateHasChanged();
+    }    // Método para actualizar el stock en UI cuando cambia en el servicio
+    private async Task ActualizarStockEnUI()
+    {
+        try 
+        {
+            // Obtener los productos actualizados en lugar de modificar los existentes
+            productos = await ApiService.ObtenerProductosAsync(busqueda);
+            
+            // Actualizar las cantidades y asegurar que no excedan el stock disponible
+            if (productos != null)
+            {                foreach (var p in productos)
+                {
+                    // Para productos nuevos, inicializar con 1
+                    if (!cantidades.ContainsKey(p.Id))
+                        cantidades[p.Id] = 1;
+                    
+                    // Asegurar que la cantidad seleccionada no exceda el stock disponible
+                    if (cantidades.ContainsKey(p.Id) && cantidades[p.Id] > p.Stock && p.Stock > 0)
+                        cantidades[p.Id] = p.Stock;
+                }
+            }
+            
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex) 
+        {
+            Console.Error.WriteLine($"Error actualizando stock en UI: {ex.Message}");
+        }
+    }public void Dispose()
+    {
+        // Detener y limpiar los temporizadores de mensajes
+        foreach (var timer in temporizadores.Values)
+        {
+            timer?.Stop();
+            timer?.Dispose();
+        }
+        temporizadores.Clear();
+        
+        // Desuscribirse del evento de cambio de stock
+        ApiService.OnStockChanged -= ActualizarStockEnUI;
     }
 }

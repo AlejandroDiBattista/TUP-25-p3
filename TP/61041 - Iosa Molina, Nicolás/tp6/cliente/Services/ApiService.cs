@@ -4,8 +4,10 @@ namespace cliente.Services;
 
 public class ApiService {
     private readonly HttpClient _httpClient;
-
+    private Dictionary<int, int> stockLocalModifications = new Dictionary<int, int>();
+    
     public event Func<Task> OnCarritoChanged;
+    public event Func<Task> OnStockChanged;
 
     public ApiService(HttpClient httpClient) {
         _httpClient = httpClient;
@@ -16,12 +18,29 @@ public class ApiService {
         } catch (Exception ex) {
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
-    }
-
-    public async Task<List<ProductoDto>> ObtenerProductosAsync(string busqueda = "") {
+    }    public async Task<List<ProductoDto>> ObtenerProductosAsync(string busqueda = "") {
+        List<ProductoDto> productos;
+        
         if (string.IsNullOrWhiteSpace(busqueda))
-            return await _httpClient.GetFromJsonAsync<List<ProductoDto>>("/productos");
-        return await _httpClient.GetFromJsonAsync<List<ProductoDto>>($"/productos/buscar/{busqueda}");
+            productos = await _httpClient.GetFromJsonAsync<List<ProductoDto>>("/productos");
+        else
+            productos = await _httpClient.GetFromJsonAsync<List<ProductoDto>>($"/productos/buscar/{busqueda}");
+        
+        // Aplicar modificaciones locales de stock
+        if (productos != null)
+        {
+            foreach (var producto in productos)
+            {
+                var modificacion = GetStockModification(producto.Id);
+                if (modificacion > 0)
+                {
+                    producto.Stock -= modificacion;
+                    if (producto.Stock < 0) producto.Stock = 0; // Prevenir stock negativo
+                }
+            }
+        }
+        
+        return productos;
     }
 
     public async Task<List<ItemCarritoDto>> GetCarrito() {
@@ -31,29 +50,73 @@ public class ApiService {
     public async Task<List<ItemCarritoDto>> ObtenerCarritoAsync() {
         var carritoId = await ObtenerCarritoIdAsync();
         return await _httpClient.GetFromJsonAsync<List<ItemCarritoDto>>($"/carritos/{carritoId}");
-    }
-
-    public async Task AgregarAlCarritoAsync(int productoId, int cantidad) {
+    }    public async Task AgregarAlCarritoAsync(int productoId, int cantidad, int cantidadAnterior = 0) {
         var carritoId = await ObtenerCarritoIdAsync();
         var url = $"/carritos/{carritoId}/{productoId}?cantidad={cantidad}";
         await _httpClient.PutAsync(url, null);
+        
+        // Calcular la diferencia entre la cantidad nueva y la anterior
+        int diferencia = cantidad - cantidadAnterior;
+        
+        if (diferencia > 0) {
+            // Si estamos añadiendo más productos, aumentar el stock local usado
+            ActualizarStockLocal(productoId, diferencia);
+            await NotificarCambioStock();
+        }
+        // No necesitamos hacer nada aquí si diferencia < 0, porque ya lo manejamos en ActualizarCantidadAsync
+        
         await NotificarCambioCarrito();
-    }
-
-    public async Task ActualizarCantidadAsync(int productoId, int cantidad) {
-        await AgregarAlCarritoAsync(productoId, cantidad);
-    }
-
-    public async Task EliminarDelCarritoAsync(int productoId) {
+    }public async Task ActualizarCantidadAsync(int productoId, int nuevaCantidad) {
+        // Obtener la cantidad actual para comparar
+        var cantidadActual = 0;
+        var carritoActual = await ObtenerCarritoAsync();
+        var itemEnCarrito = carritoActual.FirstOrDefault(i => i.ProductoId == productoId);
+        if (itemEnCarrito != null) {
+            cantidadActual = itemEnCarrito.Cantidad;
+        }
+        
+        // Si la nueva cantidad es menor que la actual, actualizar el stock local
+        if (nuevaCantidad < cantidadActual && stockLocalModifications.ContainsKey(productoId)) {
+            int diferencia = cantidadActual - nuevaCantidad;
+            stockLocalModifications[productoId] = Math.Max(0, stockLocalModifications[productoId] - diferencia);
+            if (stockLocalModifications[productoId] == 0) {
+                stockLocalModifications.Remove(productoId);
+            }
+            await NotificarCambioStock();
+        }
+        
+        // Usar el método existente para agregar al carrito (que manejará aumentos)
+        await AgregarAlCarritoAsync(productoId, nuevaCantidad, cantidadActual);
+    }public async Task EliminarDelCarritoAsync(int productoId) {
+        // Obtener la cantidad actual en el carrito para actualizar el stock
+        var cantidadActual = 0;
+        var carritoActual = await ObtenerCarritoAsync();
+        var itemEnCarrito = carritoActual.FirstOrDefault(i => i.ProductoId == productoId);
+        if (itemEnCarrito != null) {
+            cantidadActual = itemEnCarrito.Cantidad;
+        }
+        
         var carritoId = await ObtenerCarritoIdAsync();
         var url = $"/carritos/{carritoId}/{productoId}";
         await _httpClient.DeleteAsync(url);
+        
+        // Quitar del stock local esta cantidad
+        if (cantidadActual > 0 && stockLocalModifications.ContainsKey(productoId)) {
+            stockLocalModifications[productoId] = Math.Max(0, stockLocalModifications[productoId] - cantidadActual);
+            if (stockLocalModifications[productoId] == 0) {
+                stockLocalModifications.Remove(productoId);
+            }
+            await NotificarCambioStock();
+        }
+        
         await NotificarCambioCarrito();
-    }
-
-    public async Task VaciarCarritoAsync() {
+    }public async Task VaciarCarritoAsync() {
         var carritoId = await ObtenerCarritoIdAsync();
         await _httpClient.DeleteAsync($"/carritos/{carritoId}");
+        
+        // Resetear todos los cambios locales de stock
+        stockLocalModifications.Clear();
+        
         await NotificarCambioCarrito();
     }    public async Task<CompraRespuestaDto> ConfirmarCompraAsync(ClienteDto cliente) {
         try {
@@ -65,6 +128,10 @@ public class ApiService {
             
             response.EnsureSuccessStatusCode();
             var resultado = await response.Content.ReadFromJsonAsync<CompraRespuestaDto>();
+            
+            // Resetear todos los cambios locales de stock después de confirmar la compra
+            stockLocalModifications.Clear();
+            
             await NotificarCambioCarrito();
             return resultado;
         }
@@ -87,6 +154,32 @@ public class ApiService {
         if (OnCarritoChanged != null)
         {
             await OnCarritoChanged.Invoke();
+        }
+    }
+      // Método para actualizar el stock local
+    public void ActualizarStockLocal(int productoId, int cantidadRestada)
+    {
+        if (stockLocalModifications.ContainsKey(productoId))
+        {
+            stockLocalModifications[productoId] += cantidadRestada;
+        }
+        else
+        {
+            stockLocalModifications[productoId] = cantidadRestada;
+        }
+    }
+    
+    // Método para obtener la modificación de stock local
+    public int GetStockModification(int productoId)
+    {
+        return stockLocalModifications.ContainsKey(productoId) ? stockLocalModifications[productoId] : 0;
+    }
+
+    private async Task NotificarCambioStock()
+    {
+        if (OnStockChanged != null)
+        {
+            await OnStockChanged.Invoke();
         }
     }
 }
