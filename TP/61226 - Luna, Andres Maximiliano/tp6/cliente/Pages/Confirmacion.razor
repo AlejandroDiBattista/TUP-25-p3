@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 
+<div class="confirmacion-container">
 <h3>Confirmación de Compra</h3>
 
 @if (CarritoService.ObtenerCarrito().Count == 0)
@@ -16,14 +17,34 @@
 }
 else
 {
-    <h4>Resumen del pedido:</h4>
-    <ul>
-        @foreach (var item in CarritoService.ObtenerCarrito())
-        {
-            <li>@item.Producto.Nombre (@item.Cantidad)</li>
-        }
-    </ul>
-    <p><strong>Total:</strong> $@CarritoService.CalcularTotal()</p>
+    <section class="resumen-pedido">
+            <h4>Resumen del pedido:</h4>
+            <table class="resumen-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CarritoService.ObtenerCarrito())
+                    {
+                        <tr>
+                            <td>@item.Producto.Nombre</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@(item.Cantidad * item.Producto.Precio)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td><strong>$@CarritoService.CalcularTotal()</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
 
     <EditForm Model="@cliente" OnValidSubmit="@ConfirmarCompra">
         <DataAnnotationsValidator />
@@ -50,27 +71,37 @@ else
         <button type="submit" class="btn btn-primary">Finalizar Compra</button>
     </EditForm>
 }
+</div>
 
 @code {
     private ClienteDTO cliente = new();
 
     private async Task ConfirmarCompra()
     {
+        var carrito = CarritoService.ObtenerCarrito();
+
         var orden = new Orden
         {
-            Items = CarritoService.ObtenerCarrito().Select(i => new ItemOrden
+            Items = carrito.Select(i => new ItemOrden
             {
                 ProductoId = i.Producto.Id,
                 NombreProducto = i.Producto.Nombre,
                 Precio = i.Producto.Precio,
                 Cantidad = i.Cantidad
             }).ToList(),
-            Total = CarritoService.CalcularTotal()  
+            Total = CarritoService.CalcularTotal()
         };
 
         var exito = await ApiService.ConfirmarCompraAsync(orden);
         if (exito)
         {
+            foreach (var item in carrito)
+            {
+                item.Producto.StockDisponible -= item.Cantidad;
+                if (item.Producto.StockDisponible < 0)
+                    item.Producto.StockDisponible = 0;
+            }
+
             CarritoService.VaciarCarrito();
             Navigation.NavigateTo("/", true);
         }
