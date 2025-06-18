@@ -34,9 +34,8 @@ else
         <p><strong>Total de productos:</strong> @Cart.GetCantidadTotal()</p>
         <p><strong>Total a pagar:</strong> $@Cart.GetTotal().ToString("0.00")</p>
 
-       <button @onclick="@(() => EliminarProducto(item.Producto.Id))">Eliminar</button>
         <button class="btn btn-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
-        <a href="/catalogo" class="btn btn-primary">Seguir Comprando</a>
+        <a class="btn btn-success" href="/checkout">Proceder al Pago</a>
     </div>
 }
 
