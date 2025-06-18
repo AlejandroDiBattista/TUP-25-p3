@@ -32,8 +32,12 @@ var carritos = new Dictionary<string, Dictionary<int, int>>();
 app.MapGet("/productos", async (PaginaContext db) =>
     await db.Productos.ToListAsync());
 
-app.MapPost("/carritos/{carritoId}/agregar/{productoId}", (string carritoId, int productoId) =>
+app.MapPost("/carritos/{carritoId}/agregar/{productoId}", async (string carritoId, int productoId, PaginaContext db) =>
 {
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null || producto.CantidadDisponible <= 0)
+        return Results.BadRequest("Sin stock");
+
     if (!carritos.ContainsKey(carritoId))
         carritos[carritoId] = new Dictionary<int, int>();
 
@@ -41,6 +45,9 @@ app.MapPost("/carritos/{carritoId}/agregar/{productoId}", (string carritoId, int
         carritos[carritoId][productoId] = 0;
 
     carritos[carritoId][productoId]++;
+    producto.CantidadDisponible--;
+    await db.SaveChangesAsync();
+
     return Results.Ok();
 });
 
@@ -60,13 +67,37 @@ app.MapGet("/carritos/{carritoId}", async (string carritoId, PaginaContext db) =
 });
 
 
-app.MapDelete("/carritos/{carritoId}/quitar/{productoId}", (string carritoId, int productoId) =>
+app.MapDelete("/carritos/{carritoId}/quitar/{productoId}", async (string carritoId, int productoId, PaginaContext db) =>
 {
     if (carritos.TryGetValue(carritoId, out var items) && items.ContainsKey(productoId))
     {
         items[productoId]--;
+        var producto = await db.Productos.FindAsync(productoId);
+        if (producto != null)
+        {
+            producto.CantidadDisponible++;
+            await db.SaveChangesAsync();
+        }
         if (items[productoId] <= 0)
             items.Remove(productoId);
+    }
+    return Results.Ok();
+});
+
+app.MapDelete("/carritos/{carritoId}", async (string carritoId, PaginaContext db) =>
+{
+    if (carritos.TryGetValue(carritoId, out var items))
+    {
+        foreach (var kv in items)
+        {
+            var producto = await db.Productos.FindAsync(kv.Key);
+            if (producto != null)
+            {
+                producto.CantidadDisponible += kv.Value;
+            }
+        }
+        await db.SaveChangesAsync();
+        carritos.Remove(carritoId);
     }
     return Results.Ok();
 });
