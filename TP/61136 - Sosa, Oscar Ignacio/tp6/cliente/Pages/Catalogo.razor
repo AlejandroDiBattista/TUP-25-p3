@@ -1,6 +1,10 @@
 @page "/catalogo"
 @using Cliente.Models2
 @using Cliente.Services
+@using System.Collections.Generic
+@using System.Linq
+@using System.Threading.Tasks
+@using System.Globalization
 @inject CartService Cart
 
 <h1>🍭 Catálogo de Productos</h1>
@@ -11,21 +15,24 @@
     @foreach (var producto in ProductosFiltrados)
     {
         <div class="col-md-4 mb-4">
-            <div class="producto">
+            <div class="producto border rounded p-3 h-100 d-flex flex-column">
                 <h3>@producto.Nombre</h3>
                 <p>@producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@producto.Precio</p>
-                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="img-fluid" />
-                <button class="btn btn-primary mt-2" @onclick="() => AgregarAlCarrito(producto)">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="img-fluid mb-3" />
+                <button class="btn btn-primary mt-auto" @onclick="@(() => AgregarAlCarrito(producto))">
                     Agregar al carrito
                 </button>
+
             </div>
         </div>
     }
 </div>
 
 <div class="text-end mt-4">
-    <a href="/carrito" class="btn btn-success">🛒 Ver carrito (@Cart.GetCantidadTotal())</a>
+    <a href="/carrito" class="btn btn-success">
+        🛒 Ver carrito (@Cart.GetCantidadTotal())
+    </a>
 </div>
 
 @code {

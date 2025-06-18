@@ -54,4 +54,10 @@ namespace Cliente.Services
             return Items.Sum(ci => ci.Cantidad);
         }
     }
+
+    public class CartItem
+    {
+        public Producto Producto { get; set; } = new Producto();
+        public int Cantidad { get; set; } = 1;
+    }
 }
