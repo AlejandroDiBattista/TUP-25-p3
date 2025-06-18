@@ -2,7 +2,7 @@
 @using cliente.Models
 @inject CartService CartService
 
-<h2> Carrito de Compras</h2>
+<h2>Carrito de Compras</h2>
 
 @if (CartService.Items.Count == 0)
 {
@@ -30,6 +30,10 @@ else
                         <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => Restar(item)">–</button>
                         @item.Cantidad
                         <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => Sumar(item)">+</button>
+                        @if (item.Cantidad >= item.Producto.Stock)
+                        {
+                            <span class="text-danger small ms-2">(Sin stock)</span>
+                        }
                     </td>
                     <td>$@(item.Producto.Precio * item.Cantidad)</td>
                     <td>
@@ -42,14 +46,18 @@ else
 
     <p><strong>Total general:</strong> $@TotalGeneral()</p>
 
-    <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
+    <button class="btn btn-warning me-2" @onclick="() => Vaciar()">Vaciar carrito</button>
     <NavLink class="btn btn-success" href="/confirmacion">Confirmar compra</NavLink>
 }
 
 @code {
     private void Sumar(ItemCarrito item)
     {
-        item.Cantidad++;
+        if (item.Cantidad < item.Producto.Stock)
+        {
+            item.Cantidad++;
+            CartService.NotificarCambio();
+        }
     }
 
     private void Restar(ItemCarrito item)
@@ -59,24 +67,21 @@ else
         {
             CartService.Items.Remove(item);
         }
+        CartService.NotificarCambio();
     }
 
     private void Eliminar(ItemCarrito item)
     {
         CartService.Items.Remove(item);
+        CartService.NotificarCambio();
     }
 
     private void Vaciar()
     {
         CartService.Items.Clear();
+        CartService.NotificarCambio();
     }
 
-    private void Confirmar()
-    {
-        // Por ahora solo vaciamos y mostramos mensaje
-        CartService.Items.Clear();
-        Console.WriteLine("Compra confirmada.");
-    }
-
-    private decimal TotalGeneral() => CartService.Items.Sum(i => i.Producto.Precio * i.Cantidad);
+    private decimal TotalGeneral() =>
+        CartService.Items.Sum(i => i.Producto.Precio * i.Cantidad);
 }

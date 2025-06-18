@@ -3,7 +3,12 @@
 @inject HttpClient Http
 @inject CartService CartService
 
-<h1 class="mb-4 text-center fw-bold">Catálogo de Perfumes de Diseñador</h1>
+<h2 class="text-center mt-4 mb-4">Catálogo de Perfumes de Diseñador</h2>
+
+<div class="d-flex justify-content-center mb-4">
+    <input type="text" class="form-control w-50" placeholder="Buscar por nombre..."
+           @oninput="FiltrarPorNombre" value="@Busqueda" />
+</div>
 
 @if (productos is null)
 {
@@ -11,32 +16,20 @@
 }
 else if (productos.Count == 0)
 {
-    <p class="text-center text-muted">No se encontraron productos.</p>
+    <p class="text-center">No se encontraron productos.</p>
 }
 else
 {
     <div class="container">
-        <div class="row justify-content-center mb-4">
-            <div class="col-12 col-md-6">
-                <input type="text"
-                       class="form-control shadow-sm border-primary"
-                       placeholder="🔍 Buscar por nombre..."
-                       @bind="Busqueda"
-                       @bind:event="oninput" />
-            </div>
-        </div>
-
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             @foreach (var producto in productos)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm border-0">
-                        <img src="@producto.ImagenUrl"
-                             alt="@producto.Nombre"
-                             class="card-img-top img-fluid"
-                             style="height: 200px; object-fit: cover;" />
-
-                        <div class="card-body text-center">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@producto.ImagenUrl" alt="@producto.Nombre"
+                             class="card-img-top mx-auto d-block"
+                             style="height: 180px; width: auto; object-fit: contain; padding: 10px;" />
+                        <div class="card-body">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text">@producto.Descripcion</p>
                             <p><strong>Precio:</strong> $@producto.Precio</p>
@@ -56,20 +49,11 @@ else
 
 @code {
     private List<Producto>? productos;
+    private string Busqueda = "";
 
-    private string _busqueda = "";
-    private string Busqueda
+    private async Task FiltrarPorNombre(ChangeEventArgs e)
     {
-        get => _busqueda;
-        set
-        {
-            _busqueda = value;
-            _ = CargarProductos(); // Disparar sin bloquear
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
+        Busqueda = e.Value?.ToString() ?? "";
         await CargarProductos();
     }
 
@@ -80,13 +64,21 @@ else
             : $"/productos?nombre={Uri.EscapeDataString(Busqueda)}";
 
         productos = await Http.GetFromJsonAsync<List<Producto>>(url);
-        StateHasChanged(); // fuerza redibujado
     }
 
-    private bool PuedeAgregar(Producto producto) => producto.Stock > 0;
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
 
     private void AgregarAlCarrito(Producto producto)
     {
         CartService.AgregarProducto(producto);
+        producto.Stock--;
+    }
+
+    private bool PuedeAgregar(Producto producto)
+    {
+        return producto.Stock > 0;
     }
 }

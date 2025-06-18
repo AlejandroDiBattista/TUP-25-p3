@@ -8,18 +8,20 @@ public class CartService
 
     public event Action? OnChange;
 
-    private void NotificarCambio() => OnChange?.Invoke();
+    public void NotificarCambio() => OnChange?.Invoke();
 
     public void AgregarProducto(Producto producto)
     {
         var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
         if (item is not null)
         {
-            item.Cantidad++;
+            if (item.Cantidad < producto.Stock)
+                item.Cantidad++;
         }
         else
         {
-            Items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
+            if (producto.Stock > 0)
+                Items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
         }
 
         NotificarCambio();
@@ -31,7 +33,7 @@ public class CartService
         if (item is not null)
         {
             Items.Remove(item);
-            NotificarCambio(); 
+            NotificarCambio();
         }
     }
 
@@ -41,11 +43,15 @@ public class CartService
         if (item is not null)
         {
             if (nuevaCantidad <= 0)
+            {
                 Items.Remove(item);
-            else
+            }
+            else if (nuevaCantidad <= item.Producto.Stock)
+            {
                 item.Cantidad = nuevaCantidad;
+            }
 
-            NotificarCambio(); 
+            NotificarCambio();
         }
     }
 
