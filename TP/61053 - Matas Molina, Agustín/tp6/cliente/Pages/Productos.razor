@@ -31,8 +31,8 @@ else
         {
             <div class="col-6 col-sm-4 col-md-3 col-lg-2 px-0 mb-2">
                 <div class="card h-100 producto-card custom-product-card position-relative">
-                    <span class="badge bg-primary position-absolute top-0 end-0 m-2" style="font-size:0.9rem;">
-                        Stock: @prod.Stock
+                    <span class="badge bg-success position-absolute top-0 end-0 m-2" style="font-size:0.9rem;">
+                        Stock: @(stockVisible[prod.Id])
                     </span>
                     <img src="@prod.ImagenUrl"
                          class="card-img-top"
@@ -58,10 +58,30 @@ else
 <span class="carrito-contador">@((CarritoService.CarritoActual?.Items.Sum(item => item.Cantidad) ?? 0))</span>
 @code {
     private List<Producto> productos;
+    private Dictionary<int, int> stockVisible = new();
 
     protected override async Task OnInitializedAsync()
     {
         productos = await ApiService.GetProductosAsync();
+
+        // Inicializa el stock visible con el stock real
+        foreach (var prod in productos)
+        {
+            stockVisible[prod.Id] = prod.Stock;
+        }
+
+        // Si hay productos en el carrito, descuéntalos del stock visible
+        if (CarritoService.CarritoActual?.Items != null)
+        {
+            foreach (var item in CarritoService.CarritoActual.Items)
+            {
+                if (stockVisible.ContainsKey(item.Producto.Id))
+                {
+                    stockVisible[item.Producto.Id] -= item.Cantidad;
+                }
+            }
+        }
+
         BusquedaService.OnChange += StateHasChanged;
     }
 
@@ -74,6 +94,31 @@ else
     {
         await JS.InvokeVoidAsync("flyToCart", $"#img-prod-{productoId}", "#iconoCarrito");
         var prod = productos.First(p => p.Id == productoId);
+
+        // Resta 1 al stock visible
+        if (stockVisible[productoId] > 0)
+            stockVisible[productoId]--;
+
         await CarritoService.AgregarOActualizarProductoAsync(productoId, 1);
     }
+
+    private async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarritoAsync();
+        foreach (var prod in productos)
+        {
+            stockVisible[prod.Id] = prod.Stock;
+        }
+    }
 }
+
+<style>
+    .producto-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .producto-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 1.5px 4px rgba(0,0,0,0.12);
+        z-index: 2;
+    }
+</style>

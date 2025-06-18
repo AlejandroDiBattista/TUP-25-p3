@@ -177,6 +177,9 @@ app.MapPut("/api/carrito/{carritoId:int}/confirmar", async (int carritoId, Compr
 
     await db.SaveChangesAsync();
 
+    compra.Items.Clear(); // Vacía los ítems del carrito después de confirmar
+    await db.SaveChangesAsync();
+
     return Results.Ok(compra);
 });
 app.MapGet("/api/productos", async (TiendaDbContext db) =>
