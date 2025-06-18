@@ -1,0 +1,102 @@
+@page "/catalogo"
+@page "/"
+@using tp6.cliente.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject CarritoService CarritoService
+
+<header>
+    <h1 class="logo" style="cursor:pointer" @onclick="MostrarCatalogo">tecnostore</h1>
+    <input class="buscador" value="@busqueda" @oninput="OnBusquedaChanged" placeholder="Buscar productos..." />
+    <div class="carrito-icono" style="float:right;cursor:pointer" @onclick="IrAlCarrito">
+        🛒 <span class="carrito-contador">@TotalCarrito</span>
+    </div>
+</header>
+
+<div class="contenedor">
+    <div class="productos">
+        @if (!CarritoService.Productos.Any())
+        {
+            <p style="font-size:1.2rem;color:#888;text-align:center;">Cargando productos...</p>
+        }
+        else
+        {
+            @foreach (var p in CarritoService.Productos)
+            {
+                <div class="producto">
+                    <img src="@p.ImagenUrl" alt="@p.Nombre" class="producto-img" />
+                    <h3 style="font-size:1.25rem;color:#222;margin-bottom:0.5rem;">@p.Nombre</h3>
+                    <div class="producto-desc">@p.Descripcion</div>
+                    <div class="precio">$@p.Precio</div>
+                    <div class="stock">disponibles: @p.Stock</div>
+                    <button class="btn-agregar" @onclick="() => AgregarAlCarrito(p)" disabled="@(p.Stock == 0)">Agregar</button>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    string busqueda = "";
+    int TotalCarrito => CarritoService.Carrito.Sum(i => i.Cantidad);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Carga productos solo si aún no se han cargado en el servicio
+        if (!CarritoService.Productos.Any())
+        {
+            await CargarProductos();
+        }
+    }
+
+    async Task CargarProductos()
+    {
+        var url = "/productos" + (string.IsNullOrWhiteSpace(busqueda) ? "" : $"?q={Uri.EscapeDataString(busqueda)}");
+        var productos = await Http.GetFromJsonAsync<List<ProductoDto>>(url);
+        CarritoService.Productos = productos ?? new List<ProductoDto>();
+    }
+
+    private async Task OnBusquedaChanged(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? "";
+        await CargarProductos();
+    }
+
+    void AgregarAlCarrito(ProductoDto p)
+    {
+        // Evitar agregar si no hay stock
+        if (p.Stock <= 0)
+            return;
+
+        var item = CarritoService.Carrito.FirstOrDefault(i => i.Id == p.Id);
+        if (item != null)
+        {
+            // Incrementar solo si hay stock suficiente
+            if (item.Cantidad < p.Stock)
+                item.Cantidad++;
+        }
+        else
+        {
+            CarritoService.Carrito.Add(new ItemCarrito
+            {
+                Id = p.Id,
+                Nombre = p.Nombre,
+                Precio = p.Precio,
+                Stock = p.Stock,
+                Cantidad = 1
+            });
+        }
+        // Disminuye el stock del producto de forma permanente en el catálogo
+        p.Stock--;
+    }
+
+    void IrAlCarrito()
+    {
+        NavigationManager.NavigateTo("/carrito");
+    }
+
+    void MostrarCatalogo()
+    {
+        // Lógica extra si es necesaria
+    }
+}

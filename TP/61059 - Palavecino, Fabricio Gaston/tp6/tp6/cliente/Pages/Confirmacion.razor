@@ -1,0 +1,55 @@
+@page "/confirmacion"
+@inject NavigationManager NavigationManager
+@inject CarritoService CarritoService
+
+<div class="confirmacion">
+    <h2 style="color:#4e54c8;font-size:2rem;margin-bottom:1.2rem;">Confirmación de compra</h2>
+    <div class="resumen">Total de ítems: <b>@TotalCarrito</b> | Importe total: <b>$@TotalCarritoImporte</b></div>
+    <EditForm Model="@form" OnValidSubmit="ConfirmarCompra">
+        <div class="formulario">
+            <label>Nombre: <InputText @bind-Value="form.Nombre" required class="input-form" /></label>
+            <label>Apellido: <InputText @bind-Value="form.Apellido" required class="input-form" /></label>
+            <label>Email: <InputText @bind-Value="form.Email" required class="input-form" /></label>
+            <button class="btn-confirmar" type="submit">Confirmar</button>
+        </div>
+    </EditForm>
+    <span class="volver" @onclick="IrAlCarrito">VOLVER</span>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="mensaje">@mensaje</div>
+    }
+</div>
+
+@code {
+    string mensaje = "";
+    ConfirmacionForm form = new ConfirmacionForm();
+    int TotalCarrito => CarritoService.Carrito.Sum(i => i.Cantidad);
+    decimal TotalCarritoImporte => CarritoService.Carrito.Sum(i => i.Precio * i.Cantidad);
+
+    void IrAlCarrito()
+    {
+        NavigationManager.NavigateTo("/carrito");
+    }
+
+    async Task ConfirmarCompra()
+    {
+        if (CarritoService.Carrito.Any())
+        {
+            // Simular lógica de confirmación
+            await Task.Delay(500); // Simular tiempo de espera
+            mensaje = "¡Compra confirmada! Gracias por tu compra.";
+            CarritoService.Carrito.Clear(); // Vaciar el carrito después de confirmar
+        }
+        else
+        {
+            mensaje = "El carrito está vacío. No se puede confirmar la compra.";
+        }
+    }
+
+    public class ConfirmacionForm
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+    }
+}

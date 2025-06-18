@@ -1,0 +1,101 @@
+@page "/carrito"
+@inject NavigationManager NavigationManager
+@inject CarritoService CarritoService
+
+<div class="carrito">
+    @if (!CarritoService.Carrito.Any())
+    {
+        <p style="font-size:1.2rem; color:#888; text-align:center;">El carrito está vacío.</p>
+        <span class="volver" @onclick="IrAlCatalogo">← Volver</span>
+    }
+    else
+    {
+        <h2 style="color:#4e54c8; font-size:2rem; margin-bottom:1.2rem;">Carrito de compras</h2>
+        <table class="tabla-carrito">
+            <tr>
+                <th>Producto</th>
+                <th>Unidades</th>
+                <th>Precio</th>
+                <th>Importe</th>
+                <th>Acciones</th>
+            </tr>
+            @foreach (var item in CarritoService.Carrito)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Precio</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn-cantidad" @onclick="() => CambiarCantidad(item, 1)">+</button>
+                        <button class="btn-cantidad" @onclick="() => CambiarCantidad(item, -1)">-</button>
+                        <button class="btn-eliminar" @onclick="() => EliminarDelCarrito(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </table>
+        <div class="resumen">
+            <b>Total: $@TotalCarritoImporte</b>
+        </div>
+        <button class="btn-vaciar" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn-confirmar" @onclick="IrAConfirmacion">Confirmar compra</button>
+        <span class="volver" @onclick="IrAlCatalogo">← Volver al catálogo</span>
+    }
+</div>
+
+@code {
+    decimal TotalCarritoImporte => CarritoService.Carrito.Sum(i => i.Precio * i.Cantidad);
+
+    void IrAlCatalogo() {
+        NavigationManager.NavigateTo("/catalogo");
+    }
+
+    void IrAConfirmacion() {
+        NavigationManager.NavigateTo("/confirmacion");
+    }
+
+    void CambiarCantidad(ItemCarrito item, int cantidad) {
+        // Buscar el producto en la lista de catálogo
+        var producto = CarritoService.Productos.FirstOrDefault(p => p.Id == item.Id);
+        if (producto == null) return;
+
+        if (cantidad > 0) {
+            // Aumentar cantidad en el carrito: solo si queda stock en catálogo
+            if (producto.Stock > 0) {
+                item.Cantidad++;
+                producto.Stock--;  // se reserva una unidad más
+            }
+        } else if (cantidad < 0) {
+            // Disminuir cantidad: se devuelve una unidad al catálogo
+            item.Cantidad--;
+            producto.Stock++;  
+            if (item.Cantidad <= 0)
+            {
+                CarritoService.Carrito.Remove(item);
+            }
+        }
+    }
+
+    void EliminarDelCarrito(ItemCarrito item) {
+        // Buscar el producto en el catálogo y devolver la cantidad reservada
+        var producto = CarritoService.Productos.FirstOrDefault(p => p.Id == item.Id);
+        if (producto != null)
+        {
+            producto.Stock += item.Cantidad;
+        }
+        CarritoService.Carrito.Remove(item);
+    }
+
+    void VaciarCarrito() {
+        // Para cada ítem se devuelve su cantidad al stock correspondiente
+        foreach (var item in CarritoService.Carrito)
+        {
+            var producto = CarritoService.Productos.FirstOrDefault(p => p.Id == item.Id);
+            if (producto != null)
+            {
+                producto.Stock += item.Cantidad;
+            }
+        }
+        CarritoService.Carrito.Clear();
+    }
+}
