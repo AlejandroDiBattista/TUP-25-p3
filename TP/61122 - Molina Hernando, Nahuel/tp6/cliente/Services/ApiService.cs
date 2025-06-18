@@ -20,14 +20,30 @@ public class ApiService
         {
             url += $"?filtro={filtro}";
         }
-        return await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+        var resp = await _httpClient.GetAsync(url);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            var productos = await resp.Content.ReadFromJsonAsync<List<Producto>>();
+            return productos;
+        }
+        else
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
     }
 
     
     public async Task<string> CrearCarritoAsync()
     {
         var resp = await _httpClient.PostAsync("/carritos", null);
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
+
         return await resp.Content.ReadAsStringAsync();
     }
 
@@ -35,7 +51,11 @@ public class ApiService
     public async Task<List<ProductoCarrito>> ObtenerCarritoAsync(string carritoId)
     {
         var resp = await _httpClient.GetAsync($"/carritos/{carritoId}");
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
         return await resp.Content.ReadFromJsonAsync<List<ProductoCarrito>>();
     }
 
@@ -43,7 +63,11 @@ public class ApiService
     public async Task VaciarCarritoAsync(string carritoId)
     {
         var resp = await _httpClient.DeleteAsync($"/carritos/{carritoId}");
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
     }
 
     
@@ -51,21 +75,34 @@ public class ApiService
     {
         var url = $"/carritos/{carritoId}/{productoId}?cantidad={cantidad}";
         var resp = await _httpClient.PutAsync(url, null);
-        resp.EnsureSuccessStatusCode();
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
     }
 
    
     public async Task EliminarProductoDelCarritoAsync(string carritoId, int productoId, int cantidad)
     {
         var resp = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}");
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
     }
 
     
     public async Task<ConfirmacionCompraRespuesta> ConfirmarCompraAsync(string carritoId, ClienteDatos datos)
     {
         var resp = await _httpClient.PostAsJsonAsync($"/carritos/{carritoId}/confirmar", datos);
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            var error = await resp.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
         return await resp.Content.ReadFromJsonAsync<ConfirmacionCompraRespuesta>();
     }
 }

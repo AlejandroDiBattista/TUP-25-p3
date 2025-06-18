@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar el contexto de la base de datos SQLite
+// Configura el contexto de la base de datos SQLite (sin migraciones)
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// Configura CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -17,7 +17,6 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -43,7 +42,11 @@ app.MapGet("/productos", async (TiendaDbContext db, string? filtro) =>
     var consulta = db.Productos.AsQueryable();
     if (!string.IsNullOrWhiteSpace(filtro))
     {
-        consulta = consulta.Where(p => p.Nombre.Contains(filtro) || p.Descripcion.Contains(filtro));
+        var filtroLower = filtro.ToLower();
+        consulta = consulta.Where(p =>
+            p.Nombre.ToLower().Contains(filtroLower) ||
+            p.Descripcion.ToLower().Contains(filtroLower)
+        );
     }
     return await consulta.ToListAsync();
 });
@@ -87,13 +90,20 @@ app.MapGet("/carritos/{carritoId}", async (string carritoId, TiendaDbContext db)
     return Results.Ok(items);
 });
 
-app.MapDelete("/carritos/{carritoId}", (string carritoId) =>
+app.MapDelete("/carritos/{carritoId}", async (string carritoId, TiendaDbContext db) =>
 {
     var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
     if (carrito == null)
     {
         return Results.NotFound("Carrito no encontrado");
     }
+
+    foreach(var productoCarrito in carrito.Productos)
+    {
+        var prodDb = await db.Productos.FindAsync(productoCarrito.Id);
+        prodDb.Stock += productoCarrito.Cantidad;
+    }
+    await db.SaveChangesAsync();
 
     carrito.Productos.Clear();
     return Results.Ok();
@@ -125,20 +135,35 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (string carritoId, int pr
             Id = productoId, 
             Cantidad = cantidad
         });
+        producto.Stock -= cantidad;
     }
     else
     {
+        if (item.Cantidad + cantidad > producto.Stock)
+        {
+            return Results.BadRequest("Cantidad inválida o sin stock suficiente");
+        }   
         item.Cantidad += cantidad;
+        producto.Stock -= cantidad;
     }
+
+    await db.SaveChangesAsync();
+
     return Results.Ok();
 });
 
-app.MapDelete("/carritos/{carritoId}/{productoId}", (string carritoId, int productoId, int cantidad) =>
+app.MapDelete("/carritos/{carritoId}/{productoId}", async (string carritoId, int productoId, int cantidad, TiendaDbContext db) =>
 {
     var carrito = carritos.FirstOrDefault(c => c.Id == carritoId);
     if (carrito == null)
     {
         return Results.NotFound("Carrito no encontrado");
+    }
+
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null)
+    {
+        return Results.NotFound("Producto no encontrado");
     }
 
     var item = carrito.Productos.FirstOrDefault(x => x.Id == productoId);
@@ -148,12 +173,19 @@ app.MapDelete("/carritos/{carritoId}/{productoId}", (string carritoId, int produ
     }
     else
     {
+        if(item.Cantidad - cantidad < 0)
+        {
+            cantidad = item.Cantidad;
+        }
         item.Cantidad -= cantidad;
-        if(item.Cantidad <= 0)
+        if(item.Cantidad == 0)
         {
             carrito.Productos.Remove(item);
         }
+        producto.Stock += cantidad;
     }
+
+    await db.SaveChangesAsync();
     return Results.Ok();
 });
 
@@ -193,7 +225,7 @@ app.MapPost("/carritos/{carritoId}/confirmar", async (string carritoId, [FromBod
     foreach (var item in carrito.Productos)
     {
         var producto = await db.Productos.FindAsync(item.Id);
-        producto.Stock -= item.Cantidad;
+        //producto.Stock -= item.Cantidad;
         var articulo = new ArticuloDeCompra
         {
             ProductoId = producto.Id,
