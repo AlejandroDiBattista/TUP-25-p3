@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
                             });
 });
 
-// Añadir servicios para Swagger/OpenAPI (documentación de la API)
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -63,7 +63,7 @@ app.UseRouting();
 
 app.UseCors(MyAllowSpecificOrigins);
 
-// ******* INICIALIZACIÓN DE LA BASE DE DATOS *******
+// INICIALIZACIÓN DE LA BASE DE DATOS 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -75,12 +75,11 @@ using (var scope = app.Services.CreateScope())
         var dbPath = context.Database.GetDbConnection().DataSource;
         Console.WriteLine($"--> DEBUG: Ruta de la base de datos SQLite: {dbPath}");
 
-        // Asegura que la base de datos exista y el esquema esté creado.
-        // Esto crea la DB y las tablas si no existen, incluyendo 'Productos' de DbContext.
+
         context.Database.EnsureCreated(); 
         Console.WriteLine("--> DEBUG: Base de datos y esquema asegurados.");
 
-        // Verificar si la tabla Productos está vacía y sembrar datos si es necesario
+      
         if (!context.Productos.Any()) 
         {
             Console.WriteLine("--> DEBUG: La tabla 'Productos' está vacía. Sembrando datos iniciales...");
@@ -123,7 +122,7 @@ app.MapGet("/productos", async (string? q, ApplicationDbContext db) =>
             return Results.Problem("Error: No se pudo conectar a la base de datos.");
         }
         
-        var query = db.Productos.AsQueryable(); // Ya no necesitamos el try-catch interno aquí si EnsureCreated funciona
+        var query = db.Productos.AsQueryable(); 
         if (!string.IsNullOrWhiteSpace(q))
         {
             query = query.Where(p => p.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase) ||

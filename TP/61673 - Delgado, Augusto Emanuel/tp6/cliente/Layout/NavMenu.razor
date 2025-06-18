@@ -1,21 +1,21 @@
 @inject cliente.Services.CarritoService CarritoService
-@inject NavigationManager Navigation // Inyectar NavigationManager
-@implements IDisposable // Importante para la desuscripción
+@inject NavigationManager Navigation 
+@implements IDisposable 
 
-<div class="sidebar-wrapper @NavMenuCssClass" @onclick="ToggleNavMenu">
-    <div class="sidebar-header">
-        <a class="sidebar-title" href="/">Mi Tienda</a>
-        <p class="sidebar-subtitle">Tu tecnología, a un clic.</p>
+<div class="sidebar-wrapper minimal-nav @NavMenuCssClass" @onclick="ToggleNavMenu">
+    <div class="sidebar-header text-center py-4">
+        <a class="sidebar-title fw-bold fs-3 text-primary" href="/">Mi Tienda</a>
+        <p class="sidebar-subtitle text-muted small">Tu tecnología, a un clic.</p>
     </div>
-    <nav class="flex-column">
+    <nav class="flex-column gap-2">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="@NavLinkMatch.All">
-                <span class="bi bi-box-seam-fill" aria-hidden="true"></span> Productos
+            <NavLink class="nav-link minimal-link" href="" Match="@NavLinkMatch.All">
+                <span class="bi bi-box-seam-fill me-2" aria-hidden="true"></span> Productos
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="carrito">
-                <span class="bi bi-cart-fill" aria-hidden="true"></span> Carrito
+            <NavLink class="nav-link minimal-link" href="carrito">
+                <span class="bi bi-cart-fill me-2" aria-hidden="true"></span> Carrito
                 @if (isCarritoReady && CarritoService.TotalItemsEnCarrito > 0)
                 {
                     <span class="badge bg-danger rounded-pill ms-2">@CarritoService.TotalItemsEnCarrito</span>
@@ -23,12 +23,41 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="checkout">
-                <span class="bi bi-credit-card-fill" aria-hidden="true"></span> Checkout
+            <NavLink class="nav-link minimal-link" href="checkout">
+                <span class="bi bi-credit-card-fill me-2" aria-hidden="true"></span> Checkout
             </NavLink>
         </div>
     </nav>
 </div>
+
+<style>
+.minimal-nav {
+    background: rgba(255,255,255,0.85);
+    border-radius: 18px;
+    box-shadow: 0 4px 32px 0 rgba(30,60,114,0.10);
+    min-width: 220px;
+    max-width: 260px;
+    margin: 24px 0 24px 16px;
+    padding: 0 0 24px 0;
+}
+.minimal-link {
+    color: #222 !important;
+    font-weight: 500;
+    border-radius: 12px;
+    padding: 10px 18px;
+    transition: background 0.2s, color 0.2s;
+}
+.minimal-link.active, .minimal-link:hover {
+    background: #e3e6ee;
+    color: #1976d2 !important;
+}
+.sidebar-header .sidebar-title {
+    letter-spacing: 1px;
+}
+.sidebar-header .sidebar-subtitle {
+    margin-bottom: 0;
+}
+</style>
 
 @code {
     #nullable enable
