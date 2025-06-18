@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Threading.Tasks;
 using cliente.Models;
 
 namespace cliente.Services
@@ -10,6 +12,13 @@ namespace cliente.Services
         public IReadOnlyList<ItemCarrito> Items => items;
     
         public int CantidadTotal => Items.Sum(i => i.Cantidad);
+
+        private readonly HttpClient _httpClient;
+
+        public CarritoService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
 
         public async Task InicializarCarritoAsync(ApiService apiService)
         {
@@ -40,6 +49,15 @@ namespace cliente.Services
             {
                 items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
             }
+        }
+
+         public async Task AgregarProductoAsync(int productoId)
+        {
+            if (CarritoId == 0)
+                throw new InvalidOperationException("Carrito no inicializado.");
+
+            var response = await _httpClient.PutAsync($"/carritos/{CarritoId}/{productoId}", null);
+            response.EnsureSuccessStatusCode();
         }
 
         public void Vaciar()
