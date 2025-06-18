@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
 using cliente.Services;
 using cliente.Models;
+using Blazored.Toast;
 
 namespace cliente
 {
@@ -14,6 +15,7 @@ namespace cliente
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
+            builder.Services.AddBlazoredToast();
             builder.Services.AddSingleton<AppState>();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
 

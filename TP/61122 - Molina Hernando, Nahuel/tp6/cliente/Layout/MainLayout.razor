@@ -3,53 +3,56 @@
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @inject AppState AppState
+@using Blazored.Toast.Configuration
+@inject IToastService ToastService
 
+<style>
+    body {
+        background-color: #e9eaed !important;
+    }
+</style>
 
-    <nav class="navbar navbar-dark bg-dark sticky-top mb-4">
-        <div class="container-fluid d-flex align-items-center justify-content-between">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="https://logo.com/image-cdn/images/kts928pd/production/9fa92ac5a9498502d2707ced798d763fe7490ecc-1600x1026.png?w=1920&q=72" alt="Logo" style="height:32px; margin-right:8px;" /> 
-                <span>Apple Store</span>
-            </a>
-            <form class="d-flex" style="max-width: 400px;" @onsubmit="Buscar">
-                <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
-                <button class="btn btn-outline-success" type="submit">Buscar</button>
-            </form>
-            <button class="btn btn-outline-light position-relative" @onclick="IrAlCarrito">
-                <i class="bi bi-cart"></i>
-                Carrito
-                <span 
-                    @key="AppState.ContadorCarrito"
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                >
-                    @AppState.ContadorCarrito
-                </span>
-            </button>
+<BlazoredToasts Position="ToastPosition.BottomRight" Timeout="10" IconType="IconType.Custom"
+    ErrorIcon="bi bi-x-circle-fill" InfoIcon="bi bi-info-circle-fill" SuccessIcon="bi bi-check-circle-fill"
+    WarningIcon="bi bi-exclamation-triangle-fill" ShowProgressBar="@true" ShowCloseButton="@true" MaxToastCount="3">
+    <CloseButtonContent>
+        <div>
+            <span class="myCloseButtonStyleClass">&times;</span>
         </div>
-    </nav>
+    </CloseButtonContent>
+</BlazoredToasts>
 
-    <main class="container mt-4">
-        @Body
-    </main>
+<nav class="navbar navbar-dark bg-dark sticky-top mb-4">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="https://logo.com/image-cdn/images/kts928pd/production/9fa92ac5a9498502d2707ced798d763fe7490ecc-1600x1026.png?w=1920&q=72"
+                alt="Logo" style="height:32px; margin-right:8px;" />
+            <span>Iphone Store</span>
+        </a>
+        <button class="btn btn-outline-light position-relative" @onclick="IrAlCarrito">
+            <i class="bi bi-cart"></i>
+            Carrito
+            <span @key="AppState.ContadorCarrito"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @AppState.ContadorCarrito
+            </span>
+        </button>
+    </div>
+</nav>
+
+<main class="container mt-4">
+    @Body
+</main>
 
 
 @code {
-    string busqueda = "";
     int contadorCarrito = 0;
 
     protected override async Task OnInitializedAsync()
     {
         AppState.OnContadorChange += StateHasChanged;
         contadorCarrito = AppState.ContadorCarrito;
-
-        var productos = await ApiService.ObtenerProductosAsync();
-        AppState.Productos = productos;
-    }
-
-    async Task Buscar()
-    {
-        var productos = await ApiService.ObtenerProductosAsync(busqueda);
-        AppState.Productos = productos;
+        StateHasChanged();
     }
 
     void IrAlCarrito()
