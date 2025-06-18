@@ -39,9 +39,8 @@ public class CarritoService
     /// <summary>
     /// Obtiene un carrito por su ID.
     /// </summary>
-    /// <param name="carritoId">ID del carrito a buscar</param>
-    /// <returns>Carrito encontrado o null si no existe</returns>
-    public async Task<Carrito?> ObtenerCarritoAsync(string carritoId)
+    /// <param name="carritoId">ID del carrito a buscar</param>    /// <returns>Carrito encontrado o null si no existe</returns>
+    public async Task<Carrito> ObtenerCarritoAsync(string carritoId)
     {
         if (!_carritos.TryGetValue(carritoId, out var carrito))
         {
@@ -147,7 +146,7 @@ public class CarritoService
     /// <param name="productoId">ID del producto a agregar</param>
     /// <param name="cantidad">Cantidad a establecer (reemplaza la cantidad existente)</param>
     /// <returns>Resultado de la operación con detalles</returns>
-    public async Task<(bool Exito, string Mensaje, CarritoDto? Carrito)> AgregarProductoAsync(string carritoId, int productoId, int cantidad = 1)
+    public async Task<(bool Exito, string Mensaje, CarritoDto Carrito)> AgregarProductoAsync(string carritoId, int productoId, int cantidad = 1)
     {
         // Validar que el carrito existe
         if (!_carritos.TryGetValue(carritoId, out var carrito))
@@ -214,7 +213,7 @@ public class CarritoService
     /// <param name="productoId">ID del producto a eliminar</param>
     /// <param name="cantidad">Cantidad a eliminar (opcional, por defecto 1)</param>
     /// <returns>Resultado de la operación con detalles</returns>
-    public async Task<(bool Exito, string Mensaje, CarritoDto? Carrito)> EliminarProductoAsync(string carritoId, int productoId, int cantidad = 1)
+    public async Task<(bool Exito, string Mensaje, CarritoDto Carrito)> EliminarProductoAsync(string carritoId, int productoId, int cantidad = 1)
     {
         // Validar que el carrito existe
         if (!_carritos.TryGetValue(carritoId, out var carrito))
@@ -263,7 +262,7 @@ public class CarritoService
     /// <param name="carritoId">ID del carrito</param>
     /// <param name="productoId">ID del producto a eliminar completamente</param>
     /// <returns>Resultado de la operación</returns>
-    public async Task<(bool Exito, string Mensaje, CarritoDto? Carrito)> EliminarProductoCompletoAsync(string carritoId, int productoId)
+    public async Task<(bool Exito, string Mensaje, CarritoDto Carrito)> EliminarProductoCompletoAsync(string carritoId, int productoId)
     {
         if (!_carritos.TryGetValue(carritoId, out var carrito))
         {
@@ -291,7 +290,7 @@ public class CarritoService
     /// <param name="carritoId">ID del carrito a confirmar</param>
     /// <param name="datosCliente">Datos del cliente para la compra</param>
     /// <returns>Resultado de la confirmación con detalles de la compra</returns>
-    public async Task<(bool Exito, string Mensaje, CompraConfirmadaDto? Compra)> ConfirmarCompraAsync(string carritoId, ConfirmarCompraDto datosCliente)
+    public async Task<(bool Exito, string Mensaje, CompraConfirmadaDto Compra)> ConfirmarCompraAsync(string carritoId, ConfirmarCompraDto datosCliente)
     {
         // Validar que el carrito existe
         if (!_carritos.TryGetValue(carritoId, out var carrito))

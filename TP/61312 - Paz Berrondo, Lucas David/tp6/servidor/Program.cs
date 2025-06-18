@@ -52,7 +52,7 @@ app.MapGet("/", () => "Servidor API de Tienda Online está en funcionamiento");
 // === ENDPOINTS DE PRODUCTOS ===
 
 // GET /api/productos - Obtiene todos los productos o busca por nombre usando el parámetro 'buscar'
-app.MapGet("/api/productos", async (TiendaContext context, CarritoService carritoService, string? buscar) =>
+app.MapGet("/api/productos", async (TiendaContext context, CarritoService carritoService, string buscar = null) =>
 {
     try
     {
