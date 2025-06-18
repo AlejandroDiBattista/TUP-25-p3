@@ -2,20 +2,21 @@
 
 <div class="header-container">
     <header class="top-header">
-        <img src="img/ssLogo.png" alt="Logo" class="Logo">
-        <input type="text" placeholder="Buscar" class="search-input">
+        <NavLink href="/" class="logo-link">
+            <img src="img/ssLogo.png" alt="Logo" class="logo" />
+        </NavLink>
+        
+        <input type="text" placeholder="Buscar..." class="search-input" />
+        
         <NavLink href="/carrito" class="cart-link">
-            <img src="img/carritoCompras.png" alt="Carrito" class="cart-icon">
+            <img src="img/carritoCompras.png" alt="Carrito" class="cart-icon" />
         </NavLink>
     </header>
 
-    <nav class="nav-bar">
-        <NavLink href="/" class="nav-link" Match="NavLinkMatch.All">Catalogo</NavLink>
-        <NavLink href="/carrito" class="nav-link" Match="NavLinkMatch.All">Carrito</NavLink>
-    </nav>
+    <!-- Insertamos el NavMenu -->
+    <NavMenu />
 </div>
 
 <main class="main-content">
     @Body
 </main>
-
