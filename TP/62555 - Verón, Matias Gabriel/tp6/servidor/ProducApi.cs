@@ -112,7 +112,7 @@ public static class ProductoApi
             return Results.Ok(carrito); 
         });
        
-
+     // Agregar producto al carrito sumandola la cantidad
         app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}", async (
             int carritoId,
             int productoId,
@@ -146,6 +146,9 @@ public static class ProductoApi
             await db.SaveChangesAsync();
             return Results.Ok();
         });
+        //
+    
+
         app.MapGet("/api/carritos/{carritoId:int}", async (int carritoId, TiendaContext db) =>
         {
             var carrito = await db.Carritos

@@ -87,3 +87,15 @@ main {
         padding-right: 2rem !important;
     }
 }
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.page {
+    margin-top: 70px; 
+}

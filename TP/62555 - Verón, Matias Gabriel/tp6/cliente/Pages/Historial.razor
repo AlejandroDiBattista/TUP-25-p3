@@ -53,14 +53,17 @@
                         <span class="fw-bold">Detalle de la compra (@compraSeleccionada.Fecha.ToString("g"))</span>
                         <button class="btn btn-sm btn-close" @onclick="() => compraSeleccionada = null"></button>
                     </div>
-                    <ul class="mb-0">
-                        @foreach (var det in compraSeleccionada.Detalles)
-                        {
-                            <li>
-                                Producto: <b>@det.NombreProducto</b> - Cantidad: @det.Cantidad - Precio: $@det.PrecioUnitario
-                            </li>
-                        }
-                    </ul>
+                  <ul class="mb-0">
+    @foreach (var det in compraSeleccionada.Detalles)
+    {
+        <li class="mb-2">
+            Producto: <b>@det.NombreProducto</b><br />
+            Cantidad: @det.Cantidad<br />
+            Precio: $@det.PrecioUnitario<br />
+            <span class="fw-bold">Total: $@(det.Cantidad * det.PrecioUnitario)</span>
+        </li>
+    }
+</ul>
                 </div>
             }
         </div>

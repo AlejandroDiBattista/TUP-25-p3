@@ -13,7 +13,7 @@
     min-height: 420px;
     background: #fff;
     border-radius: 18px;
-    box-shadow: 0 2px 12px rgba(67,198,172,0.08);
+    box-shadow: 0 2px 12px rgba(131, 146, 143, 0.08);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,9 +23,9 @@
     z-index: 1;
 }
 
-.productos-grid .producto-card:hover {
-    transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 8px 32px rgba(67,198,172,0.18);
+.btn-agregar:active {
+    background-color: #90ca23; /* o el color que prefieras */
+    transform: scale(0.97);
 }
 
 .productos-grid .producto-card .card-body {
@@ -57,27 +57,17 @@
     height: 220px;
     object-fit: cover;
     border-radius: 18px 18px 0 0;
-    transition: box-shadow 0.2s, z-index 0.2s, transform 0.2s;
+    
     cursor: pointer;
     z-index: 2;
     position: relative;
 }
 
-.img-hover-container:hover .card-img-top {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(1.5);
-    z-index: 100;
-    box-shadow: 0 8px 32px rgba(67,198,172,0.25);
-    border-radius: 18px;
-    background: #fff;
-    pointer-events: none;
-}
+
 
 @media (max-width: 900px) {
     .img-hover-container:hover .card-img-top {
-        transform: translate(-50%, -50%) scale(1.2);
+        transform: translate(-50%, -50%) scale(0.7);
     }
 }
 
@@ -86,7 +76,7 @@ h1 {
     font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
     font-size: 2.5rem;
     font-weight: 800;
-    color: #3366cc;
+    color: #2f4061;
     background: none;
     margin: 1.5rem 0 1.5rem 0;
     letter-spacing: 1px;
@@ -110,6 +100,6 @@ h1 {
     border-radius: 24px 0 0 24px !important;
     border: 1px solid #ced4da;
     border-right: none;
-    color: #3366cc;
+    color: #374663;
     font-size: 1.2rem;
 }
