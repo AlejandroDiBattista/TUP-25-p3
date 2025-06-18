@@ -21,9 +21,12 @@
                     <p>@p.Descripcion</p>
                     <p>Precio: $@p.Precio</p>
                     <p>Stock: @p.Stock</p>
-                    <button @onclick="() => AgregarAlCarrito(p.Id)" class="boton-oscuro">
-                    Agregar al carrito
-                </button>
+                    <button 
+                        @onclick="() => AgregarAlCarrito(p.Id)" 
+                        class="boton-oscuro" 
+                        disabled="@(p.Stock == 0)">
+                        @(p.Stock == 0 ? "Sin Stock" : "Agregar al carrito")
+                    </button>
                 </div>
             }
         }
@@ -52,18 +55,23 @@
         try
         {
             int carritoId = await ApiService.ObtenerOCrearCarrito();
-
-            await ApiService.AgregarOActualizarProducto(carritoId, productoId, 1);
-
-
+            
             var items = await ApiService.GetCarrito(carritoId);
+            var itemExistente = items.FirstOrDefault(i => i.Producto?.Id == productoId);
 
+            int nuevaCantidad = 1;
+            if (itemExistente != null)
+            {
+                nuevaCantidad = itemExistente.Cantidad + 1;
+            }
 
+            await ApiService.AgregarOActualizarProducto(carritoId, productoId, nuevaCantidad);
+
+            await CargarProductos();
             await ApiService.ActualizarContadorCarrito(carritoId);
         }
         catch (Exception ex)
         {
-
             Console.WriteLine($"error al agregar al carrito: {ex.Message}");
         }
     }

@@ -79,15 +79,9 @@ namespace cliente.Services
         public async Task AgregarOActualizarProducto(int carritoId, int productoId, int cantidad)
         {
             var response = await _http.PutAsJsonAsync($"/carritos/{carritoId}/{productoId}", cantidad);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ ERROR: {response.StatusCode} - {error}");
-                throw new Exception($"Error al agregar/actualizar producto: {response.StatusCode} - {error}");
-            }
+            response.EnsureSuccessStatusCode();
         }
-
+        
         public async Task EliminarProducto(int carritoId, int productoId)
         {
             await _http.DeleteAsync($"/carritos/{carritoId}/{productoId}");

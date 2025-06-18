@@ -61,7 +61,7 @@
         {
             await ApiService.ConfirmarCompra(carritoId, confirmacion);
             await ApiService.LimpiarCarritoId();
-            Nav.NavigateTo("/");
+            Nav.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {
