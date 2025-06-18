@@ -1,23 +1,79 @@
-@inherits LayoutComponentBase
-@inject NavigationManager nav
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavManager // Para la navegación
+@inject CartStateService CartStateService // Para el contador del carrito
 
-<div class="container mt-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="titulo" @onclick="IrAlInicio">🛍️ Tienda Online</h2>
-        <a class="btn btn-outline-dark" href="/carrito">
-            🛒 Carrito
-        </a>
-    </div>
+<PageTitle>Tienda de Ropa</PageTitle>
 
-    <div class="main">@Body</div>
+<!-- Carga Tailwind CSS desde CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+
+<div class="min-h-screen flex flex-col bg-gray-100 font-sans">
+    <!-- Cabecera fija -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-lg sticky top-0 z-50 rounded-b-lg">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+            <!-- Logo/Home -->
+            <a href="/" class="text-3xl font-bold hover:text-blue-200 transition-colors" @onclick="GoHome">
+                Tienda de Ropa
+            </a>
+
+            <!-- Buscador y Carrito -->
+            <div class="flex items-center space-x-6">
+                <!-- Buscador (funcionalidad implementada en Index.razor) -->
+                <!-- <div class="relative">
+                    <input type="text" placeholder="Buscar productos..."
+                           class="py-2 px-4 pr-10 rounded-full bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                </div> -->
+                
+                <!-- Ícono de Carrito con contador -->
+                <button @onclick="GoToCart" class="relative p-2 rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <i class="fas fa-shopping-cart text-2xl"></i>
+                    @if (CartStateService.TotalItemsInCart > 0)
+                    {
+                        <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                            @CartStateService.TotalItemsInCart
+                        </span>
+                    }
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
+        @Body
+    </main>
+
+    <!-- Pie de página (opcional, básico) -->
+    <footer class="bg-gray-800 text-white p-4 text-center mt-auto rounded-t-lg">
+        <p>&copy; 2024 Tienda de Ropa. Todos los derechos reservados.</p>
+    </footer>
 </div>
 
-<style>
-    .titulo {
-        cursor: pointer;
-    }
-</style>
-
 @code {
-    void IrAlInicio() => nav.NavigateTo("/");
+    // Método para navegar a la página de inicio
+    private void GoHome()
+    {
+        NavManager.NavigateTo("/");
+    }
+
+    // Método para navegar a la página del carrito
+    private void GoToCart()
+    {
+        NavManager.NavigateTo("/carrito");
+    }
+
+    protected override void OnInitialized()
+    {
+        // Suscribirse al evento OnChange del servicio de estado del carrito
+        CartStateService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // Desuscribirse para evitar fugas de memoria
+        CartStateService.OnChange -= StateHasChanged;
+    }
 }

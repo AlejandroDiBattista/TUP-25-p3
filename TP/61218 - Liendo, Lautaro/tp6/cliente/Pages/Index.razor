@@ -1,0 +1,185 @@
+@page "/"
+@using System.Collections.Generic
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using cliente.Models
+@using cliente.Services      
+
+@inject ApiService ApiService
+@inject NavigationManager NavManager
+@inject CartStateService CartStateService
+
+<PageTitle>BetzabetStore</PageTitle>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">Catálogo de Ropa</h1>
+
+    <!-- Sección de búsqueda -->
+    <div class="mb-8 flex justify-center">
+        <input type="text" @bind-value="searchText" @bind-value:event="oninput"
+               placeholder="Buscar por nombre o descripción..."
+               class="p-3 border border-gray-300 rounded-lg w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+               @onkeyup="HandleSearchKeyUp" />
+        <button @onclick="PerformSearch"
+                class="ml-3 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+            Buscar
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-10">
+            <p class="text-lg text-gray-600">Cargando productos...</p>
+        </div>
+    }
+    else if (products == null || !products.Any())
+    {
+        <div class="text-center py-10">
+            <p class="text-lg text-gray-600">No se encontraron productos.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            @foreach (var product in products)
+            {
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105 duration-300">
+                    <img src="@product.UrlImagenArticulo" alt="@product.Denominacion"
+                         class="w-full h-48 object-cover rounded-t-xl"
+                         onerror="this.onerror=null;this.src='https://placehold.co/400x400/CCCCCC/666666?text=No+Imagen';" />
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 truncate">@product.Denominacion</h3>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">@product.Caracteristicas</p>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-2xl font-extrabold text-blue-700">@product.ValorUnitario.ToString("N2")</span>
+                            <span class="text-md font-medium @(product.CantidadDisponible > 0 ? "text-green-600" : "text-red-600")">
+                                Stock: @product.CantidadDisponible
+                            </span>
+                        </div>
+                        <button @onclick="() => AddToCart(product)"
+                                class="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors @(product.CantidadDisponible > 0 ? "" : "opacity-50 cursor-not-allowed")"
+                                disabled="@(product.CantidadDisponible <= 0)">
+                            @if (product.CantidadDisponible > 0)
+                            {
+                                <span>Agregar al Carrito</span>
+                            }
+                            else
+                            {
+                                <span>Agotado</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                <p class="text-xl font-semibold mb-4 @(isError ? "text-red-600" : "text-green-600")">@statusMessage</p>
+                <button @onclick="ClearStatusMessage" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Cerrar</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ArticuloInventario>? products;
+    private string searchText = string.Empty;
+    private bool isLoading = true;
+    private string? statusMessage;
+    private bool isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        isLoading = true;
+        ClearStatusMessage();
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            products = await ApiService.GetProductosAsync();
+        }
+        else
+        {
+            products = await ApiService.SearchProductosAsync(searchText);
+        }
+        isLoading = false;
+    }
+
+    private async Task PerformSearch()
+    {
+        await LoadProducts();
+    }
+
+    private async Task HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await PerformSearch();
+        }
+    }
+
+    private async Task AddToCart(ArticuloInventario product)
+    {
+        ClearStatusMessage();
+        isError = false;
+
+        if (CartStateService.CartId == null)
+        {
+            var newCartId = await ApiService.CreateCarritoAsync();
+            if (newCartId == null)
+            {
+                SetStatusMessage("Error al crear un nuevo carrito.", true);
+                return;
+            }
+        }
+
+        try
+        {
+            int currentQuantityInCart = CartStateService.CartItems.FirstOrDefault(i => i.ArticuloId == product.Id)?.Unidades ?? 0;
+            int newQuantity = currentQuantityInCart + 1;
+
+            bool success = await ApiService.AddItemToCarritoAsync(CartStateService.CartId!, product.Id, newQuantity);
+
+            if (success)
+            {
+                product.CantidadDisponible--;
+                SetStatusMessage($"'{product.Denominacion}' añadido al carrito. Redirigiendo...", false);
+                await Task.Delay(1000);
+                NavManager.NavigateTo("/carrito");
+            }
+            else
+            {
+                SetStatusMessage($"Error al añadir '{product.Denominacion}' al carrito. Verifica el stock.", true);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage($"Error: {ex.Message}", true);
+        }
+    }
+
+    private void SetStatusMessage(string message, bool isErrorMessage)
+    {
+        statusMessage = message;
+        isError = isErrorMessage;
+    }
+
+    private void ClearStatusMessage()
+    {
+        statusMessage = null;
+        isError = false;
+    }
+
+    public void Dispose()
+    {
+        CartStateService.OnChange -= StateHasChanged;
+    }
+}
