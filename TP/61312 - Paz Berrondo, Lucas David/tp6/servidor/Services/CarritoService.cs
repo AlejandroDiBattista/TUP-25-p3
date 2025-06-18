@@ -166,24 +166,27 @@ public class CarritoService
         if (producto == null)
         {
             return (false, $"Producto con ID {productoId} no encontrado", null);
-        }
-
-        // Verificar si el producto ya está en el carrito
+        }        // Verificar si el producto ya está en el carrito
         var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
 
-        // Validar stock disponible (usar la cantidad que se quiere establecer, no sumar)
-        if (cantidad > producto.Stock)
+        // Validar stock disponible considerando otros carritos activos
+        var stockDisponible = await CalcularStockDisponibleAsync(productoId, carritoId);
+        
+        if (cantidad > stockDisponible)
         {
-            return (false, $"Stock insuficiente. Stock disponible: {producto.Stock}, cantidad solicitada: {cantidad}", null);
-        }        // Agregar o actualizar item en el carrito
+            return (false, $"Stock insuficiente. Stock disponible: {stockDisponible}, cantidad solicitada: {cantidad}", null);
+        }
+
+        // Agregar o actualizar item en el carrito
         if (itemExistente != null)
         {
-            // Actualizar cantidad del item existente (reemplazar, no sumar)
-            itemExistente.Cantidad = cantidad;
+            // Sumar cantidad al item existente (acumular, no reemplazar)
+            var cantidadAnterior = itemExistente.Cantidad;
+            itemExistente.Cantidad += cantidad;
             itemExistente.PrecioUnitario = producto.Precio; // Actualizar precio por si cambió
             itemExistente.Producto = producto;
             
-            Console.WriteLine($"🛒 Producto {producto.Nombre} actualizado en carrito {carritoId}. Nueva cantidad: {cantidad}");
+            Console.WriteLine($"🛒 Producto {producto.Nombre} cantidad actualizada en carrito {carritoId}. Cantidad anterior: {cantidadAnterior}, agregada: {cantidad}, nueva cantidad total: {itemExistente.Cantidad}");
         }
         else
         {
@@ -430,5 +433,49 @@ public class CarritoService
         }
 
         return (true, "Stock disponible para todos los productos");
+    }
+
+    /// <summary>
+    /// Calcula el stock disponible de un producto considerando las cantidades en todos los carritos activos.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>Stock disponible real</returns>
+    public async Task<int> CalcularStockDisponibleAsync(int productoId)
+    {
+        var producto = await _context.Productos.FindAsync(productoId);
+        if (producto == null) return 0;
+
+        // Sumar todas las cantidades del producto en todos los carritos activos
+        var cantidadEnCarritos = _carritos.Values
+            .SelectMany(c => c.Items)
+            .Where(item => item.ProductoId == productoId)
+            .Sum(item => item.Cantidad);
+
+        // Stock disponible = Stock en BD - Stock reservado en carritos
+        var stockDisponible = producto.Stock - cantidadEnCarritos;
+        return Math.Max(0, stockDisponible);
+    }
+
+    /// <summary>
+    /// Calcula el stock disponible de un producto excluyendo un carrito específico.
+    /// Útil para validar actualizaciones de cantidad en un carrito existente.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <param name="carritoIdExcluir">ID del carrito a excluir del cálculo</param>
+    /// <returns>Stock disponible real</returns>
+    public async Task<int> CalcularStockDisponibleAsync(int productoId, string carritoIdExcluir)
+    {
+        var producto = await _context.Productos.FindAsync(productoId);
+        if (producto == null) return 0;
+
+        // Sumar cantidades en todos los carritos EXCEPTO el especificado
+        var cantidadEnOtrosCarritos = _carritos.Values
+            .Where(c => c.Id != carritoIdExcluir)
+            .SelectMany(c => c.Items)
+            .Where(item => item.ProductoId == productoId)
+            .Sum(item => item.Cantidad);
+
+        var stockDisponible = producto.Stock - cantidadEnOtrosCarritos;
+        return Math.Max(0, stockDisponible);
     }
 }

@@ -1,11 +1,11 @@
 namespace TUP;
 
 public class EstadoPractico {
-    public static readonly EstadoPractico NoPresentado = new("·");
     public static readonly EstadoPractico Aprobado     = new("+");
+    public static readonly EstadoPractico EnProgreso   = new("~");
     public static readonly EstadoPractico Desaprobado  = new("-");
     public static readonly EstadoPractico Error        = new("*");
-    public static readonly EstadoPractico EnProgreso   = new("~");
+    public static readonly EstadoPractico NoPresentado = new("·");
         
     public static EstadoPractico FromString(string c) => c switch {
         "." or " " or "·"=> NoPresentado,

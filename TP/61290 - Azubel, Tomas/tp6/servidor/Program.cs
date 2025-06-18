@@ -2,19 +2,27 @@ using Microsoft.EntityFrameworkCore;
 using servidor.Data;
 using servidor.Models;
 using servidor.Cart;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// DB Context
 builder.Services.AddDbContext<StoreDbContext>(options =>
     options.UseSqlite("Data Source=store.db"));
 
+// Carts
 builder.Services.AddSingleton<CartService>();
 
+// ✅ CORS Policy (IMPORTANTE)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5177")
+        policy.WithOrigins("http://localhost:5177") // Blazor WASM client
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -22,8 +30,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ✅ Activar CORS antes de cualquier endpoint
 app.UseCors("AllowFrontend");
 
+// DB Seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<StoreDbContext>();
@@ -50,6 +60,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseRouting();
 
+// ✅ API endpoints
 app.MapGet("/products", async (HttpContext http, StoreDbContext db) =>
 {
     var query = http.Request.Query["search"].ToString();
@@ -72,7 +83,7 @@ app.MapGet("/products/{id}", async (int id, StoreDbContext db) =>
 app.MapPost("/carts", (CartService carts) =>
 {
     var id = carts.CreateCart();
-    return Results.Ok(id);
+    return Results.Ok(id); // NO usar Results.Ok(new { cartId = id });
 });
 
 app.MapGet("/carts/{id}", (string id, CartService carts) =>

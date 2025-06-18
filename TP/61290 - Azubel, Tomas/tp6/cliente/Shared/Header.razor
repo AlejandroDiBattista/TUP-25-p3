@@ -2,9 +2,13 @@
 @inject ApiService Api
 @inject CartStorage Storage
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-expand-lg" style="background-color: #121212;">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">🛒 Tienda Online</a>
+        <a class="navbar-brand text-white" href="/" @onclick="GoHome">
+            <img src="images/logo-placeholder.png" alt="Logo" style="height: 60px;" />
+        </a>
+
+        <h3>MegaStore</h3>
 
         <form class="d-flex ms-auto" @onsubmit="DoSearch">
             <input class="form-control me-2" type="search" placeholder="Search..." @bind="SearchTerm" />
@@ -29,6 +33,11 @@
         await LoadCartCount();
     }
 
+    private void GoHome()
+    {
+        Nav.NavigateTo("/", forceLoad: true);
+    }
+
     private async Task LoadCartCount()
     {
         var cart = await Api.GetCartAsync(CartId);
@@ -49,8 +58,8 @@
     private void DoSearch()
     {
         if (!string.IsNullOrWhiteSpace(SearchTerm))
-            Nav.NavigateTo($"/?search={SearchTerm}");
+            Nav.NavigateTo($"/?search={SearchTerm}", forceLoad: true);
         else
-            Nav.NavigateTo("/");
+            Nav.NavigateTo("/", forceLoad: true);
     }
 }

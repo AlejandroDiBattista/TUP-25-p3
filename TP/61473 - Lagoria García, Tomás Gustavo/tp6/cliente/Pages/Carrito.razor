@@ -51,7 +51,7 @@
                                 </div>
                             </td>
                             <td>@item.PrecioUnitario.ToString("C")</td>
-                            <td>@(item.PrecioUnitario * item.Cantidad).ToString("C")</td>
+                            <td>@(item.PrecioUnitario * item.Cantidad)</td>
                             <td class="text-center">
                                 <button class="btn btn-sm btn-danger" title="Eliminar" @onclick="() => EliminarItem(item)">
                                     <i class="bi bi-trash"></i>
@@ -97,7 +97,7 @@
     }
     private void NavegarRegreso()
     {
-     Nav.NavigateTo($"/catalogo");
+     Nav.NavigateTo($"/");
     }
 
     private async Task CargarCarrito()

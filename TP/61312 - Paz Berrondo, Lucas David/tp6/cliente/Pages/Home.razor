@@ -109,31 +109,42 @@
                                         @(producto.Stock > 0 ? $"Stock: {producto.Stock}" : "Sin stock")
                                     </span>
                                 </div>
-                                
-                                @if (producto.Stock > 0)
+                                  @if (producto.Stock > 0)
                                 {
                                     <div class="quantity-selector">
                                         <button class="quantity-btn" 
-                                                @onclick="() => DecrementarCantidad(producto.Id)">-</button>
+                                                @onclick="() => DecrementarCantidad(producto.Id)"
+                                                disabled="@agregandoProducto">-</button>
                                         <input type="number" class="quantity-input" 
                                                @bind="cantidadesSeleccionadas[producto.Id]" 
                                                min="1" max="@producto.Stock">
                                         <button class="quantity-btn" 
-                                                @onclick="() => IncrementarCantidad(producto.Id, producto.Stock)">+</button>
+                                                @onclick="() => IncrementarCantidad(producto.Id, producto.Stock)"
+                                                disabled="@agregandoProducto">+</button>
                                     </div>
                                     
                                     <button class="btn btn-primary-modern w-100" 
                                             @onclick="() => AgregarAlCarrito(producto)"
-                                            disabled="@agregandoProducto">                                        @if (agregandoProducto)
+                                            disabled="@(agregandoProducto || producto.Stock < cantidadesSeleccionadas[producto.Id])">
+                                        @if (agregandoProducto)
                                         {
                                             <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                                        }
+                                        else if (producto.Stock < cantidadesSeleccionadas[producto.Id])
+                                        {
+                                            <span><Icon Name="alert-triangle" Size="16" /> Stock Insuficiente</span>
                                         }
                                         else
                                         {
                                             <span><Icon Name="shopping-cart" Size="16" /> Agregar al Carrito</span>
                                         }
                                     </button>
-                                }                                else
+                                    
+                                    @if (producto.Stock < cantidadesSeleccionadas[producto.Id])
+                                    {
+                                        <small class="text-danger mt-1 d-block">Solo quedan @producto.Stock unidades disponibles</small>
+                                    }
+                                }else
                                 {
                                     <button class="btn btn-outline-modern w-100" disabled>
                                         <Icon Name="x-circle" Size="16" /> Sin Stock
@@ -152,8 +163,7 @@
 @if (mostrarNotificacion)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : "modal-error")">                <div class="modal-header">
+        <div class="modal-dialog modal-dialog-centered">            <div class="modal-content @(tipoNotificacion == "success" ? "modal-success" : tipoNotificacion == "warning" ? "modal-warning" : "modal-error")">                <div class="modal-header">
                     <h5 class="modal-title">@tituloNotificacion</h5>
                 </div>
                 <div class="modal-body">
@@ -161,6 +171,10 @@
                         @if (tipoNotificacion == "success")
                         {
                             <Icon Name="check-circle" Size="48" Class="icon-success" />
+                        }
+                        else if (tipoNotificacion == "warning")
+                        {
+                            <Icon Name="alert-triangle" Size="48" Class="icon-warning" />
                         }
                         else
                         {
@@ -190,12 +204,11 @@
     // Estado del carrito
     private string? carritoId;
     private int totalItemsCarrito = 0;
-    
-    // Variables para la notificación
+      // Variables para la notificación
     private bool mostrarNotificacion = false;
     private string tituloNotificacion = "";
     private string mensajeNotificacion = "";
-    private string tipoNotificacion = ""; // "success" o "error"
+    private string tipoNotificacion = ""; // "success", "warning" o "error"
 
     protected override async Task OnInitializedAsync()
     {
@@ -240,9 +253,7 @@
         {
             Console.WriteLine($"Error al inicializar carrito: {ex.Message}");
         }
-    }
-
-    private async Task CargarProductos()
+    }    private async Task CargarProductos()
     {
         try
         {
@@ -258,11 +269,21 @@
                 productos = await ApiService.BuscarProductosAsync(terminoBusquedaActual);
             }
             
-            // Inicializar cantidades seleccionadas
-            cantidadesSeleccionadas.Clear();
+            // Inicializar cantidades seleccionadas manteniendo las existentes
             foreach (var producto in productos)
             {
-                cantidadesSeleccionadas[producto.Id] = 1;
+                if (!cantidadesSeleccionadas.ContainsKey(producto.Id))
+                {
+                    cantidadesSeleccionadas[producto.Id] = 1;
+                }
+                else
+                {
+                    // Ajustar cantidad si excede el stock actual
+                    if (cantidadesSeleccionadas[producto.Id] > producto.Stock)
+                    {
+                        cantidadesSeleccionadas[producto.Id] = Math.Max(1, producto.Stock);
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -295,23 +316,39 @@
             await Task.Delay(10);
             await BuscarProductos();
         }
-    }
-
-    private void IncrementarCantidad(int productoId, int stockMaximo)
+    }    private async void IncrementarCantidad(int productoId, int stockMaximo)
     {
         if (cantidadesSeleccionadas[productoId] < stockMaximo)
         {
             cantidadesSeleccionadas[productoId]++;
         }
-    }    private void DecrementarCantidad(int productoId)
+        else
+        {
+            // Validar stock real desde el servidor
+            var (esValido, stockDisponible, nombreProducto) = await ApiService.ValidarStockDisponibleAsync(productoId, cantidadesSeleccionadas[productoId] + 1);
+            
+            if (!esValido)
+            {
+                MostrarNotificacion("Stock Limitado", 
+                    $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "warning");
+            }
+            else
+            {
+                // El stock local estaba desactualizado, incrementar y recargar productos
+                cantidadesSeleccionadas[productoId]++;
+                await CargarProductos(); // Sincronizar stock
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void DecrementarCantidad(int productoId)
     {
         if (cantidadesSeleccionadas[productoId] > 1)
         {
             cantidadesSeleccionadas[productoId]--;
         }
-    }
-    
-    private async Task AgregarAlCarrito(ProductoDto producto)
+    }    private async Task AgregarAlCarrito(ProductoDto producto)
     {
         if (string.IsNullOrEmpty(carritoId))
         {
@@ -320,16 +357,43 @@
         }
 
         try
-        {            agregandoProducto = true;
-            var cantidad = cantidadesSeleccionadas[producto.Id];
+        {
+            agregandoProducto = true;
+            var cantidadAAgregar = cantidadesSeleccionadas[producto.Id];
             
-            var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
+            // Validar stock real desde el servidor antes de proceder
+            var (esValido, stockDisponible, nombreProducto) = await ApiService.ValidarStockDisponibleAsync(producto.Id, cantidadAAgregar);
+            
+            if (!esValido)
+            {
+                MostrarNotificacion("Stock Insuficiente", 
+                    $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "error");
+                
+                // Ajustar cantidad seleccionada al stock disponible
+                if (stockDisponible > 0)
+                {
+                    cantidadesSeleccionadas[producto.Id] = stockDisponible;
+                }
+                
+                // Recargar productos para sincronizar datos
+                await CargarProductos();
+                return;
+            }
+            
+            var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidadAAgregar);
             
             if (exito)
             {
+                // Recargar productos para sincronizar stock desde servidor
+                await CargarProductos();
+                
+                // Resetear la cantidad seleccionada a 1 después de agregar
+                cantidadesSeleccionadas[producto.Id] = 1;
+                
                 await ActualizarContadorCarrito();
+                
                 MostrarNotificacion("Producto Agregado", 
-                    $"{producto.Nombre} agregado al carrito (Cantidad: {cantidad})", "success");
+                    $"{cantidadAAgregar} unidad(es) de {nombreProducto} agregadas al carrito", "success");
             }
             else
             {
@@ -339,13 +403,27 @@
                 
                 if (!string.IsNullOrEmpty(carritoId))
                 {
+                    // Revalidar stock antes del segundo intento
+                    var (esValidoReintento, stockDisponibleReintento, _) = await ApiService.ValidarStockDisponibleAsync(producto.Id, cantidadAAgregar);
+                    
+                    if (!esValidoReintento)
+                    {
+                        MostrarNotificacion("Stock Insuficiente", 
+                            $"Solo quedan {stockDisponibleReintento} unidades disponibles de {nombreProducto}", "error");
+                        await CargarProductos();
+                        return;
+                    }
+                    
                     // Intentar agregar nuevamente con el carrito recreado
-                    exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidad);
+                    exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidadAAgregar);
                     if (exito)
                     {
+                        await CargarProductos();
+                        cantidadesSeleccionadas[producto.Id] = 1;
                         await ActualizarContadorCarrito();
+                        
                         MostrarNotificacion("Producto Agregado", 
-                            $"{producto.Nombre} agregado al carrito (Cantidad: {cantidad})", "success");
+                            $"{cantidadAAgregar} unidad(es) de {nombreProducto} agregadas al carrito", "success");
                     }
                     else
                     {
@@ -358,7 +436,8 @@
                     MostrarNotificacion("Error", 
                         "No se pudo crear un carrito. Intenta recargar la página.", "error");
                 }
-            }        }
+            }
+        }
         catch (Exception ex)
         {
             MostrarNotificacion("Error", $"Error: {ex.Message}", "error");

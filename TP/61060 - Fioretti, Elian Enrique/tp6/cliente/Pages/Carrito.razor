@@ -82,7 +82,8 @@
     private int ObtenerStockDisponible(int productoId)
     {
         var producto = productos?.FirstOrDefault(p => p.Id == productoId);
-        return producto?.Stock ?? 0;
+        var item = items.FirstOrDefault(i => i.ProductoId == productoId);
+        return (producto?.Stock ?? 0) + (item?.Cantidad ?? 0);
     }
 
     private async Task CambiarCantidad(int productoId, int delta)
@@ -100,6 +101,7 @@
         {
             items = await ApiService.QuitarDelCarritoAsync(productoId, 1);
         }
+        productos = await ApiService.ObtenerProductosAsync();
         StateHasChanged();
     }
 

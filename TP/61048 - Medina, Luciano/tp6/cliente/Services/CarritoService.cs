@@ -12,18 +12,19 @@ namespace cliente.Services
         public int CantidadItems { get; private set; }
         public event Action? OnChange;
 
-        public CarritoService(HttpClient http)
+        public CarritoService(HttpClient httpClient)
         {
-            _http = http;
+            _http = httpClient;
         }
 
-        // --- NUEVO MÉTODO CENTRALIZADO ---
+        // --- MÉTODO ACTUALIZADO ---
         public async Task<bool> AgregarProductoAlCarrito(int productoId)
         {
             await InicializarCarrito();
             if (CarritoId.HasValue)
             {
-                var response = await _http.PutAsync($"/api/carritos/{CarritoId}/agregar/{productoId}?cantidad=1", null);
+                // Ahora llamamos al nuevo endpoint de INCREMENTAR
+                var response = await _http.PostAsync($"/api/carritos/{CarritoId}/incrementar/{productoId}", null);
                 if (response.IsSuccessStatusCode)
                 {
                     await ActualizarCantidadDesdeApi();

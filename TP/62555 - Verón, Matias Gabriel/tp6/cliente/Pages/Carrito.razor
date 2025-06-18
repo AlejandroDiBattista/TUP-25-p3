@@ -8,7 +8,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-8 col-md-7 col-12 mb-4">
-            <h3 class="carrito-titulo">Carrito de tus Compras</h3>
+            <h3 class="carrito-titulo pt-5 mt-5">Carrito de tus Compras</h3>
             @if (itemsCarrito == null || !itemsCarrito.Any())
             {
                 <div class="alert alert-info">El carrito está vacío.</div>
@@ -92,6 +92,7 @@
     private string apellidoCliente = "";
     private string emailCliente = "";
     private string errorConfirmacion = "";
+    private int carritoId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,6 +144,7 @@
             await ObtenerCarrito();
         }
     }
+
     private async Task ConfirmarCompra()
 {
     errorConfirmacion = "";

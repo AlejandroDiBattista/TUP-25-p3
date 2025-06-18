@@ -1,0 +1,196 @@
+@page "/confirmacion"
+@using cliente.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject CarritoService CarritoService
+@inject ApiService ApiService
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<div class="page-container">
+    <div class="container">
+        <h1>Confirmación de Compra</h1>        @if (!CarritoService.Items.Any())
+        {
+            <div class="alert alert-warning text-center">
+                <i class="bi bi-exclamation-triangle me-2" style="font-size: 1.5rem;"></i>
+                <h5>No hay productos en el carrito</h5>
+                <p class="mb-3">Primero debes agregar productos al carrito para poder confirmar una compra.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="/" class="btn btn-primary">
+                        <i class="bi bi-house me-2"></i>Ir al catálogo
+                    </a>
+                    <a href="/carrito" class="btn btn-outline-secondary">
+                        <i class="bi bi-cart me-2"></i>Ver carrito
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Resumen de la compra -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-receipt me-2"></i>Resumen de tu compra
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">                            @foreach (var item in CarritoService.Items)
+                            {
+                                <div class="producto-resumen">
+                                    <div class="producto-info">
+                                        <h6 class="producto-nombre">@item.Producto.Nombre</h6>
+                                        <small class="producto-detalle">@item.Cantidad x USD @item.Producto.Precio.ToString("N2")</small>
+                                    </div>
+                                    <div class="producto-precio">
+                                        <span class="precio-valor">USD @((item.Cantidad * item.Producto.Precio).ToString("N2"))</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>                        <div class="col-md-4">
+                            <div class="resumen-total">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="resumen-label">Total de artículos:</span>
+                                    <strong class="resumen-valor">@CarritoService.Items.Sum(i => i.Cantidad)</strong>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="resumen-label-total">Total a pagar:</span>
+                                    <strong class="resumen-precio-total">USD @(CarritoService.Items.Sum(i => i.Cantidad * i.Producto.Precio).ToString("N2"))</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de datos del cliente -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>Datos del cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@ventaForm" OnValidSubmit="FinalizarCompra">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre *</label>
+                                <InputText class="form-control" @bind-Value="ventaForm.NombreCliente" 
+                                          placeholder="Ingrese su nombre" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Apellido *</label>
+                                <InputText class="form-control" @bind-Value="ventaForm.ApellidoCliente" 
+                                          placeholder="Ingrese su apellido" />
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Email *</label>
+                            <InputText class="form-control" @bind-Value="ventaForm.EmailCliente" 
+                                      placeholder="ejemplo@correo.com" type="email" />
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" @onclick="VolverAlCarrito">
+                                <i class="bi bi-arrow-left me-2"></i>Volver al carrito
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" disabled="@procesando">
+                                @if (procesando)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Procesando...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span>Confirmar compra</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    @if (!string.IsNullOrEmpty(error))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@error
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Modal de éxito -->
+        @if (mostrarModalExito)
+        {
+            <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5)">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center p-4">
+                            <div class="mb-4">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="mb-3">¡Compra realizada con éxito!</h4>
+                            <p class="mb-4">Tu pedido ha sido registrado correctamente. Te hemos enviado un email de confirmación.</p>
+                            <button class="btn btn-primary btn-lg" @onclick="IrAlInicio">
+                                <i class="bi bi-house me-2"></i>Ir al inicio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private RegistrarVentaRequest ventaForm = new RegistrarVentaRequest();
+    private string error;
+    private bool procesando = false;
+    private bool mostrarModalExito = false;    protected override void OnInitialized()
+    {
+        // La página es accesible directamente, pero muestra mensaje si no hay productos
+    }
+
+    private void VolverAlCarrito()
+    {
+        NavigationManager.NavigateTo("/carrito");
+    }
+
+    private async Task FinalizarCompra()
+    {
+        try
+        {
+            procesando = true;
+            error = null;            // Preparar los datos de la venta
+            ventaForm.Detalles = CarritoService.Items.Select(item => new DetalleVentaRequest
+            {
+                ProductoId = item.Producto.Id,
+                Cantidad = item.Cantidad
+            }).ToList();
+
+            // Registrar la venta
+            await ApiService.RegistrarVentaAsync(ventaForm);            // Limpiar el carrito
+            CarritoService.VaciarCarrito();
+
+            // Mostrar modal de éxito
+            mostrarModalExito = true;
+        }
+        catch (Exception ex)
+        {
+            error = $"Error al procesar la compra: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private void IrAlInicio()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

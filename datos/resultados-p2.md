@@ -1,65 +1,74 @@
 # Evaluacion 2do Parcial
-- 61667 : ok no descuenta stock al agregar al carrito
-ok 
-- 62055 : ok no descuenta stock al agregar al carrito
-- 61141 : no presentado
-- 61626 : ok debe mostrar directamente la lista de productos, no descuenta stock
-- 61271 : ok no descuenta stock, pesima presentacion
-- 61221 : ok no descuenta stock, no controla stock, el carrito no dice la cantidad de unidades
-- 62093 : ok no descuenta stock, no funciona confirmar venta.
-- 61450 : ok - ejemplo
-- 61627 : error
-- 61473 : no presentado
-- 61794 : ok No descuenta stock, al agregar al carrito comienza de 1.
-- 61818 : ok no muestra imagen, no descuenta stock, mala presentacion
-- 61579 : error - no muestra ningun producto
-- 61445 : no descuenta stock, al agregar vuelve a 1, doble busqueda
-- 61676 : no muestra productos al iniciar, no descuenta stock, no controla stock
-- 61032 : ok no descuenta stock al agregar al carrito
-- 62263 : no actualiza stock al agregar, mal presentacion
-- 61572 : no muestra productos, IGUAL que 61579
-- 61037 : no agrega al carrito
-- 61312 : no funciona
 - 61028 : no controla stock, no actualiza stock, no muestra imagen
-- 61197 : ok no actualiza stock
-- 61478 : no agrega al carrito
-- 61129 : ok no actualiza stock - ejemplo
-- 62555 : ok no actualiza stock, mejorar presentacion
-- 61189 : solo funciona una vez, al confirmar carrito deja de funcionar
-- 61345 : ok no actualiza stock, la presentacion se tiene que mejorar
-- 61611 : ok no actualiza stock, mejorar presentacion
-- 61908 : ok no puedo ir al carrito, mejora estetica
-- 61673 : no funciona, no muestra productos
-- 61051 : ok no actualiza stock, 
-- 61050 : no funciona la primera vez hay que refrescar, no tiene forma de volver al catalogo, no actualiza stock
-- 61680 : no funciona la primera vez hay que refrescar, me da error al confirmar la compra, no actualiza stock
-- 61060 : ok no actualiza stock al agregar al carrito, estetica muy cuidada
-- 61540 : no muestra imagen de producto, confirma compra no funciona, no actualiza stock
-- 61688 : no realiza busqueda, no actualiza stock
+- 61032 : no descuenta stock al agregar al carrito
+- 61037 : no agrega al carrito
+- 61041 : ok cuando no esta agregado al carrito la cantidad representa cuanto se va agregar, cuando esta agregado modifica la cantidad a comprar. 
 - 61042 : no tiene imagenes, no actualiza stock, en el carrito no controla stock
-- 61652 : no busca, se rompe al pasar del carrito al catalogo
-- 61041 : ok cuando no esta agregado al carrito la cantidad representa cuanto se va agregar, cuando esta agregado pmodifica la cantidad a comprar. 
-- 61218 : no tiene imagen, no va al carrito al comprar, me dice: no de puede confirmar la compra
-- 61535 : ok no actualiza stock
-- 61905 : no muestra imagenes, no confirma compra
-- 61053 :  no actualiza stock, no vacia el carrito al confirmar la compra
-- 61848 : ok no actualiza el stock
-- 61247 : error
-- 61048 : ok no actualiza stock, al agregar un producto al carrito lo reinicia
-- 61122 : no agrega al carrito
-- 61314 : ok no controla stock en el carrito
-- 61328 : error 'internal server error'
-- 62136 : no presentado
-- 61588 : ok
-- 61985 : ok no actualiza stock
-- 61644 : no actualiza stock, no controla stock, me da mensaje al confimar
-- 61732 : no funciona, no muestra productos
-- 61422 : no agrega al carrito, error 404
-- 61671 : ok
+- 61048 : no actualiza stock, al agregar un producto al carrito lo reinicia, no muestra las imagenes
+- 61050 : no tiene forma de volver al catalogo, no actualiza stock
+- 61051 : no actualiza stock, 
+- 61053 : no actualiza stock, no vacia el carrito al confirmar la compra
+- 61060 : no actualiza stock al agregar al carrito, estetica muy cuidada
 - 61064 : no agrega al carrito
+- 61072 : error - Component 'confirmacion' starts with a lowercase character
+- 61096 : error - El espacio de nombres 'Servidor.Models' ya contiene una definición para 'Producto'
+- 61122 : no agrega al carrito
+- 61125 : no muestra imagen, no agrega al carrito, doble navegacion, ir al catalogo directamente
+- 61128 : no actualiza stock
+- 61129 : no actualiza stock
+- 61141 : no presentado
+- 61189 : solo funciona una vez, al confirmar carrito deja de funcionar
+- 61197 : no actualiza stock
+- 61200 : error- El token "}" no es válido en una clase, un registro, una estructura
+- 61218 : no tiene imagen, no va al carrito al comprar, me dice: no de puede confirmar la compra
+- 61221 : no descuenta stock, no controla stock, el carrito no dice la cantidad de unidades
+- 61227 : cuando confirma no vuelve al catalogo, no carga toda las imagenes
+- 61247 : esta rota la presentacion (falta bootstrap.min.css), no permite cambiar la cantidad en el carrito
+- 61271 : no descuenta stock, pesima presentacion
+- 61290 : error - No se pudo iniciar el servidor correctamente.
+- 61312 : error - no funciona
+- 61314 : debe ir directamente al catalogo, no controla stock en el carrito
+- 61328 : error - internal server error
+- 61340 : no actualiza stock, no permite regresar al catalogo
+- 61345 : no actualiza stock
+- 61422 : no actualiza el stock
+- 61445 : no descuenta stock, al agregar vuelve a 1, doble busqueda
+- 61450 : ok
+- 61473 : no inicia en home, muestra alert, el subtotal dice '3100.0.ToString("C")'
+- 61478 : no agrega al carrito
+- 61491 : error - El tipo 'Inicial' ya define un miembro denominado 'Update' con el mismo tipo de parámetro
+- 61496 : error - The entity type 'ItemCarrito' requires a primary key to be defined
+- 61535 : no actualiza stock
+- 61540 : no muestra imagen de producto, no actualiza stock
+- 61572 : error - no muestra productos, IGUAL que 61579
+- 61579 : error - no muestra productos, IGUAL que 61572
+- 61588 : ok
+- 61611 : no actualiza stock, mejorar presentacion
+- 61626 : debe mostrar directamente la lista de productos, no descuenta stock
+- 61627 : no descuenta stock, no controla stock, no permite volver al catalogo
+- 61644 : no actualiza stock, no controla stock, me da mensaje al confimar
+- 61652 : no actualiza stock, al agregar al carrito no incrementa la cantidad
+- 61667 : no descuenta stock al agregar al carrito 
+- 61671 : ok
+- 61673 : no funciona, no muestra productos
+- 61676 : no muestra productos al iniciar, no descuenta stock, no controla stock
+- 61679 : error - "Carrito" no contiene una definición para "Items"
+- 61680 : me da error al confirmar la compra, no actualiza stock, ni controla el stock
+- 61688 : no realiza busqueda, no actualiza stock
+- 61732 : no funciona, no muestra productos
+- 61793 : error - 'ApiService' no se encontró
+- 61794 : No descuenta stock, al agregar al carrito comienza de 1.
+- 61818 : no muestra imagen, no descuenta stock, mala presentacion
+- 61848 : no actualiza el stock
+- 61905 : no muestra imagenes, no confirma compra
+- 61908 : ok 
+- 61956 : error - 'RequiredAttribute' no se encontró
+- 61962 : error - 'Layout' no existe en el espacio de nombres 'Cliente'
+- 61985 : no actualiza stock
+- 61988 : ok, eliminar historial y `agregar stock`
+- 62055 : no descuenta stock al agregar al carrito
+- 62093 : no descuenta stock.
 - 62104 : ok
-- 61125 : no muestra imagen, no agrega al carrito, doble navegacion
-- 61128 : ok imagenes desprorcionadas, no actualiza stock
-- 61340 : ok no actualiza stock, ejemplo
-- 61227 : ok cuando confirma no vuelve al catalogo, no carga toda las imagenes
-- 61988 : no agrega al carrito
+- 62136 : ir directamente al catalogo, no actualiza stock, no verifica el stock, no permite confirmar pedido
+- 62263 : no actualiza stock al agregar, mal presentacion (falla bootstrap.min.css)
+- 62555 : no actualiza stock, mejorar presentacion

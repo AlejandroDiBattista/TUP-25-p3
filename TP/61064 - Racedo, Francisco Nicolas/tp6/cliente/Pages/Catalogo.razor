@@ -80,6 +80,8 @@
                 <div class="row justify-content-center">
                     @foreach (var prod in productos)
                     {
+                        var cantidadEnCarrito = carritoItems.FirstOrDefault(i => i.Id == prod.Id)?.Cantidad ?? 0;
+                        var stockVisual = prod.Stock - cantidadEnCarrito;
                         <div class="col-12 col-md-6 mb-3">
                             <div class="card flex-row flex-wrap flex-md-nowrap align-items-center shadow border border-primary bg-light p-2" style="min-height:200px; max-height:280px;">
                                 <div class="d-flex align-items-center justify-content-center bg-white border-end border-2 border-primary" style="min-width:200px;max-width:240px;width:45%;min-height:200px;max-height:240px;">
@@ -90,13 +92,13 @@
                                     <p class="card-text text-muted small mb-2" style="font-size:0.95rem;">@prod.Descripcion</p>
                                     <div class="d-flex align-items-center mb-2">
                                         <span class="badge bg-success me-2" style="font-size:1.25rem;">$@prod.Precio.ToString("N2")</span>
-                                        <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @prod.Stock</span>
+                                        <span class="badge bg-secondary" style="font-size:1.15rem;">Stock: @stockVisual</span>
                                     </div>
                                     <div class="d-flex gap-2 mt-2">
-                                        <button class="btn btn-primary btn-sm fw-bold flex-fill" @onclick="() => AgregarAlCarrito(prod.Id)" disabled="@(!puedeAgregar)">
+                                        <button class="btn btn-primary btn-sm fw-bold flex-fill" @onclick="() => AgregarAlCarrito(prod.Id)" disabled="@(!puedeAgregar || stockVisual <= 0)">
                                             <i class="bi bi-cart-plus"></i> Agregar al carrito
                                         </button>
-                                        <button class="btn btn-outline-danger btn-sm flex-fill" @onclick="() => QuitarDelCarrito(prod.Id)">
+                                        <button class="btn btn-outline-danger btn-sm flex-fill" @onclick="() => QuitarDelCarrito(prod.Id)" disabled="@(cantidadEnCarrito == 0)">
                                             <i class="bi bi-cart-dash"></i> Quitar del carrito
                                         </button>
                                     </div>
@@ -157,6 +159,7 @@
     bool mostrarModalStock = false;
     bool mostrarModalNoEnCarrito = false;
     int contadorCarrito = 0;
+    List<CarritoItemDto> carritoItems = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -169,7 +172,7 @@
             carritoId = await Api.CrearCarritoAsync();
             await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
         }
-        await ActualizarContadorCarrito();
+        await ActualizarCarritoYContador();
     }
 
     async Task AgregarAlCarrito(int productoId)
@@ -184,7 +187,7 @@
         puedeAgregar = true;
         if (ok)
         {
-            await ActualizarContadorCarrito();
+            await ActualizarCarritoYContador();
         }
         else
         {
@@ -200,7 +203,7 @@
         if (itemExistente != null)
         {
             await Api.EliminarProductoDelCarritoAsync(carritoId, productoId);
-            await ActualizarContadorCarrito();
+            await ActualizarCarritoYContador();
             // Forzar actualización visual del contador en MainLayout
             await JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", (contadorCarrito - itemExistente.Cantidad).ToString());
         }
@@ -210,10 +213,10 @@
         }
     }
 
-    async Task ActualizarContadorCarrito()
+    async Task ActualizarCarritoYContador()
     {
-        var items = await Api.GetCarritoAsync(carritoId);
-        contadorCarrito = items?.Sum(i => i.Cantidad) ?? 0;
+        carritoItems = await Api.GetCarritoAsync(carritoId) ?? new();
+        contadorCarrito = carritoItems?.Sum(i => i.Cantidad) ?? 0;
         await JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", contadorCarrito.ToString());
         StateHasChanged();
     }

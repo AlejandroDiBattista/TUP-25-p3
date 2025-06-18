@@ -1,6 +1,7 @@
 @using cliente.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
 @page "/confirmacion"
 @inject cliente.Services.ApiService Api
 @inject IJSRuntime JS
@@ -71,6 +72,15 @@
         background-color: #c76a0b;
         color: #fff;
     }
+    .icon-success-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 96px;
+        height: 96px;
+        background: none;
+        margin: 0 auto 8px auto;
+    }
 </style>
 
 <h2>Confirmación de Compra</h2>
@@ -80,13 +90,20 @@
     <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-card">
-                <div class="modal-header">
-                    <h5 class="modal-title">¡Compra realizada con éxito!</h5>
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                            <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p>La compra fue confirmada con éxito.</p>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">¡Compra realizada con éxito!</h5>
+                    <p>Tu pedido ha sido procesado correctamente.</p>
+                    <p>Recibirás un correo de confirmación en breve.</p>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer justify-content-center border-0">
                     <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
                 </div>
             </div>
@@ -99,7 +116,27 @@ else if (items is null)
 }
 else if (items.Count == 0)
 {
-    <p>El carrito está vacío.</p>
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                            <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">El carrito está vacío</h5>
+                    <p>Agrega productos para realizar una compra.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 else
 {
@@ -131,9 +168,12 @@ else
         <div class="col-12 col-lg-5 d-flex justify-content-center align-items-start">
             <div class="card card-cliente p-4" style="min-height:420px; max-width:420px; width:100%;">
                 <h4 class="mb-4">Datos del Cliente</h4>
-                <EditForm Model="@form" OnValidSubmit="ConfirmarCompra">
+                <EditForm EditContext="editContext" OnValidSubmit="ConfirmarCompra">
                     <DataAnnotationsValidator />
-                    <ValidationSummary />
+                    @if (formIntentado && editContext.GetValidationMessages().Any())
+                    {
+                        <ValidationSummary />
+                    }
                     <div class="mb-3">
                         <label>Nombre:</label>
                         <InputText class="form-control" @bind-Value="form.Nombre" />
@@ -146,8 +186,29 @@ else
                     </div>
                     <div class="mb-3">
                         <label>Email:</label>
-                        <InputText class="form-control" @bind-Value="form.Email" />
-                        <ValidationMessage For="@(() => form.Email)" />
+                        <div class="position-relative">
+                            <InputText class="form-control pe-5" @bind-Value="form.Email" @oninput="OnEmailInput" @onblur="OnEmailBlur" />
+                            @if (editContext != null && !string.IsNullOrWhiteSpace(form.Email)
+                                && !editContext.GetValidationMessages(() => form.Email).Any()
+                                && form.Email.IndexOf('@') > 0 && form.Email.LastIndexOf(".com", StringComparison.OrdinalIgnoreCase) > form.Email.IndexOf('@') + 1 && form.Email.EndsWith(".com", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); z-index:2; pointer-events:none; background:none; border:none; padding:0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                                        <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                    </svg>
+                                </span>
+                            }
+                        </div>
+                        @if ((emailTocado || formIntentado) && (!string.IsNullOrWhiteSpace(form.Email) && editContext.GetValidationMessages(() => form.Email).Any()))
+                        {
+                            <div class="text-danger small mt-1">
+                                @foreach (var msg in editContext.GetValidationMessages(() => form.Email))
+                                {
+                                    <div>@msg</div>
+                                }
+                            </div>
+                        }
                     </div>
                     <div class="d-flex gap-2 mt-4">
                         <button class="btn btn-success btn-confirmar flex-fill" type="submit" disabled="@enviando">Confirmar compra</button>
@@ -164,62 +225,69 @@ else
             </div>
         </div>
     </div>
-    @if (mostrarCancelacion)
-    {
-        <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content modal-card">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Compra cancelada</h5>
+}
+
+@if (mostrarCancelacion)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#dc3545"/>
+                            <path d="M8 8l8 8M16 8l-8 8" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
                     </div>
-                    <div class="modal-body">
-                        <p>La compra fue cancelada con éxito.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
-                    </div>
+                </div>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">Compra cancelada</h5>
+                    <p>La compra fue cancelada con éxito.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
                 </div>
             </div>
         </div>
-    }
-    @if (mostrarConfirmarCancelacion)
-    {
-        <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content modal-card">
-                    <div class="modal-header">
-                        <h5 class="modal-title">¿Desea cancelar la compra?</h5>
-                    </div>
-                    <div class="modal-body">
-                        <p>Si acepta, la compra será cancelada y no podrá recuperarse.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-danger" @onclick="AceptarCancelarCompra">Aceptar</button>
-                        <button class="btn btn-secondary" @onclick="CancelarCancelarCompra">Cancelar</button>
-                    </div>
+    </div>
+}
+@if (mostrarConfirmarCancelacion)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header">
+                    <h5 class="modal-title">¿Desea cancelar la compra?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Si acepta, la compra será cancelada y no podrá recuperse.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @onclick="AceptarCancelarCompra">Aceptar</button>
+                    <button class="btn btn-secondary" @onclick="CancelarCancelarCompra">Cancelar</button>
                 </div>
             </div>
         </div>
-    }
-    @if (mostrarConfirmarCompra)
-    {
-        <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content modal-card">
-                    <div class="modal-header">
-                        <h5 class="modal-title">¿Desea confirmar la compra?</h5>
-                    </div>
-                    <div class="modal-body">
-                        <p>Si acepta, la compra será procesada y no podrá modificarse.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-success" @onclick="AceptarConfirmarCompra">Aceptar</button>
-                        <button class="btn btn-secondary" @onclick="CancelarConfirmarCompra">Cancelar</button>
-                    </div>
+    </div>
+}
+@if (mostrarConfirmarCompra)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header">
+                    <h5 class="modal-title">¿Desea confirmar la compra?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Si acepta, la compra será procesada y no podrá modificarse.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" @onclick="AceptarConfirmarCompra">Aceptar</button>
+                    <button class="btn btn-secondary" @onclick="CancelarConfirmarCompra">Cancelar</button>
                 </div>
             </div>
         </div>
-    }
+    </div>
 }
 
 @code {
@@ -234,6 +302,9 @@ else
     bool mostrarConfirmarCancelacion = false;
     bool mostrarConfirmarCompra = false;
     bool confirmarCompraPendiente = false;
+    private EditContext editContext;
+    private bool formIntentado = false;
+    private bool emailTocado = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -245,10 +316,17 @@ else
             await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
         }
         items = await Api.GetCarritoAsync(carritoId);
+        editContext = new EditContext(form);
+        await base.OnInitializedAsync();
     }
 
     async Task ConfirmarCompra()
     {
+        formIntentado = true;
+        emailTocado = true;
+        editContext?.Validate();
+        if (!editContext.Validate())
+            return;
         // En vez de ejecutar directamente, mostramos el modal de confirmación
         mostrarConfirmarCompra = true;
         confirmarCompraPendiente = true;
@@ -328,6 +406,21 @@ else
         Navigation.NavigateTo("/carrito");
     }
 
+    private void OnEmailInput(ChangeEventArgs e)
+    {
+        form.Email = e.Value?.ToString() ?? string.Empty;
+        if (emailTocado || formIntentado)
+        {
+            editContext?.NotifyFieldChanged(new FieldIdentifier(form, nameof(form.Email)));
+            editContext?.Validate();
+        }
+    }
+    private void OnEmailBlur(FocusEventArgs e)
+    {
+        emailTocado = true;
+        editContext?.NotifyFieldChanged(new FieldIdentifier(form, nameof(form.Email)));
+        editContext?.Validate();
+    }
     public class ConfirmacionForm
     {
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -338,6 +431,27 @@ else
 
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "El email no es válido")]
+        [CustomValidation(typeof(ConfirmacionForm), nameof(ValidarEmailPersonalizado))]
         public string Email { get; set; }
+
+        public static ValidationResult ValidarEmailPersonalizado(string email, ValidationContext context)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return ValidationResult.Success;
+
+            int atIdx = email.IndexOf('@');
+            int lastAtIdx = email.LastIndexOf('@');
+            bool endsWithCom = email.EndsWith(".com", StringComparison.OrdinalIgnoreCase);
+
+            if (atIdx < 3)
+                return new ValidationResult("Debe haber al menos 3 caracteres antes de '@'.");
+            if (atIdx != lastAtIdx)
+                return new ValidationResult("El email solo puede tener un '@'.");
+            if (atIdx == -1)
+                return new ValidationResult("El email debe contener '@'.");
+            if (!endsWithCom)
+                return new ValidationResult("El email debe finalizar con '.com'.");
+            return ValidationResult.Success;
+        }
     }
 }

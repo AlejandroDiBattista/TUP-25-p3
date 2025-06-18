@@ -122,7 +122,7 @@
 
         @if (!string.IsNullOrEmpty(mensajeExito))
         {
-            <div class="alert alert-success text-center mt-4">@mensajeExito</div>
+            <div id="mensaje-exito" class="cartel-exito-flotante">@mensajeExito</div>
         }
     </div>
 </div>
@@ -199,7 +199,7 @@
         await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
         mensajeExito = "¡Compra confirmada con éxito! Serás redirigido al catálogo.";
         StateHasChanged();
-        await Task.Delay(1800);
+        await Task.Delay(3500); // Espera 3.5s
         NavigationManager.NavigateTo("/");
     }
 

@@ -89,6 +89,50 @@ public class ApiService
         }
     }
 
+    /// <summary>
+    /// Obtiene el stock disponible de un producto específico.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <returns>Cantidad de stock disponible, -1 si hay error</returns>
+    public async Task<int> ObtenerStockDisponibleAsync(int productoId)
+    {
+        try 
+        {
+            var producto = await ObtenerProductoPorIdAsync(productoId);
+            return producto?.Stock ?? -1;
+        } 
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"❌ Error al obtener stock del producto {productoId}: {ex.Message}");
+            return -1;
+        }
+    }
+
+    /// <summary>
+    /// Valida si hay suficiente stock para una cantidad solicitada.
+    /// </summary>
+    /// <param name="productoId">ID del producto</param>
+    /// <param name="cantidadSolicitada">Cantidad que se quiere agregar</param>
+    /// <returns>Tupla con (esValido, stockDisponible, nombreProducto)</returns>
+    public async Task<(bool esValido, int stockDisponible, string nombreProducto)> ValidarStockDisponibleAsync(int productoId, int cantidadSolicitada)
+    {
+        try 
+        {
+            var producto = await ObtenerProductoPorIdAsync(productoId);
+            if (producto == null)
+            {
+                return (false, 0, "Producto no encontrado");
+            }
+            
+            return (producto.Stock >= cantidadSolicitada, producto.Stock, producto.Nombre);
+        } 
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"❌ Error al validar stock del producto {productoId}: {ex.Message}");
+            return (false, 0, "Error de validación");
+        }
+    }
+
     // ========================================
     // MÉTODOS DE CARRITO
     // ========================================

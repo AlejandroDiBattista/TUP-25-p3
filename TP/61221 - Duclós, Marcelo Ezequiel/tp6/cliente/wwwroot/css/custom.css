@@ -3,6 +3,12 @@
     --content-bg: #f8f9fa;
     --card-bg: #ffffff;
     --text-color: #212529;
+    --border-color: #dee2e6;
+    --hover-bg: rgba(0,123,255,0.05);
+    --input-bg: #ffffff;
+    --input-border: #ced4da;
+    --table-header-bg: #f8f9fa;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* Modo oscuro */
@@ -10,6 +16,12 @@ body.dark-mode {
     --content-bg: #1a1a2e;
     --card-bg: #16213e;
     --text-color: #e1e1e1;
+    --border-color: #495057;
+    --hover-bg: rgba(255,255,255,0.05);
+    --input-bg: #2d3748;
+    --input-border: #4a5568;
+    --table-header-bg: #2d3748;
+    --shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
 body {
@@ -19,6 +31,7 @@ body {
     background-color: var(--content-bg) !important;
     color: var(--text-color) !important;
     transition: all 0.3s ease;
+    font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .main-layout {
@@ -26,7 +39,8 @@ body {
     min-height: 100vh;
 }
 
-main {
+/* Ajustes para el nuevo layout horizontal */
+.main-content {
     background-color: var(--content-bg) !important;
 }
 
@@ -51,14 +65,28 @@ main {
     height: 100%;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s;
+    transition: all 0.3s ease;
     background-color: var(--card-bg);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
 }
 
 .producto-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Modo oscuro - mejoras para las tarjetas */
+body.dark-mode .producto-card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .producto-card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
 }
 
 .producto-imagen-container {
@@ -96,6 +124,24 @@ main {
     flex-grow: 1;
 }
 
+/* Contenedor para páginas que evita superposición con navbar */
+.page-container {
+    padding-top: 1rem;
+    min-height: calc(100vh - 80px);
+}
+
+.page-container h1 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Asegurar que los contenidos no se superpongan */
+.container, .catalogo-container {
+    position: relative;
+    z-index: 1;
+}
+
 /* Media queries para responsividad */
 @media (max-width: 992px) {
     .productos-grid {
@@ -129,35 +175,69 @@ body.dark-mode {
     color: #e1e1e1 !important;
 }
 
-/* Sidebar y navegación */
-body.dark-mode .sidebar {
-    background-color: #16213e !important;
+/* Navbar en modo oscuro */
+body.dark-mode .navbar {
+    background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
 }
 
-body.dark-mode .sidebar-header {
-    background-color: #1a1a2e !important;
-}
-
-body.dark-mode .nav-link {
+body.dark-mode .navbar-nav .nav-link {
     color: #e1e1e1 !important;
 }
 
-body.dark-mode .nav-link:hover,
-body.dark-mode .nav-link.active {
-    background-color: #0f3460 !important;
+body.dark-mode .navbar-nav .nav-link:hover,
+body.dark-mode .navbar-nav .nav-link.active {
+    background-color: rgba(0, 255, 149, 0.2) !important;
     color: #00ff95 !important;
+}
+
+body.dark-mode .navbar-brand {
+    color: #ffd700 !important; /* Dorado para mejor contraste */
 }
 
 /* Tarjetas y contenedores */
 body.dark-mode .card {
-    background-color: #16213e !important;
-    border-color: #1f4068 !important;
-    color: #e1e1e1 !important;
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
 }
 
+body.dark-mode .card-body {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .card-title {
+    color: var(--text-color) !important;
+}
+
+/* Mejoras para el modal */
 body.dark-mode .modal-content {
-    background-color: #16213e !important;
-    color: #e1e1e1 !important;
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .modal-header {
+    background-color: var(--table-header-bg) !important;
+    border-bottom-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .modal-body {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .modal-footer {
+    background-color: var(--table-header-bg) !important;
+    border-top-color: var(--border-color) !important;
+}
+
+/* Alertas */
+body.dark-mode .alert-info {
+    background-color: #1e3a5f !important;
+    border-color: #2d5aa0 !important;
+    color: #b8daff !important;
 }
 
 /* Tablas */
@@ -171,38 +251,113 @@ body.dark-mode .table th {
     border-color: #1f4068 !important;
 }
 
-/* Formularios */
+/* Formularios - estilos generales */
+.form-control,
+.form-select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--input-bg);
+    border-color: #0d6efd;
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+}
+
+/* Modo oscuro - formularios */
 body.dark-mode .form-control {
-    background-color: #1f4068 !important;
-    border-color: #162447 !important;
-    color: #e1e1e1 !important;
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
 }
 
 body.dark-mode .form-control:focus {
-    background-color: #162447 !important;
-    border-color: #0f3460 !important;
-    color: #e1e1e1 !important;
+    background-color: var(--input-bg) !important;
+    border-color: #0d6efd !important;
+    color: var(--text-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
 }
 
-/* Botones */
+body.dark-mode .form-control::placeholder {
+    color: #adb5bd !important;
+}
+
+/* Botones - mejoras para modo oscuro */
 body.dark-mode .btn-primary {
-    background-color: #0f3460 !important;
-    border-color: #162447 !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: white !important;
 }
 
 body.dark-mode .btn-primary:hover {
-    background-color: #162447 !important;
-    border-color: #1f4068 !important;
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    color: white !important;
+}
+
+body.dark-mode .btn-success {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: white !important;
+}
+
+body.dark-mode .btn-success:hover {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+    color: white !important;
 }
 
 body.dark-mode .btn-outline-secondary {
-    color: #e1e1e1 !important;
-    border-color: #1f4068 !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 body.dark-mode .btn-outline-secondary:hover {
-    background-color: #1f4068 !important;
-    color: #e1e1e1 !important;
+    background-color: var(--border-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: white !important;
+}
+
+body.dark-mode .btn-outline-danger {
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+body.dark-mode .btn-outline-danger:hover {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Estilos adicionales para el botón de modo oscuro */
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #ffd700;
+    color: #ffd700;
 }
 
 /* Alertas y mensajes */
@@ -230,66 +385,386 @@ body.dark-mode .alert-success {
     color: #00ff95 !important;
 }
 
-/* Toast notifications */
+/* === TOAST NOTIFICATIONS MEJORADOS === */
+
+/* Toast en modo claro */
+.toast {
+    background-color: #ffffff !important;
+    border: 2px solid #28a745 !important;
+    box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3) !important;
+    border-radius: 8px !important;
+}
+
+.toast-header {
+    background-color: #28a745 !important;
+    color: white !important;
+    border-bottom: none !important;
+    font-weight: 600;
+}
+
+.toast-header .btn-close {
+    color: white !important;
+    opacity: 0.8;
+}
+
+.toast-header .btn-close:hover {
+    opacity: 1;
+}
+
+.toast-body {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    font-weight: 500;
+    padding: 1rem !important;
+}
+
+/* Toast en modo oscuro */
 body.dark-mode .toast {
-    background-color: #16213e !important;
-    border-color: #1f4068 !important;
-    color: #e1e1e1 !important;
+    background-color: var(--card-bg) !important;
+    border: 2px solid #20c997 !important;
+    box-shadow: 0 4px 20px rgba(32, 201, 151, 0.4) !important;
 }
 
-/* Inputs y dropdowns */
-body.dark-mode .input-group-text {
-    background-color: #1f4068 !important;
-    border-color: #162447 !important;
-    color: #e1e1e1 !important;
+body.dark-mode .toast-header {
+    background-color: #20c997 !important;
+    color: #ffffff !important;
+    border-bottom: none !important;
 }
 
-/* Badges */
+body.dark-mode .toast-body {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Modo oscuro - mejoras de contraste */
+body.dark-mode .navbar-brand {
+    color: #ffd700 !important; /* Dorado para mejor contraste */
+}
+
+body.dark-mode .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.dark-mode .nav-link:hover {
+    color: #ffffff !important;
+}
+
 body.dark-mode .badge {
-    background-color: #0f3460 !important;
-    color: #e1e1e1 !important;
+    background-color: #dc3545 !important;
+    color: white !important;
 }
 
-/* Iconos */
-body.dark-mode .bi {
-    color: #e1e1e1 !important;
+/* Mejoras para el modal */
+body.dark-mode .modal-content {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
 }
 
-/* Botón de cierre */
+body.dark-mode .modal-header {
+    background-color: var(--table-header-bg) !important;
+    border-bottom-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .modal-body {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .modal-footer {
+    background-color: var(--table-header-bg) !important;
+    border-top-color: var(--border-color) !important;
+}
+
 body.dark-mode .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-/* Transiciones suaves */
-.card,
-.btn,
-.form-control,
-.alert,
-.modal-content,
-.toast {
-    transition: all 0.3s ease !important;
+/* Mejoras para productos */
+body.dark-mode .producto-detalles h4,
+body.dark-mode .producto-detalles h5 {
+    color: var(--text-color) !important;
 }
 
-/* Scrollbar personalizada para modo oscuro */
-body.dark-mode::-webkit-scrollbar {
-    width: 12px;
+body.dark-mode .stock-info {
+    color: #adb5bd !important;
 }
 
-body.dark-mode::-webkit-scrollbar-track {
-    background: #1a1a2e;
+/* === ESTILOS PARA BOTONES DEL CARRITO === */
+
+/* Controles de cantidad en el carrito */
+.cantidad-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
 }
 
-body.dark-mode::-webkit-scrollbar-thumb {
-    background-color: #1f4068;
-    border-radius: 6px;
-    border: 3px solid #1a1a2e;
+/* Botón disminuir (rojo) */
+.btn-cantidad-minus {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
 }
 
-/* Enlaces */
-body.dark-mode a {
-    color: #00ff95 !important;
+.btn-cantidad-minus:hover:not(:disabled) {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+    transform: scale(1.05);
 }
 
-body.dark-mode a:hover {
-    color: #00cc76 !important;
+.btn-cantidad-minus:active {
+    transform: scale(0.95);
 }
+
+/* Botón aumentar (verde) */
+.btn-cantidad-plus {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-cantidad-plus:hover:not(:disabled) {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: white;
+    transform: scale(1.05);
+}
+
+.btn-cantidad-plus:active {
+    transform: scale(0.95);
+}
+
+/* Botón deshabilitado */
+.btn-cantidad-plus:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Número de cantidad */
+.cantidad-numero {
+    min-width: 40px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #212529; /* Color por defecto para modo claro */
+    background-color: transparent;
+    padding: 0 0.5rem;
+}
+
+/* Mensaje de stock máximo */
+.stock-limite-msg {
+    font-size: 0.8rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Modo oscuro - ajustes para botones del carrito */
+body.dark-mode .btn-cantidad-plus:disabled {
+    background-color: #495057;
+    border-color: #495057;
+    color: #6c757d;
+}
+
+body.dark-mode .stock-limite-msg {
+    color: #f8d7da;
+}
+
+body.dark-mode .cantidad-numero {
+    color: #ffffff !important; /* Blanco puro para máxima visibilidad */
+    font-weight: 700; /* Más negrita en modo oscuro */
+}
+
+/* === FIN ESTILOS BOTONES CARRITO === */
+
+/* === ESTILOS PARA PÁGINA DE CONFIRMACIÓN === */
+
+/* Resumen de productos */
+.producto-resumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+}
+
+.producto-resumen:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.producto-info {
+    flex: 1;
+}
+
+.producto-nombre {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.producto-detalle {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+body.dark-mode .producto-detalle {
+    color: #adb5bd;
+}
+
+.producto-precio {
+    text-align: right;
+    min-width: 120px;
+}
+
+/* Resumen total mejorado */
+.resumen-total {
+    background-color: var(--table-header-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.resumen-label {
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.resumen-valor {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.resumen-label-total {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.resumen-precio-total {
+    color: #28a745;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+body.dark-mode .resumen-precio-total {
+    color: #20c997;
+}
+
+/* Separador del resumen */
+.resumen-total hr {
+    border-color: var(--border-color);
+    margin: 1rem 0;
+}
+
+/* Mejoras para modo oscuro en cards */
+body.dark-mode .card-header {
+    background-color: var(--table-header-bg) !important;
+    border-bottom-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .card-header h5 {
+    color: var(--text-color) !important;
+}
+
+/* Responsive para confirmación */
+@media (max-width: 768px) {
+    .resumen-total {
+        margin-top: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .producto-resumen {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .producto-precio {
+        text-align: left;
+        min-width: auto;
+    }
+    
+    .resumen-precio-total {
+        font-size: 1.1rem;
+    }
+}
+
+/* === ESTILOS PARA TABLA DEL CARRITO === */
+
+/* Mejorar tabla del carrito */
+.carrito-tabla {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.carrito-tabla th {
+    background-color: var(--table-header-bg);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    padding: 1rem;
+    color: var(--text-color);
+}
+
+.carrito-tabla td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+/* Animaciones y efectos para la tabla */
+.carrito-tabla tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.carrito-tabla tbody tr:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Mejorar botón de eliminar */
+.btn-outline-danger:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+.btn-outline-danger:active {
+    transform: scale(0.95);
+}
+
+/* === FIN ESTILOS TABLA CARRITO === */

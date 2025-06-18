@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace servidor.Models;
 
 public class Purchase

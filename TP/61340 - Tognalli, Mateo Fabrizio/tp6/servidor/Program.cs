@@ -49,7 +49,7 @@ app.UseCors("AllowClientApp");
 // === ENDPOINTS DE LA API ===
 
 // GET /productos - Obtener todos los productos (con búsqueda opcional)
-app.MapGet("/productos", async (TiendaDbContext context, string busqueda = "") =>
+app.MapGet("/productos", async (TiendaDbContext context, CarritoService carritoService, string busqueda = "") =>
 {
     var query = context.Productos.AsQueryable();
     
@@ -65,7 +65,7 @@ app.MapGet("/productos", async (TiendaDbContext context, string busqueda = "") =
         Nombre = p.Nombre,
         Descripcion = p.Descripcion,
         Precio = p.Precio,
-        Stock = p.Stock,
+        Stock = carritoService.ObtenerStockDisponible(p.Id, p.Stock),
         ImagenUrl = p.ImagenUrl
     }).ToListAsync();
     
@@ -130,31 +130,11 @@ app.MapDelete("/carritos/{carrito}/{producto}", (string carrito, int producto, C
     
     if (!resultado)
         return Results.NotFound("Producto no encontrado en el carrito");
-    
-    return Results.Ok(new { Mensaje = "Producto eliminado del carrito" });
-});
-
-// PUT /admin/productos/{id}/stock - Endpoint administrativo para restaurar stock
-app.MapPut("/admin/productos/{id}/stock", async (int id, int nuevoStock, TiendaDbContext context) =>
-{
-    var producto = await context.Productos.FindAsync(id);
-    
-    if (producto == null)
-        return Results.NotFound("Producto no encontrado");
-    
-    producto.Stock = nuevoStock;
-    await context.SaveChangesAsync();
-    
-    return Results.Ok(new { 
-        Mensaje = $"Stock actualizado para {producto.Nombre}",
-        ProductoId = producto.Id,
-        NombreProducto = producto.Nombre,
-        NuevoStock = producto.Stock
-    });
+      return Results.Ok(new { Mensaje = "Producto eliminado del carrito" });
 });
 
 // Endpoint adicional para obtener un producto específico
-app.MapGet("/productos/{id}", async (int id, TiendaDbContext context) =>
+app.MapGet("/productos/{id}", async (int id, TiendaDbContext context, CarritoService carritoService) =>
 {
     var producto = await context.Productos.FindAsync(id);
     
@@ -167,11 +147,10 @@ app.MapGet("/productos/{id}", async (int id, TiendaDbContext context) =>
         Nombre = producto.Nombre,
         Descripcion = producto.Descripcion,
         Precio = producto.Precio,
-        Stock = producto.Stock,
+        Stock = carritoService.ObtenerStockDisponible(producto.Id, producto.Stock),
         ImagenUrl = producto.ImagenUrl
     };
-    
-    return Results.Ok(productoDto);
+      return Results.Ok(productoDto);
 });
 
 // Endpoint de estado de la API

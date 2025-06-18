@@ -3,81 +3,83 @@
 @inject CartStorage Storage
 @inject NavigationManager Nav
 
-<h3>Shopping Cart</h3>
+<div class="container mt-4">
+    <h3 class="text-center text-light mb-4">Shopping Cart</h3>
 
-@if (CartItems == null || CartItems.Count == 0)
-{
-    <p>Your cart is empty.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Price</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in CartItems)
-            {
-                <tr>
-                    <td>@item.Product.Name</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity - 1)">-</button>
-                        @item.Quantity
-                        <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity + 1)">+</button>
-                    </td>
-                    <td>$@item.Product.Price</td>
-                    <td>$@(item.Product.Price * item.Quantity)</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveItem(item.Product.Id)">Remove</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @if (CartItems == null || CartItems.Count == 0)
+    {
+        <p class="text-center text-light">Your cart is empty.</p>
+    }
+    else
+    {
+        <div class="bg-dark text-white p-4 rounded shadow">
+            <table class="table table-dark table-bordered">
+                <thead class="table-secondary text-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th style="width: 120px;">Qty</th>
+                        <th>Price</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CartItems)
+                    {
+                        <tr>
+                            <td>@item.Product.Name</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-light me-1" @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity - 1)">-</button>
+                                    <span>@item.Quantity</span>
+                                    <button class="btn btn-sm btn-outline-light ms-1" @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity + 1)">+</button>
+                                </div>
+                            </td>
+                            <td>$@item.Product.Price</td>
+                            <td>$@(item.Product.Price * item.Quantity)</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" @onclick="() => RemoveItem(item.Product.Id)">Remove</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
 
-    <h5>Total: $@CartItems.Sum(i => i.Product.Price * i.Quantity)</h5>
+            <h5 class="text-end text-light">Total: $@CartItems.Sum(i => i.Product.Price * i.Quantity)</h5>
 
-    <div class="mt-3">
-        <button class="btn btn-outline-danger me-2" @onclick="ClearCart">Clear Cart</button>
-        <button class="btn btn-primary" @onclick="GoToConfirm">Confirm Purchase</button>
-    </div>
-}
-
-@inject NavigationManager Nav
+            <div class="d-flex justify-content-center mt-4">
+                <button class="btn btn-outline-danger me-3" @onclick="ClearCart">Clear Cart</button>
+                <button class="btn btn-primary" @onclick="GoToConfirm">Confirm Purchase</button>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     private List<CartItemDisplay> CartItems = new();
     private string CartId = "";
 
-    private int? AddProductId { get; set; }
-
-[Parameter]
-[SupplyParameterFromQuery]
-public int? Add { get; set; }
-
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? Add { get; set; }
 
     protected override async Task OnInitializedAsync()
-{
-    CartId = await GetOrCreateCartId();
-
-    var uri = Nav.ToAbsoluteUri(Nav.Uri);
-    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-    var add = query["add"];
-
-    if (int.TryParse(add, out int productId))
     {
-        await Api.UpdateCartItemAsync(CartId, productId, 1);
-        Nav.NavigateTo("/cart", forceLoad: false);
+        CartId = await GetOrCreateCartId();
+
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var add = query["add"];
+
+        if (int.TryParse(add, out int productId))
+        {
+            await Api.UpdateCartItemAsync(CartId, productId, 1);
+            Nav.NavigateTo("/cart", forceLoad: false);
+        }
+
+        await LoadCart();
     }
 
-    await LoadCart();
-}
     private async Task LoadCart()
     {
         var cartData = await Api.GetCartAsync(CartId);
@@ -128,15 +130,16 @@ public int? Add { get; set; }
     }
 
     private async Task<string> GetOrCreateCartId()
-{
-    var existing = await Storage.GetCartIdAsync();
-    if (!string.IsNullOrEmpty(existing))
-        return existing;
+    {
+        var existing = await Storage.GetCartIdAsync();
+        if (!string.IsNullOrEmpty(existing))
+            return existing;
 
-    var id = await Api.CreateCartAsync();
-    await Storage.SetCartIdAsync(id);
-    return id;
-}
+        var id = await Api.CreateCartAsync();
+        await Storage.SetCartIdAsync(id);
+        return id;
+    }
+
     public class CartItemDisplay
     {
         public Product Product { get; set; } = default!;

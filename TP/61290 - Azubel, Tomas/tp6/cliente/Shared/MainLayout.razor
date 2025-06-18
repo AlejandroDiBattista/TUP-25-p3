@@ -1,19 +1,7 @@
 @inherits LayoutComponentBase
 
-<div class="header d-flex align-items-center p-2 bg-light border-bottom">
-    <a href="/" class="navbar-brand">Online Store</a>
-    <input type="text" class="form-control mx-2" placeholder="Search..." @bind="searchText" @bind:event="oninput" />
-    <a href="/cart" class="btn btn-outline-primary">
-        🛒 Cart (@CartItemCount)
-    </a>
-</div>
+<Header />
 
-<main class="p-3">
+<div class="container mt-5 pt-4">
     @Body
-</main>
-
-@code {
-    private string searchText = "";
-
-    [CascadingParameter] public int CartItemCount { get; set; }
-}
+</div>

@@ -2,9 +2,17 @@
 @inject ProductoService productoService
 @inject CarritoService carritoService
 @inject BusquedaService busquedaService
+@inject NavigationManager navigationManager
 
 <div class="container py-4">
-    <h1 class="text-center text-black mb-5">Catálogo</h1>
+    <h1 class="text-center text-black mb-3">Catálogo</h1>
+
+    @if (!string.IsNullOrEmpty(mensajeSinStock))
+    {
+        <div class="alert alert-danger text-center" role="alert">
+            @mensajeSinStock
+        </div>
+    }
 
     @if (productosFiltrados == null)
     {
@@ -24,6 +32,7 @@
         <div class="row g-4 @ObtenerClasesFilas(productosFiltrados.Count)">
             @foreach (var p in productosFiltrados)
             {
+                var stockDisponible = p.Stock - ObtenerCantidadEnCarrito(p.Id);
                 <div class="col d-flex">
                     <div class="card flex-fill h-100 shadow-sm border-0 rounded-4 hover-shadow">
                         @if (!string.IsNullOrEmpty(p.ImagenUrl))
@@ -44,9 +53,12 @@
                             </p>
                             <div class="mt-auto text-center">
                                 <p class="fw-bold mb-1 text-primary">$@p.Precio.ToString("N0")</p>
-                                <p class="text-muted mb-3">Stock: @p.Stock</p>
-                                <button class="btn btn-success w-100" @onclick="() => AgregarAlCarrito(p)">
-                                    <i class="bi bi-cart-plus"></i> Agregar al carrito
+                                <p class="text-muted mb-3">Stock: @stockDisponible</p>
+                                <button class="btn @(stockDisponible > 0 ? "btn-success" : "btn-secondary") w-100"
+                                        @onclick="() => AgregarAlCarrito(p)"
+                                        disabled="@(stockDisponible <= 0)">
+                                    <i class="bi @(stockDisponible > 0 ? "bi-cart-plus" : "bi-x-circle")"></i>
+                                    @(stockDisponible > 0 ? " Agregar al carrito" : " Sin stock")
                                 </button>
                             </div>
                         </div>
@@ -58,22 +70,14 @@
 </div>
 
 @code {
-    private string ObtenerClasesFilas(int cantidad)
-    {
-        if (cantidad == 1) return "row-cols-1";
-        if (cantidad == 2) return "row-cols-1 row-cols-sm-2";
-        if (cantidad == 3) return "row-cols-1 row-cols-sm-2 row-cols-md-3";
-        return "row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4";
-    }
-}
-
-@code {
-    private List<Producto>? productos;
-    private List<Producto>? productosFiltrados;
+    private List<Producto> productos = new();
+    private List<Producto> productosFiltrados = new();
+    private string? mensajeSinStock;
 
     protected override async Task OnInitializedAsync()
     {
         productos = await productoService.ObtenerProductos();
+
         productosFiltrados = productos;
 
         busquedaService.OnBusquedaCambiada += FiltrarProductos;
@@ -81,20 +85,55 @@
 
     private void FiltrarProductos(string termino)
     {
-        productosFiltrados = string.IsNullOrWhiteSpace(termino)
-        ? productos
-        : productos?.Where(p => p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)).ToList();
+        mensajeSinStock = null;
+
+        if (string.IsNullOrWhiteSpace(termino))
+        {
+            productosFiltrados = productos;
+        }
+        else
+        {
+            productosFiltrados = productos.Where(p => p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
 
         InvokeAsync(StateHasChanged);
     }
 
     void AgregarAlCarrito(Producto producto)
     {
-        carritoService.AgregarProducto(producto, 1);
+        mensajeSinStock = null;
+
+        int stockDisponible = producto.Stock - ObtenerCantidadEnCarrito(producto.Id);
+
+        if (stockDisponible > 0)
+        {
+            carritoService.AgregarProducto(producto, 1);
+            navigationManager.NavigateTo("/carrito"); // Aquí redirigimos
+        }
+        else
+        {
+            mensajeSinStock = $"El producto \"{producto.Nombre}\" no tiene stock disponible.";
+        }
+
+        StateHasChanged();
+    }
+
+    private int ObtenerCantidadEnCarrito(int productoId)
+    {
+        var item = carritoService.ObtenerItems().FirstOrDefault(i => i.ProductoId == productoId);
+        return item?.Cantidad ?? 0;
     }
 
     public void Dispose()
     {
         busquedaService.OnBusquedaCambiada -= FiltrarProductos;
+    }
+
+    private string ObtenerClasesFilas(int cantidad)
+    {
+        if (cantidad == 1) return "row-cols-1";
+        if (cantidad == 2) return "row-cols-1 row-cols-sm-2";
+        if (cantidad == 3) return "row-cols-1 row-cols-sm-2 row-cols-md-3";
+        return "row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4";
     }
 }

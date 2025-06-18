@@ -92,6 +92,8 @@ class Clase : IEnumerable<Alumno>
     public Clase C3() => this.EnComision("C3");
     public Clase C5() => this.EnComision("C5");
     public Clase Continuan() => new(alumnos.Where(a => a.Continuan));
+    public Clase ConResultado(EstadoMateria estado) => new(alumnos.Where(a => a.Estado == estado));
+    public Clase Completar() => new(alumnos.Where(a => a.Faltantes > 0 && a.Faltantes <= 3 && a.Continuan));
     // Métodos de modificación
     public void Agregar(Alumno alumno)
     {
@@ -408,6 +410,27 @@ class Clase : IEnumerable<Alumno>
             Consola.Escribir($"Total alumnos en comisión {comision}: {EnComision(comision).Count()}", ConsoleColor.Yellow);
         }
         Consola.Escribir($"\nTotal general de alumnos: {alumnos.Count}", ConsoleColor.Green);
+    }
+
+    public void Informar(string titulo, bool conObservacion = true)
+    {
+        if(!alumnos.Any()) return;
+        Consola.Escribir($"\n## {titulo}");
+        Consola.Escribir("```");
+        bool primero = true;
+        foreach (var alumno in OrdenandoPorNombre())
+        {
+            var emojis = string.Join("", alumno.Practicos.Select(p => p.Emoji).ToList());
+            string linea = $"{alumno.Legajo} {alumno.NombreCompleto,-35}   {alumno.Asistencias,2}   {emojis}";
+            if (conObservacion && (alumno.Estado == EstadoMateria.Recuperar || alumno.Estado == EstadoMateria.Corregir) && alumno.Observaciones != ""){
+                linea += $"\n      {alumno.Observaciones}";
+                if (!primero) linea = "\n" + linea;
+            }
+
+            Consola.Escribir(linea);
+            if (primero) primero = false;
+        }
+        Consola.Escribir("```");
     }
 
     private void ListarPorComision(IEnumerable<Alumno> listado, string comision, string mensaje)

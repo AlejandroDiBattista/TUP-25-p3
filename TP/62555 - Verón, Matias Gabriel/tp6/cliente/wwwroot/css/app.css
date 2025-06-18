@@ -1,9 +1,9 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #f8ffae 0%, #43c6ac 100%);
+    background: #f5f6fa;
     min-height: 100vh;
 }
 
@@ -16,31 +16,24 @@ a, .btn-link {
 }
 
 .btn-primary, .btn-success, .btn-secondary, .btn-danger {
-    border-radius: 24px;
+    border-radius: 8px;
     font-weight: 600;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
     letter-spacing: 0.5px;
-}
-
-.btn-primary {
-    background: linear-gradient(90deg, #43c6ac 0%, #191654 100%);
+    background: #2f4061;
+    color: #fff;
     border: none;
 }
 
-.btn-success {
-    background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
-    border: none;
+.btn-primary:hover, .btn-success:hover, .btn-secondary:hover, .btn-danger:hover {
+    background: #1d2940;
+    color: #fff;
 }
 
-.btn-danger {
-    background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
-    border: none;
-}
-
-.btn-secondary {
-    background: linear-gradient(90deg, #a8c0ff 0%, #3f2b96 100%);
-    border: none;
+h1, h2, h3, h4, h5, h6 {
+    color: #2f4061;
+    font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 /* Feedback visual para el botón agregar al carrito */
@@ -150,12 +143,6 @@ code {
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     padding: 2rem 2.5rem;
     margin-top: 2rem;
-}
-
-h1, h2, h3 {
-    font-family: 'Montserrat', Arial, sans-serif;
-    font-weight: 700;
-    letter-spacing: 1px;
 }
 
 .card {
