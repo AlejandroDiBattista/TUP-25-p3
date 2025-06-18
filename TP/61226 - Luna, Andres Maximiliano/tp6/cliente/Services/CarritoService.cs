@@ -41,10 +41,16 @@ public class CarritoService
         if (item != null)
         {
             item.Cantidad--;
+
+            item.Producto.Stock++;
+
             if (item.Cantidad <= 0)
+            {
                 _items.Remove(item);
+            }
         }
     }
+
 
     public void EliminarDelCarrito(int productoId)
     {

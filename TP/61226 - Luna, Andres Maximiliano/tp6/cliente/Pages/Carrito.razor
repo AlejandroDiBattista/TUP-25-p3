@@ -58,8 +58,8 @@ else
 
 
 
-@code {
-    private void VaciarCarrito()
+@code {    
+    private void VaciarCarrito()   
     {
         CarritoService.VaciarCarrito();
     }
@@ -68,7 +68,6 @@ else
     private async Task ProcesarCompra()
     {
         var carrito = CarritoService.ObtenerCarrito();
-
         var orden = new Orden
         {
             Items = carrito.Select(p => new ItemOrden
@@ -105,4 +104,6 @@ else
         CarritoService.DisminuirCantidad(productoId);
         StateHasChanged();
     }
+
+    
 }
