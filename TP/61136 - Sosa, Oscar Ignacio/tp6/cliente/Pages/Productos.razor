@@ -1,43 +1,33 @@
 @page "/productos"
-@using Cliente.Services
-@inject CartService Cart
+@using Cliente.Models2
 
-<h2>Catálogo de Productos</h2>
+<h3>Catálogo de Productos</h3>
 
-<div class="row">
-    @foreach (var producto in productos)
+<input @bind="busqueda" placeholder="Buscar producto..." />
+
+<ul>
+    @foreach (var producto in ProductosFiltrados)
     {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">@producto.Nombre</h5>
-                    <p class="card-text">@producto.Descripcion</p>
-                    <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-                    <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
-                </div>
-            </div>
-        </div>
+        <li>
+            <strong>@producto.Nombre</strong> - @producto.Descripcion - $@producto.Precio
+            <br />
+            <img src="@producto.ImagenUrl" alt="@producto.Nombre" width="100" />
+        </li>
     }
-</div>
-
-<NavLink class="btn btn-success" href="carrito.html" style="margin: 1rem;">Ver carrito</NavLink>
+</ul>
 
 @code {
-    public class Producto
-    {
-        public string Nombre { get; set; }
-        public string Descripcion { get; set; }
-        public string ImagenUrl { get; set; }
-        public int Stock { get; set; }
-        public decimal Precio { get; set; }
-    }
+    private string busqueda = string.Empty;
 
-    // Ejemplo de productos
-    List<Producto> productos = new()
+    // Ejemplo de productos (puedes cargarlos desde la API)
+    private List<Producto> productos = new()
     {
-        new Producto { Nombre = "Camiseta", Descripcion = "Camiseta 100% algodón", ImagenUrl = "camiseta.jpg", Stock = 10, Precio = 20 },
-        new Producto { Nombre = "Pantalón", Descripcion = "Pantalón de jean", ImagenUrl = "pantalon.jpg", Stock = 5, Precio = 35 },
-        new Producto { Nombre = "Zapatos", Descripcion = "Zapatos de cuero", ImagenUrl = "zapatos.jpg", Stock = 8, Precio = 50 }
+        new Producto { Nombre = "Chocolate", Descripcion = "Chocolate dulce", Precio = 100, Stock = 10, ImagenUrl = "https://images.example.com/chocolate.jpg" },
+        new Producto { Nombre = "Caramelos", Descripcion = "Caramelos surtidos", Precio = 50, Stock = 20, ImagenUrl = "https://images.example.com/caramelos.jpg" }
     };
+
+    private IEnumerable<Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? productos
+            : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 }
