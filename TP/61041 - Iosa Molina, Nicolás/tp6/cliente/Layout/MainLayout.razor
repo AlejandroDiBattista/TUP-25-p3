@@ -47,12 +47,10 @@
         
         var navigationManager = new Uri(NavigationManager.Uri);
         currentUrl = navigationManager.AbsolutePath;
-    }
-
-    private async Task ActualizarCantidadCarrito()
+    }    private async Task ActualizarCantidadCarrito()
     {
         var carrito = await ApiService.GetCarrito();
-        cantidadCarrito = carrito?.Count ?? 0;
+        cantidadCarrito = carrito?.Sum(item => item.Cantidad) ?? 0;
         StateHasChanged();
     }
 
