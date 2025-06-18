@@ -49,19 +49,15 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
 //Endpoint devuelve los productos desde la base de datos
-app.MapGet("/api/producto", async (TiendaContext db, string buscar) =>
+app.MapGet("/api/producto", async (TiendaContext db, string buscar = null) =>
 {
-    // Busca productos por nombre, descripción, marca o precio
     if (string.IsNullOrEmpty(buscar))
         return Results.Ok(await db.Productos.ToListAsync());
 
+    var buscarLower = buscar.ToLower();
     var filtrados = await db.Productos
-        .Where(p =>
-            p.Nombre.Contains(buscar) ||
-            p.Descripcion.Contains(buscar) ||
-            p.Marca.Contains(buscar) ||
-            p.Precio.ToString().Contains(buscar)
-        ).ToListAsync();
+        .Where(p => p.Nombre.ToLower().Contains(buscarLower))
+        .ToListAsync();
 
     return Results.Ok(filtrados);
 });
