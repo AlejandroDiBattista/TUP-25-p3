@@ -90,6 +90,7 @@ app.MapDelete("/carritos/{carrito}", (string carrito) => {
 });
 
 app.MapPut("/carritos/{carrito}/confirmar", async (string carrito, TiendaDbContext db, [FromBody] CompraDTO datos) => {
+    
     if (!carritos.TryGetValue(carrito, out var items) || items.Count == 0)
         return Results.BadRequest("El carrito está vacío.");
 

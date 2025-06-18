@@ -1,4 +1,3 @@
-#r "nuget: System.Net.Http.Json, 7.0.0"
 using System;
 using System.Net.Http;
 using System.Text.Json;

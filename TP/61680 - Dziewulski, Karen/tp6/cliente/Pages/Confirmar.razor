@@ -14,6 +14,28 @@
 }
 else
 {
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
     <div class="mb-3">
         <p><strong>Total ítems:</strong> @CarritoService.TotalItems</p>
         <p><strong>Importe total:</strong> $@CarritoService.Total</p>
@@ -49,6 +71,7 @@ else
         }
     </EditForm>
 }
+
 
 @code {
     private Cliente cliente = new();
@@ -96,6 +119,7 @@ else
         try
         {
             var response = await Http.PutAsJsonAsync($"/carritos/{CarritoService.CarritoId}/confirmar", compra);
+
 
             if (response.IsSuccessStatusCode)
             {

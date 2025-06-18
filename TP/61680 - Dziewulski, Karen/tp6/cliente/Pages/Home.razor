@@ -24,6 +24,7 @@ else
         <div class="row">
             @foreach (var producto in productosFiltrados)
             {
+                var disponible = producto.Stock - CantidadEnCarrito(producto.Id);
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <img src="@producto.ImagenUrl" class="card-img-top" style="object-fit: cover; height: 200px;" alt="Imagen de @producto.Nombre" />
@@ -31,8 +32,10 @@ else
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text">@producto.Descripcion</p>
                             <p><strong>Precio:</strong> $@producto.Precio</p>
-                            <p><strong>Stock:</strong> @producto.Stock</p>
-                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
+                            <p><strong>Stock:</strong> @disponible</p>
+                            <button class="btn btn-success"
+                                @onclick="() => AgregarAlCarrito(producto)"
+                                disabled="@EstaAgotado(producto)">
                                 Agregar al carrito
                             </button>
                         </div>
@@ -47,7 +50,7 @@ else
     private List<Producto>? productos;
     private List<Producto> productosFiltrados = new();
     private bool cargando = true;
-    private string q = ""; // Este es el término que mostrás cuando no hay resultados
+    private string q = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,7 +60,7 @@ else
         try
         {
             productos = await ApiService.ObtenerProductosAsync();
-            productosFiltrados = new List<Producto>(productos ?? Enumerable.Empty<Producto>());
+            productosFiltrados = new List<Producto>(productos);
         }
         catch
         {
@@ -72,17 +75,10 @@ else
     private async void FiltrarProductos(string termino)
     {
         q = termino;
+        productosFiltrados = string.IsNullOrWhiteSpace(termino)
+            ? new List<Producto>(productos!)
+            : productos!.Where(p => p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        if (string.IsNullOrWhiteSpace(termino))
-        {
-            productosFiltrados = new List<Producto>(productos ?? Enumerable.Empty<Producto>());
-        }
-        else
-        {
-            productosFiltrados = (productos ?? new List<Producto>())
-                .Where(p => p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
         await InvokeAsync(StateHasChanged);
     }
 
@@ -91,14 +87,22 @@ else
         Buscador.NotifyTerminoChanged -= FiltrarProductos;
     }
 
-  private async Task AgregarAlCarrito(Producto producto)
-{
-    if (producto.Stock > 0)
+    private async Task AgregarAlCarrito(Producto producto)
     {
-        await CarritoService.AgregarProductoAsync(producto); // LLAMA AL SERVIDOR
-        StateHasChanged();
+        try
+        {
+            await CarritoService.AgregarProductoAsync(producto);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al agregar: {ex.Message}");
+        }
     }
-}
 
+    private int CantidadEnCarrito(int productoId)
+        => CarritoService.Items.FirstOrDefault(i => i.Producto.Id == productoId)?.Cantidad ?? 0;
 
+    private bool EstaAgotado(Producto producto)
+        => CantidadEnCarrito(producto.Id) >= producto.Stock;
 }
