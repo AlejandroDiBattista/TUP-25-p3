@@ -26,6 +26,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
 
 // --- **NUEVO CÓDIGO PARA CREAR LA BD AUTOMÁTICAMENTE** ---
 using (var scope = app.Services.CreateScope())
