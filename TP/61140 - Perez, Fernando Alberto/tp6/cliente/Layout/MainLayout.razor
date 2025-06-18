@@ -1,4 +1,20 @@
 ﻿@inherits LayoutComponentBase
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img src="/logo.png" alt="Logo" style="height: 40px;" /> Tienda Online
+        </a>
+        <div class="d-flex align-items-center">
+            <input type="text" class="form-control me-2" placeholder="Buscar productos..." style="width: 300px;" />
+            <a href="/carrito" class="btn btn-outline-light position-relative">
+                <span class="bi bi-cart"></span>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    0
+                </span>
+            </a>
+        </div>
+    </div>
+</div>
 <div class="page">
     @Body
 </div>

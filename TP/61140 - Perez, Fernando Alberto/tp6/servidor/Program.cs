@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using TiendaOnline.Api.Data;
 using TiendaOnline.Api.Models;
 
-
-
 namespace TiendaOnline.Api.Models;
 
 public class Producto
