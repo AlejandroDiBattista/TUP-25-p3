@@ -1,0 +1,65 @@
+@page "/confirmacion"
+@using System.Net.Http.Json
+@using cliente.Modelos
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h1>Confirmación de Compra</h1>
+
+@if (compra == null)
+{
+    <p>Cargando información...</p>
+}
+else
+{
+    <div>
+        <p><strong>Total de Items:</strong> @compra.Items.Sum(i => i.Cantidad)</p>
+        <p><strong>Importe Total:</strong> $@compra.Total</p>
+    </div>
+    <EditForm Model="compra" OnValidSubmit="OnConfirmar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group mb-3">
+            <label>Nombre</label>
+            <InputText @bind-Value="compra.NombreCliente" class="form-control" />
+        </div>
+        <div class="form-group mb-3">
+            <label>Apellido</label>
+            <InputText @bind-Value="compra.ApellidoCliente" class="form-control" />
+        </div>
+        <div class="form-group mb-3">
+            <label>Email</label>
+            <InputText @bind-Value="compra.EmailCliente" type="email" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-success">Confirmar Compra</button>
+    </EditForm>
+}
+
+@code {
+    private Compra compra;
+    [Parameter] [SupplyParameterFromQuery] public int carritoId { get; set; } = 1; // En este ejemplo, un carrito fijo
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Para simplificar, se podría llamar a la API para obtener información del carrito si fuera necesario.
+        // Aquí simplemente inicializamos el objeto Compra:
+        compra = new Compra
+        {
+            Items = new List<ItemCompra>(),
+            Fecha = DateTime.Now
+        };
+
+        // Se podría precargar información del carrito para mostrar resumen si se deseara.
+        // Por ejemplo, obtener datos a través de GET /carritos/{carritoId}
+    }
+
+    private async Task OnConfirmar()
+    {
+        var response = await Http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", compra);
+        if (response.IsSuccessStatusCode)
+        {
+            // Tras confirmar, se redirige al catálogo (o se muestra mensaje de éxito)
+            Navigation.NavigateTo("/catalogo");
+        }
+    }
+}

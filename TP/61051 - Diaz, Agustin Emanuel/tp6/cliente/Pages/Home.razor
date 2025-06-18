@@ -1,59 +1,159 @@
 ﻿@page "/"
+@using cliente
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
+<div class="catalogo-container">
+    <div class="catalogo-header">
+        <h1 class="catalogo-titulo">Productos disponibles</h1>
+        @if (!string.IsNullOrEmpty(Query))
+        {
+            <p class="resultado-busqueda">Resultados para: "<strong>@Query</strong>"</p>
+        }
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+    @if (cargando)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Cargando productos...</p>
+        </div>
+    }
+    else if (!productos.Any())
+    {
+        <div class="no-productos">
+            <h3>No se encontraron productos</h3>
+            <p>Intenta con otros términos de búsqueda</p>
+        </div>
+    }
+    else
+    {
+        <div class="productos-grid">
+            @foreach (var producto in productos)
+            {
+                <div class="producto-card">
+                    <div class="producto-imagen">
+                        <img src="@producto.ImagenUrl" alt="@producto.Nombre" 
+                             onerror="this.src='https://via.placeholder.com/300x200?text=Sin+Imagen'" />
+                        @if (producto.Stock <= 3 && producto.Stock > 0)
+                        {
+                            <div class="stock-badge stock-bajo">¡Últimas @producto.Stock unidades!</div>
+                        }
+                        else if (producto.Stock == 0)
+                        {
+                            <div class="stock-badge stock-agotado">Sin Stock</div>
+                        }
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                    
+                    <div class="producto-info">
+                        <h3 class="producto-nombre">@producto.Nombre</h3>
+                        <p class="producto-descripcion">@producto.Descripcion</p>
+                        
+                        <div class="producto-detalles">
+                            <div class="precio-stock">
+                                <span class="producto-precio">$@producto.Precio.ToString("N0")</span>
+                                <span class="producto-stock">Stock: @producto.Stock</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-agregar @(producto.Stock == 0 ? "disabled" : "")" 
+                                @onclick="() => AgregarAlCarrito(producto)"
+                                disabled="@(producto.Stock == 0 || agregandoProducto == producto.Id)">
+                            @if (agregandoProducto == producto.Id)
+                            {
+                                <span class="btn-loading">⏳</span>
+                                <span>Agregando...</span>
+                            }
+                            else if (producto.Stock == 0)
+                            {
+                                <span>Sin Stock</span>
+                            }
+                            else
+                            {
+                                <span>🛒</span>
+                                <span>Agregar al Carrito</span>
+                            }
+                        </button>
                     </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+#nullable enable
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "query")]
+    public string? Query { get; set; }
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
+    private List<Producto> productos = new();
+    private bool cargando = true;
+    private int? agregandoProducto = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync(Query);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al cargar productos: {ex.Message}");
+            productos = new List<Producto>();
+        }
+        finally
+        {
             cargando = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AgregarAlCarrito(Producto producto)
+    {
+        if (producto.Stock == 0 || agregandoProducto == producto.Id)
+            return;
+
+        agregandoProducto = producto.Id;
+        StateHasChanged();
+
+        try
+        {
+            var exito = await ApiService.AgregarProductoAsync(producto.Id);
+            
+            if (exito)
+            {           
+                Navigation.NavigateTo("/carrito");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error al agregar el producto al carrito");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", "Error al agregar el producto al carrito");
+        }
+        finally
+        {
+            agregandoProducto = null;
+            StateHasChanged();
         }
     }
 }

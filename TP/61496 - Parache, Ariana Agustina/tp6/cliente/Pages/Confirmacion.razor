@@ -1,0 +1,95 @@
+@page "/confirmacion"
+@inject CarritoService carritoService
+@inject NavigationManager navigationManager
+@inject ApiService ApiService
+
+
+<h1>Confirmación de compra</h1>
+
+
+@if (!carritoService.Items.Any())
+{
+    <p>El carrito está vacío. Redirigiendo al catálogo...</p>
+}
+else
+
+{
+    <h3>Total: $@carritoService.Total</h3>
+
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Nombre:</label>
+            <InputText @bind-Value="cliente.Nombre" class="form-control" />
+        </div>
+
+        <div>
+            <label>Apellido:</label>
+            <InputText @bind-Value="cliente.Apellido" class="form-control" />
+        </div>
+
+        <div>
+            <label>Email:</label>
+            <InputText @bind-Value="cliente.Email" class="form-control" />
+        </div>
+
+        <button type="submit">Confirmar Compra</button>
+        <button @onclick="Cancelar" type="button">Cancelar</button>
+    </EditForm>
+}
+@code {
+    protected override void OnInitialized()
+    {
+        if (!carritoService.Items.Any())
+        {
+            navigationManager.NavigateTo("/");
+        }
+    }
+}
+
+
+@code {
+    Cliente cliente = new Cliente();
+
+
+    private void Cancelar()
+    {
+        navigationManager.NavigateTo("/");
+    }
+
+    public class Cliente
+    {
+        [Required(ErrorMessage = "Nombre obligatorio")]
+        public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "Apellido obligatorio")]
+        public string Apellido { get; set; }
+
+        [Required(ErrorMessage = "Email obligatorio")]
+        [EmailAddress(ErrorMessage = "Formato de email inválido")]
+        public string Email { get; set; }
+    }
+    private async Task ConfirmarCompra()
+{
+    var compra = new CompraDto
+    {
+        Nombre = cliente.Nombre,
+        Apellido = cliente.Apellido,
+        Email = cliente.Email,
+        Items = carritoService.Items.Select(item => new ItemCompraDto
+        {
+            ProductoId = item.Producto.Id,
+            Cantidad = item.Cantidad
+        }).ToList()
+    };
+
+
+    await ApiService.RegistrarCompraAsync(compra);
+    
+    carritoService.Items.Clear();
+    navigationManager.NavigateTo("/");
+}
+
+}

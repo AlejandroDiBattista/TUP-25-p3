@@ -1,0 +1,160 @@
+@page "/"
+@using cliente.Services
+@inject ProductoService ProductoService
+@inject CarritoService CarritoService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="container py-4">
+
+    <div class="navbar-container sticky-top bg-white shadow-sm py-3">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn btn-link m-0 p-0 text-decoration-none" style="font-size:2rem;" @onclick="CargarProductosAsync">
+            Tienda Online
+        </button>
+
+        <!-- BUSCADOR + CARRO -->
+        <div class="d-flex align-items-center w-50">
+            <div class="input-group me-3">
+                <input class="form-control" placeholder="Buscar productos..." @bind="Busqueda" @bind:event="oninput" />
+                <button class="btn btn-primary" @onclick="Buscar">Buscar</button>
+            </div>
+
+            <!-- Ícono de carrito con badge -->
+            <button class="btn position-relative" @onclick="() => NavegarCarrito()">
+                <i class="bi bi-cart4" style="font-size:1.5rem;"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @_cartCount
+                </span>
+            </button>
+        </div>
+    </div>
+    </div>
+</div>
+
+    
+
+    @if (Productos is null)
+    {
+        <div class="text-center">Cargando productos...</div>
+    }
+    else if (!Productos.Any())
+    {
+        <div class="text-center">No se encontraron productos.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var producto in Productos)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Contenedor de imagen con ajuste -->
+                        <div style="height: 200px; display: flex; align-items: center; justify-content: center; background-color: #fff;">
+                            <img 
+                                class="card-img-top"
+                                src="@producto.ImagenUrl"
+                                alt="@producto.Nombre"
+                                style="max-height: 100%; max-width: 100%; object-fit: contain; padding: 10px;" />
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text text-truncate">@producto.Descripcion</p>
+                            <p class="mt-auto mb-2"><strong>@producto.Precio.ToString("C")</strong></p>
+                            <p>
+                                Stock:
+                                <span class="badge @(producto.Stock > 0 ? "bg-success" : "bg-danger")">
+                                    @(producto.Stock > 0 ? producto.Stock.ToString() : "Agotado")
+                                </span>
+                            </p>
+                            <button class="btn btn-primary"
+                                    disabled="@(producto.Stock <= 0)"
+                                    @onclick="() => AgregarAlCarrito(producto)">
+                                Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+@code {
+    private List<Producto>? Productos;
+    // Variable para almacenar el texto de búsqueda
+    private Guid? _carritoId;
+    private int _cartCount;
+    private List<ItemCarrito>? Carrito;
+    private string Busqueda = string.Empty;
+     private bool _productosCargados = false;
+    //[Parameter]
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CargarProductosAsync();
+        }
+    }
+  
+     private async Task CargarProductosAsync()
+    {
+          Busqueda = string.Empty;      
+        Productos = await ProductoService.ObtenerProductosAsync(Busqueda);
+        _carritoId ??= await CarritoService.ObtenerCarritoIdAsync();
+        Carrito = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);  
+        _cartCount = Carrito.Sum(i => i.Cantidad);
+        _productosCargados = true;
+        StateHasChanged();
+    }
+ /*
+    protected override async Task OnInitializedAsync()
+    {
+    
+        Productos = await ProductoService.ObtenerProductosAsync();
+    } 
+    
+*/
+private void NavegarCarrito()
+    {
+        if (_carritoId.HasValue)
+        {
+            Nav.NavigateTo($"/carrito/{_carritoId}");
+        }
+        
+    }
+    private async Task Buscar()
+    {  
+        Productos = await ProductoService.ObtenerProductosAsync(Busqueda);
+    }
+
+    private async Task AgregarAlCarrito(Producto producto)
+    { 
+         if (producto.Stock <= 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Sin stock disponible.");
+            return;
+        }
+   //  Guid carritoId = await CarritoService.ObtenerCarritoId();
+
+ /*    var Nuevo = new AgregarCarritoRequest
+        {
+            ProductoId = producto.Id,
+            Cantidad = 1
+        };
+     var nuevoCarritoId = await CarritoService.AgregarOActualizarItemAsync(carritoId, producto.Id, Nuevo);
+
+         if (carritoId == null)
+    {
+        await CarritoService.GuardarCarritoIdAsync(nuevoCarritoId);
+    }
+*/   
+  await CarritoService.AumentarItemAsync(_carritoId.Value, producto.Id);
+        // Refrescar productos para actualizar stock
+    Productos = await ProductoService.ObtenerProductosAsync(Busqueda); // refresca stock
+ var items = await CarritoService.ObtenerCarritoAsync(_carritoId.Value);
+     _cartCount = items.Sum(i => i.Cantidad);
+ 
+    }
+}

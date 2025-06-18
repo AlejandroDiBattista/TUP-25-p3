@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+
+
+<!-- Para que funcione el redireccionamiento, se debe tener una página de productos -->
+
+<NavLink href="/productos" Match="NavLinkMatch.All">
+    Productos
+</NavLink>
+<NavLink href="/carrito" Match="NavLinkMatch.All">
+    Carrito
+</NavLink>
+
+<NavLink href="/" Match="NavLinkMatch.All">
+    cabecera
+</NavLink>

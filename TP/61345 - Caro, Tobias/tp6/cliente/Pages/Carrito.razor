@@ -1,0 +1,211 @@
+@page "/carrito"
+@using cliente.Services
+@using cliente.Shared
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject ApiService ApiService
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<PageTitle>Carrito de Compras</PageTitle>
+
+<div class="cart-container">
+    <header class="cart-header">
+        <div class="cart-title-container">
+            <h1 class="cart-title">
+                Mi Carrito de Compras
+            </h1>
+        </div>
+        <button class="btn btn-outline-primary ms-3" @onclick="RegresarAlMenu">
+            <span class="me-1">←</span> Volver al Menú
+        </button>
+    </header>
+
+    <div class="cart-content">
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <div class="error-alert">
+                <strong>⚠️ Error:</strong> @errorMsg
+            </div>
+        }
+
+        @if (items == null)
+        {
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="text-muted mb-0">Cargando productos del carrito...</p>
+            </div>
+        }
+        else if (items.Count == 0)
+        {
+            <div class="empty-cart">
+                <div class="empty-cart-icon">🛍️</div>
+                <p class="empty-cart-text mb-0">Tu carrito está vacío</p>
+                <small class="text-muted">¡Agrega algunos productos para comenzar!</small>
+            </div>
+        }
+        else
+        {
+            <div class="cart-items">
+                @foreach (var item in items)
+                {
+                    <div class="cart-item d-flex align-items-center">
+                        <img src="@item.Producto?.ImagenUrl" 
+                             alt="@item.Producto?.Nombre" 
+                             class="product-image" />
+                        
+                        <div class="product-info">
+                            <div class="product-name">@item.Producto?.Nombre</div>
+                            <div class="product-price">Precio unitario: $@item.PrecioUnitario</div>
+                        </div>
+                        
+                        <div class="quantity-controls">
+                            <button class="quantity-btn-less" 
+                                    @onclick="() => CambiarCantidad(item, -1)"
+                                    title="Reducir cantidad">
+                                −
+                            </button>
+                            <span class="quantity-display">@item.Cantidad</span>
+                            <button class="quantity-btn" 
+                                    @onclick="() => CambiarCantidad(item, 1)" 
+                                    disabled="@(item.Cantidad >= (item.Producto?.Stock ?? int.MaxValue))"
+                                    title="Aumentar cantidad">
+                                +
+                            </button>
+                        </div>
+                        
+                        <div class="subtotal-section">
+                            <div class="text-muted small">Subtotal</div>
+                            <div class="subtotal-amount">$@(item.PrecioUnitario * item.Cantidad)</div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="total-section">
+                <div class="text-light opacity-75 mb-1">Total del carrito</div>
+                <h2 class="total-amount">$@items.Sum(i => i.PrecioUnitario * i.Cantidad)</h2>
+            </div>
+        }
+
+        @if (items != null && items.Count > 0)
+        {
+            <div class="checkout-section mt-4 p-4 bg-light rounded shadow-sm">
+                <h3>Confirmar compra</h3>
+                <div>
+                    <strong>Total ítems:</strong> @items.Sum(i => i.Cantidad)
+                    <br />
+                    <strong>Importe total:</strong> $@items.Sum(i => i.Cantidad * i.PrecioUnitario)
+                </div>
+                <EditForm Model="@checkoutData" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="mb-2">
+                        <label>Nombre:</label>
+                        <InputText class="form-control" @bind-Value="checkoutData.Nombre" />
+                        <ValidationMessage For="@(() => checkoutData.Nombre)" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Apellido:</label>
+                        <InputText class="form-control" @bind-Value="checkoutData.Apellido" />
+                        <ValidationMessage For="@(() => checkoutData.Apellido)" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Email:</label>
+                        <InputText class="form-control" @bind-Value="checkoutData.Email" />
+                        <ValidationMessage For="@(() => checkoutData.Email)" />
+                    </div>
+                    <button type="submit" class="btn btn-success mt-2">Confirmar compra</button>
+                </EditForm>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensajeExito))
+        {
+            <div id="mensaje-exito" class="cartel-exito-flotante">@mensajeExito</div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ItemCompra> items;
+    private int carritoId;
+    private string errorMsg;
+    private string mensajeExito = null;
+
+    private class CheckoutData
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string Email { get; set; }
+    }
+    private CheckoutData checkoutData = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!int.TryParse(idStr, out carritoId) || carritoId == 0)
+        {
+            items = new List<ItemCompra>();
+            return;
+        }
+        await CargarItems();
+    }
+
+    private async Task CargarItems()
+    {
+        try
+        {
+            items = await ApiService.ObtenerItemsCarritoAsync(carritoId);
+        }
+        catch
+        {
+            items = new List<ItemCompra>();
+        }
+        StateHasChanged();
+    }
+
+    private async Task CambiarCantidad(ItemCompra item, int delta)
+    {
+        errorMsg = string.Empty;
+        if (delta == 0) return;
+        int nuevaCantidad = item.Cantidad + delta;
+        if (nuevaCantidad < 1)
+        {
+            await ApiService.EliminarDelCarrito(carritoId, item.Producto.Id);
+        }
+        else
+        {
+            try
+            {
+                await ApiService.AgregarAlCarrito(carritoId, item.Producto.Id, nuevaCantidad);
+            }
+            catch (HttpRequestException ex)
+            {
+                errorMsg = "No hay stock suficiente para este producto.";
+            }
+        }
+        await CargarItems();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        await ApiService.ConfirmarCompraAsync(carritoId, checkoutData);
+        await ApiService.VaciarCarritoAsync(carritoId);
+        await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+        mensajeExito = "¡Compra confirmada con éxito! Serás redirigido al catálogo.";
+        StateHasChanged();
+        await Task.Delay(3500); // Espera 3.5s
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void RegresarAlMenu()
+    {
+        // Redirige a la página principal (Home)
+        NavigationManager.NavigateTo("/");
+    }
+}

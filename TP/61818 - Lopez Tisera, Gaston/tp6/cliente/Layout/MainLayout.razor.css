@@ -36,6 +36,18 @@ main {
         text-overflow: ellipsis;
     }
 
+.navbar {
+    background-color: #282c34;
+    padding: 1rem;
+    display: flex;
+    gap: 2rem;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}    
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;

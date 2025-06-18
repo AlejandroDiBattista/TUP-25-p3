@@ -1,0 +1,91 @@
+﻿@page "/"
+@using System.Web;
+@using cliente.Services
+@using cliente.Modelos
+@inject ProductoService ProductoService
+@inject CarritoService CarritoService
+
+
+
+<h3 style="text-align: center; padding: 20px;">Catálogo de Productos</h3>
+
+<div class="search-bar-container">
+    <input type="text"
+           class="form-control search-input"
+           placeholder="Buscar productos por nombre..."
+           @bind-value="searchText"
+           @bind-value:event="oninput"
+           @onkeyup="HandleSearch" />
+    <button class="btn btn-primary search-button" @onclick="ApplySearch">Buscar</button>
+    @if (!string.IsNullOrEmpty(searchText))
+    {
+        <button class="btn btn-secondary clear-search-button" @onclick="ClearSearch">Limpiar</button>
+    }
+</div>
+
+
+@if (ProductoService.Productos == null)
+{
+    <p style="padding: 20px; text-align: center;">Cargando productos...</p>
+}
+else if (ProductoService.Productos.Count == 0)
+{
+    <p style="padding: 20px; text-align: center;">No hay productos disponibles.</p>
+}
+else
+{
+    <div class="contenedor-catalogo">
+        <div class="productos-grid">
+            @foreach (var prod in ProductoService.Productos)
+            {
+                <div class="productos-card">
+                    <img src="@prod.ImagenUrl" alt="@prod.Nombre" />
+                    <h4>@prod.Nombre</h4>
+                    <p>@prod.Descripcion</p>
+                    <p>Precio: $@prod.Precio</p>
+                    <p>Stock: @prod.Stock</p>
+                    <button @onclick="() => AgregarAlCarrito(prod)">
+    Agregar al carrito
+</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string searchText = string.Empty; // Variable para el texto de búsqueda
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Al inicio, carga todos los productos (sin término de búsqueda)
+        await ProductoService.ObtenerProductosAsync();
+    }
+
+    // Maneja la pulsación de teclas en la barra de búsqueda (ej. Enter)
+    private async Task HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ApplySearch();
+        }
+    }
+
+    // Aplica el filtro de búsqueda llamando al servicio con el texto actual
+    private async Task ApplySearch()
+    {
+        await ProductoService.ObtenerProductosAsync(searchText);
+    }
+
+    // Limpia el texto de búsqueda y recarga todos los productos
+    private async Task ClearSearch()
+    {
+        searchText = string.Empty; // Limpia la variable
+        await ApplySearch(); // Vuelve a cargar sin filtro
+    }
+
+    private async Task AgregarAlCarrito(cliente.Modelos.Producto producto)
+    {
+        await CarritoService.AgregarProductoAsync(producto);
+    }
+}

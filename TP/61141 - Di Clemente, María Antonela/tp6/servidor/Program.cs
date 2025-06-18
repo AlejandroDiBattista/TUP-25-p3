@@ -1,3 +1,9 @@
+using servidor.ModeloDatos;
+using servidor.Datos;
+using servidor.ModeloDatos;
+using Microsoft.EntityFrameworkCore;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -8,6 +14,11 @@ builder.Services.AddCors(options => {
               .AllowAnyMethod();
     });
 });
+
+// EF Core con SQLite
+builder.Services.AddDbContext<TiendaContexto>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
@@ -28,4 +39,10 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+
+app.MapControllers();
+
+
 app.Run();
+
+

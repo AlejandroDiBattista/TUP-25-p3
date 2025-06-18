@@ -1,5 +1,10 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background: #f5f6fa;
+    min-height: 100vh;
 }
 
 h1:focus {
@@ -10,14 +15,33 @@ a, .btn-link {
     color: #0071c1;
 }
 
-.btn-primary {
+.btn-primary, .btn-success, .btn-secondary, .btn-danger {
+    border-radius: 8px;
+    font-weight: 600;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+    letter-spacing: 0.5px;
+    background: #2f4061;
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    border: none;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn-primary:hover, .btn-success:hover, .btn-secondary:hover, .btn-danger:hover {
+    background: #1d2940;
+    color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2f4061;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Feedback visual para el botón agregar al carrito */
+.btn-agregar:active, .btn-agregar:focus {
+    background: linear-gradient(90deg, #43c6ac 0%, #191654 100%);
+    filter: brightness(1.2) drop-shadow(0 0 8px #43c6ac);
+    transform: scale(0.97);
+    transition: all 0.1s;
 }
 
 .content {
@@ -111,4 +135,110 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+.container, .page {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2rem 2.5rem;
+    margin-top: 2rem;
+}
+
+.card {
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(67,198,172,0.08);
+}
+
+.table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+input.form-control {
+    border-radius: 12px;
+    border: 1px solid #43c6ac;
+}
+
+.alert-info {
+    background: linear-gradient(90deg, #f8ffae 0%, #43c6ac 100%);
+    color: #191654;
+    border: none;
+    border-radius: 12px;
+}
+
+/* Navbar y alineación de íconos */
+header.navbar {
+    justify-content: center !important;
+    text-align: center;
+    background: rgba(255,255,255,0.95) !important;
+    box-shadow: 0 2px 12px rgba(67,198,172,0.08);
+}
+
+.navbar .navbar-brand, .navbar .nav-link {
+    font-size: 2rem;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.navbar .navbar-brand i, .navbar .nav-link i {
+    font-size: 2.7rem !important;
+    margin-right: 0.7rem;
+}
+
+.navbar .navbar-brand span {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.navbar .nav-link .badge {
+    font-size: 1.1rem;
+    padding: 0.5em 0.7em;
+    top: 0.2em !important;
+    right: 0.2em !important;
+}
+
+.mt-3, .mt-4, .card .card-body form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.card .card-body form > * {
+    width: 100%;
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card .card-header {
+    text-align: center;
+}
+
+.btn + .btn {
+    margin-left: 1rem;
+}
+
+.frase-historia {
+    text-align: center;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #2d3a4a;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(67,198,172,0.07);
 }

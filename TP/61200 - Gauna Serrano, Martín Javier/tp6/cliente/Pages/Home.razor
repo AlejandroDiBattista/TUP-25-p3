@@ -1,8 +1,11 @@
-﻿@page "/"
+﻿
+
+@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject HttpClient Http
 
-<PageTitle>Inicio</PageTitle>
+@inject cliente.Services.ApiService ApiService
 
 <div class="container">
     <div class="row mb-4">
@@ -21,7 +24,8 @@
         <div class="col-12">            
             @if (cargando) {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
+            } else if (datos != null) {                
+                <div class="card" style="width: 300px;">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>
@@ -37,12 +41,54 @@
             }
         </div>
     </div>
+
+    <h1>Catálogo de Productos</h1>
+
+    <input type="text" placeholder="Buscar..." @bind="filtro" @bind:event="oninput" class="form-control mb-3" />
+    <button class="btn btn-primary mb-3" @onclick="Buscar">Buscar</button>
+
+    @if (productos is null)
+    {
+        <p>Cargando productos...</p>
+    }
+    else if (!productos.Any())
+    {
+        <p>No se encontraron productos.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var p in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" />
+                        <div class="card-body">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <p class="card-text">@p.Descripcion</p>
+                            <p class="card-text">Precio: $@p.Precio</p>
+                            <p class="card-text">Stock: @p.Stock</p>
+                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(p.Id)">Agregar al carrito</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
+
+    private List<Producto>? productos;
+    private string filtro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
 
     private async Task ObtenerDatosDelServidor() {
         try {
@@ -56,4 +102,33 @@
             cargando = false;
         }
     }
+
+    private async Task CargarProductos()
+    {
+        var url = string.IsNullOrWhiteSpace(filtro) ? "/productos" : $"/productos?buscar={Uri.EscapeDataString(filtro)}";
+        productos = await Http.GetFromJsonAsync<List<Producto>>(url);
+    }
+
+    private async Task Buscar()
+    {
+        await CargarProductos();
+    }
+
+    private void AgregarAlCarrito(int id)
+    {
+        // Lógica futura
+        Console.WriteLine($"Producto {id} agregado al carrito");
+    }
+
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string Descripcion { get; set; } = "";
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; } = "";
+    }
+ 
+   }
 }

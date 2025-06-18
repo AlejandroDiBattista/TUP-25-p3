@@ -1,59 +1,110 @@
 ﻿@page "/"
-@using cliente.Services
+@using Cliente.Services
+@using Cliente.Modelos
 @inject ApiService ApiService
+@inject NavigationManager Navigation
+@inject CarritoFinal CarritoFinal
+@implements IDisposable
+@using Microsoft.AspNetCore.WebUtilities
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<h2 style="text-align: center; font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: #333;">
+    Productos disponibles
+</h2>
+@if (productosFiltrados == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (!productosFiltrados.Any())
+{
+    <p>No se encontraron productos.</p>
+}
+else
+{
+    <div class="productos">
+        @foreach (var producto in productosFiltrados)
+        {
+            <div class="producto">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="img-fluid" />
+                <h4>@producto.Nombre</h4>
+                <p>@producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@producto.Precio</p>
+                <p><strong>Stock:</strong> @producto.Stock</p>
+                <button class="btn btn-primary" @onclick="@(() => AgregarProducto(producto))">
+                    <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                </button>
+            </div>
+        }
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
-    </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    [Inject] private NavigationManager NavigationManager { get; set; }
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    private IDisposable locationChangedHandler;
+
+    protected override void OnInitialized()
+    {
+        locationChangedHandler = NavigationManager.RegisterLocationChangingHandler(OnLocationChanged);
+    }
+
+    private List<Producto> productosFiltrados = new();
+    private string search = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("search", out var query))
+        {
+            search = query;
+        }
+        else
+        {
+            search = "";
+        }
+
+        productosFiltrados = await ApiService.BuscarProductos(search);
+    }
+    private void CarritoActualizado()
+    {
+        InvokeAsync(StateHasChanged); 
+    }
+
+    public void Dispose()
+    {
+        CarritoFinal.OnChange -= CarritoActualizado; 
+    }
+
+ private async Task AgregarProducto(Producto producto)
+{
+    var existente = CarritoFinal.Items.FirstOrDefault(i => i.ProductoId == producto.Id);
+
+    if (existente != null && existente.Cantidad >= producto.Stock)
+    {
+        Console.WriteLine($"⚠️ No se puede agregar más del stock disponible ({producto.Stock}).");
+        return;
+    }
+    var item = new ItemCarrito
+    {
+        ProductoId = producto.Id,
+        Nombre = producto.Nombre,
+        Precio = producto.Precio,
+        Cantidad = 1
+    };
+
+    await CarritoFinal.AgregarProductoAsync(item); 
+}
+  private async ValueTask OnLocationChanged(LocationChangingContext context)
+{
+    var uri = new Uri(context.TargetLocation);
+    if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("search", out var nuevaBusqueda))
+    {
+        if (search != nuevaBusqueda)
+        {
+            search = nuevaBusqueda;
+            productosFiltrados = await ApiService.BuscarProductos(search);
+            StateHasChanged();
         }
     }
+}
 }

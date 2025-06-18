@@ -1,0 +1,128 @@
+#root {
+	max-width: 500px;
+	width: 500px;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start; /* alineación arriba */
+	box-sizing: border-box;
+
+}
+
+body, html {
+  background-color: #ffffff;
+  color: black;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  fieldset {
+    border: none;
+    margin:0;
+    padding: 0;
+    margin-bottom: 5px;
+    legend {
+      font-weight: bold;
+      margin-left: 0;
+      text-align: left;
+      padding: 0;
+      margin-bottom: 5px;
+      display: block;
+    }
+	input {
+	  padding: 10px;
+	  font-size: 1rem;
+	  border: 1px solid #ccc;
+	  border-radius: 10px;
+	  width: calc(100% - 22px);
+	}
+  }
+
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end; /* alineación a la izquierda */
+  gap: 10px;
+  margin-top: 5px;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 10px;
+
+  padding: 5px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  border: 1px solid black;
+  border-radius: 30px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ccc;
+  &:active {
+    transform: scale(0.98);
+  }
+  &:focus {
+    outline: none;
+  }
+
+
+}
+
+.agregar {
+  font-size: 24px;
+  font-weight: bold;
+  gap: 10px;
+  padding: 10px 15px;
+}
+
+.tarjeta {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  width: calc(100% - 32px);
+  h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.5rem;
+	color: #666;
+  }
+  p {
+    margin: 3px 0px;
+  }
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* asegura alineación arriba */
+  justify-content: flex-start; /* asegura alineación arriba */
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  /* background-color: red; */
+  height: 100vh; /* ocupa toda la altura de la ventana */
+}
+
+h1 {
+font-size: 2rem;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+

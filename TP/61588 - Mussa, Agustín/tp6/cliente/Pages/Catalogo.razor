@@ -1,0 +1,71 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
+
+
+<div class="FondoDePantalla">
+    <div class="container mt-4">    
+        @if (productos == null)
+        {
+            <p>Cargando productos...</p>
+        }
+        else if (productos.Count == 0)
+        {
+            <p>No hay productos disponibles.</p>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var prod in productos)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <img src="@prod.ImagenUrl" class="card-img-top" alt="@prod.Nombre" style="max-height:200px;object-fit:contain;">
+                            <div class="card-body">
+                                <h5 class="card-title">@prod.Nombre</h5>
+                                <p class="card-text">@prod.Descripcion</p>
+                                <p><b>Precio:</b> $@prod.Precio</p>
+                                <p><b>Stock:</b> @prod.Stock</p>
+                                <button class="btn btn-primary"
+                                        disabled="@(@prod.Stock == 0)"
+                                        @onclick="() => AgregarAlCarrito(prod.Id)">
+                                    Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+@code {
+    List<cliente.Modelos.Producto> productos = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var busqueda = query.Get("busqueda");
+        productos = await ApiService.ObtenerProductosAsync(busqueda);
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        if (CarritoService.CarritoId == 0)
+        {
+            var carrito = await ApiService.CrearCarritoAsync();
+            CarritoService.CarritoId = carrito.Id;
+        }
+        await ApiService.AgregarProductoAlCarrito(CarritoService.CarritoId, productoId, 1);
+
+
+        var carritoActualizado = await ApiService.ObtenerCarritoAsync(CarritoService.CarritoId);
+        CarritoService.Items = carritoActualizado.Items;
+        CarritoService.NotificarCambio();
+
+        
+        NavigationManager.NavigateTo("/carrito");
+    }
+}

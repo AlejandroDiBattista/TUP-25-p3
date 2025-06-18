@@ -42,20 +42,26 @@ public static class Consola {
         return entrada;
     }
     
+    
     // Helper method to get a valid option from a range
     // Método para elegir una opción de un conjunto de valores posibles
-    public static int ElegirOpcion(string mensaje, int maximo) {
+    public static int ElegirOpcion(string mensaje, int maximo)
+    {
         int resultado = -1;
         Console.Write(mensaje);
-        do {
+        do
+        {
             ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-            if (keyInfo.Key == ConsoleKey.Escape) {
+            if (keyInfo.Key == ConsoleKey.Escape)
+            {
                 resultado = 0;
-            } else if (char.IsDigit(keyInfo.KeyChar))  {
+            }
+            else if (char.IsDigit(keyInfo.KeyChar))
+            {
                 resultado = int.Parse(keyInfo.KeyChar.ToString());
             }
-        } while(resultado < 0 || resultado > maximo);
-        
+        } while (resultado < 0 || resultado > maximo);
+
         Console.WriteLine(resultado);
         return resultado;
     }
@@ -74,5 +80,27 @@ public static class Consola {
             }
             return keyChar == 'S';
         }
+    }
+
+    // Método para leer un entero con validación opcional de valores permitidos
+    public static int LeerEntero(string mensaje = "", int[]? valoresPosibles = null) {
+        int resultado;
+        bool entradaValida;
+        do {
+            Console.Write(mensaje ?? "");
+            string entrada = Console.ReadLine() ?? "";
+            entradaValida = int.TryParse(entrada, out resultado);
+            if (!entradaValida) {
+                Escribir("Por favor, ingrese un número entero válido.", ConsoleColor.Red);
+                continue;
+            }
+            if (valoresPosibles != null && valoresPosibles.Length > 0) {
+                entradaValida = valoresPosibles.Contains(resultado);
+                if (!entradaValida) {
+                    Escribir($"Entrada no válida. Opciones permitidas: {string.Join(", ", valoresPosibles)}", ConsoleColor.Red);
+                }
+            }
+        } while (!entradaValida);
+        return resultado;
     }
 }

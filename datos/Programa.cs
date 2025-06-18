@@ -186,7 +186,6 @@ class Program {
         }
 
         Consola.Escribir($"Hay {lineas.Count()} líneas en el archivo con {contarTelefonos} telefonos y {contarNotas} notas.");
-        // Consola.EsperarTecla();
     }
 
     static void CopiarHistoriaChat(Clase clase) {
@@ -205,35 +204,29 @@ class Program {
 
         var origen  = Path.Combine(capetaOrigen);
         var destino = Path.Combine(carpetaDestino);
-        Consola.EsperarTecla( $"Procesando comisión WhatsApp en {comision}...");
         try
         {
             var archivos = Directory.GetFiles(origen, $"WhatsApp*{comision}*.zip");
             Consola.Escribir($"Se encontraron {archivos.Length} archivos zip para la comisión {comision}.", ConsoleColor.Cyan);
-            Consola.EsperarTecla();
             var ultimo = archivos.Select(f => new FileInfo(f)).OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
             if (ultimo == null) return; // No hay archivos zip para esta comision, salimos sin hacer nien
 
             string targetFileName = $"historia-{comision}.txt";
             string destinationFilePath = Path.Combine(destino, targetFileName);
 
-            using (ZipArchive archive = ZipFile.OpenRead(ultimo.FullName))
-            {
+            using (ZipArchive archive = ZipFile.OpenRead(ultimo.FullName)) {
                 ZipArchiveEntry? chatEntry = archive.Entries.FirstOrDefault(entry =>
                     entry.Name.Equals("_chat.txt") || entry.FullName.Equals("_chat.txt")
                 );
-                if (chatEntry != null)
-                {
-                    using (StreamReader reader = new StreamReader(chatEntry.Open()))
-                    {
+                if (chatEntry != null) {
+                    using (StreamReader reader = new StreamReader(chatEntry.Open())) {
                         string chatContent = reader.ReadToEnd();
                         File.WriteAllText(destinationFilePath, chatContent);
                     }
                 }
             }
             // Delete all previous WhatsApp zip files for this commission
-            foreach (var file in archivos)
-            {
+            foreach (var file in archivos){
                 File.Delete(file);
             }
         }
@@ -271,6 +264,130 @@ class Program {
         }
     }
 
+    static void AgregarResultado(int legajo, string resultado) {
+        string archivo = "resultados-p2.md";
+        string lineaNueva = $"- {legajo} : {resultado}";
+        List<string> lineas = new();
+        bool encontrado = false;
+
+        if (File.Exists(archivo)) {
+            lineas = File.ReadAllLines(archivo).ToList();
+            for (int i = 0; i < lineas.Count; i++) {
+                if (lineas[i].TrimStart().StartsWith($"- {legajo} ")) {
+                    lineas[i] = lineaNueva;
+                    encontrado = true;
+                    break;
+                }
+            }
+        }
+        if (!encontrado) {
+            lineas.Add(lineaNueva);
+        }
+        File.WriteAllLines(archivo, lineas);
+    }
+
+    static void ProbarTP6(Clase clase) {
+        Consola.Limpiar();
+        Consola.Escribir("=== Probar TP6 ===", ConsoleColor.Cyan);
+        int error = 0;
+        foreach (var alumno in clase.Presentaron(6))
+        {
+            var resultado = clase.EjecutarSistema(alumno.Legajo);
+            Consola.Escribir($"\n\n{alumno.Legajo} - {alumno.NombreCompleto}", ConsoleColor.Cyan);
+            var estado = resultado ? EstadoPractico.EnProgreso : EstadoPractico.Error;
+
+            var evaluacion = Consola.LeerCadena("Resultado:") ?? "";
+            if (evaluacion.Trim() == "fin")
+                return;
+            if (evaluacion.Contains("ok"))
+                estado = EstadoPractico.Aprobado;
+            AgregarResultado(alumno.Legajo, evaluacion);
+            alumno.PonerPractico(6, estado);
+            clase.Guardar();
+            if (!resultado) error++;
+        }
+        Consola.Escribir($"Se encontraron {error} errores al correr el TP6.", ConsoleColor.Red);
+    }
+
+    static void ProbarPorLegajo(Clase clase) {
+        Consola.Limpiar();
+        Consola.Escribir("=== Probar por Legajo ===", ConsoleColor.Cyan);
+        int legajo = Consola.LeerEntero("Ingrese el legajo del alumno a probar: ");
+        var alumno = clase.Buscar(legajo);
+        if (alumno == null) {
+            Consola.Escribir($"No se encontró un alumno con el legajo {legajo}.", ConsoleColor.Red);
+            return;
+        }
+        var resultado = clase.EjecutarSistema(alumno.Legajo);
+        Consola.Escribir($"Alumno: {alumno.NombreCompleto} ({alumno.Telefono}) - Resultado: {resultado}", ConsoleColor.Cyan);
+    }
+
+    static void CargarResultados(Clase clase) {
+        string archivo = "resultados-p2.md";
+
+        var lineas = File.ReadAllLines(archivo);
+        foreach (var linea in lineas) {
+            var partes = linea.Split(':');
+            if (partes.Length < 2) continue;
+
+            int legajo = int.Parse(partes[0].Trim().Substring(2));
+            string resultado = partes[1].Trim();
+
+            var alumno = clase.Buscar(legajo);
+            if (alumno == null) continue;
+
+            if (resultado.Contains("ok"))
+            {
+                alumno.PonerPractico(6, EstadoPractico.Aprobado);
+            }
+            else if (resultado.Contains("error -"))
+            {
+                alumno.PonerPractico(6, EstadoPractico.Error);
+                alumno.Observaciones = partes[1].Replace("error -", "").Trim();
+            }
+            else if (resultado.Contains("no presentado"))
+            {
+                alumno.PonerPractico(6, EstadoPractico.NoPresentado);
+            }
+            else
+            {
+                alumno.PonerPractico(6, EstadoPractico.EnProgreso);
+                alumno.Observaciones = partes[1].Trim();
+            }
+
+            Consola.Escribir($"Legajo {legajo} actualizado con resultado: {resultado}", ConsoleColor.Green);
+        }
+    }
+
+// OUTPUT
+    // Promocionado
+    // Recuperar
+    // Presentar
+    // Corregir
+    // Abandono
+    // Revisar
+
+    static void InformePractico(Clase clase)
+    {
+        CargarResultados(clase);
+        Consola.Limpiar();
+
+        foreach (var comision in clase.Comisiones)
+        {
+            Consola.Escribir("---");
+            var lista = clase.EnComision(comision).Continuan();
+            Consola.Escribir($"# Informe de la comisión {comision}");
+            lista.ConResultado(EstadoMateria.Promocionado).Informar("Alumnos que aprobaron");
+            lista.ConResultado(EstadoMateria.Recuperar).Informar("Alumnos que deben recuperar (tiene errores)");
+            lista.ConResultado(EstadoMateria.Corregir).Informar("Alumnos que deben corregir (no funciona)");
+            lista.ConResultado(EstadoMateria.Presentar).Informar("Alumnos que no presentaron");
+            lista.ConResultado(EstadoMateria.Revisar).Informar("Alumnos a revisar", false);
+            // clase.EnComision(comision).ConAbandono(true).Informar("Alumnos que abandonaron");
+            // clase.Completar().Informar("Alumnos que deben completar trabajos prácticos");
+            Consola.Escribir("\n");
+        }
+    }
+
     static void Main(string[] args)
     {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
@@ -278,14 +395,21 @@ class Program {
 
         var clase = Clase.Cargar();
 
-        int practico = 5;
+        int practico = 6;
 
         var menu = new TUP.Menu("Bienvenido al sistema de gestión de alumnos");
         menu.Agregar("Listar alumnos", () => ListarAlumnos(clase));
         menu.Agregar("Publicar trabajo práctico", () => CopiarPractico(clase));
         menu.Agregar("Registrar Asistencia & Notas", () => RegistrarTodo(clase, practico));
+        // menu.Agregar("Registrar Resultados", () => CargarResultados(clase));
         menu.Agregar("Faltan presentar TP", () => ListarNoPresentaron(clase, practico));
-        menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
+        // menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
+        // menu.Agregar("  P2: Ejecutar", () => ProbarTP6(clase));
+        menu.Agregar("  P2: Presentaron", () => clase.Presentaron(6).ListarAlumnos());
+        menu.Agregar("  P2: No presentaron", () => clase.NoPresentaron(6).Continuan().ListarAlumnos());
+        menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
+        menu.Agregar("  P2: Generar informe", () => InformePractico(clase));
+        menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
 
         menu.Ejecutar();
 

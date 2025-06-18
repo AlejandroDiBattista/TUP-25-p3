@@ -1,0 +1,152 @@
+@page "/carrito"
+@inject CarritoService carritoService
+@inject HttpClient http
+@inject NavigationManager nav
+@using servidor.Models
+@using System.Net.Http.Json
+@implements IDisposable
+
+<div class="carrito-wrapper">
+    <div class="carrito-contenedor">
+        <h3 class="carrito-titulo mb-4 text-center">🛒 Carrito de compras</h3>
+
+        @if (carrito.Count == 0)
+        {
+            <div class="alert alert-info text-center">No hay productos en el carrito.</div>
+        }
+        else
+        {
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carrito)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.ImagenUrl" alt="Imagen" class="carrito-img" />
+                            </td>
+                            <td>@item.Nombre</td>
+                            <td>$@item.Precio</td>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <button class="btn btn-outline-secondary btn-sm me-2"
+                                            @onclick="() => Disminuir(item.ProductoId)">-</button>
+                                    <span>@item.Cantidad</span>
+                                    <button class="btn btn-outline-secondary btn-sm ms-2"
+                                            @onclick="() => Incrementar(item.ProductoId)">+</button>
+                                </div>
+                            </td>
+                            <td>$@item.Subtotal</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm"
+                                        @onclick="() => Eliminar(item.ProductoId)">
+                                    <i class="bi bi-trash"></i> Quitar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <h5 class="text-center mt-4 mb-3" style="color: black;">Total: <strong>$@carritoService.CalcularTotal()</strong></h5>
+
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-2 ">
+                <button class="btn btn-success"
+                        @onclick='() => nav.NavigateTo("/realizar-compra")'>
+                    <i class="bi bi-cash"></i> Realizar compra
+                </button>
+
+                <button class="btn btn-outline-warning"
+                        @onclick="Vaciar">
+                    <i class="bi bi-x-circle"></i> Vaciar carrito
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ItemCarrito> carrito = new();
+    private CompraClienteDto compraCliente = new();
+
+    protected override void OnInitialized()
+    {
+        carrito = carritoService.ObtenerItems().ToList();
+        carritoService.OnChange += Actualizar;
+    }
+
+    private void Actualizar()
+    {
+        carrito = carritoService.ObtenerItems().ToList();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Eliminar(int id)
+    {
+        carritoService.EliminarProducto(id);
+    }
+
+    private void Vaciar()
+    {
+        carritoService.VaciarCarrito();
+    }
+
+    private async Task Incrementar(int productoId)
+    {
+        await carritoService.IncrementarCantidad(productoId);
+    }
+
+    private void Disminuir(int productoId)
+    {
+        carritoService.DisminuirCantidad(productoId);
+    }
+
+    public void Dispose()
+    {
+        carritoService.OnChange -= Actualizar;
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var dto = new
+        {
+            NombreCliente = compraCliente.NombreCliente,
+            ApellidoCliente = compraCliente.ApellidoCliente,
+            EmailCliente = compraCliente.EmailCliente,
+            Items = carrito.Select(i => new
+            {
+                ProductoId = i.ProductoId,
+                Cantidad = i.Cantidad
+            }).ToList()
+        };
+
+        var response = await http.PostAsJsonAsync("api/compras", dto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            carritoService.VaciarCarrito();
+            nav.NavigateTo("/gracias");
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Error al confirmar compra: " + error);
+        }
+    }
+
+    class CompraClienteDto
+    {
+        public string NombreCliente { get; set; } = "";
+        public string ApellidoCliente { get; set; } = "";
+        public string EmailCliente { get; set; } = "";
+    }
+}

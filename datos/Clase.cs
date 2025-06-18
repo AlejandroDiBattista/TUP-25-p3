@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+
 using TUP;
 
 class Clase : IEnumerable<Alumno>
@@ -84,7 +85,15 @@ class Clase : IEnumerable<Alumno>
     public Clase OrdenandoPorNombre() => new(alumnos.OrderBy(a => a.Apellido).ThenBy(a => a.Nombre));
     public Clase OrdenandoPorLegajo() => new(alumnos.OrderBy(a => a.Legajo));
     public Clase SinGithub() => new(alumnos.Where(a => a.GitHub == ""));
-
+    public Clase EnProgreso(int practico=6) => new(alumnos.Where(a => a.ObtenerPractico(practico) == EstadoPractico.EnProgreso));
+    public Clase ConError(int practico=6) => new(alumnos.Where(a => a.ObtenerPractico(practico) == EstadoPractico.Error));
+    public Clase NoPresentaron(int practico = 1) => new(alumnos.Where(a => a.ObtenerPractico(practico) == EstadoPractico.NoPresentado));
+    public Clase Presentaron(int practico = 6) => new(alumnos.Where(a => a.ObtenerPractico(practico) == EstadoPractico.Aprobado || a.ObtenerPractico(practico) == EstadoPractico.EnProgreso));
+    public Clase C3() => this.EnComision("C3");
+    public Clase C5() => this.EnComision("C5");
+    public Clase Continuan() => new(alumnos.Where(a => a.Continuan));
+    public Clase ConResultado(EstadoMateria estado) => new(alumnos.Where(a => a.Estado == estado));
+    public Clase Completar() => new(alumnos.Where(a => a.Faltantes > 0 && a.Faltantes <= 3 && a.Continuan));
     // Métodos de modificación
     public void Agregar(Alumno alumno)
     {
@@ -200,6 +209,7 @@ class Clase : IEnumerable<Alumno>
         var fuente = practico switch {
             4 => "Program.cs",
             5 => "Servidor.cs",
+            6 => "servidor/Program.cs",
             _ => "ejercicio.cs"
         };
 
@@ -234,6 +244,20 @@ class Clase : IEnumerable<Alumno>
                     if (practico == 3 && lineasEfectivas > 20)
                     { // Si es TP3, ejecutar el programa y verificar el resultado
                         alumno.Resultado = ResultadoEjecutar(archivo);
+                    }
+
+                    if (practico == 6)
+                    { // Si es TP4, ejecutar el programa y verificar el resultado
+
+                        if (lineasEfectivas >= 0)
+                        {
+                            estado = EstadoPractico.EnProgreso;
+                        }
+                        else
+                        {
+                            estado = EstadoPractico.NoPresentado;
+                        }
+                        alumno.PonerPractico(practico, estado);
                     }
 
                     var color = lineasEfectivas < 20 ? ConsoleColor.Yellow : ConsoleColor.White;
@@ -287,20 +311,36 @@ class Clase : IEnumerable<Alumno>
         }
     }
 
-    public void CopiarPractico(int practico, bool forzar = false) {
+    public bool EjecutarSistema(int legajo)
+    {
+        string? carpeta = CarpetaDeAlumnoPorLegajo(legajo);
+        if (carpeta is null) {
+            Console.WriteLine("No se encontró la carpeta del alumno.");
+            return false;
+        }
+        string Base = Path.Combine("../TP",carpeta, "tp6");
+        Consola.Escribir($"▶︎ Ejecutando sistema para el alumno {legajo} en {Base}", ConsoleColor.Cyan);
+        return Corredor.CorrerSistema(Base).GetAwaiter().GetResult() == ResultadoEjecucion.Ok;
+    }
+
+    public void CopiarPractico(int practico, bool forzar = false)
+    {
         const string Base = "../TP";
         const string Enunciados = "../enunciados";
         Consola.Escribir($" ▶︎ Copiando trabajo práctico de TP{practico}", ConsoleColor.Cyan);
         var carpetaOrigen = Path.Combine(Enunciados, $"tp{practico}");
 
-        if (!Directory.Exists(carpetaOrigen)) {
+        if (!Directory.Exists(carpetaOrigen))
+        {
             Consola.Escribir($"Error: No se encontró el enunciado del trabajo práctico '{practico}' en {carpetaOrigen}", ConsoleColor.Red);
             return;
         }
 
-        foreach (var alumno in Alumnos.OrderBy(a => a.Legajo)) {
+        foreach (var alumno in Alumnos.OrderBy(a => a.Legajo))
+        {
             var carpetaDestino = Path.Combine(Base, alumno.Carpeta, $"tp{practico}");
-            if (forzar && Directory.Exists(carpetaDestino)) {
+            if (forzar && Directory.Exists(carpetaDestino))
+            {
                 Directory.Delete(carpetaDestino, true);
             }
             Directory.CreateDirectory(carpetaDestino);
@@ -370,6 +410,27 @@ class Clase : IEnumerable<Alumno>
             Consola.Escribir($"Total alumnos en comisión {comision}: {EnComision(comision).Count()}", ConsoleColor.Yellow);
         }
         Consola.Escribir($"\nTotal general de alumnos: {alumnos.Count}", ConsoleColor.Green);
+    }
+
+    public void Informar(string titulo, bool conObservacion = true)
+    {
+        if(!alumnos.Any()) return;
+        Consola.Escribir($"\n## {titulo}");
+        Consola.Escribir("```");
+        bool primero = true;
+        foreach (var alumno in OrdenandoPorNombre())
+        {
+            var emojis = string.Join("", alumno.Practicos.Select(p => p.Emoji).ToList());
+            string linea = $"{alumno.Legajo} {alumno.NombreCompleto,-35}   {alumno.Asistencias,2}   {emojis}";
+            if (conObservacion && (alumno.Estado == EstadoMateria.Recuperar || alumno.Estado == EstadoMateria.Corregir) && alumno.Observaciones != ""){
+                linea += $"\n      {alumno.Observaciones}";
+                if (!primero) linea = "\n" + linea;
+            }
+
+            Consola.Escribir(linea);
+            if (primero) primero = false;
+        }
+        Consola.Escribir("```");
     }
 
     private void ListarPorComision(IEnumerable<Alumno> listado, string comision, string mensaje)
@@ -559,6 +620,15 @@ class Clase : IEnumerable<Alumno>
         }
 
         return mapeo;
+    }
+
+    public string? CarpetaDeAlumnoPorLegajo(int legajo) {
+        var alumno = Buscar(legajo);
+        if (alumno != null) {
+            return alumno.Carpeta;
+        } else {
+            return null;
+        }
     }
 
 }

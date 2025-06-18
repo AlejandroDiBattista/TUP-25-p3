@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
+
 @inject ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
@@ -7,53 +9,66 @@
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+            <h1 class="text-center">Lista de productos </h1>
         </div>
     </div>
+@if (datos.Count > 0)
+{
     
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+         <div class="d-flex flex-wrap gap-4 justify-content-start"> 
+            <Card Items="datos"/>
+
         </div>
+}
+else
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Error al cargar los productos</h4>
+        <p>@error</p>
     </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
-    </div>
+}
 </div>
 
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+@implements IDisposable 
+@code {
+    private List<Producto> datos;
+    private string? error;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        ApiService.OnChange += StateHasChanged;
+        ApiService.OnBuscar += OnBuscar;
+        await ObtenerDatosDelServidor(null);
+
     }
+
+    public void Dispose()
+    {
+        ApiService.OnChange -= StateHasChanged;
+        ApiService.OnBuscar -= OnBuscar;
+    }
+
+    private async Task ObtenerDatosDelServidor(string? texto)
+    {
+        try
+        {
+            datos = await ApiService.ObtenerProductos();
+
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+
+    }
+
+    private async void OnBuscar(string texto)
+    {
+        await ObtenerDatosDelServidor(texto);
+        StateHasChanged();
+    }
+  
+   
 }

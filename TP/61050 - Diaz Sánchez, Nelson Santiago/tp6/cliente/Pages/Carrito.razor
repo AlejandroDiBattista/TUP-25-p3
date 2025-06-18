@@ -1,0 +1,161 @@
+@inject NavigationManager Navigation
+@page "/carrito"
+@inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
+@using cliente.Models
+@inject HttpClient Http
+@using cliente.DTOs
+
+<div class="container mt-5 bg-dark text-white p-4 rounded">
+    <h1 class="text-center mb-4 text-primary">🛒 Carrito de compras</h1>
+
+    @if (carrito.Count == 0) 
+    {
+        <p class="text-center text-danger">El carrito está vacío.</p>
+    }
+    else 
+    {
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in carrito)
+                {
+                    <tr>
+                        <td>@producto.Nombre</td>
+                        <td>$@producto.Precio</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-light me-1" @onclick="() => DisminuirCantidad(producto.Id)">−</button>
+                            @producto.Cantidad
+                            <button class="btn btn-sm btn-outline-light ms-1" @onclick="() => IncrementarCantidad(producto.Id)">+</button>
+                        </td>
+                        <td>$@(producto.Precio * producto.Cantidad)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <p class="fs-5 mt-3"><strong>Total general:</strong> $@TotalGeneral</p>
+
+        <div class="d-flex gap-2 mb-4">
+            <button class="btn btn-outline-danger" @onclick="VaciarCarrito">🗑️ Vaciar carrito</button>
+            <button class="btn btn-outline-success" @onclick="ConfirmarCompra">✅ Confirmar compra</button>
+        </div>
+
+        @if (mostrarFormulario)
+        {
+            <div class="mt-4 border border-light p-4 rounded bg-secondary text-white">
+                <h4 class="text-warning">🧾 Datos del cliente</h4>
+                <div class="mb-3">
+                    <label>Nombre:</label>
+                    <input type="text" class="form-control bg-dark text-white" @bind="nombreCliente" />
+                </div>
+                <div class="mb-3">
+                    <label>Apellido:</label>
+                    <input type="text" class="form-control bg-dark text-white" @bind="apellidoCliente" />
+                </div>
+                <div class="mb-3">
+                    <label>Email:</label>
+                    <input type="email" class="form-control bg-dark text-white" @bind="emailCliente" />
+                </div>
+                <button class="btn btn-primary" @onclick="async () => await EnviarCompra()">
+                    📨 Enviar compra
+                </button>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Producto> carrito = new();
+
+    private bool mostrarFormulario = false;
+    private string nombreCliente = "";
+    private string apellidoCliente = "";
+    private string emailCliente = "";
+
+    protected override void OnInitialized()
+    {
+        carrito = CarritoService.ObtenerCarrito();
+    }
+
+    private void VaciarCarrito()
+    {
+        carrito.Clear();
+        CarritoService.ObtenerCarrito().Clear();
+    }
+
+    private void ConfirmarCompra()
+    {
+        mostrarFormulario = true;
+    }
+
+    private async Task EnviarCompra()
+    {
+        var compraDto = new CompraDTO
+        {
+            NombreCliente = nombreCliente,
+            ApellidoCliente = apellidoCliente,
+            EmailCliente = emailCliente,
+            Items = carrito.Select(p => new ItemCompraDTO
+            {
+                ProductoId = p.Id,
+                Cantidad = p.Cantidad,
+                PrecioUnitario = p.Precio
+            }).ToList()
+        };
+
+        var exito = await ApiService.ConfirmarCompraAsync(compraDto);
+
+        if (exito)
+        {
+            VaciarCarrito();
+            mostrarFormulario = false;
+            Navigation.NavigateTo("/catalogo", forceLoad: true);
+        }
+        else
+        {
+            Console.WriteLine("Error al confirmar la compra.");
+        }
+    }
+
+    private double TotalGeneral => carrito.Sum(p => p.Precio * p.Cantidad);
+
+    private async Task IncrementarCantidad(int productoId)
+    {
+        var producto = carrito.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            var productosDesdeApi = await ApiService.ObtenerProductosAsync();
+            var productoApi = productosDesdeApi.FirstOrDefault(p => p.Id == productoId);
+
+            if (productoApi != null && producto.Cantidad < productoApi.Cantidad)
+            {
+                producto.Cantidad++;
+            }
+            else
+            {
+                Console.WriteLine("No hay suficiente stock disponible para incrementar la cantidad.");
+            }
+        }
+    }
+
+    private void DisminuirCantidad(int productoId)
+    {
+        var producto = carrito.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            producto.Cantidad--;
+            if (producto.Cantidad <= 0)
+            {
+                carrito.Remove(producto);
+            }
+        }
+    }
+}

@@ -1,0 +1,40 @@
+@page "/productos"
+@using cliente.Models
+@using cliente.Services
+
+<h3>Productos</h3>
+
+<p>En carrito: @Carrito?.Items?.Count ?? 0</p>
+
+@if (productos == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <ul>
+        @foreach (var prod in productos)
+        {
+            <li>
+                @prod.Nombre - $@prod.Precio (Stock: @prod.Stock)
+                <button @onclick="() => AgregarAlCarrito(prod)">Agregar al carrito</button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    List<Producto> productos;
+    [Inject] ProductoService Services { get; set; }
+    [Inject] CarritoService Carrito { get; set; } // Cambiar a CarritoService
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Services.ObtenerProductos();
+    }
+
+    async Task AgregarAlCarrito(Producto producto)
+    {
+        await Carrito.AgregarAlCarrito(producto); // Llamar al método del servicio
+    }
+}

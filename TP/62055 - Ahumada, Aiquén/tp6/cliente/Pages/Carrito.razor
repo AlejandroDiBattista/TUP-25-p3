@@ -1,0 +1,99 @@
+@page "/carrito"
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<div class="contenido-con-margen">
+<div class="inicio">
+<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="img/logo2.jpeg" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="catalogo">Productos</a>
+          </li>
+          <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center position-relative" href="carrito">
+                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                    <span style="margin-right: 0.3em;">Carrito</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                       @CarritoService.Items.Sum(i => i.Cantidad)
+                    </span>
+                    </a>
+                </li>
+        </ul>
+       
+      </div>
+    </div>
+  </nav>
+ </div>
+
+<h3>Carrito de compras</h3>
+
+@if (CarritoService.Items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio unitario</th>
+                <th>Cantidad</th>
+                <th>Importe</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => CarritoService.Quitar(item.Producto)" disabled="@(item.Cantidad == 1)">-</button>
+                        <span class="mx-2">@item.Cantidad</span>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => CarritoService.Agregar(item.Producto)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                    </td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => CarritoService.Eliminar(item.Producto)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><strong>Total:</strong> $@CarritoService.Total()</p>
+    <button class="btn btn-warning me-2" @onclick="CarritoService.Vaciar">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+}
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+    }
+
+    private void ConfirmarCompra()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}

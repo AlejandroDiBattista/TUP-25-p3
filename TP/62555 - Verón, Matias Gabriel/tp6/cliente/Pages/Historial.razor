@@ -1,0 +1,88 @@
+@inject cliente.Services.ApiService ApiService
+@using cliente.Models
+@using System.Collections.Generic
+@page "/historial"
+<link href="css/historial.css" rel="stylesheet" />
+
+<div class="historial-wrapper">
+    <h3 class="text-center mb-4">Historial de compras</h3>
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-12 mb-3">
+            @if (compras == null)
+            {
+                <p>Cargando...</p>
+            }
+            else if (!compras.Any())
+            {
+                <p>No hay compras registradas.</p>
+            }
+            else
+            {
+                <table class="table table-sm table-hover shadow-sm rounded">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Email</th>
+                            <th>Total</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var compra in compras)
+                        {
+                            <tr>
+                                <td>@compra.Fecha.ToString("g")</td>
+                                <td>@compra.NombreCliente @compra.ApellidoCliente</td>
+                                <td>@compra.EmailCliente</td>
+                                <td>$@compra.Total</td>
+                                <td>
+                                    <button class="btn btn-link" @onclick="() => MostrarDetalle(compra)">Ver</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+        <div class="col-lg-5 col-md-12">
+            @if (compraSeleccionada != null)
+            {
+                <div class="detalle-compra-card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Detalle de la compra (@compraSeleccionada.Fecha.ToString("g"))</span>
+                        <button class="btn btn-sm btn-close" @onclick="() => compraSeleccionada = null"></button>
+                    </div>
+                  <ul class="mb-0">
+    @foreach (var det in compraSeleccionada.Detalles)
+    {
+        <li class="mb-2">
+            Producto: <b>@det.NombreProducto</b><br />
+            Cantidad: @det.Cantidad<br />
+            Precio: $@det.PrecioUnitario<br />
+            <span class="fw-bold">Total: $@(det.Cantidad * det.PrecioUnitario)</span>
+        </li>
+    }
+</ul>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<CompraResumen> compras;
+    private CompraResumen compraSeleccionada;
+
+    protected override async Task OnInitializedAsync()
+    {
+        compras = await ApiService.ObtenerHistorialCompras();
+    }
+
+    private void MostrarDetalle(CompraResumen compra)
+    {
+        compraSeleccionada = compra;
+    }
+
+    
+}

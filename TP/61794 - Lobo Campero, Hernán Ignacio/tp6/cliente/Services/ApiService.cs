@@ -1,26 +1,51 @@
+#nullable enable
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
+using Cliente.Models;
 
-namespace cliente.Services;
+namespace Cliente.Services;
 
-public class ApiService {
+public class ApiService 
+{
     private readonly HttpClient _httpClient;
+    private readonly ILogger<ApiService> _logger;
 
-    public ApiService(HttpClient httpClient) {
+    public ApiService(HttpClient httpClient, ILogger<ApiService> logger) 
+    {
         _httpClient = httpClient;
+        _logger = logger;
     }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
+    public async Task<List<Producto>> GetProductosAsync(string? query = null)
+    {
+        try
+        {
+            var url = "/productos";
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                url += $"?q={Uri.EscapeDataString(query)}";
+                _logger.LogInformation("Buscando productos con query: '{Query}'", query);
+            }
+            else
+            {
+                _logger.LogDebug("Obteniendo todos los productos");
+            }
+            
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url) ?? new();
+            _logger.LogInformation("Obtenidos {Count} productos", productos.Count);
+            return productos;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Error de conexión al obtener productos");
+            throw new InvalidOperationException("Error de conexión con el servidor. Verifique su conexión a internet.", ex);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error inesperado al obtener productos");
+            throw;
         }
     }
-}
 
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
+    public HttpClient HttpClient => _httpClient;
 }
