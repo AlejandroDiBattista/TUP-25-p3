@@ -15,7 +15,6 @@
             <h4 class="mb-3" style="font-size: 1.5rem;">Tu carrito está vacío</h4>
             <img src="imagenes/carritovacio.png" alt="Carrito vacío" class="img-fluid mb-3" style="max-width: 300px;" />
             <p class="mb-2" style="font-size: 1.2rem;">Agregá camisetas desde el catálogo para comenzar tu compra.</p>
-            <button class="btn btn-primary mt-2 px-4 py-2 fs-5" @onclick="IrAlCatalogo">Ir al catálogo</button>
         </div>
     }
     else
@@ -56,7 +55,7 @@
                             <td>
                                 <button class="btn btn-danger btn-sm"
                                         title="Quitar producto"
-                                        @onclick="() => QuitarProducto(item.ProductoId)">
+                                        @onclick="() => QuitarProductoTotal(item.ProductoId)">
                                         Quitar
                                 </button>
                             </td>
@@ -81,6 +80,10 @@
             </div>
         </div>
     }
+
+    <div class="d-flex justify-content-center mt-4">
+        <button class="btn btn-primary px-4 py-2 fs-5" @onclick="IrAlCatalogo">Ir al catálogo</button>
+    </div>
 </div>
 
 @implements IDisposable
@@ -111,6 +114,12 @@
     {
         var producto = new Producto { Id = productoId };
         await carrito.QuitarProducto(producto);
+        await CargarCarrito();
+    }
+
+    private async Task QuitarProductoTotal(int productoId)
+    {
+        await carrito.QuitarProductoTotal(productoId);
         await CargarCarrito();
     }
 
