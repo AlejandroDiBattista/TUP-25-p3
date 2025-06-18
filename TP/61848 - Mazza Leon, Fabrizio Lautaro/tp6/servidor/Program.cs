@@ -17,11 +17,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
+    db.Database.EnsureCreated();
+}
+
 app.UseCors();
 
 // Endpoint simple de prueba
 app.MapGet("/", () => "API Tienda Online funcionando");
-
 
 app.MapGet("/productos", async (TiendaContext db, string? search) =>
 {
@@ -123,6 +128,8 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (
         };
         carrito.Items.Add(item);
     }
+
+    producto.Stock--;
 
     await db.SaveChangesAsync();
     return Results.Ok(new { mensaje = "Producto agregado al carrito." });

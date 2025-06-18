@@ -5,6 +5,7 @@
 @inject ApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject StockLocalService StockLocalService
 
 <PageTitle>Carrito de compras</PageTitle>
 
@@ -83,10 +84,11 @@
         }
     }
     private CompraFormulario formulario = new();
-    public void VaciarCarrito()
+    public async void VaciarCarrito()
     {
+        await StockLocalService.RestaurarStockInicialAsync();
         CarritoService.Vaciar();
-        StateHasChanged();
+        Navigation.NavigateTo("/", true);
     }
     public async Task ConfirmarCompra()
     {
