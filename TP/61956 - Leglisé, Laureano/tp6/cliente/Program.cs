@@ -7,7 +7,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// La URL tiene que tener "/" al final para que funcione correctamente
+// Configurar el HttpClient para apuntar al servidor API
+// IMPORTANTE: La URL debe terminar con "/" para que las rutas relativas funcionen
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184/") });
 
 // Registrar los servicios
