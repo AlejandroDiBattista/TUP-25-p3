@@ -35,7 +35,8 @@ public static class CarritoEndpoints
     ProductoId = i.ProductoId,
     Nombre = i.Producto.Nombre,
     Precio = i.Producto.Precio,
-    Cantidad = i.Cantidad
+    Cantidad = i.Cantidad,
+    StockDisponible = i.Producto.Stock
   }).ToList();
 
   return Results.Ok(response);
@@ -56,20 +57,26 @@ public static class CarritoEndpoints
       return Results.NotFound("Producto no encontrado.");
 
     var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
-
+//
     if (item != null)
+{
+    if (datos.Cantidad > producto.Stock)
+        return Results.BadRequest($"No hay suficiente stock para el producto '{producto.Nombre}'.");
+
+    item.Cantidad = datos.Cantidad;
+}
+else
+{
+    if (datos.Cantidad > producto.Stock)
+        return Results.BadRequest($"No hay suficiente stock para el producto '{producto.Nombre}'.");
+
+    carrito.Items.Add(new ItemCarrito
     {
-       item.Cantidad = datos.Cantidad; 
-    }
-    else
-    {
-      carrito.Items.Add(new ItemCarrito
-      {
         ProductoId = productoId,
         Cantidad = datos.Cantidad
-      });
-    }
-
+    });
+}
+//
     await db.SaveChangesAsync();
 
     return Results.Ok();

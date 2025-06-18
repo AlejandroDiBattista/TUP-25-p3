@@ -24,7 +24,9 @@ else
                 <span>
                     @item.Nombre (@item.Cantidad @((item.Cantidad == 1) ? "unidad" : "unidades"))
                     <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="@(() => CambiarCantidad(item.ProductoId, item.Cantidad - 1))" disabled="@(item.Cantidad <= 1)">-</button>
-                    <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="@(() => CambiarCantidad(item.ProductoId, item.Cantidad + 1))">+</button>
+                    <button class="btn btn-sm btn-outline-secondary ms-1"
+        @onclick="@(() => CambiarCantidad(item.ProductoId, item.Cantidad + 1))"
+        disabled="@(item.Cantidad >= item.StockDisponible)">+</button>
                     <button class="btn btn-sm btn-outline-danger ms-2" @onclick="@(() => EliminarProducto(item.ProductoId))">🗑️</button>
                 </span>
                 <span>$@item.Subtotal.ToString("N2")</span>
@@ -50,14 +52,23 @@ else
     }
 
     private async Task CambiarCantidad(int productoId, int nuevaCantidad)
-    {
-        if (nuevaCantidad < 1)
-            return;
+{
+    if (nuevaCantidad < 1)
+        return;
 
+    try
+    {
         await CarritoService.ActualizarCantidadAsync(productoId, nuevaCantidad);
         items = await CarritoService.ObtenerItemsCarritoAsync();
-        StateHasChanged();
     }
+    catch (HttpRequestException ex)
+    {
+        var mensaje = ex.Message.Contains("400") ? 
+            "No hay suficiente stock disponible." : 
+            "Error al actualizar el carrito.";
+        await JS.InvokeVoidAsync("alert", mensaje);
+    }
+}
 
     private async Task EliminarProducto(int productoId)
     {

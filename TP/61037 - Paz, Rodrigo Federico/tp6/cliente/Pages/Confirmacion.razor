@@ -6,16 +6,17 @@
 
 <h3>Confirmación de compra</h3>
 
-@if (items == null)
+@if (items == null && !mostrarMensaje)
 {
     <p>Cargando...</p>
 }
-else if (!items.Any())
+else if (!mostrarMensaje && !items.Any())
 {
     <div class="alert alert-warning">El carrito está vacío.</div>
     <a class="btn btn-primary" href="/">Volver al catálogo</a>
 }
-else
+else if (!mostrarMensaje)
+
 {
     <div class="mb-4">
         <h5>Resumen</h5>
@@ -44,9 +45,25 @@ else
     </EditForm>
 }
 
+@if (mostrarMensaje)
+{
+    <div class="alert alert-success">
+        <h4 class="alert-heading">¡Gracias por tu compra!</h4>
+        <p>Tu pedido fue registrado exitosamente.</p>
+        <hr />
+        <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+    </div>
+}
+
 @code {
+    
+    private bool mostrarMensaje = false;
     private List<ItemCarritoResponse>? items;
     private DatosCliente datosCliente = new();
+    private void VolverAlCatalogo()
+{
+    NavigationManager.NavigateTo("/");
+}
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,7 +75,8 @@ else
         try
         {
             await CarritoService.ConfirmarCompraAsync(datosCliente.Nombre, datosCliente.Apellido, datosCliente.Email);
-            NavigationManager.NavigateTo("/");
+            mostrarMensaje = true;
+            items = null;
         }
         catch (Exception ex)
         {
