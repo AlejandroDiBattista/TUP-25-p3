@@ -2,10 +2,219 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Test enlace a carrito</title>
+    <title>Carrito de compra</title>
+    <link rel="stylesheet" href="css/app.css" />
+    <style>
+        body {
+            background: #085caf;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #db1616;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #4db5cf;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(241, 125, 16, 0.05);
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #066613;
+        }
+        th {
+            background: #e70f0f;
+            color: #f9fdfd;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 2px;
+        }
+        .btn-secondary {
+            background: #0c0a8f;
+            color: #b8bb1c;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: #32ee19;
+        }
+        .btn-success {
+            background: #28a745;
+            color: #68b6e4;
+        }
+        .carrito-botones {
+            text-align: right;
+            margin-top: 10px;
+        }
+        @media (max-width: 600px) {
+            table, th, td {
+                font-size: 14px;
+            }
+            .carrito-botones {
+                text-align: center;
+            }
+        }
+        .producto {
+            border: 1px solid #610202;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 20px;
+            background: #064be0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .producto h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #ecca08;
+        }
+        .producto p {
+            margin: 5px 0;
+            color: #f3efef;
+        }
+        .producto img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+        #totalRow td {
+            font-weight: bold;
+            font-size: 1.2em;
+            background: #5c0832;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
-    <h1>Test botón enlace</h1>
-    <a href="carrito.html">Ir a carrito</a>
+    <h1>Carrito de compras</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Unidades</th>
+                <th>Precio unitario</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody id="carrito-body">
+            <!-- Aquí se inyectarán las filas -->
+        </tbody>
+        <tfoot>
+            <tr id="totalRow">
+                <td colspan="3">Total</td>
+                <td id="total">$0</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="carrito-botones">
+        <button onclick="vaciarCarrito()" class="btn btn-danger">Vaciar carrito</button>
+        <button onclick="confirmarCompra()" class="btn btn-success">Confirmar compra</button>
+    </div>
+
+<script>
+    // Datos de productos (nombre, stock, precio)
+    const productos = [
+        { nombre: "Chocolate Milka", stock: 10, precio: 950 },
+        { nombre: "Bon o Bon", stock: 20, precio: 120 },
+        { nombre: "Sugus", stock: 30, precio: 80 },
+        { nombre: "Rocklets", stock: 15, precio: 250 },
+        { nombre: "Mogul", stock: 12, precio: 180 },
+        { nombre: "Tita", stock: 25, precio: 90 },
+        { nombre: "Rhodesia", stock: 22, precio: 90 },
+        { nombre: "Menta Cristal", stock: 35, precio: 70 },
+        { nombre: "Caramelos Arcor", stock: 50, precio: 60 },
+        { nombre: "Chocolinas", stock: 18, precio: 350 },
+        { nombre: "Alfajor Jorgito", stock: 40, precio: 180 },
+        { nombre: "Bananita Dolca", stock: 30, precio: 100 },
+        { nombre: "Kinder Bueno", stock: 8, precio: 400 },
+        { nombre: "KitKat", stock: 16, precio: 350 },
+        { nombre: "M&M's", stock: 10, precio: 300 },
+    ];
+
+    // Inicializamos cantidades en 1 para todos
+    let cantidades = Array(productos.length).fill(1);
+
+    const carritoBody = document.getElementById('carrito-body');
+    const totalCell = document.getElementById('total');
+
+    function renderizarCarrito() {
+        carritoBody.innerHTML = '';
+        productos.forEach((producto, index) => {
+            const importe = cantidades[index] * producto.precio;
+            const fila = document.createElement('tr');
+
+            fila.innerHTML = `
+                <td>${producto.nombre}</td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidad(${index}, -1)">-</button>
+                    <span id="cantidad-${index}">${cantidades[index]}</span>
+                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidad(${index}, 1)">+</button>
+                </td>
+                <td>$${producto.precio}</td>
+                <td id="importe-${index}">$${importe}</td>
+            `;
+            carritoBody.appendChild(fila);
+        });
+        actualizarTotal();
+    }
+
+    function cambiarCantidad(index, delta) {
+        let nuevaCantidad = cantidades[index] + delta;
+        if (nuevaCantidad < 1) return; // no menos de 1
+        if (nuevaCantidad > productos[index].stock) {
+            alert('No hay suficiente stock para ' + productos[index].nombre);
+            return;
+        }
+        cantidades[index] = nuevaCantidad;
+        document.getElementById('cantidad-' + index).innerText = nuevaCantidad;
+        document.getElementById('importe-' + index).innerText = '$' + (nuevaCantidad * productos[index].precio);
+        actualizarTotal();
+    }
+
+    function actualizarTotal() {
+        let total = 0;
+        cantidades.forEach((cantidad, i) => {
+            total += cantidad * productos[i].precio;
+        });
+        totalCell.innerText = '$' + total;
+    }
+
+    function vaciarCarrito() {
+        cantidades = cantidades.map(() => 0);
+        renderizarCarrito();
+    }
+
+    function confirmarCompra() {
+        // Crear un array con los productos y cantidades > 0
+        const carritoParaGuardar = productos.map((p, i) => ({
+            nombre: p.nombre,
+            cantidad: cantidades[i],
+            precio: p.precio
+        })).filter(item => item.cantidad > 0);
+
+        if (carritoParaGuardar.length === 0) {
+            alert('El carrito está vacío.');
+            return;
+        }
+
+        // Guardar carrito en localStorage
+        localStorage.setItem('carrito', JSON.stringify(carritoParaGuardar));
+
+        // Redirigir a la página de confirmación
+        window.location.href = 'confirmacion.html';
+    }
+
+    // Al cargar la página, renderizamos el carrito
+    renderizarCarrito();
+</script>
 </body>
 </html>

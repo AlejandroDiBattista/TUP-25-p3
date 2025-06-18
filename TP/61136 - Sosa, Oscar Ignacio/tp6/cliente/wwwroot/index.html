@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bienvenido a tienda online</title>
-    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BIENVENIDO A TIENDA ONLINE</title>
+    <!-- <base href="/" /> Eliminado para evitar conflictos con rutas -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -16,161 +16,61 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
+            color: #f3efef;
+            text-align: center;
         }
 
         h1 {
             color: #db1616;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #4db5cf;
+            font-size: 2.5rem;
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(241, 125, 16, 0.05);
+            text-transform: uppercase;
         }
 
-        th,
-        td {
-            padding: 12px 8px;
-            text-align: center;
-            border-bottom: 1px solid #066613;
+        p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
         }
 
-        th {
-            background: #5c0832;
-            color: #7015a5;
-        }
-
-        .btn {
-            padding: 6px 12px;
+        a.btn-success {
+            background-color: #0f4b1d;
+            color: #68b6e4;
+            padding: 10px 16px;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
-            margin: 0 2px;
-        }
-
-        .btn-secondary {
-            background: #0c0a8f;
-            color: #b8bb1c;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: #32ee19;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: #68b6e4;
-        }
-
-        .carrito-botones {
-            text-align: right;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 600px) {
-            table,
-            th,
-            td {
-                font-size: 14px;
-            }
-
-            .carrito-botones {
-                text-align: center;
-            }
-        }
-
-        .producto {
-            border: 1px solid #610202;
-            border-radius: 4px;
-            padding: 16px;
-            margin-bottom: 20px;
-            background: #064be0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .producto h3 {
-            margin: 0 0 10px 0;
+            text-decoration: none;
             font-size: 18px;
-            color: #ecca08;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        .producto p {
-            margin: 5px 0;
-            color: #f3efef;
+        a.btn-success:hover {
+            background-color: #1e7e34;
+            color: #200dcc;
         }
 
-        .producto img {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
+        /* Centrar contenido y limitar ancho */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
         }
     </style>
 </head>
 
 <body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+    <div class="container">
+        <h1>BIENVENIDO A TIENDA ONLINE</h1>
+        <p>Las mejores ofertas de dulces</p>
+
+        <a href="carrito.html" class="btn btn-success">Ver carrito</a>
     </div>
 
-    <!-- Botón Agregar al carrito -->
-    <div style="margin: 2rem;">
-        <h2>Nombre del producto</h2>
-        <p>Descripción del producto</p>
-        <button id="addToCartBtn" class="btn btn-primary">Agregar al carrito</button>
-        <a href="carrito.html" class="btn btn-success" style="margin: 1rem;">Ver carrito</a>
-    </div>
-
-    <div id="blazor-error-ui">
+    <div id="blazor-error-ui" style="text-align:center; margin-top:3rem; color:#f3efef;">
         An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+        <a href="." class="reload" style="color:#68b6e4;">Reload</a>
+        <span class="dismiss" style="cursor:pointer;">🗙</span>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const btn = document.getElementById('addToCartBtn');
-            if (btn) {
-                btn.addEventListener('click', function () {
-                    const stockDisponible = 5; // Cambia este valor según tu lógica
 
-                    if (stockDisponible > 0) {
-                        const producto = {
-                            id: 1,
-                            nombre: "Nombre del producto",
-                            precio: 100,
-                            cantidad: 1
-                        };
-
-                        let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-
-                        const existente = carrito.find(item => item.id === producto.id);
-                        if (existente) {
-                            existente.cantidad += 1;
-                        } else {
-                            carrito.push(producto);
-                        }
-
-                        localStorage.setItem('carrito', JSON.stringify(carrito));
-
-                        alert("Producto agregado al carrito.");
-
-                        window.location.href = 'carrito.html';
-
-                    } else {
-                        alert('No hay stock disponible');
-                    }
-                });
-            }
-        });
-    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 
