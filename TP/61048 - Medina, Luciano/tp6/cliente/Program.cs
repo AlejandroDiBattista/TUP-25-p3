@@ -7,11 +7,18 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+// 1. Registramos HttpClient para que esté disponible en toda la app.
+builder.Services.AddScoped(sp => new HttpClient 
+{ 
+    BaseAddress = new Uri("http://localhost:5184") // Asegúrate que el puerto sea el de tu servidor
+});
 
+// 2. Registramos CarritoService como "Scoped". 
+//    Esto es suficiente para que no pierda su estado al navegar.
+builder.Services.AddScoped<CarritoService>();
+
+// (El registro de ApiService puede permanecer o quitarse)
 builder.Services.AddScoped<ApiService>();
 
-
-builder.Services.AddScoped<CarritoService>();
 
 await builder.Build().RunAsync();
