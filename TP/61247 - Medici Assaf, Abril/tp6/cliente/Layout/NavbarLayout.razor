@@ -1,0 +1,59 @@
+@inherits LayoutComponentBase
+
+<nav class="navbar navbar-custom mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand align-text-center"  style="color: aliceblue" " href="/">
+            <img src="icon-192.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-center" />
+            ABISTORE
+        </a>
+        <form class="d-flex ms-auto" @onsubmit="Buscar">
+            <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" @bind="busqueda" />
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+        <a class="btn btn-primary ms-3" href="/carrito">
+            🛒 Carrito (@Tienda.CantidadTotal())
+        </a>
+
+        <button class="btn btn-outline-secondary ms-2" @onclick="ToggleDarkMode">
+            @((isDarkMode ? "Modo claro" : "Modo oscuro"))
+        </button>
+    </div>
+</nav>
+
+
+@code {
+    [Inject] public TiendaService Tienda { get; set; }
+
+    private string busqueda = "";
+
+    private async Task Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            NavigationManager.NavigateTo($"/?q={busqueda}");
+        else
+            NavigationManager.NavigateTo("/");
+    }
+
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    //pa saber q funca el carrito 
+        protected override void OnInitialized()
+    {
+        Tienda.OnCarritoChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Tienda.OnCarritoChanged -= StateHasChanged;
+    }
+
+    @inject IJSRuntime jsRuntime;
+    private bool isDarkMode = false;
+
+    private async Task ToggleDarkMode()
+    {
+        isDarkMode = !isDarkMode;
+        await jsRuntime.InvokeVoidAsync("toggleDarkMode", isDarkMode);
+
+    }
+}

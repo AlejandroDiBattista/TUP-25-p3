@@ -1,0 +1,100 @@
+﻿@page "/"
+@inject ProductoService productoService
+@inject CarritoService carritoService
+@inject BusquedaService busquedaService
+
+<div class="container py-4">
+    <h1 class="text-center text-black mb-5">Catálogo</h1>
+
+    @if (productosFiltrados == null)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 text-light">Cargando productos...</p>
+        </div>
+    }
+    else if (productosFiltrados.Count == 0)
+    {
+        <p class="text-center text-muted">No hay productos disponibles.</p>
+    }
+    else
+    {
+        <div class="row g-4 @ObtenerClasesFilas(productosFiltrados.Count)">
+            @foreach (var p in productosFiltrados)
+            {
+                <div class="col d-flex">
+                    <div class="card flex-fill h-100 shadow-sm border-0 rounded-4 hover-shadow">
+                        @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                        {
+                            <img src="@p.ImagenUrl" class="card-img-top mx-auto d-block product-image" alt="@p.Nombre" />
+                        }
+                        else
+                        {
+                            <div class="bg-secondary d-flex align-items-center justify-content-center rounded-top-4 product-image text-white">
+                                <span>Sin imagen</span>
+                            </div>
+                        }
+
+                        <div class="card-body d-flex flex-column p-3">
+                            <h5 class="card-title text-center">@p.Nombre</h5>
+                            <p class="card-text text-muted text-truncate text-center" style="max-height: 4.5em; overflow: hidden;">
+                                @p.Descripcion
+                            </p>
+                            <div class="mt-auto text-center">
+                                <p class="fw-bold mb-1 text-primary">$@p.Precio.ToString("N0")</p>
+                                <p class="text-muted mb-3">Stock: @p.Stock</p>
+                                <button class="btn btn-success w-100" @onclick="() => AgregarAlCarrito(p)">
+                                    <i class="bi bi-cart-plus"></i> Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string ObtenerClasesFilas(int cantidad)
+    {
+        if (cantidad == 1) return "row-cols-1";
+        if (cantidad == 2) return "row-cols-1 row-cols-sm-2";
+        if (cantidad == 3) return "row-cols-1 row-cols-sm-2 row-cols-md-3";
+        return "row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4";
+    }
+}
+
+@code {
+    private List<Producto>? productos;
+    private List<Producto>? productosFiltrados;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await productoService.ObtenerProductos();
+        productosFiltrados = productos;
+
+        busquedaService.OnBusquedaCambiada += FiltrarProductos;
+    }
+
+    private void FiltrarProductos(string termino)
+    {
+        productosFiltrados = string.IsNullOrWhiteSpace(termino)
+        ? productos
+        : productos?.Where(p => p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    void AgregarAlCarrito(Producto producto)
+    {
+        carritoService.AgregarProducto(producto, 1);
+    }
+
+    public void Dispose()
+    {
+        busquedaService.OnBusquedaCambiada -= FiltrarProductos;
+    }
+}

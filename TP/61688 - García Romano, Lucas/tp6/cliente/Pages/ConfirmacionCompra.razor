@@ -1,0 +1,74 @@
+@page "/confirmacion"
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<h3>Finalizar Compra</h3>
+
+@if (items is null) //muestra msj de carga
+{
+    <p>Cargando carrito...</p>
+}
+else if (items.Count == 0) //muesta msj que no hay productos en el carrito
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <EditForm Model="@cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Nombre:</label>
+            <InputText @bind-Value="cliente.Nombre" class="form-control" />
+        </div>
+        <div>
+            <label>Apellido:</label>
+            <InputText @bind-Value="cliente.Apellido" class="form-control" />
+        </div>
+        <div>
+            <label>Email:</label>
+            <InputText @bind-Value="cliente.Email" class="form-control" />
+        </div>
+
+        <button class="btn btn-primary" type="submit" disabled="@enviando">Confirmar compra</button>
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div class="alert alert-info mt-2">@mensaje</div>
+        }
+    </EditForm>
+}
+
+@code {
+    private DatosCliente cliente = new(); //datos del cliente
+    private List<ItemCarritoDto> items; //lista de items del carrito
+    private string mensaje;//msj de confirmacion o error
+    private bool enviando = false; //indica si se esta enviando la compra
+
+    protected override async Task OnInitializedAsync()//inicializa el componente
+    {
+        items = await CarritoService.ObtenerItemsDelCarritoAsync();//obtiene los items del carrito
+    }
+
+    private async Task ConfirmarCompra() //confirma la compra
+    {
+        enviando = true; //indica que se esta enviando la compra
+        mensaje = string.Empty; //limpia el msj previo 
+        try
+        {
+            await CarritoService.ConfirmarCompraAsync(cliente); //confirma la compra enviando los datos del cliente
+            mensaje = "¡Compra confirmada! Redirigiendo...";//msj de confirmacion
+            await Task.Delay(1200);//espera un poco antes de redirigir
+            Navigation.NavigateTo("/compra-finalizada");//te lleva a la pagina de compra finalizada
+        }
+        catch (Exception ex) //maneja errores al confirmar la compra
+        {
+            mensaje = "Error al confirmar la compra: " + ex.Message;//manda msj de error
+        }
+        finally
+        {
+            enviando = false; //indica que ya no se esta enviando la compra
+        }
+    }
+}

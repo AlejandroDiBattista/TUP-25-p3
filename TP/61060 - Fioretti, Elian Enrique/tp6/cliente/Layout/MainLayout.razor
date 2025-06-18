@@ -1,4 +1,90 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+@implements IDisposable
+
+<div class="d-flex" style="align-items: flex-start;">
+    <div 
+        class="d-flex flex-column align-items-center padding-top-6 bg-cover-center"
+        style="width:220px; min-width:220px; height:220px; background-image: url('@navBarLeftUrl');">
+        <img src="@bionicTechLogoUrl" alt="Bionic Tech" class="logo-clickable" @onclick="IrHome" />
+    </div>
+    <div class="flex-grow-1">
+        <div class="sticky-top mb-4" style="height:60px; display:flex; align-items:center; background-color: transparent; box-shadow: none;">
+            <div class="container d-flex align-items-center justify-content-between navbar-container bg-cover-center"
+                 style="background-image: url('@navBarRightUrl');">
+                <div class="d-flex align-items-center padding-top-3 margin-left-18">
+                    <a class="btn btn-outline-secondary me-3 btn-carrito" href="/carrito">
+                        Carrito
+                    </a>
+                    <a class="btn btn-contadorCarrito align-items-center" href="/carrito">
+                        @if (ApiService.ContadorCarrito > 0)
+                        {
+                            <span>@ApiService.ContadorCarrito</span>
+                        }
+                    </a>
+                </div>
+                <div class="d-flex align-items-center justify-content-end padding-top-3 margin-right-17">
+                    <form class="d-flex align-items-center" @onsubmit="@(() => Buscar())">
+                        <input class="form-control form-control-sm me-2 buscador-navbar input-busqueda"
+                               type="search" placeholder="Buscar..." @bind="busqueda" />
+                        <button class="btn btn-outline-primary ms-1 btn-buscar" type="submit">Buscar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <main class="container">
+            @Body
+        </main>
+    </div>
 </div>
+
+@code {
+    private string bionicTechLogoUrl = "http://localhost:5184/img/hud/bionictechLogo.png";
+    private string navBarLeftUrl = "http://localhost:5184/img/hud/navbarLeft.png";
+    private string navBarRightUrl = "http://localhost:5184/img/hud/navbarRight.png";
+    private string? busqueda;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        ApiService.OnChange += ActualizarContador;
+        await ApiService.ObtenerCarritoAsync();
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ActualizarContador()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        ApiService.OnChange -= ActualizarContador;
+    }
+
+    private void IrHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            NavigationManager.NavigateTo($"/?busqueda={Uri.EscapeDataString(busqueda)}");
+        else
+            NavigationManager.NavigateTo("/");
+    }
+
+    private bool EsCarrito
+    {
+        get
+        {
+            var uri = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
+            return uri.Equals("carrito", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+}

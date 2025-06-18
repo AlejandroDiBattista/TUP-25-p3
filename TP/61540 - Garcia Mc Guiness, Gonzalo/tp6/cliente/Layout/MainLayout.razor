@@ -1,4 +1,58 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using cliente.Services
+@inherits LayoutComponentBase
+@inject CarritoService CarritoService 
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="img/f1logo.svg" alt="F1 Logo" style="height: 40px;" />
+        <span class="ms-2">Tienda Formula 1</span>
+    </a>
+        <form class="d-flex ms-auto" @onsubmit="Buscar">
+            <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
+            <button class="btn btn-outline-light" type="submit">Buscar</button>
+        </form>
+    <a href="/carrito" class="btn btn-outline-light position-relative ms-3">
+        <span style="font-size: 1.5rem;">🛒</span>
+        <span class="visually-hidden">Carrito</span>
+        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+            @contadorCarrito
+        </span>
+    </a>
+</nav>
+
+<div class="page px-3">
     @Body
 </div>
+
+@code {
+    string? busqueda;
+    int contadorCarrito = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoService.CarritoActualizado += ActualizarContadorSync;
+        await ActualizarContador();
+    }
+
+    void ActualizarContadorSync()
+    {
+        _ = ActualizarContador();
+    }
+
+    async Task ActualizarContador()
+    {
+        var carrito = await CarritoService.GetCarritoAsync();
+        contadorCarrito = carrito?.Items.Count ?? 0;
+        StateHasChanged();
+    }
+
+    void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            NavigationManager.NavigateTo($"/?q={busqueda}");
+        else
+            NavigationManager.NavigateTo("/");
+    }
+
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+}

@@ -1,0 +1,126 @@
+﻿@page "/carrito"
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+@using cliente.Models
+
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:48px; height:48px;">
+            <i class="bi bi-cart3" style="font-size:2rem;"></i>
+        </div>
+        <h2 class="fw-bold mb-1">Tu Carrito de Compras</h2>
+        <div class="text-muted small">Revisa tus productos antes de confirmar la compra</div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-info text-center">@mensaje</div>
+    }
+
+    @if (carrito == null)
+    {
+        <p class="text-center">Cargando carrito...</p>
+    }
+    else if (!carrito.Items.Any())
+    {
+        <div class="alert alert-info text-center">
+            Tu carrito está vacío
+            <button @onclick="VolverAlCatalogo" class="btn btn-link">Volver al catálogo</button>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive mb-3">
+            <table class="table align-middle table-hover shadow-sm rounded bg-white">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width:60px"></th>
+                        <th>Producto</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-end">Precio unitario</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-center" style="width:50px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carrito.Items)
+                    {
+                        <tr>
+                            <td class="text-center align-middle">
+                                <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre"
+                                     style="width:48px; height:48px; object-fit:cover; border-radius:12px; border:2px solid #dee2e6; box-shadow:0 2px 8px rgba(0,0,0,0.07);" />
+                            </td>
+                            <td class="align-middle">
+                                <div class="fw-bold">@item.Producto.Nombre</div>
+                                <div class="text-muted small">@item.Producto.Descripcion</div>
+                            </td>
+                            <td class="text-center align-middle">@item.Cantidad</td>
+                            <td class="text-end align-middle">$@item.PrecioUnitario.ToString("N2", new System.Globalization.CultureInfo("es-AR"))</td>
+                            <td class="text-end align-middle fw-bold">
+                                @((item.Cantidad * item.PrecioUnitario).ToString("N2", new System.Globalization.CultureInfo("es-AR")))
+                            </td>
+                            <td class="text-center align-middle">
+                                <button class="btn btn-outline-danger btn-sm" title="Eliminar"
+                                        @onclick="() => EliminarProducto(item.ProductoId)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                        <td class="text-end fw-bold text-success" style="font-size:1.2rem;">$@carrito.Total.ToString("N2", new System.Globalization.CultureInfo("es-AR"))</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between">
+            <button @onclick="VaciarCarrito" class="btn btn-danger flex-fill">
+                <i class="bi bi-x-circle"></i> Vaciar Carrito
+            </button>
+            <button @onclick="IrAConfirmacion" class="btn btn-primary flex-fill">
+                <i class="bi bi-check-circle"></i> Confirmar Compra
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private Compra carrito;
+    private string mensaje = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarritoService.InitializeCarrito(); // Solo si no hay carrito activo
+        carrito = await CarritoService.GetCarritoAsync();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarrito();
+        carrito = await CarritoService.GetCarritoAsync();
+        mensaje = "Carrito vaciado correctamente.";
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        await CarritoService.AgregarProducto(productoId, -1);
+        carrito = await CarritoService.GetCarritoAsync();
+        mensaje = "Producto eliminado del carrito.";
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+
+    private void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+

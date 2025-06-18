@@ -1,0 +1,18 @@
+@inherits LayoutComponentBase
+@inject CartState CartState
+
+<header>
+    <h1>CompraGamer</h1>
+    <nav>
+        <a href="/">Inicio</a> |
+        <a href="/carrito">🛒 (@CartState.Items)</a>
+    </nav>
+</header>
+
+<main class="main-content">
+    @Body
+</main>
+
+<footer>
+    © 2025 CompraGamer. Todos los derechos reservados.
+</footer>

@@ -1,0 +1,30 @@
+@* Componente de Loading Spinner personalizado para TUC BYTE *@
+
+<div class="loader-container @(Fullscreen ? "fullscreen" : "") @CssClass">
+    <span class="loader @GetSizeClass()"></span>
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <p class="loading-text">@Message</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public LoadingSize Size { get; set; } = LoadingSize.Medium;
+    [Parameter] public bool Fullscreen { get; set; } = false;
+    [Parameter] public string CssClass { get; set; } = "";
+
+    private string GetSizeClass() => Size switch
+    {
+        LoadingSize.Small => "loader-sm",
+        LoadingSize.Large => "loader-lg",
+        _ => ""
+    };
+
+    public enum LoadingSize
+    {
+        Small,
+        Medium,
+        Large
+    }
+}
