@@ -5,11 +5,9 @@ using servidor.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Entity Framework con SQLite
 builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -22,17 +20,14 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Crear, migrar y poblar la base de datos al iniciar la aplicación
+// Inicializar base de datos
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TiendaContext>();
-    
-    // Crear la base de datos si no existe
     context.Database.EnsureCreated();
     
-    // Verificar si ya hay productos en la base de datos
     if (!context.Productos.Any())
-    {        // Poblar la base de datos con productos de ejemplo
+    {
         var productos = new List<Producto>
         {
             new Producto { Nombre = "NVIDIA RTX 4080 Super", Descripcion = "Tarjeta gráfica de alto rendimiento para gaming y diseño profesional. 16GB GDDR6X, Ray Tracing de 3ra generación, DLSS 3.0", Precio = 1199999.99M, Stock = 8, ImagenUrl = "/images/rtx4080.png" },
@@ -45,23 +40,18 @@ using (var scope = app.Services.CreateScope())
             new Producto { Nombre = "Cooler Master Hyper 212 RGB", Descripcion = "Cooler de CPU con ventilador RGB de 120mm. Compatible con Intel LGA 1700 y AMD AM5", Precio = 45999.99M, Stock = 25, ImagenUrl = "/images/nzxt-kraken-x73.png" },
             new Producto { Nombre = "Logitech G Pro X Superlight", Descripcion = "Mouse gaming inalámbrico ultraliviano de 63g con sensor HERO 25K. Hasta 70 horas de batería", Precio = 109999.99M, Stock = 22, ImagenUrl = "/images/pro-x-superlight-black.png" },
             new Producto { Nombre = "Razer BlackWidow V4 Pro", Descripcion = "Teclado mecánico gaming con switches Green, RGB Chroma, dial de comandos y reposamuñecas magnético", Precio = 219999.99M, Stock = 16, ImagenUrl = "/images/razer-v4-pro.png" }
-        };
-
-        context.Productos.AddRange(productos);
+        };        context.Productos.AddRange(productos);
         context.SaveChanges();
-        
-        Console.WriteLine("✅ Base de datos inicializada con 10 productos de gaming de PC.");
+        Console.WriteLine("✅ Base de datos inicializada con productos de gaming.");
     }
 }
 
-// Configurar CORS
 app.UseCors("AllowClientApp");
-
 app.MapGet("/", () => "Servidor API de Tienda Online está en funcionamiento");
 
-// === ENDPOINTS DE PRODUCTOS ===
+// ENDPOINTS DE PRODUCTOS
 
-// GET /api/productos - Obtiene todos los productos o busca por nombre
+// GET /api/productos - Obtiene productos con búsqueda opcional
 app.MapGet("/api/productos", async (TiendaContext context, string buscar = null) =>
 {
     try
@@ -89,15 +79,14 @@ app.MapGet("/api/productos", async (TiendaContext context, string buscar = null)
             Total = productos.Count,
             TerminoBusqueda = buscar ?? "todos"
         });
-    }
-    catch (Exception ex)
+    }    catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener productos: {ex.Message}");
         return Results.Problem("Error interno del servidor", statusCode: 500);
     }
 });
 
-// GET /api/productos/{id} - Obtiene un producto específico por ID
+// GET /api/productos/{id} - Obtiene un producto por ID
 app.MapGet("/api/productos/{id:int}", async (TiendaContext context, int id) =>
 {
     try
@@ -123,11 +112,10 @@ app.MapGet("/api/productos/{id:int}", async (TiendaContext context, int id) =>
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener producto {id}: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
-// GET /api/productos/{id}/stock-disponible/{carritoId} - Obtiene stock disponible considerando carrito
+// GET /api/productos/{id}/stock-disponible/{carritoId} - Stock disponible considerando carrito
 app.MapGet("/api/productos/{id:int}/stock-disponible/{carritoId:int}", async (TiendaContext context, int id, int carritoId) =>
 {
     try
@@ -136,10 +124,7 @@ app.MapGet("/api/productos/{id:int}/stock-disponible/{carritoId:int}", async (Ti
         if (producto == null)
         {
             return Results.NotFound(new { Mensaje = "Producto no encontrado" });
-        }
-
-        // Obtener cantidad actual en el carrito
-        var cantidadEnCarrito = await context.ItemsCarrito
+        }        var cantidadEnCarrito = await context.ItemsCarrito
             .Where(i => i.CarritoId == carritoId && i.ProductoId == id)
             .Select(i => i.Cantidad)
             .FirstOrDefaultAsync();
@@ -157,11 +142,10 @@ app.MapGet("/api/productos/{id:int}/stock-disponible/{carritoId:int}", async (Ti
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener stock disponible: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
-// GET /api/productos/stock/{productoId} - Obtiene stock disponible de un producto
+// GET /api/productos/stock/{productoId} - Stock de un producto
 app.MapGet("/api/productos/stock/{productoId:int}", async (TiendaContext context, int productoId) =>
 {
     try
@@ -177,13 +161,12 @@ app.MapGet("/api/productos/stock/{productoId:int}", async (TiendaContext context
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener stock: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
-// === ENDPOINTS DE CARRITO ===
+// ENDPOINTS DE CARRITO
 
-// POST /api/carritos - Crear un nuevo carrito
+// POST /api/carritos - Crear carrito
 app.MapPost("/api/carritos", async (TiendaContext context) =>
 {
     try
@@ -201,11 +184,10 @@ app.MapPost("/api/carritos", async (TiendaContext context) =>
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al crear carrito: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
-// GET /api/carritos/{carritoId} - Obtener carrito con sus items
+// GET /api/carritos/{carritoId} - Obtener carrito
 app.MapGet("/api/carritos/{carritoId:int}", async (TiendaContext context, int carritoId) =>
 {
     try
@@ -241,11 +223,10 @@ app.MapGet("/api/carritos/{carritoId:int}", async (TiendaContext context, int ca
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al obtener carrito: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
-// PUT /api/carritos/{carritoId}/productos/{productoId} - Agregar/actualizar producto en carrito
+// PUT /api/carritos/{carritoId}/productos/{productoId} - Agregar producto al carrito
 app.MapPut("/api/carritos/{carritoId:int}/productos/{productoId:int}", async (TiendaContext context, int carritoId, int productoId, int cantidad) =>
 {
     try
@@ -266,13 +247,10 @@ app.MapPut("/api/carritos/{carritoId:int}/productos/{productoId:int}", async (Ti
         }        if (cantidad <= 0)
         {
             return Results.BadRequest(new { Mensaje = "La cantidad debe ser mayor a 0" });
-        }
-
-        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        }        var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
         var cantidadActualEnCarrito = itemExistente?.Cantidad ?? 0;
         var nuevaCantidadTotal = cantidadActualEnCarrito + cantidad;
 
-        // Validar stock disponible considerando lo que ya está en el carrito
         if (producto.Stock < nuevaCantidadTotal)
         {
             var stockDisponible = producto.Stock - cantidadActualEnCarrito;
@@ -283,8 +261,7 @@ app.MapPut("/api/carritos/{carritoId:int}/productos/{productoId:int}", async (Ti
 
         if (itemExistente != null)
         {
-            // SUMAR la cantidad, no reemplazar
-            itemExistente.Cantidad = nuevaCantidadTotal;
+            itemExistente.Cantidad = nuevaCantidadTotal; // Lógica acumulativa
         }
         else
         {
@@ -303,8 +280,7 @@ app.MapPut("/api/carritos/{carritoId:int}/productos/{productoId:int}", async (Ti
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al agregar producto: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
 // DELETE /api/carritos/{carritoId}/productos/{productoId} - Eliminar producto del carrito
@@ -328,8 +304,7 @@ app.MapDelete("/api/carritos/{carritoId:int}/productos/{productoId:int}", async 
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al eliminar producto: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
 // DELETE /api/carritos/{carritoId} - Vaciar carrito
@@ -349,8 +324,7 @@ app.MapDelete("/api/carritos/{carritoId:int}", async (TiendaContext context, int
     catch (Exception ex)
     {
         Console.WriteLine($"❌ Error al vaciar carrito: {ex.Message}");
-        return Results.Problem("Error interno del servidor", statusCode: 500);
-    }
+        return Results.Problem("Error interno del servidor", statusCode: 500);    }
 });
 
 // POST /api/carritos/{carritoId}/confirmar - Confirmar compra
@@ -364,11 +338,9 @@ app.MapPost("/api/carritos/{carritoId:int}/confirmar", async (TiendaContext cont
             .FirstOrDefaultAsync(c => c.Id == carritoId);
         
         if (carrito == null || !carrito.Items.Any())
-        {
-            return Results.BadRequest(new { Mensaje = "Carrito vacío o no encontrado" });
+        {            return Results.BadRequest(new { Mensaje = "Carrito vacío o no encontrado" });
         }
 
-        // Validar datos del cliente
         if (string.IsNullOrWhiteSpace(datosCliente.NombreCliente) ||
             string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente) ||
             string.IsNullOrWhiteSpace(datosCliente.EmailCliente))
@@ -376,19 +348,15 @@ app.MapPost("/api/carritos/{carritoId:int}/confirmar", async (TiendaContext cont
             return Results.BadRequest(new { Mensaje = "Todos los datos del cliente son obligatorios" });
         }
 
-        // Validar stock disponible
         foreach (var item in carrito.Items)
         {
             if (item.Producto.Stock < item.Cantidad)
             {
                 return Results.BadRequest(new { Mensaje = $"Stock insuficiente para {item.Producto.Nombre}" });
             }
-        }
-
-        using var transaction = await context.Database.BeginTransactionAsync();
+        }        using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            // Crear la compra
             var compra = new Compra
             {
                 Fecha = DateTime.Now,
@@ -406,13 +374,11 @@ app.MapPost("/api/carritos/{carritoId:int}/confirmar", async (TiendaContext cont
             compra.Total = compra.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
             context.Compras.Add(compra);
 
-            // Actualizar stock
             foreach (var item in carrito.Items)
             {
                 item.Producto.Stock -= item.Cantidad;
             }
 
-            // Limpiar carrito
             context.ItemsCarrito.RemoveRange(carrito.Items);
 
             await context.SaveChangesAsync();

@@ -9,7 +9,6 @@
 
 <PageTitle>DualTech - Gaming Store</PageTitle>
 
-<!-- Content Header -->
 <div class="content-header">
     <div class="row align-items-center">
         <div class="col-lg-6">
@@ -39,8 +38,7 @@
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="container-fluid px-4">    <!-- Search Results Info -->
+<div class="container-fluid px-4">
     @if (!string.IsNullOrEmpty(terminoBusquedaActual))
     {
         <div class="alert alert-info shadow-modern fade-in">
@@ -49,7 +47,6 @@
         </div>
     }
 
-    <!-- Cart Info -->
     @if (carritoId != null && totalItemsCarrito > 0)
     {        <div class="alert alert-success shadow-modern fade-in">
             <div class="d-flex justify-content-between align-items-center">
@@ -80,10 +77,8 @@
                 <Icon Name="refresh-cw" Size="16" /> Reintentar
             </button>
         </div>
-    }
-    else
+    }    else
     {
-        <!-- Products Grid -->
         <div class="row g-4">            @if (productos == null || !productos.Any())
             {
                 <div class="col-12 text-center py-5">
@@ -204,26 +199,21 @@
     private bool cargando = false;
     private bool agregandoProducto = false;
     
-    // Estado del carrito
     private string? carritoId;
     private int totalItemsCarrito = 0;
       
-    // Variables para la notificación
     private bool mostrarNotificacion = false;
     private string tituloNotificacion = "";
     private string mensajeNotificacion = "";
-    private string tipoNotificacion = ""; // "success", "warning" o "error"
+    private string tipoNotificacion = "";
 
     protected override async Task OnInitializedAsync()
     {
-        // Suscribirse a cambios de stock
         StockService.StockCambiado += OnStockCambiado;
-        
         await InicializarCarrito();
         await CargarProductos();
     }
 
-    // Método para manejar cambios de stock
     private void OnStockCambiado(int productoId, int nuevoStock)
     {
         var producto = productos?.FirstOrDefault(p => p.Id == productoId);
@@ -231,7 +221,6 @@
         {
             producto.Stock = nuevoStock;
             
-            // Ajustar cantidad seleccionada si excede el nuevo stock
             if (cantidadesSeleccionadas.ContainsKey(productoId) && 
                 cantidadesSeleccionadas[productoId] > nuevoStock && 
                 nuevoStock > 0)
@@ -243,7 +232,6 @@
         }
     }
 
-    // Liberar suscripción cuando se destruye el componente
     public void Dispose()
     {
         StockService.StockCambiado -= OnStockCambiado;
@@ -251,7 +239,6 @@
     
     private async Task InicializarCarrito()
     {
-        // Intentar recuperar carrito existente del localStorage
         try
         {
             carritoId = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "carritoId");
@@ -289,16 +276,14 @@
 
     private async Task CargarProductos()
     {
-        try
-        {
+        try        {
             cargando = true;
             error = null;
-              // Usar el StockService para obtener productos con stock sincronizado
+            
             productos = await StockService.SincronizarStockAsync(carritoId, terminoBusquedaActual);
             
             if (productos == null || productos.Count == 0)
             {
-                // Fallback al método original si el servicio de stock falla
                 if (string.IsNullOrEmpty(terminoBusquedaActual))
                 {
                     productos = await ApiService.ObtenerProductosAsync();
@@ -308,11 +293,9 @@
                     productos = await ApiService.BuscarProductosAsync(terminoBusquedaActual);
                 }
                 
-                // Inicializar cache de stock
                 StockService.InicializarCache(productos);
             }
             
-            // Inicializar cantidades seleccionadas manteniendo las existentes
             foreach (var producto in productos)
             {
                 if (!cantidadesSeleccionadas.ContainsKey(producto.Id))
@@ -321,7 +304,6 @@
                 }
                 else
                 {
-                    // Ajustar cantidad si excede el stock actual
                     if (cantidadesSeleccionadas[producto.Id] > producto.Stock)
                     {
                         cantidadesSeleccionadas[producto.Id] = Math.Max(1, producto.Stock);
@@ -350,16 +332,14 @@
         terminoBusquedaActual = "";
         await CargarProductos();
     }
-    
-    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
+      private async Task OnBuscarKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            // Pequeño delay para asegurar que el bind se complete
             await Task.Delay(10);
             await BuscarProductos();
         }
-    }    private async void IncrementarCantidad(int productoId, int stockMaximo)
+    }private async void IncrementarCantidad(int productoId, int stockMaximo)
     {
         if (cantidadesSeleccionadas[productoId] < stockMaximo)
         {
@@ -374,12 +354,10 @@
             {
                 MostrarNotificacion("Stock Limitado", 
                     $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "warning");
-            }
-            else
+            }            else
             {
-                // El stock local estaba desactualizado, incrementar y recargar productos
                 cantidadesSeleccionadas[productoId]++;
-                await CargarProductos(); // Sincronizar stock
+                await CargarProductos();
                 StateHasChanged();
             }
         }
@@ -400,11 +378,9 @@
         }
 
         try
-        {
-            agregandoProducto = true;
+        {            agregandoProducto = true;
             var cantidadAAgregar = cantidadesSeleccionadas[producto.Id];
             
-            // Obtener stock disponible considerando lo que ya está en el carrito
             var (stockTotal, cantidadEnCarrito, stockDisponible, nombreProducto) = await ApiService.ObtenerStockDisponibleAsync(producto.Id, carritoId);
             
             if (stockDisponible < cantidadAAgregar)
@@ -412,7 +388,6 @@
                 MostrarNotificacion("Stock Insuficiente", 
                     $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto} (ya tienes {cantidadEnCarrito} en el carrito)", "warning");
                 
-                // Ajustar cantidad seleccionada al stock disponible
                 if (stockDisponible > 0)
                 {
                     cantidadesSeleccionadas[producto.Id] = stockDisponible;

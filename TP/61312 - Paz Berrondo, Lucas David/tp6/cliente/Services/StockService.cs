@@ -2,16 +2,11 @@ using cliente.Models;
 
 namespace cliente.Services;
 
-/// <summary>
-/// Servicio para manejar el estado del stock de productos en tiempo real.
-/// Permite sincronizar el stock entre diferentes páginas cuando se agregan/eliminan productos del carrito.
-/// </summary>
 public class StockService
 {
     private readonly ApiService _apiService;
     private Dictionary<int, int> _stockCache = new();
 
-    // Evento para notificar cambios de stock
     public event Action<int, int>? StockCambiado; // productoId, nuevoStock
 
     public StockService(ApiService apiService)
@@ -19,22 +14,12 @@ public class StockService
         _apiService = apiService;
     }
 
-    /// <summary>
-    /// Actualiza el stock de un producto en la cache y notifica a los suscriptores.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <param name="nuevoStock">Nuevo stock del producto</param>
     public void ActualizarStock(int productoId, int nuevoStock)
     {
         _stockCache[productoId] = nuevoStock;
         StockCambiado?.Invoke(productoId, nuevoStock);
     }
 
-    /// <summary>
-    /// Disminuye el stock de un producto cuando se agrega al carrito.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <param name="cantidad">Cantidad agregada</param>
     public void DisminuirStock(int productoId, int cantidad)
     {
         if (_stockCache.ContainsKey(productoId))
@@ -44,11 +29,6 @@ public class StockService
         }
     }
 
-    /// <summary>
-    /// Aumenta el stock de un producto cuando se elimina del carrito.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <param name="cantidad">Cantidad eliminada</param>
     public void AumentarStock(int productoId, int cantidad)
     {
         if (_stockCache.ContainsKey(productoId))
@@ -58,20 +38,11 @@ public class StockService
         }
     }
 
-    /// <summary>
-    /// Obtiene el stock actual de un producto desde la cache.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <returns>Stock actual o -1 si no está en cache</returns>
     public int ObtenerStockCache(int productoId)
     {
         return _stockCache.ContainsKey(productoId) ? _stockCache[productoId] : -1;
     }
 
-    /// <summary>
-    /// Inicializa la cache de stock con una lista de productos.
-    /// </summary>
-    /// <param name="productos">Lista de productos</param>
     public void InicializarCache(List<ProductoDto> productos)
     {
         _stockCache.Clear();
@@ -79,7 +50,7 @@ public class StockService
         {
             _stockCache[producto.Id] = producto.Stock;
         }
-    }    /// <summary>
+    }/// <summary>
     /// Sincroniza el stock de todos los productos con el servidor.
     /// </summary>
     /// <param name="carritoId">ID del carrito para calcular stock disponible</param>
@@ -105,11 +76,7 @@ public class StockService
                     // Actualizar el stock visual con el stock disponible
                     producto.Stock = stockDisponible;
                 }
-            }
-
-            // Actualizar cache con los valores reales
-            InicializarCache(productos);
-            
+            }            InicializarCache(productos);
             return productos;
         }
         catch (Exception ex)
@@ -119,9 +86,6 @@ public class StockService
         }
     }
 
-    /// <summary>
-    /// Limpia la cache de stock.
-    /// </summary>
     public void LimpiarCache()
     {
         _stockCache.Clear();

@@ -5,10 +5,6 @@ using cliente.Models;
 
 namespace cliente.Services;
 
-/// <summary>
-/// Servicio para comunicación con la API del servidor.
-/// Proporciona métodos para todas las operaciones de la tienda online.
-/// </summary>
 public class ApiService 
 {
     private readonly HttpClient _httpClient;
@@ -17,22 +13,14 @@ public class ApiService
     public ApiService(HttpClient httpClient) 
     {
         _httpClient = httpClient;
-        
-        // Configurar opciones de JSON para ser case-insensitive
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
     }
 
-    // ========================================
-    // MÉTODOS DE PRODUCTOS
-    // ========================================
+    // PRODUCTOS
 
-    /// <summary>
-    /// Obtiene todos los productos disponibles.
-    /// </summary>
-    /// <returns>Lista de productos</returns>
     public async Task<List<ProductoDto>> ObtenerProductosAsync()
     {
         try 
@@ -44,14 +32,8 @@ public class ApiService
         {
             Console.WriteLine($"❌ Error al obtener productos: {ex.Message}");
             return new List<ProductoDto>();
-        }
-    }
+        }    }
 
-    /// <summary>
-    /// Busca productos por nombre.
-    /// </summary>
-    /// <param name="termino">Término de búsqueda</param>
-    /// <returns>Lista de productos que coinciden con el término</returns>
     public async Task<List<ProductoDto>> BuscarProductosAsync(string termino)
     {
         try 
@@ -63,14 +45,8 @@ public class ApiService
         {
             Console.WriteLine($"❌ Error al buscar productos: {ex.Message}");
             return new List<ProductoDto>();
-        }
-    }
+        }    }
 
-    /// <summary>
-    /// Obtiene un producto específico por ID.
-    /// </summary>
-    /// <param name="id">ID del producto</param>
-    /// <returns>Producto o null si no se encuentra</returns>
     public async Task<ProductoDto?> ObtenerProductoPorIdAsync(int id)
     {
         try 
@@ -86,14 +62,8 @@ public class ApiService
         {
             Console.WriteLine($"❌ Error al obtener producto {id}: {ex.Message}");
             return null;
-        }
-    }
+        }    }
 
-    /// <summary>
-    /// Obtiene el stock disponible de un producto específico.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <returns>Cantidad de stock disponible, -1 si hay error</returns>
     public async Task<int> ObtenerStockDisponibleAsync(int productoId)
     {
         try 
@@ -105,15 +75,8 @@ public class ApiService
         {
             Console.WriteLine($"❌ Error al obtener stock del producto {productoId}: {ex.Message}");
             return -1;
-        }
-    }
+        }    }
 
-    /// <summary>
-    /// Valida si hay suficiente stock para una cantidad solicitada.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <param name="cantidadSolicitada">Cantidad que se quiere agregar</param>
-    /// <returns>Tupla con (esValido, stockDisponible, nombreProducto)</returns>
     public async Task<(bool esValido, int stockDisponible, string nombreProducto)> ValidarStockDisponibleAsync(int productoId, int cantidadSolicitada)
     {
         try 
@@ -131,12 +94,8 @@ public class ApiService
             Console.WriteLine($"❌ Error al validar stock del producto {productoId}: {ex.Message}");
             return (false, 0, "Error de validación");
         }
-    }    /// <summary>
-    /// Obtiene el stock disponible considerando lo que ya está en el carrito.
-    /// </summary>
-    /// <param name="productoId">ID del producto</param>
-    /// <param name="carritoId">ID del carrito</param>
-    /// <returns>Información de stock disponible</returns>
+    }
+
     public async Task<(int stockTotal, int cantidadEnCarrito, int stockDisponible, string nombreProducto)> ObtenerStockDisponibleAsync(int productoId, string carritoId)
     {
         try 
@@ -155,14 +114,8 @@ public class ApiService
         }
     }
 
-    // ========================================
-    // MÉTODOS DE CARRITO
-    // ========================================
+    // CARRITO
 
-    /// <summary>
-    /// Crea un nuevo carrito de compras.
-    /// </summary>
-    /// <returns>ID del carrito creado o null si hay error</returns>
     public async Task<string?> CrearCarritoAsync()
     {
         try 
@@ -203,14 +156,8 @@ public class ApiService
         {
             Console.WriteLine($"❌ Error al obtener carrito {carritoId}: {ex.Message}");
             return null;
-        }
-    }
+        }    }
 
-    /// <summary>
-    /// Vacía completamente un carrito.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito</param>
-    /// <returns>True si se vació exitosamente</returns>
     public async Task<bool> VaciarCarritoAsync(string carritoId)
     {
         try 
@@ -223,18 +170,12 @@ public class ApiService
             Console.WriteLine($"❌ Error al vaciar carrito {carritoId}: {ex.Message}");
             return false;
         }
-    }    /// <summary>
-    /// Agrega o actualiza un producto en el carrito.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito</param>
-    /// <param name="productoId">ID del producto</param>
-    /// <param name="cantidad">Cantidad del producto</param>
-    /// <returns>True si se agregó exitosamente, False si el carrito no existe</returns>
+    }
+
     public async Task<bool> AgregarProductoAlCarritoAsync(string carritoId, int productoId, int cantidad)
     {
         try 
         {
-            // Usar la nueva sintaxis de endpoints con query parameter
             var response = await _httpClient.PutAsync($"/api/carritos/{carritoId}/productos/{productoId}?cantidad={cantidad}", null);
             
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -243,24 +184,18 @@ public class ApiService
                 return false;
             }
             
-            return response.IsSuccessStatusCode;
-        } 
+            return response.IsSuccessStatusCode;        }
         catch (Exception ex) 
         {
             Console.WriteLine($"❌ Error al agregar producto {productoId} al carrito {carritoId}: {ex.Message}");
             return false;
         }
-    }    /// <summary>
-    /// Elimina un producto específico del carrito.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito</param>
-    /// <param name="productoId">ID del producto a eliminar</param>
-    /// <returns>True si se eliminó exitosamente</returns>
+    }
+
     public async Task<bool> EliminarProductoDelCarritoAsync(string carritoId, int productoId)
     {
         try 
         {
-            // Usar la nueva sintaxis de endpoints
             var response = await _httpClient.DeleteAsync($"/api/carritos/{carritoId}/productos/{productoId}");
             return response.IsSuccessStatusCode;
         } 
@@ -269,12 +204,8 @@ public class ApiService
             Console.WriteLine($"❌ Error al eliminar producto {productoId} del carrito {carritoId}: {ex.Message}");
             return false;
         }
-    }    /// <summary>
-    /// Confirma una compra convirtiendo el carrito en una compra persistente.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito</param>
-    /// <param name="datosCliente">Datos del cliente para la compra</param>
-    /// <returns>Detalles de la compra confirmada o null si hay error</returns>
+    }
+
     public async Task<CompraConfirmadaDto?> ConfirmarCompraAsync(string carritoId, ConfirmarCompraDto datosCliente)
     {
         try 
@@ -282,7 +213,6 @@ public class ApiService
             var json = JsonSerializer.Serialize(datosCliente, _jsonOptions);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
-            // Usar POST en lugar de PUT según la implementación del servidor
             var response = await _httpClient.PostAsync($"/api/carritos/{carritoId}/confirmar", content);
             
             if (response.IsSuccessStatusCode)
@@ -290,7 +220,6 @@ public class ApiService
                 return await response.Content.ReadFromJsonAsync<CompraConfirmadaDto>(_jsonOptions);
             }
             
-            // Si hay error, leer el mensaje de error
             var errorContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"❌ Error al confirmar compra: {errorContent}");
             return null;
@@ -302,11 +231,6 @@ public class ApiService
         }
     }
 
-    /// <summary>
-    /// Verifica si un carrito existe en el servidor.
-    /// </summary>
-    /// <param name="carritoId">ID del carrito a verificar</param>
-    /// <returns>True si el carrito existe, False si no</returns>
     public async Task<bool> CarritoExisteAsync(string carritoId)
     {
         try 
