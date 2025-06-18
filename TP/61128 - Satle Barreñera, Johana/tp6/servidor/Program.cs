@@ -126,15 +126,6 @@ app.MapPut("/carritos/{id}/confirmar", async (string id, ClienteDTO cliente, Tie
     };
 
 
-
-    foreach (var item in items)
-    {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto == null || producto.Stock < item.Cantidad)
-            return Results.BadRequest("Stock insuficiente");
-        producto.Stock -= item.Cantidad;
-    }
-
     db.Compras.Add(compra);
     await db.SaveChangesAsync();
     carritos.Remove(id);
