@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
-using Cliente.Modelo;
-using Cliente.Services;
+using cliente.Modelo;
+using cliente.Services;
 
-namespace Cliente.Services
+namespace cliente.Services
 {
     public class CartService
     {
@@ -46,6 +46,7 @@ namespace Cliente.Services
         {
             await InicializarCarrito();
             await _http.DeleteAsync($"/carritos/{CarritoId}/{productoId}");
+            OnCarritoActualizado?.Invoke();
         }
         public async Task<int> ObtenerCantidadItems()
         {
@@ -57,6 +58,7 @@ namespace Cliente.Services
         {
             await InicializarCarrito();
             await _http.DeleteAsync($"/carritos/{CarritoId}");
+            OnCarritoActualizado?.Invoke();
         }
 
         public async Task<bool> ConfirmarCompra(object compra)
