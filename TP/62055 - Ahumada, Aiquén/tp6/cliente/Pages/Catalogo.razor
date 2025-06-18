@@ -1,3 +1,4 @@
+@page "/"
 @page "/catalogo"
 @using cliente.Models
 @using cliente.Services
@@ -20,16 +21,14 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/">Inicio</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="catalogo">Productos</a>
-          </li>
+         
           <li class="nav-item">
                     <a class="nav-link d-flex align-items-center position-relative" href="carrito">
-                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
-                    <span style="margin-right: 0.3em;">Carrito</span>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                       @CarritoService.Items.Sum(i => i.Cantidad)
-                    </span>
+                        <img src="img/iconopng.png" alt="Carrito" width="28" height="28" style="margin-right: 0.3em;">
+                        
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                           @CarritoService.Items.Sum(i => i.Cantidad)
+                        </span>
                     </a>
                 </li>
         </ul>
@@ -75,8 +74,8 @@
                         <p class="card-text">@productosFiltrados[0].Descripcion</p>
                         <p class="mb-1"><strong>Precio:</strong> <span class="text-success">$@productosFiltrados[0].Precio</span></p>
                         <p class="mb-2"><strong>Stock:</strong> @productosFiltrados[0].Stock</p>
-                        <button class="btn btn-primary mt-auto" @onclick="() => CarritoService.Agregar(productosFiltrados[0])" disabled="@(!PuedeAgregar(productosFiltrados[0]))">
-                            <i class="bi bi-cart-plus"></i> Añadir al carrito
+                       <button class="btn btn-primary mt-auto" @onclick="() => AgregarYDescontarStock(productosFiltrados[0])" disabled="@(!PuedeAgregar(productosFiltrados[0]))">
+                        <i class="bi bi-cart-plus"></i> Añadir al carrito
                         </button>
                     </div>
                 </div>
@@ -96,8 +95,8 @@
                             <p class="card-text">@producto.Descripcion</p>
                             <p class="mb-1"><strong>Precio:</strong> <span class="text-success">$@producto.Precio</span></p>
                             <p class="mb-2"><strong>Stock:</strong> @producto.Stock</p>
-                            <button class="btn btn-primary mt-auto" @onclick="() => CarritoService.Agregar(producto)" disabled="@(!PuedeAgregar(producto))">
-                                <i class="bi bi-cart-plus"></i> Añadir al carrito
+                            <button class="btn btn-primary mt-auto" @onclick="() => AgregarYDescontarStock(producto)" disabled="@(!PuedeAgregar(producto))">
+                            <i class="bi bi-cart-plus"></i> Añadir al carrito
                             </button>
                         </div>
                     </div>
@@ -141,7 +140,7 @@
     textoBusqueda = e.Value?.ToString() ?? "";
     if (string.IsNullOrWhiteSpace(textoBusqueda))
     {
-        Navigation.NavigateTo("/catalogo", forceLoad: true);
+        Navigation.NavigateTo("/catalogo");
     }
 }
 
@@ -150,5 +149,16 @@
         CarritoService.OnChange -= StateHasChanged;
     }
 
-    private bool PuedeAgregar(Producto p) => p.Stock > 0;
+    private bool PuedeAgregar(Producto p) => p.Stock > 0;   
+
+    private void AgregarYDescontarStock(Producto producto)
+{
+    if (producto.Stock > 0)
+    {
+        CarritoService.Agregar(producto);
+        producto.Stock--;
+        StateHasChanged();
+    }
 }
+}
+

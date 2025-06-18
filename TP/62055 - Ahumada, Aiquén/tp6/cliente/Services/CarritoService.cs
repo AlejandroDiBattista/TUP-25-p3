@@ -19,8 +19,7 @@ public class CarritoService
         var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
         if (item != null)
         {
-            if (item.Cantidad < producto.Stock)
-                item.Cantidad++;
+            item.Cantidad++;
         }
         else
         {
