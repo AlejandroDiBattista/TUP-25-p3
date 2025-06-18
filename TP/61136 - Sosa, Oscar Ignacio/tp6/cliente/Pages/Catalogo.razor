@@ -1,40 +1,53 @@
 @page "/catalogo"
+@using Cliente.Models2
+@using Cliente.Services
+@inject CartService Cart
 
-<h1>Catálogo de Productos</h1>
+<h1>🍭 Catálogo de Productos</h1>
 
-<input @bind="busqueda" placeholder="Buscar productos..." />
+<input class="form-control mb-3" @bind="busqueda" placeholder="Buscar productos..." />
 
-<ul>
+<div class="row">
     @foreach (var producto in ProductosFiltrados)
     {
-        <li>
-            <strong>@producto.Nombre</strong> - @producto.Descripcion - $@producto.Precio
-            <br />
-            <img src="@producto.ImagenUrl" alt="@producto.Nombre" width="100" />
-        </li>
+        <div class="col-md-4 mb-4">
+            <div class="producto">
+                <h3>@producto.Nombre</h3>
+                <p>@producto.Descripcion</p>
+                <p><strong>Precio:</strong> $@producto.Precio</p>
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="img-fluid" />
+                <button class="btn btn-primary mt-2" @onclick="() => AgregarAlCarrito(producto)">
+                    Agregar al carrito
+                </button>
+            </div>
+        </div>
     }
-</ul>
+</div>
+
+<div class="text-end mt-4">
+    <a href="/carrito" class="btn btn-success">🛒 Ver carrito (@Cart.GetCantidadTotal())</a>
+</div>
 
 @code {
     private string busqueda = string.Empty;
 
     private List<Producto> productos = new()
     {
-        new Producto { Nombre = "Chocolate Milka", Descripcion = "Tableta de chocolate con leche 100g", Precio = 950, ImagenUrl = "https://images.example.com/milka.jpg" },
-        new Producto { Nombre = "Bon o Bon", Descripcion = "Bombón de chocolate relleno", Precio = 120, ImagenUrl = "https://images.example.com/bonobon.jpg" },
-        new Producto { Nombre = "Sugus", Descripcion = "Caramelos masticables surtidos", Precio = 80, ImagenUrl = "https://images.example.com/sugus.jpg" },
-        new Producto { Nombre = "Rocklets", Descripcion = "Confites de chocolate 40g", Precio = 250, ImagenUrl = "https://images.example.com/rocklets.jpg" },
-        new Producto { Nombre = "Mogul", Descripcion = "Gomitas frutales 50g", Precio = 180, ImagenUrl = "https://images.example.com/mogul.jpg" },
-        new Producto { Nombre = "Tita", Descripcion = "Galletita bañada en chocolate", Precio = 90, ImagenUrl = "https://images.example.com/tita.jpg" },
-        new Producto { Nombre = "Rhodesia", Descripcion = "Galletita bañada en chocolate", Precio = 90, ImagenUrl = "https://images.example.com/rhodesia.jpg" },
-        new Producto { Nombre = "Menta Cristal", Descripcion = "Caramelos de menta", Precio = 70, ImagenUrl = "https://images.example.com/mentacristal.jpg" },
-        new Producto { Nombre = "Caramelos Arcor", Descripcion = "Caramelos duros surtidos", Precio = 60, ImagenUrl = "https://images.example.com/arcor.jpg" },
-        new Producto { Nombre = "Chocolinas", Descripcion = "Galletitas de chocolate 170g", Precio = 350, ImagenUrl = "https://images.example.com/chocolinas.jpg" },
-        new Producto { Nombre = "Alfajor Jorgito", Descripcion = "Alfajor de dulce de leche", Precio = 180, ImagenUrl = "https://images.example.com/jorgito.jpg" },
-        new Producto { Nombre = "Bananita Dolca", Descripcion = "Dulce de banana bañado en chocolate", Precio = 100, ImagenUrl = "https://images.example.com/bananita.jpg" },
-        new Producto { Nombre = "Kinder Bueno", Descripcion = "Barra de chocolate con leche y avellanas", Precio = 400, ImagenUrl = "https://images.example.com/kinderbueno.jpg" },
-        new Producto { Nombre = "KitKat", Descripcion = "Barra de chocolate con obleas", Precio = 350, ImagenUrl = "https://images.example.com/kitkat.jpg" },
-        new Producto { Nombre = "M&M's", Descripcion = "Confites de chocolate 45g", Precio = 300, ImagenUrl = "https://images.example.com/mms.jpg" }
+        new Producto { Id = 1, Nombre = "Chocolate Milka", Descripcion = "Tableta de chocolate con leche 100g", Precio = 950, Stock = 10, ImagenUrl = "https://images.example.com/milka.jpg" },
+        new Producto { Id = 2, Nombre = "Bon o Bon", Descripcion = "Bombón de chocolate relleno", Precio = 120, Stock = 20, ImagenUrl = "https://images.example.com/bonobon.jpg" },
+        new Producto { Id = 3, Nombre = "Sugus", Descripcion = "Caramelos masticables surtidos", Precio = 80, Stock = 30, ImagenUrl = "https://images.example.com/sugus.jpg" },
+        new Producto { Id = 4, Nombre = "Rocklets", Descripcion = "Confites de chocolate 40g", Precio = 250, Stock = 15, ImagenUrl = "https://images.example.com/rocklets.jpg" },
+        new Producto { Id = 5, Nombre = "Mogul", Descripcion = "Gomitas frutales 50g", Precio = 180, Stock = 12, ImagenUrl = "https://images.example.com/mogul.jpg" },
+        new Producto { Id = 6, Nombre = "Tita", Descripcion = "Galletita bañada en chocolate", Precio = 90, Stock = 25, ImagenUrl = "https://images.example.com/tita.jpg" },
+        new Producto { Id = 7, Nombre = "Rhodesia", Descripcion = "Galletita bañada en chocolate", Precio = 90, Stock = 22, ImagenUrl = "https://images.example.com/rhodesia.jpg" },
+        new Producto { Id = 8, Nombre = "Menta Cristal", Descripcion = "Caramelos de menta", Precio = 70, Stock = 35, ImagenUrl = "https://images.example.com/mentacristal.jpg" },
+        new Producto { Id = 9, Nombre = "Caramelos Arcor", Descripcion = "Caramelos duros surtidos", Precio = 60, Stock = 50, ImagenUrl = "https://images.example.com/arcor.jpg" },
+        new Producto { Id = 10, Nombre = "Chocolinas", Descripcion = "Galletitas de chocolate 170g", Precio = 350, Stock = 18, ImagenUrl = "https://images.example.com/chocolinas.jpg" },
+        new Producto { Id = 11, Nombre = "Alfajor Jorgito", Descripcion = "Alfajor de dulce de leche", Precio = 180, Stock = 40, ImagenUrl = "https://images.example.com/jorgito.jpg" },
+        new Producto { Id = 12, Nombre = "Bananita Dolca", Descripcion = "Dulce de banana bañado en chocolate", Precio = 100, Stock = 30, ImagenUrl = "https://images.example.com/bananita.jpg" },
+        new Producto { Id = 13, Nombre = "Kinder Bueno", Descripcion = "Barra de chocolate con leche y avellanas", Precio = 400, Stock = 8, ImagenUrl = "https://images.example.com/kinderbueno.jpg" },
+        new Producto { Id = 14, Nombre = "KitKat", Descripcion = "Barra de chocolate con obleas", Precio = 350, Stock = 16, ImagenUrl = "https://images.example.com/kitkat.jpg" },
+        new Producto { Id = 15, Nombre = "M&M's", Descripcion = "Confites de chocolate 45g", Precio = 300, Stock = 10, ImagenUrl = "https://images.example.com/mms.jpg" }
     };
 
     private IEnumerable<Producto> ProductosFiltrados =>
@@ -42,11 +55,8 @@
             ? productos
             : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 
-    public class Producto
+    private void AgregarAlCarrito(Producto producto)
     {
-        public string Nombre { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public decimal Precio { get; set; }
-        public string ImagenUrl { get; set; } = string.Empty;
+        Cart.AddToCart(producto);
     }
 }
