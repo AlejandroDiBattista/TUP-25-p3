@@ -212,47 +212,48 @@ else
         }
         StateHasChanged(); 
     }
+private async Task AddToCart(cliente.Models.Producto producto)
+{
+    ShowNotification(null, false); 
 
-    private async Task AddToCart(cliente.Models.Producto producto)
+    try
     {
-        ShowNotification(null, false); 
-
-        try
+        if (CartId == null)
         {
-            if (CartId == null)
-            {
-                CartId = await ApiService.InitializeCart();
-                await LoadCartItems(); 
-            }
-
-            var existingCartItem = cartItems.FirstOrDefault(item => item.ProductoId == producto.Id);
-            int currentQuantityInCart = existingCartItem?.Cantidad ?? 0;
-            
-            int newQuantity = currentQuantityInCart + 1;
-
-            if (newQuantity > producto.Stock)
-            {
-                ShowNotification($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}", true);
-                return; 
-            }
-
-            string? error = await ApiService.AddOrUpdateProductInCart(CartId.Value, producto.Id, newQuantity);
-
-            if (error != null)
-            {
-                ShowNotification(error, true);
-            }
-            else
-            {
-                await LoadCartItems(); 
-                ShowNotification($"'{producto.Nombre}' ha sido agregado en el carrito.", false);
-            }
+            CartId = await ApiService.InitializeCart();
+            await LoadCartItems(); 
         }
-        catch (Exception ex) 
+
+        var existingCartItem = cartItems.FirstOrDefault(item => item.ProductoId == producto.Id);
+        int currentQuantityInCart = existingCartItem?.Cantidad ?? 0;
+        
+        int newQuantity = currentQuantityInCart + 1;
+
+        if (newQuantity > producto.Stock)
         {
-            ShowNotification($"Error inesperado al agregar {producto.Nombre} al carrito: {ex.Message}", true);
+            ShowNotification($"No hay suficiente stock de {producto.Nombre}. Stock disponible: {producto.Stock}", true);
+            return; 
+        }
+
+        string? error = await ApiService.AddOrUpdateProductInCart(CartId.Value, producto.Id, newQuantity);
+
+        if (error != null)
+        {
+            ShowNotification(error, true);
+        }
+        else
+        {
+            await LoadCartItems(); 
+            ShowNotification($"'{producto.Nombre}' ha sido agregado en el carrito.", false);
+            
+            Navigation.NavigateTo($"/carrito/{CartId.Value}"); 
         }
     }
+    catch (Exception ex) 
+    {
+        ShowNotification($"Error inesperado al agregar {producto.Nombre} al carrito: {ex.Message}", true);
+    }
+}
 
     private void ShowNotification(string? message, bool isError)
     {

@@ -1,3 +1,4 @@
+@page "/carrito/{carritoId:int}"
 @page "/carrito"
 @inject cliente.Services.ApiService ApiService
 @inject cliente.Services.CartStateService CartStateService 
@@ -93,18 +94,23 @@ else
 @code {
     private List<cliente.Models.CarritoItemDto> CartItems = new();
     private bool Loading = true;
-    private int? CartId;
+    
+    [Parameter] 
+    public int? CarritoId { get; set; } 
+    private int? _internalCartId; 
+
     private decimal TotalPrice => CartItems.Sum(item => item.Cantidad * item.PrecioUnitario);
     private string? Message;
     private bool ShowMessage = false;
     private bool isError = false; 
     private System.Timers.Timer? messageTimer;
 
-
     protected override async Task OnInitializedAsync()
     {
-        CartId = CartStateService.CartId;
-        if (CartId == null)
+        CartStateService.OnCartIdChanged += HandleCartIdChanged;
+        SetInternalCartId();
+
+        if (_internalCartId == null) 
         {
             Loading = false;
             return;
@@ -112,15 +118,65 @@ else
         await LoadCartItems();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        int? previousInternalCartId = _internalCartId; 
+        
+        SetInternalCartId(); 
+
+        if (_internalCartId != previousInternalCartId) 
+        {
+            if (_internalCartId == null) 
+            {
+                CartItems.Clear(); 
+                Loading = false;
+            }
+            else
+            {
+                await LoadCartItems();
+            }
+        }
+    }
+
+    private void HandleCartIdChanged()
+    {
+        InvokeAsync(async () =>
+        {
+            SetInternalCartId(); 
+            if (_internalCartId == null) 
+            {
+                CartItems.Clear();
+                Loading = false;
+            }
+            else
+            {
+                await LoadCartItems();
+            }
+            StateHasChanged();
+        });
+    }
+
+    private void SetInternalCartId()
+    {
+        if (this.CarritoId.HasValue) 
+        {
+            _internalCartId = this.CarritoId.Value;
+        }
+        else
+        {
+            _internalCartId = CartStateService.CartId;
+        }
+    }
+
     private async Task LoadCartItems()
     {
         Loading = true;
         try
         {
-            if (CartId.HasValue)
+            if (_internalCartId.HasValue) 
             {
-                CartItems = await ApiService.GetCartItems(CartId.Value);
-                Console.WriteLine($"--- Cart loaded for CartId: {CartId.Value} ---");
+                CartItems = await ApiService.GetCartItems(_internalCartId.Value);
+                Console.WriteLine($"--- Cart loaded for CartId: {_internalCartId.Value} ---"); 
                 foreach (var item in CartItems)
                 {
                     Console.WriteLine($"Producto: {item.ProductoNombre}, Cantidad en Carrito: {item.Cantidad}, Stock disponible (desde servidor): {item.ProductoStock}");
@@ -148,20 +204,20 @@ else
     {
         ShowNotification(null, false); 
 
-        if (CartId == null) return;
+        if (_internalCartId == null) return;
 
         Console.WriteLine($"[UpdateQuantity] Producto: {item.ProductoNombre}, Cantidad actual en carrito: {item.Cantidad}, Nueva cantidad deseada: {newQuantity}, Stock disponible (desde item): {item.ProductoStock}");
 
         if (newQuantity <= 0)
         {
-            Console.WriteLine($"[UpdateQuantity] Eliminando ítem: {item.ProductoNombre} (cantidad <= 0)"); // Debugging
+            Console.WriteLine($"[UpdateQuantity] Eliminando ítem: {item.ProductoNombre} (cantidad <= 0)"); 
             await RemoveItem(item);
         }
         else 
         {
             try
             {
-                string? error = await ApiService.AddOrUpdateProductInCart(CartId.Value, item.ProductoId, newQuantity);
+                string? error = await ApiService.AddOrUpdateProductInCart(_internalCartId.Value, item.ProductoId, newQuantity); 
 
                 if (error != null)
                 {
@@ -185,10 +241,10 @@ else
     private async Task RemoveItem(cliente.Models.CarritoItemDto item)
     {
         ShowNotification(null, false); 
-        if (CartId == null) return;
+        if (_internalCartId == null) return;
         try
         {
-            await ApiService.RemoveProductFromCart(CartId.Value, item.ProductoId);
+            await ApiService.RemoveProductFromCart(_internalCartId.Value, item.ProductoId); 
             await LoadCartItems(); 
             ShowNotification($"'{item.ProductoNombre}' ha sido eliminado del carrito.", false);
         }
@@ -202,10 +258,10 @@ else
     private async Task ClearCart()
     {
         ShowNotification(null, false); 
-        if (CartId == null) return;
+        if (_internalCartId == null) return; 
         try
         {
-            await ApiService.ClearCart(CartId.Value);
+            await ApiService.ClearCart(_internalCartId.Value); 
             CartItems.Clear();
             CartStateService.SetCartId(null); 
             ShowNotification("Carrito vaciado correctamente.", false); 
@@ -220,12 +276,12 @@ else
     private void ConfirmPurchase()
     {
         ShowNotification(null, false); 
-        if (CartId == null || !CartItems.Any())
+        if (_internalCartId == null || !CartItems.Any()) 
         {
             ShowNotification("El carrito está vacío. No se puede confirmar la compra.", true); 
             return;
         }
-        Navigation.NavigateTo($"/confirmacion/{CartId.Value}");
+        Navigation.NavigateTo($"/confirmacion/{_internalCartId.Value}"); 
     }
 
     private void ShowNotification(string? message, bool isError) 
@@ -261,5 +317,6 @@ else
         {
             messageTimer.Dispose();
         }
+        CartStateService.OnCartIdChanged -= HandleCartIdChanged;
     }
 }
