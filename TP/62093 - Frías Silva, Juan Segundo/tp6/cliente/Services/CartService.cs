@@ -8,7 +8,7 @@ public class CartService
 
     public event Action? OnChange;
 
-    private void NotificarCambio() => OnChange?.Invoke();
+   public void NotificarCambio() => OnChange?.Invoke();
 
     public void AgregarProducto(Producto producto)
     {

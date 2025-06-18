@@ -24,14 +24,14 @@ public static class DbSeeder
                     Descripcion = "Aromático y elegante",
                     Precio = 720000,
                     Stock = 9,
-                    ImagenUrl = "https://www.rp-luxury.com/5054-thickbox_default/yves-saint-laurent-black-opium-eau-de-parfum.jpg"
+                    ImagenUrl = "https://acdn-us.mitiendanube.com/stores/001/071/596/products/3614273258180-copia1-7cbc5aac05c7914bc616844627788032-480-0.jpg"
                 },
                 new Producto {
                     Nombre = "Paco Rabanne 1 Million",
                     Descripcion = "Estilo y presencia",
                     Precio = 550000,
                     Stock = 14,
-                    ImagenUrl = "https://www.farmaciasrp.com.ar/22848-thickbox_default/paco-rabanne-1-million-elixir-parfum-intense-100-ml.jpg"
+                    ImagenUrl = "https://acdn-us.mitiendanube.com/stores/001/165/255/products/paco-rabanne-1-million-elixir-parfum-x100ml-892681e0b4082209ac17174279112192-1024-1024.jpg"
                 },
                 new Producto {
                     Nombre = "Versace Eros",
@@ -52,7 +52,7 @@ public static class DbSeeder
                     Descripcion = "Icónico y masculino",
                     Precio = 520000,
                     Stock = 11,
-                    ImagenUrl = "https://www.farmaciasrp.com.ar/33698-thickbox_default/jean-paul-gaultier-le-male-elixir-absolu-parfum-intense-125-ml.jpg"
+                    ImagenUrl = "https://fimgs.net/mdimg/perfume-thumbs/375x500.430.jpg"
                 },
                 new Producto {
                     Nombre = "Carolina Herrera 212 VIP",
