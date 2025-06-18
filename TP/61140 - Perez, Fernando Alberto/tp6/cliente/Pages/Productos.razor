@@ -1,0 +1,50 @@
+@page "/productos"
+
+<h1>Catálogo de Productos</h1>
+
+<div class="row">
+    @foreach (var producto in productos)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
+                <div class="card-body">
+                    <h5 class="card-title">@producto.Nombre</h5>
+                    <p class="card-text">@producto.Descripcion</p>
+                    <p class="card-text">Precio: $@producto.Precio</p>
+                    <p class="card-text">Stock: @producto.Stock</p>
+                    <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Producto> productos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulación de carga de productos
+        productos = new List<Producto>
+        {
+            new Producto { Nombre = "iPhone 12", Descripcion = "6.1\" Super Retina XDR", Precio = 250000, Stock = 10, ImagenUrl = "img/iphone12.jpg" },
+            new Producto { Nombre = "iPhone 13", Descripcion = "6.1\" Super Retina XDR", Precio = 300000, Stock = 8, ImagenUrl = "img/iphone13.jpg" }
+        };
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        // Lógica para agregar al carrito
+        Console.WriteLine($"Producto agregado: {producto.Nombre}");
+    }
+
+    private class Producto
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
+    }
+}
