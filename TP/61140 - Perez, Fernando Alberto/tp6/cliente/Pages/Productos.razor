@@ -21,16 +21,21 @@
 </div>
 
 @code {
+    @inject cliente.Services.ApiService ApiService
+
     private List<Producto> productos = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulación de carga de productos
-        productos = new List<Producto>
+        try
         {
-            new Producto { Nombre = "iPhone 12", Descripcion = "6.1\" Super Retina XDR", Precio = 250000, Stock = 10, ImagenUrl = "img/iphone12.jpg" },
-            new Producto { Nombre = "iPhone 13", Descripcion = "6.1\" Super Retina XDR", Precio = 300000, Stock = 8, ImagenUrl = "img/iphone13.jpg" }
-        };
+            var datos = await ApiService.ObtenerDatosAsync();
+            productos = datos.Productos;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar productos: {ex.Message}");
+        }
     }
 
     private void AgregarAlCarrito(Producto producto)

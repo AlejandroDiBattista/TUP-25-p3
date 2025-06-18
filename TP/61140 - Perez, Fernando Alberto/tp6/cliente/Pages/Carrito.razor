@@ -1,4 +1,5 @@
 @page "/carrito"
+@inject cliente.Services.ApiService ApiService
 
 <h1>Carrito de Compras</h1>
 
@@ -45,30 +46,73 @@ else
 @code {
     private List<ItemCarrito> carrito = new();
 
-    private void ModificarCantidad(ItemCarrito item, int cambio)
+    protected override async Task OnInitializedAsync()
     {
-        item.Cantidad += cambio;
-        if (item.Cantidad <= 0)
+        try
         {
-            carrito.Remove(item);
+            carrito = await ApiService.ObtenerCarritoAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar el carrito: {ex.Message}");
         }
     }
 
-    private void EliminarDelCarrito(ItemCarrito item)
+    private async Task ModificarCantidad(ItemCarrito item, int cambio)
     {
-        carrito.Remove(item);
+        try
+        {
+            await ApiService.ModificarCantidadAsync(item.Producto.Id, cambio);
+            item.Cantidad += cambio;
+            if (item.Cantidad <= 0)
+            {
+                carrito.Remove(item);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al modificar cantidad: {ex.Message}");
+        }
     }
 
-    private void VaciarCarrito()
+    private async Task EliminarDelCarrito(ItemCarrito item)
     {
-        carrito.Clear();
+        try
+        {
+            await ApiService.EliminarDelCarritoAsync(item.Producto.Id);
+            carrito.Remove(item);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar del carrito: {ex.Message}");
+        }
     }
 
-    private void ConfirmarCompra()
+    private async Task VaciarCarrito()
     {
-        // Lógica para confirmar la compra
-        Console.WriteLine("Compra confirmada");
-        carrito.Clear();
+        try
+        {
+            await ApiService.VaciarCarritoAsync();
+            carrito.Clear();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al vaciar el carrito: {ex.Message}");
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        try
+        {
+            await ApiService.ConfirmarCompraAsync();
+            Console.WriteLine("Compra confirmada");
+            carrito.Clear();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar la compra: {ex.Message}");
+        }
     }
 
     private class ItemCarrito
@@ -79,6 +123,7 @@ else
 
     private class Producto
     {
+        public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public decimal Precio { get; set; }
     }

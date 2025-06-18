@@ -38,12 +38,26 @@ else
 }
 
 @code {
-    private List<ItemCarrito> carrito = new(); // Simulación del carrito
+    @inject cliente.Services.ApiService ApiService
+
+    private List<ItemCarrito> carrito = new();
     private string nombre = string.Empty;
     private string apellido = string.Empty;
     private string email = string.Empty;
 
-    private void ConfirmarCompra()
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            carrito = await ApiService.ObtenerCarritoAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar el carrito: {ex.Message}");
+        }
+    }
+
+    private async Task ConfirmarCompra()
     {
         if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido) || string.IsNullOrWhiteSpace(email))
         {
@@ -51,9 +65,16 @@ else
             return;
         }
 
-        // Lógica para registrar la compra
-        Console.WriteLine($"Compra confirmada por {nombre} {apellido} ({email})");
-        carrito.Clear();
+        try
+        {
+            await ApiService.ConfirmarCompraAsync(new Cliente { Nombre = nombre, Apellido = apellido, Email = email });
+            Console.WriteLine("Compra confirmada");
+            carrito.Clear();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar la compra: {ex.Message}");
+        }
     }
 
     private class ItemCarrito
@@ -66,5 +87,12 @@ else
     {
         public string Nombre { get; set; } = string.Empty;
         public decimal Precio { get; set; }
+    }
+
+    private class Cliente
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 }
