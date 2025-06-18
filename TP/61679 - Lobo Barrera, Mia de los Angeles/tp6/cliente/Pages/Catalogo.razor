@@ -1,0 +1,51 @@
+@page "/catalogo"
+@using cliente.Pages
+@using cliente.Modelos
+@inject HttpClient Http
+
+<h1>Catálogo de Productos</h1>
+
+<div class="mb-3">
+    <input type="text" @bind="searchQuery" placeholder="Buscar productos..." class="form-control" />
+    <button class="btn btn-primary mt-2" @onclick="Buscar">Buscar</button>
+</div>
+
+<div class="productos-grid">
+    @if (productos == null)
+    {
+        <p>Cargando productos...</p>
+    }
+    else if (productos.Count == 0)
+    {
+        <p>No se encontraron productos.</p>
+    }
+    else
+    {
+        foreach (var producto in productos)
+        {
+            <TarjetaProducto Producto="producto" />
+        }
+    }
+</div>
+
+@code {
+    private List<Producto> productos;
+    private string searchQuery = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        // Si se ingresa un query, se lo agrega como parámetro
+        string url = string.IsNullOrWhiteSpace(searchQuery) ? "/productos" : $"/productos?query={searchQuery}";
+        productos = await Http.GetFromJsonAsync<List<Producto>>(url);
+    }
+
+    private async Task Buscar()
+    {
+        await CargarProductos();
+    }
+}

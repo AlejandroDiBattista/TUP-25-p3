@@ -1,0 +1,277 @@
+@page "/carrito"
+@inject CarritoEstado CarritoEstado
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<h3 class="text-center mb-4">
+    <i class="fas fa-shopping-cart me-2"></i>
+    Carrito de Compra
+</h3>
+
+<div class="container">
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-orange" role="status">
+                <span class="visually-hidden">Cargando carrito...</span>
+            </div>
+            <p class="mt-2">Cargando carrito...</p>
+        </div>
+    }
+    else if (CarritoEstado.Carrito == null || !CarritoEstado.Carrito.Items.Any())
+    {
+        <div class="text-center">
+            <div class="alert alert-info">
+                <h4>Tu carrito está vacío</h4>
+                <p>¡Explora nuestro catálogo y encuentra productos increíbles!</p>
+                <button class="btn btn-primary" @onclick="IrAlCatalogo">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Ir al Catálogo
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Lista de productos en el carrito -->
+            <div class="col-lg-8">
+                @foreach (var item in CarritoEstado.Carrito.Items)
+                {
+                    <div class="card mb-3">
+                        <div class="row g-0">
+                            <!-- Imagen del producto -->
+                            <div class="col-md-3">
+                                <img src="@item.ImagenUrl" 
+                                     class="img-fluid rounded-start h-100" 
+                                     alt="@item.NombreProducto"
+                                     style="object-fit: cover; min-height: 150px;">
+                            </div>
+                            
+                            <!-- Información del producto -->
+                            <div class="col-md-6">
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.NombreProducto</h5>
+                                    <p class="card-text">
+                                        <span class="text-orange h5">$@item.PrecioUnitario.ToString("N2")</span>
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">Precio unitario</small>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Controles de cantidad -->
+                            <div class="col-md-3">
+                                <div class="card-body d-flex flex-column h-100">
+                                    <!-- Controles +/- -->
+                                    <div class="d-flex align-items-center justify-content-center mb-3">
+                                        <button class="btn btn-outline-secondary btn-sm" 
+                                                @onclick="@(async () => await DisminuirCantidad(item.ProductoId))"
+                                                disabled="@(procesandoItem == item.ProductoId)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        
+                                        <span class="mx-3 fw-bold">@item.Cantidad</span>
+                                        
+                                        <button class="btn btn-outline-secondary btn-sm" 
+                                                @onclick="@(async () => await AumentarCantidad(item.ProductoId))"
+                                                disabled="@(procesandoItem == item.ProductoId)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Importe total del item -->
+                                    <div class="text-center mb-2">
+                                        <strong class="h6">Subtotal: $@item.Importe.ToString("N2")</strong>
+                                    </div>
+                                    
+                                    <!-- Botón eliminar -->
+                                    <button class="btn btn-outline-danger btn-sm mt-auto" 
+                                            @onclick="@(async () => await EliminarItem(item.ProductoId))"
+                                            disabled="@(procesandoItem == item.ProductoId)">
+                                        @if (procesandoItem == item.ProductoId)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-1"></span>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-trash me-1"></i>
+                                        }
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <!-- Resumen del carrito -->
+            <div class="col-lg-4">
+                <div class="card position-sticky" style="top: 100px;">
+                    <div class="card-header bg-elegant-orange text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-receipt me-2"></i>
+                            Resumen del Pedido
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total de artículos:</span>
+                            <span class="fw-bold">@CarritoEstado.Carrito.TotalItems</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="h5">Total a pagar:</span>
+                            <span class="h5 text-orange fw-bold">$@CarritoEstado.Carrito.Total.ToString("N2")</span>
+                        </div>
+                        
+                        <!-- Botones de acción -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-lg" 
+                                    @onclick="IrAConfirmacion"
+                                    disabled="@procesandoAccion">
+                                @if (procesandoAccion)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="fas fa-credit-card me-2"></i>
+                                Confirmar Compra
+                            </button>
+                            
+                            <button class="btn btn-outline-secondary" 
+                                    @onclick="IrAlCatalogo">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Seguir Comprando
+                            </button>
+                            
+                            <button class="btn btn-outline-danger" 
+                                    @onclick="@(async () => await VaciarCarrito())"
+                                    disabled="@procesandoAccion">
+                                @if (procesandoAccion)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="fas fa-trash me-2"></i>
+                                Vaciar Carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool cargando = true;
+    private bool procesandoAccion = false;
+    private int? procesandoItem = null;    protected override async Task OnInitializedAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "document.title = 'TechStore - Carrito'");
+        CarritoEstado.OnChange += StateHasChanged;
+        await CarritoEstado.InicializarCarritoAsync();
+        cargando = false;
+    }
+
+    private async Task AumentarCantidad(int productoId)
+    {
+        procesandoItem = productoId;
+        try
+        {
+            var exito = await CarritoEstado.AgregarProductoAsync(productoId, 1);
+            if (!exito)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "No se pudo agregar más cantidad. Verifica el stock disponible.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al aumentar cantidad: {ex.Message}");
+        }
+        finally
+        {
+            procesandoItem = null;
+        }
+    }
+
+    private async Task DisminuirCantidad(int productoId)
+    {
+        procesandoItem = productoId;
+        try
+        {
+            await CarritoEstado.EliminarProductoAsync(productoId, 1);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al disminuir cantidad: {ex.Message}");
+        }
+        finally
+        {
+            procesandoItem = null;
+        }
+    }
+
+    private async Task EliminarItem(int productoId)
+    {
+        procesandoItem = productoId;
+        try
+        {
+            var item = CarritoEstado.Carrito?.Items.FirstOrDefault(i => i.ProductoId == productoId);
+            if (item != null)
+            {
+                await CarritoEstado.EliminarProductoAsync(productoId, item.Cantidad);
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al eliminar item: {ex.Message}");
+        }
+        finally
+        {
+            procesandoItem = null;
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        procesandoAccion = true;
+        try
+        {
+            var confirmacion = await JSRuntime.InvokeAsync<bool>("confirm", 
+                "¿Estás seguro de que deseas vaciar el carrito? Esta acción no se puede deshacer.");
+            
+            if (confirmacion)
+            {
+                await CarritoEstado.VaciarCarritoAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error al vaciar carrito: {ex.Message}");
+        }
+        finally
+        {
+            procesandoAccion = false;
+        }
+    }
+
+    private void IrAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+
+    public void Dispose()
+    {
+        CarritoEstado.OnChange -= StateHasChanged;
+    }
+}

@@ -1,26 +1,56 @@
 using System.Net.Http.Json;
+using cliente.Modelos;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace cliente.Services;
+namespace cliente.Services
+{
+    public class ApiService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-public class ApiService {
-    private readonly HttpClient _httpClient;
+        public ApiService(HttpClient httpClient) {
+            _httpClient = httpClient;
+            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, ReferenceHandler = ReferenceHandler.Preserve };
+        }
 
-    public ApiService(HttpClient httpClient) {
-        _httpClient = httpClient;
-    }
+        public async Task<List<Producto>> GetProductosAsync(string? searchQuery = null) {
+            var url = $"http://localhost:5184/api/productos{(string.IsNullOrWhiteSpace(searchQuery) ? "" : $"?q={searchQuery}")}";
+            var response = await _httpClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) { throw new ApplicationException($"Error de la API: {response.ReasonPhrase}"); }
+            return JsonSerializer.Deserialize<List<Producto>>(content, _jsonOptions);
+        }
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
+        public async Task<Guid> CreateCartAsync() {
+            var response = await _httpClient.PostAsync("http://localhost:5184/api/carritos", null);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<CartCreationResponse>();
+            return result.CarritoId;
+        }
+
+        public async Task AddProductToCartAsync(Guid cartId, int productId) {
+            var response = await _httpClient.PutAsync($"http://localhost:5184/api/carritos/{cartId}/productos/{productId}", null);
+            response.EnsureSuccessStatusCode();
+        }
+
+        // <<< MÉTODO NUEVO >>>
+        public async Task RemoveProductFromCartAsync(Guid cartId, int productId) {
+            var response = await _httpClient.DeleteAsync($"http://localhost:5184/api/carritos/{cartId}/productos/{productId}");
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task EmptyCartAsync(Guid cartId) {
+            var response = await _httpClient.DeleteAsync($"http://localhost:5184/api/carritos/{cartId}");
+            response.EnsureSuccessStatusCode();
+        }
+        
+        public async Task ConfirmPurchaseAsync(Guid cartId, DatosCliente datosCliente) {
+            var response = await _httpClient.PutAsJsonAsync($"http://localhost:5184/api/carritos/{cartId}/confirmar", datosCliente);
+            response.EnsureSuccessStatusCode();
         }
     }
-}
 
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
+    public class CartCreationResponse { public Guid CarritoId { get; set; } }
 }

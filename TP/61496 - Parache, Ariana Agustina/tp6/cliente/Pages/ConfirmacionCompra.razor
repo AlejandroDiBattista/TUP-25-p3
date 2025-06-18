@@ -1,0 +1,89 @@
+@inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<h3>Confirmar Compra</h3>
+
+@if (mensajeError != null)
+{
+    <p style="color:red">@mensajeError</p>
+}
+@if (mensajeExito != null)
+{
+    <p style="color:green">@mensajeExito</p>
+}
+
+<p>Total ítems: @TotalItems</p>
+<p>Importe total: @TotalImporte.ToString("C")</p>
+
+<EditForm Model="compra" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Nombre:</label>
+        <InputText @bind-Value="compra.Nombre" />
+    </div>
+    <div>
+        <label>Apellido:</label>
+        <InputText @bind-Value="compra.Apellido" />
+    </div>
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="compra.Email" type="email" />
+    </div>
+
+    <button type="submit" disabled="@(!PuedeConfirmar)">Confirmar compra</button>
+</EditForm>
+
+@if (!PuedeConfirmar)
+{
+    <p style="color:red;">No hay stock suficiente para algunos productos.</p>
+}
+
+@code {
+    private CompraDto compra = new CompraDto();
+    private string? mensajeError;
+    private string? mensajeExito;
+
+    protected override void OnInitialized()
+    {
+        compra.Items = CarritoService.Items.Select(i => new ItemCompraDto
+        {
+            ProductoId = i.Producto.Id,
+            Cantidad = i.Cantidad
+        }).ToList();
+    }
+
+    private bool PuedeConfirmar => CarritoService.Items.All(i => i.Cantidad <= i.Producto.Stock);
+
+    private int TotalItems => CarritoService.Items.Sum(i => i.Cantidad);
+
+    private decimal TotalImporte => CarritoService.Items.Sum(i => i.Cantidad * i.Producto.Precio);
+
+   private async Task OnValidSubmit()
+{
+    mensajeError = null;
+    mensajeExito = null;
+
+    if (!PuedeConfirmar)
+    {
+        mensajeError = "No hay stock suficiente para algunos productos.";
+        return;
+    }
+
+    try
+    {
+        await ApiService.RegistrarCompraAsync(compra);
+
+        mensajeExito = "Compra realizada con éxito. ¡Gracias!";
+        CarritoService.VaciarCarrito();
+        await Task.Delay(2000);
+        Navigation.NavigateTo("/");
+    }
+    catch (Exception ex)
+    {
+        mensajeError = $"Error al confirmar compra: {ex.Message}";
+    }
+}
+}

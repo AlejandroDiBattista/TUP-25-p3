@@ -2,6 +2,13 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+body {
+    min-height: 100vh;
+   
+    background: linear-gradient(135deg, #e6e6e6 0%, #bdbdbd 40%, #f5f5f5 60%, #a7a7a7 100%);
+    background-attachment: fixed;
+}
+
 h1:focus {
     outline: none;
 }
@@ -111,4 +118,50 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+.card-footer .badge {
+    font-size: 0.95em;
+}
+
+.card {
+    border-radius: 0.75rem;
+    transition: box-shadow 0.2s;
+}
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.07);
+}
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.card-footer {
+    background: none;
+    border-top: none;
+}
+
+
+.catalogo-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.catalogo-controls > div,
+.catalogo-controls > button {
+    margin-top: 1cm;
+    max-width: 400px;
+    width: 100%;
+}
+.catalogo-controls > div:first-child {
+    margin-top: 0;
+}
+
+.logo-catalogo {
+    height: 400px; 
+    border: 8px solid #232323;
+    border-radius: 24px;
+    box-shadow: 0 0 24px 4px #444, 0 0 0 8px #888 inset;
+    background: linear-gradient(135deg, #232323 0%, #444 100%);
+    padding: 8px;
+    object-fit: contain;
 }

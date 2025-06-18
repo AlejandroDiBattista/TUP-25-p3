@@ -9,8 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json;
-
-// Configuración básica
 var builder = WebApplication.CreateBuilder();
 builder.Services.AddDbContext<AppDb>(options => options.UseSqlite("Data Source=./tienda.db"));
 builder.Services.Configure<JsonOptions>(options => {

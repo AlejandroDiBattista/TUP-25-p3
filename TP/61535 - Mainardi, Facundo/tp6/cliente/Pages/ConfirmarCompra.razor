@@ -1,0 +1,85 @@
+@page "/confirmar"
+@using Cliente.Services
+@using Cliente.Modelos
+
+@inject NavigationManager Navigation
+@inject CarritoFinal Carrito
+@inject ApiService ApiService
+
+<h3>Confirmación de Compra</h3>
+
+@if (Carrito.Items.Count == 0)
+{
+    <p>El carrito está vacío. <a href="/">Volver al catálogo</a></p>
+}
+else
+{
+  <EditForm Model="comprador" OnValidSubmit="ProcesarCompra">
+    <DataAnnotationsValidator />
+    <!-- Quitamos esto para evitar duplicado -->
+    @* <ValidationSummary /> *@
+
+    <h4>Resumen del Carrito</h4>
+    <div class="card p-4 shadow-sm mb-4">
+        <ul class="list-group list-group-flush">
+            @foreach (var item in Carrito.Items)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>@item.Nombre x @item.Cantidad</span>
+                    <strong>$@item.Total</strong>
+                </li>
+            }
+        </ul>
+        <div class="mt-3 text-end">
+            <h5>Total: <span class="text-success">$@Carrito.Items.Sum(i => i.Total)</span></h5>
+        </div>
+    </div>
+
+    <h4>Datos del Comprador</h4>
+    <div class="card p-4 shadow-sm mb-4">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="nombre" class="form-label">Nombre</label>
+                <InputText id="nombre" @bind-Value="comprador.Nombre" class="form-control" />
+                <ValidationMessage For="@(() => comprador.Nombre)" class="text-danger small" />
+            </div>
+            <div class="col-md-6">
+                <label for="apellido" class="form-label">Apellido</label>
+                <InputText id="apellido" @bind-Value="comprador.Apellido" class="form-control" />
+                <ValidationMessage For="@(() => comprador.Apellido)" class="text-danger small" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <InputText id="email" @bind-Value="comprador.Email" type="email" class="form-control" />
+            <ValidationMessage For="@(() => comprador.Email)" class="text-danger small" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Confirmar Compra</button>
+</EditForm>
+}
+
+@code {
+    private ConfirmacionCompraDto comprador = new();
+
+    protected override void OnInitialized()
+    {
+        comprador.Items = Carrito.Items.ToList();
+    }
+
+    private async Task ProcesarCompra()
+    {
+        var exito = await ApiService.ConfirmarCompra(Carrito.CarritoId, comprador);
+
+        if (exito)
+        {
+            Carrito.Vaciar();
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Console.WriteLine("❌ No se pudo confirmar la compra.");
+        }
+    }
+}

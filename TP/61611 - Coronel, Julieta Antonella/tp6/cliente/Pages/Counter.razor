@@ -1,0 +1,151 @@
+﻿@page "/counter"
+@using cliente.Services
+@using cliente.Models
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Carrito</PageTitle>
+
+<h1>Carrito de Compras</h1>
+
+@if (carrito.Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <h4>Modificar cantidades</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>$@item.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" @onclick="() => AumentarCantidad(item.ProductoId)">+</button>
+                        <button class="btn btn-sm btn-warning mx-1" @onclick="() => DisminuirCantidad(item.ProductoId)">-</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarProducto(item.ProductoId)">🗑</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p><strong>Total:</strong> $@carrito.Sum(x => x.Precio * x.Cantidad)</p>
+
+    <button class="btn btn-danger mb-3" @onclick="VaciarCarrito">Vaciar Carrito</button>
+
+    <h4>Datos del Cliente</h4>
+    <input placeholder="Nombre Cliente" type="text" @oninput="GuardarNombreCliente" class="form-control mb-2" />
+    <input placeholder="Apellido Cliente" type="text" @oninput="GuardarApellidoCliente" class="form-control mb-2" />
+    <input placeholder="Email Cliente" type="email" @oninput="GuardarEmailCliente" class="form-control mb-3" />
+    <button type="button" class="btn btn-primary" @onclick="FinalizarCompra">Finalizar Compra</button>
+}
+
+@code {
+    IList<Producto> productos = new List<Producto>();
+    List<CarritoDto> carrito = new();
+
+    private string NombreCliente;
+    private string ApellidoCliente;
+    private string EmailCliente;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecargarCarritos();
+    }
+
+    private void GuardarNombreCliente(ChangeEventArgs e)
+    {
+        NombreCliente = e.Value?.ToString() ?? "";
+    }
+
+    private void GuardarApellidoCliente(ChangeEventArgs e)
+    {
+        ApellidoCliente = e.Value?.ToString() ?? "";
+    }
+
+    private void GuardarEmailCliente(ChangeEventArgs e)
+    {
+        EmailCliente = e.Value?.ToString() ?? "";
+    }
+
+    private async Task FinalizarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(NombreCliente) ||
+            string.IsNullOrWhiteSpace(ApellidoCliente) ||
+            string.IsNullOrWhiteSpace(EmailCliente))
+        {
+            Console.WriteLine("Por favor complete todos los campos.");
+            return;
+        }
+
+        try
+        {
+            var nuevaCompraDto = new NuevaCompraDto
+            {
+                Nombre = NombreCliente,
+                Apellido = ApellidoCliente,
+                Email = EmailCliente
+            };
+
+            var resultado = await ApiService.NuevaCompra(nuevaCompraDto);
+            Console.WriteLine($"Resultado de la compra: {resultado}");
+
+            if (resultado.Contains("éxito"))
+            {
+                await Task.Delay(1500);
+                NavigationManager.NavigateTo("/", forceLoad: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al finalizar la compra: {ex.Message}");
+        }
+    }
+
+    private async Task AumentarCantidad(int productoId)
+    {
+        await ApiService.AgregarAlCarrito(productoId);
+        await RecargarCarritos();
+    }
+
+    private async Task DisminuirCantidad(int productoId)
+    {
+        await ApiService.DisminuirCantidadProducto(productoId);
+        await RecargarCarritos();
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        await ApiService.EliminarProductoDelCarrito(productoId);
+        await RecargarCarritos();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarrito();
+        carrito.Clear();
+        productos.Clear();
+        StateHasChanged();
+    }
+
+    private async Task RecargarCarritos()
+    {
+        carrito = await ApiService.ObtenerCarritoDetalle();
+        productos = await ApiService.ObtenerCarrito();
+        StateHasChanged();
+    }
+}

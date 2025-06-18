@@ -1,12 +1,37 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using cliente.Services
+@using Microsoft.AspNetCore.Components.Routing.Router
+@using cliente.Shared
+
+@inject PageTitle PageTitle
+
+<CascadingValue Value="this">
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Lo sentimos, no hay nada en esta dirección.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingValue>
+
+<HeadContent>
+    <title>@PageTitle.Title</title>
+</HeadContent>
+
+@code {
+    protected override void OnInitialized()
+    {
+        PageTitle.OnTitleChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        PageTitle.OnTitleChanged -= StateHasChanged;
+    }
+}

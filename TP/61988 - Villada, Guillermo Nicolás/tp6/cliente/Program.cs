@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
 using cliente.Services;
+using Blazored.LocalStorage;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -12,5 +13,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 
 // Registrar el servicio API
 builder.Services.AddScoped<ApiService>();
+//el blazor local storage paa!
+builder.Services.AddBlazoredLocalStorage();
 
 await builder.Build().RunAsync();
+

@@ -1,0 +1,36 @@
+@using cliente.Services
+@using cliente.Modelos
+@inject NavigationManager Nav
+@inject ServicioCarrito Carrito
+@inject BusquedaService BusquedaService
+
+<header style="display:flex;align-items:center;justify-content:space-between;padding:1rem;background:#af3a3a;position:sticky;top:0;">
+    <div style="display:flex;align-items:center;cursor:pointer;" @onclick='() => Nav.NavigateTo("/")'>
+        <img src="img/logo.png" alt="Logo" style="height:40px;margin-right:10px;" />
+        <span style="font-size:1.5rem;font-weight:bold;">Tienda Online</span>
+    </div>
+    @if (Nav.Uri.Contains("/productos"))
+    {
+        <input placeholder="Buscar productos..." @bind="BusquedaService.Busqueda" @bind:event="oninput" style="margin-right:1rem;" />
+    }
+    <div style="cursor:pointer;" @onclick='() => Nav.NavigateTo("/carrito")'>
+        <span style="font-size:1.5rem;">🛒</span>
+        @if (Carrito.Items.Sum(i => i.Cantidad) > 0)
+        {
+            <span style="font-weight:bold;">@Carrito.Items.Sum(i => i.Cantidad)</span>
+        }
+    </div>
+</header>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Carrito.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Carrito.OnChange -= StateHasChanged;
+    }
+}
+@implements IDisposable

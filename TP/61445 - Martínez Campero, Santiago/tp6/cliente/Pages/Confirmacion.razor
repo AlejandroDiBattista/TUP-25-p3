@@ -1,0 +1,84 @@
+@page "/confirmacion"
+@using Compartido
+@using System.ComponentModel.DataAnnotations
+@inject ApiService ApiService
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager NavigationManager
+
+<div class="container my-4">
+    <h1 class="mt-4">Confirmación de Compra</h1>
+
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert alert-success">
+            <p>@mensaje</p>
+            <button class="btn btn-primary" @onclick="VolverAInicio">Volver al catálogo</button>
+        </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <h3>Resumen de la Compra</h3>
+            <p><strong>Total ítems:</strong> @totalItems</p>
+            <p><strong>Importe total:</strong> @totalPrecio.ToString("C")</p>
+        </div>
+
+        <EditForm Model="formModel" OnValidSubmit="SubmitCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <InputText class="form-control" @bind-Value="formModel.Nombre" />
+                <ValidationMessage For="() => formModel.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Apellido</label>
+                <InputText class="form-control" @bind-Value="formModel.Apellido" />
+                <ValidationMessage For="() => formModel.Apellido" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <InputText type="email" class="form-control" @bind-Value="formModel.Email" />
+                <ValidationMessage For="() => formModel.Email" />
+            </div>
+
+            <button type="submit" class="btn btn-success">Confirmar Compra</button>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private ConfirmarCompraRequest formModel = new ConfirmarCompraRequest();
+    private int totalItems;
+    private decimal totalPrecio;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        var items = await ApiService.GetCarritoAsync(carritoId) ?? new List<ItemCarritoDto>();
+        totalItems = items.Sum(i => i.Cantidad);
+        totalPrecio = items.Sum(i => i.Cantidad * i.PrecioUnitario);
+    }
+
+    private async Task SubmitCompra()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        var response = await ApiService.ConfirmarCompraAsync(carritoId, formModel);
+        if (response != null)
+        {
+            mensaje = response.Mensaje;
+            await CarritoStateService.ResetCarritoIdAsync();
+        }
+        else
+        {
+            mensaje = "Error al confirmar la compra.";
+        }
+    }
+
+    private void VolverAInicio()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

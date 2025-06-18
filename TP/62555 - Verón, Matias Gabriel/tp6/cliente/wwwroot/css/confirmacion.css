@@ -1,0 +1,13 @@
+.confirmacion-container {
+    min-height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.confirmacion-alert {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 1.2rem;
+}

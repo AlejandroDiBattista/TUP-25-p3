@@ -1,0 +1,164 @@
+@page "/carrito"
+@using Microsoft.JSInterop
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using global::cliente.Services
+@using global::cliente.Modelos
+
+@inject ServicioCarrito carritoo
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<h3>Resumen del carrito</h3>
+
+@if (carritoo.Items.Count == 0)
+{
+    <p>El carritoo está vacío.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carritoo.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>
+                        <button @onclick="() => RestarCantidad(item.Producto)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => SumarCantidad(item.Producto)">+</button>
+                    </td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                    <td>
+                        <button @onclick="() => RemoverItemDelCarrito(item.Producto)">Quitar producto</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><b>Total: $@carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</b></p>
+    <button @onclick="Vaciarcarritoo">Vaciar carrito</button> 
+}
+
+@if (mensajeCompra != null)
+{
+    <p>@mensajeCompra</p>
+    <button @onclick="PreguntarRedireccion">Volver a productos</button>
+}
+
+@if (mensajeVaciado != null)
+{
+    <p>@mensajeVaciado</p>
+    <button @onclick="RedireccionarAProductos">Volver a productos</button>
+}
+
+@if (carritoo.Items.Any())
+{
+    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
+        <InputText @bind-Value="datosCliente.Nombre" placeholder="Nombre" required />
+        <InputText @bind-Value="datosCliente.Apellido" placeholder="Apellido" required />
+        <InputText @bind-Value="datosCliente.Email" placeholder="Email" required />
+        <button type="submit">Confirmar compra</button>
+    </EditForm>
+}
+
+@code {
+    class DatosCliente
+    {
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Email { get; set; }
+    }
+
+    DatosCliente datosCliente = new();
+
+    string mensajeCompra = null;
+    string mensajeVaciado = null;
+
+    protected override void OnInitialized()
+    {
+        carritoo.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        carritoo.OnChange -= StateHasChanged;
+    }
+
+    void QuitarDelcarritoo(Producto producto)
+    {
+        carritoo.QuitarDelCarrito(producto);
+    }
+
+    void Vaciarcarritoo()
+    {
+        carritoo.VaciarCarrito();
+        mensajeVaciado = "El carritoo fue vaciado correctamente.";
+    }
+
+    async Task ConfirmarCompra()
+    {
+        var compra = new
+        {
+            Items = carritoo.Items.Select(i => new {
+                productoId = i.Producto.Id,
+                cantidad = i.Cantidad
+            }).ToList(),
+            nombreCliente = datosCliente.Nombre,
+            apellidoCliente = datosCliente.Apellido,
+            emailCliente = datosCliente.Email
+        };
+
+        var respuesta = await Http.PostAsJsonAsync("compras", compra);
+
+        if (respuesta.IsSuccessStatusCode)
+        {
+            mensajeCompra = "¡Compra realizada con éxito!";
+            carritoo.VaciarCarrito();
+        }
+        else
+        {
+            mensajeCompra = "Hubo un error al procesar la compra.";
+        }
+    }
+
+    async Task PreguntarRedireccion()
+    {
+        bool ok = await JS.InvokeAsync<bool>("confirm", "¿Desea volver al menú principal de productos?");
+        if (ok)
+        {
+            Nav.NavigateTo("/productos");
+        }
+    }
+
+    void RedireccionarAProductos()
+    {
+        Nav.NavigateTo("/productos");
+    }
+
+    void SumarCantidad(Producto producto)
+    {
+        carritoo.AgregarAlCarrito(producto);
+    }
+
+    void RestarCantidad(Producto producto)
+    {
+        carritoo.QuitarDelCarrito(producto);
+    }
+
+    void RemoverItemDelCarrito(Producto producto)
+    {
+        carritoo.RemoverItemDelCarrito(producto);
+    }
+}

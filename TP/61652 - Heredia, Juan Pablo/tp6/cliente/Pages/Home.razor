@@ -1,59 +1,71 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using Microsoft.AspNetCore.Components
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
+<div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <h2 style="color: rgb(216, 214, 214)">Catálogo de Productos</h2>
+    <div class="productos-grid" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;">
+        @if (productos is null)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+            @foreach (var p in productos)
+            {
+                <div class="producto-card" style="background: rgb(175, 173, 173); border-radius: 8px; box-shadow: 0 2px 8px #bbbbbb; padding: 1rem; width: 220px; display: flex; flex-direction: column; align-items: center;">
+                    <img src="@p.ImagenUrl" alt="@p.Nombre" width="120" />
+                    <h4>@p.Nombre</h4>
+                    <p>@p.Descripcion</p>
+                    <p>Precio: $@p.Precio</p>
+                    <p>Stock: @p.Stock</p>
+                    <button @onclick="() => AgregarAlCarrito(p.Id)" class="boton-oscuro">
+                    Agregar al carrito
+                </button>
                 </div>
             }
-        </div>
+        }
     </div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    #nullable enable
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? busqueda { get; set; }  
+    List<cliente.models.Producto>? productos;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarProductos();
+    }
+
+    async Task CargarProductos()
+    {
+        productos = await ApiService.GetProductos(busqueda);
+    }
+
+    async Task AgregarAlCarrito(int productoId)
+    {
+        try
+        {
+            int carritoId = await ApiService.ObtenerOCrearCarrito();
+
+            await ApiService.AgregarOActualizarProducto(carritoId, productoId, 1);
+
+
+            var items = await ApiService.GetCarrito(carritoId);
+
+
+            await ApiService.ActualizarContadorCarrito(carritoId);
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine($"error al agregar al carrito: {ex.Message}");
         }
     }
+
 }

@@ -107,4 +107,6 @@ class Contacto {
 class AppDb : DbContext {
     public AppDb(DbContextOptions<AppDb> opt) : base(opt) { }
     public DbSet<Contacto> Contactos => Set<Contacto>();
+
+    
 }

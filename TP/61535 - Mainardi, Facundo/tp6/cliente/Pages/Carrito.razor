@@ -1,0 +1,101 @@
+@page "/carrito"
+@using Cliente.Modelos
+@using Cliente.Services
+@inject CarritoFinal CarritoFinal
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h1>🛒 Tu Carrito</h1>
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (!CarritoFinal.Items.Any())
+{
+    <p>No hay productos en el carrito.</p>
+    <a class="btn btn-secondary" href="/">← Volver a la tienda</a>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                total = 0; 
+            }
+
+            @foreach (var item in CarritoFinal.Items)
+            {
+                var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                if (producto is not null)
+                {
+                    var subtotal = producto.Precio * item.Cantidad;
+                    total += subtotal;
+
+                    <tr>
+                        <td>@producto.Nombre</td>
+                        <td>$@producto.Precio</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad <= 1)">-</button>
+                            <span class="mx-2">@item.Cantidad</span>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => CambiarCantidad(item.ProductoId, 1)" disabled="@(item.Cantidad >= producto.Stock)">+</button>
+                        </td>
+                        <td>$@subtotal</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <h3>Total: $@total</h3>
+
+    <button class="btn btn-danger" @onclick="VaciarCarrito">🗑️ Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="Comprar">💳 Comprar</button>
+}
+
+@code {
+    private List<Producto> productos;
+    private decimal total;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.BuscarProductos(""); 
+    }
+
+    private void VaciarCarrito()
+    {
+        CarritoFinal.Vaciar();
+        Navigation.NavigateTo("/carrito", forceLoad: true);
+    }
+
+    private async Task CambiarCantidad(int productoId, int delta)
+    {
+        var item = CarritoFinal.Items.FirstOrDefault(i => i.ProductoId == productoId);
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+
+        if (item == null || producto == null)
+            return;
+
+        var nuevaCantidad = item.Cantidad + delta;
+
+        if (nuevaCantidad < 1 || nuevaCantidad > producto.Stock)
+            return;
+
+        item.Cantidad = nuevaCantidad;
+
+        StateHasChanged(); 
+    }
+
+    private void Comprar()
+    {
+        Navigation.NavigateTo("/confirmar");
+    }
+}

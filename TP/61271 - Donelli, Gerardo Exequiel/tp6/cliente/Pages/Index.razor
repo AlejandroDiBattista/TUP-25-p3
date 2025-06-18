@@ -1,0 +1,86 @@
+@page "/"
+
+@inject ProductosService ProductosService 
+@inject PageTitleService PageTitleService 
+@code {
+    protected override void OnInitialized() {
+        PageTitleService.Title = "Catálogo - Tienda Online";
+    }
+}
+
+<div class="container py-4">
+    <div class="row">
+        @if (productos == null)
+        {
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else if (!productos.Any())
+        {
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No se encontraron productos @(!string.IsNullOrEmpty(textoBusqueda) ? $"para \"{textoBusqueda}\"" : "")
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3 mb-4">
+                    <TarjetaProducto Producto="producto" />
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Lista de productos a mostrar en el catálogo
+    /// </summary>
+    private List<ProductoDTO> productos;
+
+    /// <summary>
+    /// Texto actual de búsqueda
+    /// </summary>
+    private string textoBusqueda = "";
+
+
+    /// <summary>
+    /// Layout principal de la aplicación
+    /// </summary>
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
+    /// <summary>
+    /// Se ejecuta cuando se inicializa el componente
+    /// Carga los productos iniciales
+    /// </summary>
+    @* protected override async Task OnInitializedAsync()
+    {
+        await BuscarProductos("");
+    } *@
+[Parameter]
+[SupplyParameterFromQuery(Name = "buscar")]
+public string? Buscar { get; set; }
+
+protected override async Task OnParametersSetAsync()
+{
+    await BuscarProductos(Buscar ?? "");
+}
+
+
+    /// <summary>
+    /// Busca productos que coincidan con el texto especificado
+    /// </summary>
+    /// <param name="texto">Texto a buscar</param>
+    private async Task BuscarProductos(string texto)
+    {
+        textoBusqueda = texto;
+        productos = await ProductosService.ObtenerProductosAsync(texto);
+    }
+}
