@@ -1,0 +1,203 @@
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0d1117; 
+    color: #c9d1d9;
+    margin: 0; 
+}
+
+header { 
+    background: #161b22; 
+    color: #58a6ff; 
+    padding: 1rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 1rem; 
+    position: sticky; 
+    top: 0; 
+    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.1);
+}
+
+.logo { 
+    font-size: 2rem;
+    font-weight: bold;
+    margin-right: 2rem;
+    color: #58a6ff;
+    cursor: pointer;
+}
+
+.buscador {
+    max-width: 300px;
+    flex: none;  /* para que no tome todo el espacio */
+    padding: 0.6rem;
+    border-radius: 6px;
+    border: 1px solid #30363d;
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+
+.carrito-icono {
+    position: relative; /* para posicionar contador */
+    cursor: pointer;
+    font-size: 1.6rem;
+    color: #58a6ff;
+    display: inline-block;
+    margin-left: 1rem;
+}
+
+.carrito-contador {
+    top: -8px;
+    right: -18px;  /* más a la derecha */
+    background: #ff5555;
+    color: white;
+    border-radius: 50%;
+    padding: 0.2em 0.6em;
+    font-size: 0.9em;
+    font-weight: bold;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+    pointer-events: none;
+}
+
+.contenedor { 
+    margin: 2rem auto;
+    max-width: 1000px;
+    background: #161b22; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 16px rgba(0, 255, 255, 0.1); 
+    padding: 2em; 
+}
+
+.productos { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 2rem; 
+    justify-content: center;
+}
+
+.producto { 
+    background: #0d1117;
+    border: 1px solid #30363d; 
+    border-radius: 12px; 
+    box-shadow: 0 2px 10px rgba(0, 255, 255, 0.05);
+    padding: 1rem; 
+    width: 220px; 
+    text-align: center; 
+    transition: transform 0.2s;
+}
+.producto:hover {
+    transform: scale(1.03);
+}
+
+.producto-img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+    filter: brightness(1.1);
+}
+
+.producto-desc {
+    font-size: 0.95rem;
+    color: #c9d1d9;
+    min-height: 40px;
+}
+
+.precio { 
+    color: #00ffff;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.stock { 
+    font-size: 0.9rem; 
+    color: #3fb950; 
+}
+
+.btn-agregar, .btn-confirmar, .btn-vaciar, .btn-cantidad, .btn-eliminar {
+    margin: 0.2rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: none;
+    background: #238636;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.btn-agregar:hover, .btn-confirmar:hover, .btn-vaciar:hover, .btn-cantidad:hover, .btn-eliminar:hover {
+    background: #2ea043;
+}
+
+.btn-agregar:disabled {
+    background: #555;
+    cursor: not-allowed; 
+}
+
+.tabla-carrito {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background-color: #0d1117;
+}
+
+.tabla-carrito th, .tabla-carrito td { 
+    border: 1px solid #30363d; 
+    padding: 0.5rem; 
+    text-align: center; 
+    color: #c9d1d9;
+}
+
+.acciones-carrito button { 
+    margin: 0 0.2em; 
+}
+
+.formulario { 
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 300px;
+    margin: 1rem auto;
+}
+
+.formulario label { 
+    display: block; 
+    margin-top: 1em; 
+}
+
+.input-form {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #30363d;
+    background: #0d1117;
+    color: #c9d1d9;
+}
+
+.formulario button { 
+    margin-top: 1em; 
+    background: #58a6ff; 
+    color: #0d1117; 
+    border: none; 
+    border-radius: 6px; 
+    padding: 0.7em 1.5em; 
+    cursor: pointer; 
+    transition: background 0.3s;
+}
+
+.formulario button:hover {
+    background: #1f6feb;
+}
+
+.resumen { 
+    margin: 1rem 0;
+    font-size: 1.2rem;
+    color: #c9d1d9;
+}
+
+.volver { 
+    margin-top: 1em; 
+    display: inline-block; 
+    color: #58a6ff;
+    cursor: pointer; 
+    text-decoration: underline;
+}

@@ -1,0 +1,238 @@
+@page "/"
+@using cliente.Services
+@inject HttpClient Http
+
+<div class="header">
+    <h1 class="logo" style="cursor:pointer" @onclick="MostrarCatalogo">tecknoLich</h1>
+
+    @if (vista == "catalogo")
+    {
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <input class="buscador" value="@busqueda" @oninput="OnBusquedaChanged" placeholder="Buscar productos..." />
+            <div class="carrito-icono" style="align-self: flex-start; margin-top: 10px;" @onclick="MostrarCarrito">
+                🛒 <span class="carrito-contador">@TotalCarrito</span>
+            </div>
+        </div>
+    }
+</div>
+
+@if (vista == "catalogo")
+{
+    <div class="contenedor">
+        <div class="productos">
+            @if (productos == null)
+            {
+                <p>Cargando productos...</p>
+            }
+            else if (!productos.Any())
+            {
+                <p>No se encontraron productos.</p>
+            }
+            else
+            {
+                @foreach (var p in productos)
+                {
+                    <div class="producto">
+                        <img src="@p.ImagenUrl" alt="@p.Nombre" class="producto-img" />
+                        <h3>@p.Nombre</h3>
+                        <div class="producto-desc">@p.Descripcion</div>
+                        <div class="precio">$@p.Precio</div>
+                        <div class="stock">Stock: @p.Stock</div>
+                        <button class="btn-agregar" @onclick="() => AgregarAlCarrito(p)" disabled="@(p.Stock == 0)">Agregar al carrito</button>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+else if (vista == "carrito")
+{
+    <div class="carrito">
+        @if (!carrito.Any())
+        {
+            <p>El carrito está vacío.</p>
+            <span class="volver" @onclick="MostrarCatalogo">← Volver al catálogo</span>
+        }
+        else
+        {
+            <h2>Carrito de compras</h2>
+            <table class="tabla-carrito">
+                <tr><th>Producto</th><th>Unidades</th><th>Precio</th><th>Importe</th><th>Acciones</th></tr>
+                @foreach (var item in carrito)
+                {
+                    <tr>
+                        <td>@item.Nombre</td>
+                        <td>@item.Cantidad</td>
+                        <td>$@item.Precio</td>
+                        <td>$@(item.Precio * item.Cantidad)</td>
+                        <td>
+                            <button class="btn-cantidad" @onclick="() => CambiarCantidad(item, 1)">+</button>
+                            <button class="btn-cantidad" @onclick="() => CambiarCantidad(item, -1)">-</button>
+                            <button class="btn-eliminar" @onclick="() => EliminarDelCarrito(item)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </table>
+            <div class="resumen"><b>Total: $@TotalCarritoImporte</b></div>
+            <button class="btn-vaciar" @onclick="VaciarCarrito">Vaciar carrito</button>
+            <button class="btn-confirmar" @onclick="MostrarConfirmacion">Confirmar compra</button>
+            <span class="volver" @onclick="MostrarCatalogo">← Volver al catálogo</span>
+        }
+    </div>
+}
+else if (vista == "confirmacion")
+{
+    <div class="confirmacion">
+        <h2>Confirmación de compra</h2>
+        <div class="resumen">Total de ítems: <b>@TotalCarrito</b> | Importe total: <b>$@TotalCarritoImporte</b></div>
+        <EditForm Model="@form" OnValidSubmit="ConfirmarCompra">
+            <div class="formulario">
+                <label>Nombre: <InputText @bind-Value="form.Nombre" required class="input-form" /></label>
+                <label>Apellido: <InputText @bind-Value="form.Apellido" required class="input-form" /></label>
+                <label>Email: <InputText @bind-Value="form.Email" required class="input-form" /></label>
+                <button class="btn-confirmar" type="submit">Confirmar</button>
+            </div>
+        </EditForm>
+        <span class="volver" @onclick="MostrarCarrito">← Volver al carrito</span>
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div class="mensaje">@mensaje</div>
+        }
+    </div>
+}
+
+@code {
+    string vista = "catalogo";
+    string busqueda = "";
+    List<ProductoDto> productos;
+    List<ItemCarrito> carrito = new();
+    CompraForm form = new();
+    string mensaje = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    async Task CargarProductos()
+    {
+        var url = "/productos" + (string.IsNullOrWhiteSpace(busqueda) ? "" : $"?q={Uri.EscapeDataString(busqueda)}");
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>(url);
+        StateHasChanged();
+    }
+
+    private async Task OnBusquedaChanged(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? "";
+        await CargarProductos();
+    }
+
+    void MostrarCatalogo()
+    {
+        vista = "catalogo";
+        _ = CargarProductos();
+    }
+
+    void MostrarCarrito()
+    {
+        vista = "carrito";
+    }
+
+    void MostrarConfirmacion()
+    {
+        vista = "confirmacion";
+        mensaje = "";
+    }
+
+    void AgregarAlCarrito(ProductoDto p)
+    {
+        var item = carrito.FirstOrDefault(i => i.Id == p.Id);
+        if (item != null)
+        {
+            if (item.Cantidad < p.Stock)
+                item.Cantidad++;
+        }
+        else
+        {
+            carrito.Add(new ItemCarrito
+            {
+                Id = p.Id,
+                Nombre = p.Nombre,
+                Precio = p.Precio,
+                Stock = p.Stock,
+                Cantidad = 1
+            });
+        }
+    }
+
+    void CambiarCantidad(ItemCarrito item, int delta)
+    {
+        var prod = productos.FirstOrDefault(p => p.Id == item.Id);
+        if (prod == null) return;
+        if (delta == 1 && item.Cantidad < prod.Stock) item.Cantidad++;
+        if (delta == -1 && item.Cantidad > 1) item.Cantidad--;
+    }
+
+    void EliminarDelCarrito(ItemCarrito item)
+    {
+        carrito.Remove(item);
+    }
+
+    void VaciarCarrito()
+    {
+        carrito.Clear();
+    }
+
+    int TotalCarrito => carrito.Sum(i => i.Cantidad);
+    decimal TotalCarritoImporte => carrito.Sum(i => i.Precio * i.Cantidad);
+
+    async Task ConfirmarCompra()
+    {
+        var compra = new
+        {
+            nombre = form.Nombre,
+            apellido = form.Apellido,
+            email = form.Email,
+            items = carrito.Select(i => new { productoId = i.Id, cantidad = i.Cantidad, precioUnitario = i.Precio }).ToList()
+        };
+        var resp = await Http.PutAsJsonAsync("/carritos/mi-carrito/confirmar", compra);
+        if (resp.IsSuccessStatusCode)
+        {
+            mensaje = "¡Compra confirmada! Gracias por tu compra, " + form.Nombre + "!";
+            carrito.Clear();
+            form = new();
+            vista = "catalogo";
+            await CargarProductos();
+        }
+        else
+        {
+            mensaje = "Error al confirmar compra: " + await resp.Content.ReadAsStringAsync();
+        }
+    }
+
+    class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+
+    class ItemCarrito
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    class CompraForm
+    {
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Email { get; set; }
+    }
+}
