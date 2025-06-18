@@ -1,7 +1,6 @@
 ﻿@page "/carrito"
 @using Cliente.Modelo
 @using Cliente.Services
-@using System.ComponentModel.DataAnnotations
 @inject CartService CartService
 @inject NavigationManager Navigation
 
@@ -39,69 +38,19 @@ else
         </tbody>
     </table>
     <p><b>Total: $@items.Sum(i => i.Importe)</b></p>
-
-    <EditForm Model="compra" OnValidSubmit="ConfirmarCompra">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <div class="mb-2">
-            <label>Nombre:</label>
-            <InputText class="form-control" @bind-Value="compra.NombreCliente" />
-        </div>
-        <div class="mb-2">
-            <label>Apellido:</label>
-            <InputText class="form-control" @bind-Value="compra.ApellidoCliente" />
-        </div>
-        <div class="mb-2">
-            <label>Email:</label>
-            <InputText class="form-control" @bind-Value="compra.EmailCliente" />
-        </div>
-        <button class="btn btn-success" type="submit">Confirmar compra</button>
-    </EditForm>
-    @if (!string.IsNullOrEmpty(mensaje))
-    {
-        <div class="alert alert-info mt-2">@mensaje</div>
-    }
+    <button class="btn btn-success mt-3" @onclick="IrAConfirmar">Confirmar compra</button>
 }
 
 @code {
     List<ItemCarritoDto>? items;
-    CompraDto compra = new();
-    string? mensaje;
 
     protected override async Task OnInitializedAsync()
     {
         items = await CartService.ObtenerItems();
     }
 
-    async Task ConfirmarCompra()
+    void IrAConfirmar()
     {
-        var ok = await CartService.ConfirmarCompra(compra);
-        if (ok)
-        {
-            mensaje = "¡Compra confirmada! Redirigiendo...";
-            await CartService.VaciarCarrito();
-            items = new List<ItemCarritoDto>();
-            compra = new CompraDto();
-            StateHasChanged();
-            
-            Navigation.NavigateTo("/");
-        }
-        else
-        {
-            mensaje = "Ocurrió un error al confirmar la compra.";
-        }
-    }
-
-    public class CompraDto
-    {
-        [Required(ErrorMessage = "El nombre es obligatorio")]
-        public string NombreCliente { get; set; } = "";
-
-        [Required(ErrorMessage = "El apellido es obligatorio")]
-        public string ApellidoCliente { get; set; } = "";
-
-        [Required(ErrorMessage = "El email es obligatorio")]
-        [EmailAddress(ErrorMessage = "El email no es válido")]
-        public string EmailCliente { get; set; } = "";
+        Navigation.NavigateTo("/confirmar");
     }
 }

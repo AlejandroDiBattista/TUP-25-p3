@@ -1,4 +1,4 @@
-﻿@page "/catalogo"
+﻿@page "/"
 @using Cliente.Modelo
 @using Cliente.Services
 @inject ProductoService ProductoService
@@ -51,6 +51,14 @@ else
     {
         int cantidad = cantidades.ContainsKey(productoId) ? cantidades[productoId] : 1;
         await CartService.AgregarProducto(productoId, cantidad);
+
+        // Actualiza el stock localmente
+        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            producto.Stock -= cantidad;
+            if (producto.Stock < 0) producto.Stock = 0;
+        }
     }
 
     IEnumerable<Producto> productosFiltrados =>

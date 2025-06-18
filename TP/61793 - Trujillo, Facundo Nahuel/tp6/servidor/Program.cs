@@ -147,6 +147,11 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, string
         item.Cantidad = cantidad;
         db.ItemsCarrito.Update(item);
     }
+
+    // Descontar stock
+    producto.Stock -= cantidad;
+    if (producto.Stock < 0) producto.Stock = 0;
+
     await db.SaveChangesAsync();
     return Results.Ok();
 });

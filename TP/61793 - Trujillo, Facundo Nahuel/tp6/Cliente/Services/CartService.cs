@@ -57,6 +57,7 @@ namespace Cliente.Services
         {
             await InicializarCarrito();
             await _http.DeleteAsync($"/carritos/{CarritoId}");
+            OnCarritoActualizado?.Invoke();
         }
 
         public async Task<bool> ConfirmarCompra(object compra)
