@@ -26,11 +26,19 @@ public class TiendaService
         Carrito = await _http.GetFromJsonAsync<List<productosCarritos>>($"carritos/{_carritoId}") ?? new();
     }
 
-    public async Task AgregarAlCarrito(int productoId)
+    public async Task<bool> AgregarAlCarrito(int productoId)
     {
-        await _http.PostAsync($"carritos/{_carritoId}/agregar/{productoId}", null);
-        await CargarCarrito();
-        NotificarCambio();
+        var response = await _http.PostAsync($"carritos/{_carritoId}/agregar/{productoId}", null);
+        if (response.IsSuccessStatusCode)
+        {
+            await CargarCarrito();
+            NotificarCambio();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public async Task QuitarDelCarrito(int productoId)
@@ -51,7 +59,7 @@ public class TiendaService
     {
         await _http.PutAsJsonAsync($"carritos/{_carritoId}/confirmar", cliente);
         Carrito.Clear();
-        _carritoId = Guid.NewGuid().ToString(); // nueva compra
+        _carritoId = Guid.NewGuid().ToString();
     }
 
     public decimal CalcularTotal() =>
