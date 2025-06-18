@@ -47,19 +47,14 @@ public class ApiService {
     {
         var request = new CantidadRequest { Cantidad = cantidad };
         var response = await _httpClient.PutAsJsonAsync($"/api/carritos/{carritoId}/{productoId}", request);
-        
-        if (response.IsSuccessStatusCode)
+          if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<ItemCarritoActualizadoDto>(_jsonSerializerOptions);
         }
         else
         {
-
-
-
-
-            response.EnsureSuccessStatusCode(); // This will throw for non-success codes
-            return null; // Should not be reached if EnsureSuccessStatusCode throws
+            response.EnsureSuccessStatusCode();
+            return null;
         }
     }
 

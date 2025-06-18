@@ -35,11 +35,8 @@ namespace cliente.Services
                 return _carritoId.Value;
             }
 
-            var carritoIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", CarritoIdStorageKey);
-
-            if (!string.IsNullOrEmpty(carritoIdString) && Guid.TryParse(carritoIdString, out var storedGuid))
+            var carritoIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", CarritoIdStorageKey);            if (!string.IsNullOrEmpty(carritoIdString) && Guid.TryParse(carritoIdString, out var storedGuid))
             {
-                // Intentar recuperar carrito existente
                 try
                 {
                     await _apiService.GetCarritoAsync(storedGuid);
@@ -48,11 +45,9 @@ namespace cliente.Services
                 }
                 catch (Exception)
                 {
-                    // Si no existe o error HTTP (404), ignorar y crear uno nuevo
                 }
             }
 
-            // Crear un nuevo carrito si no hay uno válido
             var nuevaCompra = await _apiService.CrearCarritoAsync();
             if (nuevaCompra != null)
             {
@@ -69,7 +64,7 @@ namespace cliente.Services
             if (!_carritoId.HasValue)
             {
                 _carritoId = await GetOrCreateCarritoIdAsyncInternal();
-                if (!_carritoId.HasValue) // Still null after trying to create/get
+                if (!_carritoId.HasValue)
                 {
                      throw new Exception("No se pudo obtener el ID del carrito después de la inicialización.");
                 }

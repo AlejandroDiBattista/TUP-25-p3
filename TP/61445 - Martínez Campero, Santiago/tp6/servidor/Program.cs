@@ -18,7 +18,6 @@ builder.Services.AddCors(options => {
 
 builder.Services.AddControllers();
 
-// Definir ruta absoluta para la base de datos SQLite
 var dbPath = Path.Combine(AppContext.BaseDirectory, "tienda_dev.db");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                         ?? $"Data Source={dbPath}";
@@ -39,7 +38,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<TiendaDbContext>();
-        context.Database.EnsureCreated(); // Crear la base de datos si no existe
+        context.Database.EnsureCreated();
         SeedData.Initialize(context);     
     }
     catch (Exception ex)
@@ -133,12 +132,10 @@ app.MapPut("/api/carritos/{carritoId:guid}/{productoId:int}",
     if (producto == null)
     {
         return Results.NotFound(new { Mensaje = "Producto no encontrado." });
-    }
-      var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    }      var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
 
     if (itemEnCarrito == null) 
     {
-        // Nuevo item en el carrito
         if (producto.Stock < request.Cantidad)
         {
             return Results.BadRequest(new { Mensaje = $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {request.Cantidad}." });
@@ -154,8 +151,7 @@ app.MapPut("/api/carritos/{carritoId:guid}/{productoId:int}",
     }
     else 
     {
-        // Item ya existe en el carrito - validar stock disponible
-        var stockDisponible = producto.Stock + itemEnCarrito.Cantidad; // Stock real + lo que ya tiene en carrito
+        var stockDisponible = producto.Stock + itemEnCarrito.Cantidad;
         if (stockDisponible < request.Cantidad)
         {
              return Results.BadRequest(new { Mensaje = $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, En carrito: {itemEnCarrito.Cantidad}, Solicitado total: {request.Cantidad}." });

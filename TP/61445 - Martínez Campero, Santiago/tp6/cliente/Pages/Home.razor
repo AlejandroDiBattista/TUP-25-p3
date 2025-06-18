@@ -87,12 +87,11 @@
         });
     }    private async Task HandleLocationAsync(string uri)
     {
-        // Parsear query string correctamente
         var uriObj = new Uri(uri);
-        var query = uriObj.Query; // Ej. "?search=mouse"
+        var query = uriObj.Query;
         if (!string.IsNullOrEmpty(query))
         {
-            var qs = query.TrimStart('?'); // "search=mouse"
+            var qs = query.TrimStart('?');
             var param = qs.Split('&').FirstOrDefault(p => p.StartsWith("search=", StringComparison.OrdinalIgnoreCase));
             searchTerm = param != null ? Uri.UnescapeDataString(param.Split('=', 2)[1]) : null;
         }
@@ -101,18 +100,15 @@
             searchTerm = null;
         }
         await CargarProductosAsync(searchTerm);
-    }
-
-    private async Task CargarProductosAsync(string? busqueda)
+    }    private async Task CargarProductosAsync(string? busqueda)
     {
         cargando = true;
         error = null;
-        StateHasChanged(); // Forzar actualización para mostrar el spinner
+        StateHasChanged();
         
         try
         {
             productos = await ApiService.GetProductosAsync(busqueda);
-            // Cargar estado actual del carrito
             var carritoId = await CarritoStateService.GetCarritoIdAsync();
             var itemsCarrito = await ApiService.GetCarritoAsync(carritoId);
             cantidadesEnCarrito = itemsCarrito?.ToDictionary(i => i.ProductoId, i => i.Cantidad)
@@ -126,7 +122,7 @@
         finally 
         { 
             cargando = false; 
-            StateHasChanged(); // Forzar actualización cuando termine
+            StateHasChanged();
         }
     }
 
@@ -153,16 +149,13 @@
             {
                 error="Producto no disponible.";
                 return;
-            }
-            var carritoId = await CarritoStateService.GetCarritoIdAsync();
-            // Calcular nueva cantidad acumulada
+            }            var carritoId = await CarritoStateService.GetCarritoIdAsync();
             cantidadesEnCarrito.TryGetValue(productoId, out int cantidadActual);
             var nuevaCantidad = cantidadActual + 1;
             var res = await ApiService.AgregarOActualizarItemCarritoAsync(carritoId, productoId, nuevaCantidad);
 
             if (res!=null)
             {
-                // Actualizar stock y conteo localmente
                 cantidadesEnCarrito[productoId] = nuevaCantidad;
                 if (seleccionado != null)
                 {
@@ -178,16 +171,13 @@
 
     private string GetImageUrl(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
+        if (string.IsNullOrWhiteSpace(url))        {
             return "https://via.placeholder.com/300x200.png?text=Sin+Imagen";
         }
-        // Si es URL absoluta, devolver tal cual
         if (Uri.TryCreate(url, UriKind.Absolute, out _))
         {
             return url;
         }
-        // Construir URL absoluta usando BaseAddress
         var baseAddress = HttpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
         var path = url.StartsWith("/") ? url : "/" + url;
         return baseAddress + path;

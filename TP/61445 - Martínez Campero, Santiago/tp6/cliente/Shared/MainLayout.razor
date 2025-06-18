@@ -7,9 +7,7 @@
 @inject NavigationManager NavigationManager
 
 <header class="bg-dark border-bottom fixed-top">
-  <div class="container d-flex align-items-center py-2">
-    <a class="navbar-brand me-4" href="/" @onclick:preventDefault="true" @onclick="GoHome" style="cursor:pointer;">
-      <!-- Logo enlarged to 80px height -->
+  <div class="container d-flex align-items-center py-2">    <a class="navbar-brand me-4" href="/" @onclick:preventDefault="true" @onclick="GoHome" style="cursor:pointer;">
       <img src="/miLogo.png" alt="Mi Logo" style="height:80px;" />
     </a>
     <input type="text" class="form-control me-2" placeholder="Buscar productos..." @bind="searchTerm" @bind:event="oninput" @onkeypress="OnKeyPress" />
