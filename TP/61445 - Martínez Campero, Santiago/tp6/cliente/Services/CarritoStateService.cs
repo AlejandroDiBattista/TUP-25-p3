@@ -39,10 +39,20 @@ namespace cliente.Services
 
             if (!string.IsNullOrEmpty(carritoIdString) && Guid.TryParse(carritoIdString, out var storedGuid))
             {
-                _carritoId = storedGuid;
-                return _carritoId.Value;
+                // Intentar recuperar carrito existente
+                try
+                {
+                    await _apiService.GetCarritoAsync(storedGuid);
+                    _carritoId = storedGuid;
+                    return _carritoId.Value;
+                }
+                catch (Exception)
+                {
+                    // Si no existe o error HTTP (404), ignorar y crear uno nuevo
+                }
             }
 
+            // Crear un nuevo carrito si no hay uno válido
             var nuevaCompra = await _apiService.CrearCarritoAsync();
             if (nuevaCompra != null)
             {

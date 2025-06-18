@@ -3,29 +3,35 @@ using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Compartido;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins("http://localhost:5184", "https://localhost:7221")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
 builder.Services.AddControllers();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tienda.db";
+// Definir ruta absoluta para la base de datos SQLite
+var dbPath = Path.Combine(AppContext.BaseDirectory, "tienda_dev.db");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                        ?? $"Data Source={dbPath}";
+
 builder.Services.AddDbContext<TiendaDbContext>(options =>
     options.UseSqlite(connectionString));
 
 
 var app = builder.Build();
 
-app.UseStaticFiles(); 
-
 app.UseCors("AllowClientApp");
+
+app.UseStaticFiles();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -33,6 +39,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<TiendaDbContext>();
+        context.Database.EnsureCreated(); // Crear la base de datos si no existe
         SeedData.Initialize(context);     
     }
     catch (Exception ex)
@@ -97,7 +104,8 @@ app.MapGet("/api/carritos/{carritoId:guid}", async (Guid carritoId, TiendaDbCont
         NombreProducto = ic.Producto?.Nombre,
         ic.Cantidad,
         PrecioUnitario = ic.PrecioUnitario,
-        ImagenUrl = ic.Producto?.ImagenUrl
+        ImagenUrl = ic.Producto?.ImagenUrl,
+        Stock = ic.Producto?.Stock ?? 0
     }).ToList();
 
     return Results.Ok(itemsDto);
@@ -126,11 +134,11 @@ app.MapPut("/api/carritos/{carritoId:guid}/{productoId:int}",
     {
         return Results.NotFound(new { Mensaje = "Producto no encontrado." });
     }
-    
-    var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+      var itemEnCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
 
     if (itemEnCarrito == null) 
     {
+        // Nuevo item en el carrito
         if (producto.Stock < request.Cantidad)
         {
             return Results.BadRequest(new { Mensaje = $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {request.Cantidad}." });
@@ -146,9 +154,11 @@ app.MapPut("/api/carritos/{carritoId:guid}/{productoId:int}",
     }
     else 
     {
-        if (producto.Stock < request.Cantidad && request.Cantidad > itemEnCarrito.Cantidad) 
+        // Item ya existe en el carrito - validar stock disponible
+        var stockDisponible = producto.Stock + itemEnCarrito.Cantidad; // Stock real + lo que ya tiene en carrito
+        if (stockDisponible < request.Cantidad)
         {
-             return Results.BadRequest(new { Mensaje = $"Stock insuficiente para aumentar la cantidad de '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado en total: {request.Cantidad}." });
+             return Results.BadRequest(new { Mensaje = $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, En carrito: {itemEnCarrito.Cantidad}, Solicitado total: {request.Cantidad}." });
         }
 
         itemEnCarrito.Cantidad = request.Cantidad;
@@ -166,7 +176,8 @@ app.MapPut("/api/carritos/{carritoId:guid}/{productoId:int}",
         itemEnCarrito.Cantidad,
         PrecioUnitario = producto?.Precio,
         ImagenUrl = producto?.ImagenUrl,
-        Subtotal = itemEnCarrito.Cantidad * (producto?.Precio ?? 0)
+        Subtotal = itemEnCarrito.Cantidad * (producto?.Precio ?? 0),
+        Stock = producto?.Stock ?? 0
     };
 
     return Results.Ok(itemDto);
@@ -223,11 +234,11 @@ app.MapDelete("/api/carritos/{carritoId:guid}",
     return Results.NoContent();
 });
 
-app.MapPut("/api/carritos/{carritoId:guid}/confirmar", 
-    async (Guid carritoId, ConfirmarCompraRequest request, TiendaDbContext dbContext) => 
+app.MapPut("/api/carritos/{carritoId:guid}/confirmar",
+    async (Guid carritoId, ConfirmarCompraRequest request, TiendaDbContext dbContext) =>
 {
-    if (string.IsNullOrWhiteSpace(request.Nombre) || 
-        string.IsNullOrWhiteSpace(request.Apellido) || 
+    if (string.IsNullOrWhiteSpace(request.Nombre) ||
+        string.IsNullOrWhiteSpace(request.Apellido) ||
         string.IsNullOrWhiteSpace(request.Email))
     {
         return Results.BadRequest(new { Mensaje = "Nombre, Apellido y Email del cliente son obligatorios." });
@@ -235,8 +246,8 @@ app.MapPut("/api/carritos/{carritoId:guid}/confirmar",
 
     var carritoPendiente = await dbContext.Compras
                                  .Include(c => c.Items)
-                                 .ThenInclude(ic => ic.Producto) 
-                                 .FirstOrDefaultAsync(c => c.Id == carritoId && c.FechaCompra == null); 
+                                 .ThenInclude(ic => ic.Producto)
+                                 .FirstOrDefaultAsync(c => c.Id == carritoId && c.FechaCompra == null);
 
     if (carritoPendiente == null)
     {
@@ -251,7 +262,7 @@ app.MapPut("/api/carritos/{carritoId:guid}/confirmar",
     var erroresStock = new List<string>();
     foreach (var item in carritoPendiente.Items)
     {
-        if (item.Producto == null) 
+        if (item.Producto == null)
         {
             return Results.Problem($"Error interno crítico: Producto con ID {item.ProductoId} no encontrado. Por favor, contacte a soporte.");
         }
@@ -270,17 +281,17 @@ app.MapPut("/api/carritos/{carritoId:guid}/confirmar",
     {
         item.Producto!.Stock -= item.Cantidad;
     }
-    
+
     carritoPendiente.FechaCompra = DateTime.UtcNow;
     carritoPendiente.NombreCliente = request.Nombre;
     carritoPendiente.ApellidoCliente = request.Apellido;
     carritoPendiente.EmailCliente = request.Email;
-    
+
     carritoPendiente.Total = carritoPendiente.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
 
     await dbContext.SaveChangesAsync();
 
-    return Results.Ok(new 
+    return Results.Ok(new
     {
         Mensaje = "Compra confirmada exitosamente.",
         CompraId = carritoPendiente.Id,
@@ -289,4 +300,10 @@ app.MapPut("/api/carritos/{carritoId:guid}/confirmar",
     });
 });
 
+app.Use(async (ctx, next) =>
+{
+    var log = app.Logger;
+    log.LogInformation("REQUEST → {Method} {Path}", ctx.Request.Method, ctx.Request.Path);
+    await next();
+});
 app.Run();

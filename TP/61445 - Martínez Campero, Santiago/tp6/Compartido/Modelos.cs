@@ -56,6 +56,7 @@ namespace Compartido
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
         public string? ImagenUrl { get; set; }
+        public int Stock { get; set; }
     }
 
     public class ItemCarritoActualizadoDto
@@ -66,6 +67,7 @@ namespace Compartido
         public decimal? PrecioUnitario { get; set; }
         public string? ImagenUrl { get; set; }
         public decimal Subtotal { get; set; }
+        public int Stock { get; set; }
     }
 
     public class ConfirmacionCompraResponseDto

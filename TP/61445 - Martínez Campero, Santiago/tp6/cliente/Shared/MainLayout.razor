@@ -6,14 +6,15 @@
 @inject CarritoStateService CarritoStateService
 @inject NavigationManager NavigationManager
 
-<header class="bg-light border-bottom fixed-top">
+<header class="bg-dark border-bottom fixed-top">
   <div class="container d-flex align-items-center py-2">
     <a class="navbar-brand me-4" href="/" @onclick:preventDefault="true" @onclick="GoHome" style="cursor:pointer;">
       <!-- Logo enlarged to 80px height -->
       <img src="/miLogo.png" alt="Mi Logo" style="height:80px;" />
     </a>
-    <input type="text" class="form-control me-auto" placeholder="Buscar productos..." @bind="searchTerm" @oninput="PerformSearch" />
-    <a class="nav-link text-dark ms-3" href="/carrito">
+    <input type="text" class="form-control me-2" placeholder="Buscar productos..." @bind="searchTerm" @bind:event="oninput" @onkeypress="OnKeyPress" />
+    <button class="btn btn-primary" @onclick="SearchManual">Buscar</button>
+    <a class="nav-link text-white ms-3" href="/carrito">
       <i class="bi bi-cart-fill fs-4"></i>
       <span class="badge bg-danger">@CarritoStateService.CantidadItems</span>
     </a>
@@ -26,29 +27,58 @@
 
 @code {
     private string? searchTerm;
+    private Timer? searchTimer;
 
     protected override async Task OnInitializedAsync()
     {
-
         CarritoStateService.OnChange += StateHasChanged;
         await CarritoStateService.InicializarAsync();
+        
+        // Sincronizar el término de búsqueda con la URL actual
+        var uri = new Uri(NavigationManager.Uri);
+        var query = uri.Query;
+        if (!string.IsNullOrEmpty(query))
+        {
+            var qs = query.TrimStart('?');
+            var param = qs.Split('&').FirstOrDefault(p => p.StartsWith("search=", StringComparison.OrdinalIgnoreCase));
+            searchTerm = param != null ? Uri.UnescapeDataString(param.Split('=', 2)[1]) : null;
+        }
     }
 
     public void Dispose()
     {
         CarritoStateService.OnChange -= StateHasChanged;
+        searchTimer?.Dispose();
     }
 
-    private void PerformSearch(ChangeEventArgs e)
+    private void OnKeyPress(KeyboardEventArgs e)
     {
-        searchTerm = e.Value?.ToString();
+        if (e.Key == "Enter")
+        {
+            PerformSearchImmediate();
+        }
+        else
+        {
+            // Usar debounce para búsqueda automática
+            searchTimer?.Dispose();
+            searchTimer = new Timer((_) => InvokeAsync(PerformSearchImmediate), null, 500, Timeout.Infinite);
+        }
+    }
+
+    private void PerformSearchImmediate()
+    {
         var url = string.IsNullOrWhiteSpace(searchTerm) ? "/" : $"/?search={Uri.EscapeDataString(searchTerm)}";
         NavigationManager.NavigateTo(url);
     }
 
     private void GoHome()
     {
+        searchTerm = null;
+        NavigationManager.NavigateTo("/");
+    }
 
-        NavigationManager.NavigateTo("/", forceLoad: true);
+    private void SearchManual()
+    {
+        PerformSearchImmediate();
     }
 }

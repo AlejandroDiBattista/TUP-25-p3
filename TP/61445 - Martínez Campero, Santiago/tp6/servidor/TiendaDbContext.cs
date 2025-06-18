@@ -13,10 +13,9 @@ public class TiendaDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
-        modelBuilder.Entity<ItemCompra>(entity =>
+          modelBuilder.Entity<ItemCompra>(entity =>
         {
-            entity.HasKey(ic => new { ic.CompraId, ic.ProductoId });
+            entity.HasKey(ic => ic.Id);
 
             entity.HasOne(ic => ic.Producto)
                 .WithMany(p => p.ItemsCompra) 
