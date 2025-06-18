@@ -20,7 +20,8 @@ namespace Cliente.Services
             var existingItem = _items.FirstOrDefault(ci => ci.Producto.Id == producto.Id);
             if (existingItem != null)
             {
-                existingItem.Cantidad++;
+                if (existingItem.Cantidad < producto.Stock)
+                    existingItem.Cantidad++;
             }
             else
             {
@@ -38,6 +39,29 @@ namespace Cliente.Services
                 existingItem.Cantidad--;
                 if (existingItem.Cantidad <= 0)
                     _items.Remove(existingItem);
+
+                OnChange?.Invoke();
+            }
+        }
+
+        public void IncrementarCantidad(int productoId)
+        {
+            var item = _items.FirstOrDefault(ci => ci.Producto.Id == productoId);
+            if (item != null && item.Cantidad < item.Producto.Stock)
+            {
+                item.Cantidad++;
+                OnChange?.Invoke();
+            }
+        }
+
+        public void DecrementarCantidad(int productoId)
+        {
+            var item = _items.FirstOrDefault(ci => ci.Producto.Id == productoId);
+            if (item != null)
+            {
+                item.Cantidad--;
+                if (item.Cantidad <= 0)
+                    _items.Remove(item);
 
                 OnChange?.Invoke();
             }

@@ -21,11 +21,17 @@ else
                          style="width: 60px; height: 60px; object-fit: cover; margin-right: 1rem;" />
                     <div>
                         <strong>@item.Producto.Nombre</strong><br />
-                        <span>Precio: $@item.Producto.Precio</span><br />
-                        <span>Cantidad: @item.Cantidad</span>
+                        <span>Precio unitario: $@item.Producto.Precio</span><br />
+                        <span>Subtotal: $@(item.Producto.Precio * item.Cantidad)</span><br />
+
+                        <div class="btn-group mt-2">
+                            <button class="btn btn-sm btn-secondary" @onclick="() => DisminuirCantidad(item.Producto.Id)">-</button>
+                            <span class="mx-2">@item.Cantidad</span>
+                            <button class="btn btn-sm btn-secondary" @onclick="() => AumentarCantidad(item.Producto.Id)">+</button>
+                        </div>
                     </div>
                 </div>
-                <button class="btn btn-sm btn-danger" @onclick="() => EliminarProducto(item.Producto.Id)">Eliminar</button>
+                <button class="btn btn-sm btn-danger ms-2" @onclick="() => EliminarProducto(item.Producto.Id)">Eliminar</button>
             </li>
         }
     </ul>
@@ -54,6 +60,9 @@ else
     {
         Cart.RemoveFromCart(id);
     }
+
+    private void AumentarCantidad(int id) => Cart.IncrementarCantidad(id);
+    private void DisminuirCantidad(int id) => Cart.DecrementarCantidad(id);
 
     public void Dispose()
     {
