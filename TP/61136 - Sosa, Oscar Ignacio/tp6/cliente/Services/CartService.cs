@@ -1,33 +1,36 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Cliente.Models2; // Usa tu clase Producto
+
 namespace Cliente.Services
 {
     public class CartService
     {
-        public List<Product> Items { get; } = new();
+        public List<Producto> Items { get; } = new();
 
         public event Action? OnChange;
 
-        public void AddToCart(Product product)
+        public void AddToCart(Producto producto)
         {
-            Items.Add(product);
+            Items.Add(producto);
             OnChange?.Invoke();
         }
 
-        public void RemoveFromCart(Product product)
+        public void RemoveFromCart(int productoId)
         {
-            Items.Remove(product);
-            OnChange?.Invoke();
+            var item = Items.FirstOrDefault(p => p.Id == productoId);
+            if (item != null)
+            {
+                Items.Remove(item);
+                OnChange?.Invoke();
+            }
         }
+
         public void ClearCart()
         {
             Items.Clear();
             OnChange?.Invoke();
         }
-    }
-
-    public class Product
-    {
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
     }
 }
