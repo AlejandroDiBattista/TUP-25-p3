@@ -5,13 +5,13 @@
   <title>Catálogo de productos</title>
   <link rel="stylesheet" href="css/app.css" />
   <style>
+    /* (El mismo CSS que ya tenías) */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #085caf;
       color: #f3efef;
     }
-
     header {
       background: #042f66;
       padding: 10px 20px;
@@ -22,18 +22,15 @@
       top: 0;
       z-index: 1000;
     }
-
     header h1 {
       margin: 0;
       font-size: 24px;
       color: #ffdb4d;
     }
-
     .search-container {
       flex-grow: 1;
       margin: 0 20px;
     }
-
     .search-container input {
       width: 100%;
       padding: 8px;
@@ -41,13 +38,11 @@
       border: none;
       font-size: 16px;
     }
-
     .carrito-icon {
       position: relative;
       cursor: pointer;
       font-size: 24px;
     }
-
     .carrito-icon::after {
       content: attr(data-count);
       position: absolute;
@@ -59,14 +54,12 @@
       font-size: 12px;
       padding: 2px 5px;
     }
-
     .productos {
       display: flex;
       flex-wrap: wrap;
       padding: 20px;
       justify-content: center;
     }
-
     .producto {
       background: #064be0;
       border-radius: 8px;
@@ -78,7 +71,6 @@
       flex-direction: column;
       align-items: center;
     }
-
     .producto img {
       width: 100%;
       height: 150px;
@@ -86,27 +78,22 @@
       border-radius: 4px;
       margin-bottom: 10px;
     }
-
     .producto h3 {
       margin: 0 0 5px;
       color: #fdd835;
       text-align: center;
     }
-
     .producto p {
       margin: 3px 0;
       text-align: center;
     }
-
     .producto .stock {
       color: #00ff99;
     }
-
     .producto .precio {
       font-weight: bold;
       color: #ffffff;
     }
-
     .producto button {
       margin-top: auto;
       background: #28a745;
@@ -117,7 +104,6 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     .producto button:disabled {
       background: #888;
       cursor: not-allowed;
@@ -136,7 +122,8 @@
   <main class="productos" id="productos-container"></main>
 
   <script>
-    const productos = [
+    // Intentamos cargar el stock guardado en localStorage o si no, usamos el array original.
+    const productosOriginales = [
       { id: 1, nombre: "Chocolate Milka", descripcion: "Chocolate suave con leche", precio: 950, stock: 10, imagen: "img/milka.jpg" },
       { id: 2, nombre: "Bon o Bon", descripcion: "Bombón de maní", precio: 120, stock: 20, imagen: "img/bonobon.jpg" },
       { id: 3, nombre: "Sugus", descripcion: "Caramelos masticables", precio: 80, stock: 30, imagen: "img/sugus.jpg" },
@@ -153,6 +140,9 @@
       { id: 14, nombre: "KitKat", descripcion: "Barra de chocolate con galleta", precio: 350, stock: 16, imagen: "img/kitkat.jpg" },
       { id: 15, nombre: "M&M's", descripcion: "Confites de chocolate", precio: 300, stock: 10, imagen: "img/mms.jpg" }
     ];
+
+    // Cargar productos con stock guardado o originales
+    let productos = JSON.parse(localStorage.getItem('productosStock')) || productosOriginales;
 
     const carritoIcon = document.querySelector('.carrito-icon');
     const cont = document.getElementById('productos-container');
@@ -173,21 +163,44 @@
       carritoIcon.setAttribute('data-count', total);
     }
 
-    function agregarAlCarrito(p) {
-      const carrito = obtenerCarrito();
-      const idx = carrito.findIndex(x => x.id === p.id);
+    function guardarStock() {
+      localStorage.setItem('productosStock', JSON.stringify(productos));
+    }
 
-      if (idx !== -1) {
-        if (carrito[idx].cantidad + 1 > p.stock) {
-          alert('No hay más stock disponible.');
+    function agregarAlCarrito(p) {
+      // Buscar producto en carrito
+      const carrito = obtenerCarrito();
+      const idxCarrito = carrito.findIndex(x => x.id === p.id);
+
+      // Buscar producto en productos para actualizar stock
+      const idxProd = productos.findIndex(x => x.id === p.id);
+      if (idxProd === -1) return;
+
+      if (productos[idxProd].stock <= 0) {
+        alert('No hay más stock disponible.');
+        return;
+      }
+
+      // Validar si ya está en carrito y no superar stock
+      if (idxCarrito !== -1) {
+        if (carrito[idxCarrito].cantidad + 1 > productos[idxProd].stock) {
+          alert('No hay más stock disponible en el carrito.');
           return;
         }
-        carrito[idx].cantidad++;
+        carrito[idxCarrito].cantidad++;
       } else {
         carrito.push({ ...p, cantidad: 1 });
       }
 
+      // Disminuir stock en productos
+      productos[idxProd].stock--;
+
+      // Guardar cambios
       guardarCarrito(carrito);
+      guardarStock();
+
+      // Re-renderizar para actualizar stock y botón
+      renderizar(buscador.value);
     }
 
     function renderizar(filtro = '') {
@@ -212,6 +225,8 @@
     }
 
     buscador.addEventListener('input', (e) => renderizar(e.target.value));
+
+    // Iniciar renderizado y contador carrito
     renderizar();
     actualizarContadorCarrito();
   </script>

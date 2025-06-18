@@ -89,7 +89,7 @@
             font-weight: bold;
             color: #555;
         }
-        input[type="text"], input[type="email"] {
+        input[type="text"], input[type="email"], input[type="tel"] {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -150,6 +150,10 @@
             Email:
             <input type="email" name="email" required>
         </label>
+        <label>
+            Número de celular:
+            <input type="tel" name="celular" required pattern="[0-9]{8,15}" title="Ingrese un número de celular válido (8-15 dígitos)">
+        </label>
         <button type="submit">Confirmar</button>
     </form>
 
@@ -187,6 +191,7 @@
 
         document.getElementById('form-confirmacion').addEventListener('submit', function(e) {
             e.preventDefault();
+            // Aquí podrías capturar datos adicionales si quieres
             localStorage.removeItem('carrito');
             alert('¡Compra confirmada!');
             window.location.href = 'catalogo.html';
@@ -194,3 +199,4 @@
     </script>
 </body>
 </html>
+

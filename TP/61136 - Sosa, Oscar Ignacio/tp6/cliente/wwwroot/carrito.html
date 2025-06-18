@@ -120,100 +120,74 @@
         <button onclick="confirmarCompra()" class="btn btn-success">Confirmar compra</button>
     </div>
 
-<script>
-    // Datos de productos (nombre, stock, precio)
-    const productos = [
-        { nombre: "Chocolate Milka", stock: 10, precio: 950 },
-        { nombre: "Bon o Bon", stock: 20, precio: 120 },
-        { nombre: "Sugus", stock: 30, precio: 80 },
-        { nombre: "Rocklets", stock: 15, precio: 250 },
-        { nombre: "Mogul", stock: 12, precio: 180 },
-        { nombre: "Tita", stock: 25, precio: 90 },
-        { nombre: "Rhodesia", stock: 22, precio: 90 },
-        { nombre: "Menta Cristal", stock: 35, precio: 70 },
-        { nombre: "Caramelos Arcor", stock: 50, precio: 60 },
-        { nombre: "Chocolinas", stock: 18, precio: 350 },
-        { nombre: "Alfajor Jorgito", stock: 40, precio: 180 },
-        { nombre: "Bananita Dolca", stock: 30, precio: 100 },
-        { nombre: "Kinder Bueno", stock: 8, precio: 400 },
-        { nombre: "KitKat", stock: 16, precio: 350 },
-        { nombre: "M&M's", stock: 10, precio: 300 },
-    ];
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="window.location.href='catalogo.html'">← Volver al catálogo</button>
+    </div>
 
-    // Inicializamos cantidades en 1 para todos
-    let cantidades = Array(productos.length).fill(1);
+<script>
+    const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
     const carritoBody = document.getElementById('carrito-body');
     const totalCell = document.getElementById('total');
 
     function renderizarCarrito() {
         carritoBody.innerHTML = '';
-        productos.forEach((producto, index) => {
-            const importe = cantidades[index] * producto.precio;
-            const fila = document.createElement('tr');
+        let total = 0;
 
+        carrito.forEach((item, index) => {
+            const importe = item.cantidad * item.precio;
+            total += importe;
+
+            const fila = document.createElement('tr');
             fila.innerHTML = `
-                <td>${producto.nombre}</td>
+                <td>${item.nombre}</td>
                 <td>
                     <button class="btn btn-secondary btn-sm" onclick="cambiarCantidad(${index}, -1)">-</button>
-                    <span id="cantidad-${index}">${cantidades[index]}</span>
+                    <span id="cantidad-${index}">${item.cantidad}</span>
                     <button class="btn btn-secondary btn-sm" onclick="cambiarCantidad(${index}, 1)">+</button>
                 </td>
-                <td>$${producto.precio}</td>
+                <td>$${item.precio}</td>
                 <td id="importe-${index}">$${importe}</td>
             `;
             carritoBody.appendChild(fila);
         });
-        actualizarTotal();
-    }
 
-    function cambiarCantidad(index, delta) {
-        let nuevaCantidad = cantidades[index] + delta;
-        if (nuevaCantidad < 1) return; // no menos de 1
-        if (nuevaCantidad > productos[index].stock) {
-            alert('No hay suficiente stock para ' + productos[index].nombre);
-            return;
-        }
-        cantidades[index] = nuevaCantidad;
-        document.getElementById('cantidad-' + index).innerText = nuevaCantidad;
-        document.getElementById('importe-' + index).innerText = '$' + (nuevaCantidad * productos[index].precio);
-        actualizarTotal();
-    }
-
-    function actualizarTotal() {
-        let total = 0;
-        cantidades.forEach((cantidad, i) => {
-            total += cantidad * productos[i].precio;
-        });
         totalCell.innerText = '$' + total;
     }
 
+    function cambiarCantidad(index, delta) {
+        const nuevoValor = carrito[index].cantidad + delta;
+        if (nuevoValor < 1) return;
+        carrito[index].cantidad = nuevoValor;
+        document.getElementById('cantidad-' + index).textContent = nuevoValor;
+        document.getElementById('importe-' + index).textContent = '$' + (nuevoValor * carrito[index].precio);
+        actualizarTotal();
+        guardarCarrito();
+    }
+
+    function actualizarTotal() {
+        let total = carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+        totalCell.textContent = '$' + total;
+    }
+
+    function guardarCarrito() {
+        localStorage.setItem('carrito', JSON.stringify(carrito));
+    }
+
     function vaciarCarrito() {
-        cantidades = cantidades.map(() => 0);
-        renderizarCarrito();
+        localStorage.removeItem('carrito');
+        location.reload();
     }
 
     function confirmarCompra() {
-        // Crear un array con los productos y cantidades > 0
-        const carritoParaGuardar = productos.map((p, i) => ({
-            nombre: p.nombre,
-            cantidad: cantidades[i],
-            precio: p.precio
-        })).filter(item => item.cantidad > 0);
-
-        if (carritoParaGuardar.length === 0) {
+        if (carrito.length === 0) {
             alert('El carrito está vacío.');
             return;
         }
-
-        // Guardar carrito en localStorage
-        localStorage.setItem('carrito', JSON.stringify(carritoParaGuardar));
-
-        // Redirigir a la página de confirmación
+        localStorage.setItem('carrito', JSON.stringify(carrito));
         window.location.href = 'confirmacion.html';
     }
 
-    // Al cargar la página, renderizamos el carrito
     renderizarCarrito();
 </script>
 </body>
