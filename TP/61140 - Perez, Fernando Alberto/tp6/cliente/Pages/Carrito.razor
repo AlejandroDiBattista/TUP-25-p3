@@ -1,0 +1,85 @@
+@page "/carrito"
+
+<h1>Carrito de Compras</h1>
+
+@if (carrito.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Importe</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => ModificarCantidad(item, -1)">-</button>
+                        @item.Cantidad
+                        <button class="btn btn-sm btn-secondary" @onclick="() => ModificarCantidad(item, 1)">+</button>
+                    </td>
+                    <td>@item.Producto.Precio</td>
+                    <td>@(item.Cantidad * item.Producto.Precio)</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarDelCarrito(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><strong>Total: $@carrito.Sum(i => i.Cantidad * i.Producto.Precio)</strong></p>
+    <button class="btn btn-primary" @onclick="ConfirmarCompra">Confirmar Compra</button>
+    <button class="btn btn-secondary" @onclick="VaciarCarrito">Vaciar Carrito</button>
+}
+
+@code {
+    private List<ItemCarrito> carrito = new();
+
+    private void ModificarCantidad(ItemCarrito item, int cambio)
+    {
+        item.Cantidad += cambio;
+        if (item.Cantidad <= 0)
+        {
+            carrito.Remove(item);
+        }
+    }
+
+    private void EliminarDelCarrito(ItemCarrito item)
+    {
+        carrito.Remove(item);
+    }
+
+    private void VaciarCarrito()
+    {
+        carrito.Clear();
+    }
+
+    private void ConfirmarCompra()
+    {
+        // Lógica para confirmar la compra
+        Console.WriteLine("Compra confirmada");
+        carrito.Clear();
+    }
+
+    private class ItemCarrito
+    {
+        public Producto Producto { get; set; } = null!;
+        public int Cantidad { get; set; }
+    }
+
+    private class Producto
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+    }
+}

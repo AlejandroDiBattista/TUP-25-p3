@@ -1,0 +1,70 @@
+@page "/confirmacion"
+
+<h1>Confirmación de Compra</h1>
+
+@if (carrito.Count == 0)
+{
+    <p>No hay productos en el carrito para confirmar la compra.</p>
+}
+else
+{
+    <div>
+        <h3>Resumen de la Compra</h3>
+        <ul>
+            @foreach (var item in carrito)
+            {
+                <li>@item.Cantidad x @item.Producto.Nombre (@item.Producto.Precio c/u)</li>
+            }
+        </ul>
+        <p><strong>Total: $@carrito.Sum(i => i.Cantidad * i.Producto.Precio)</strong></p>
+    </div>
+
+    <div>
+        <h3>Datos del Cliente</h3>
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input id="nombre" class="form-control" @bind="nombre" />
+        </div>
+        <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input id="apellido" class="form-control" @bind="apellido" />
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" type="email" class="form-control" @bind="email" />
+        </div>
+        <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    private List<ItemCarrito> carrito = new(); // Simulación del carrito
+    private string nombre = string.Empty;
+    private string apellido = string.Empty;
+    private string email = string.Empty;
+
+    private void ConfirmarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido) || string.IsNullOrWhiteSpace(email))
+        {
+            Console.WriteLine("Por favor, complete todos los campos.");
+            return;
+        }
+
+        // Lógica para registrar la compra
+        Console.WriteLine($"Compra confirmada por {nombre} {apellido} ({email})");
+        carrito.Clear();
+    }
+
+    private class ItemCarrito
+    {
+        public Producto Producto { get; set; } = null!;
+        public int Cantidad { get; set; }
+    }
+
+    private class Producto
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+    }
+}
