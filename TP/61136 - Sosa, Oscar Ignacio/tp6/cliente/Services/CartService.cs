@@ -18,7 +18,7 @@ namespace Cliente.Services
             Items.Remove(product);
             OnChange?.Invoke();
         }
- public void ClearCart()
+        public void ClearCart()
         {
             Items.Clear();
             OnChange?.Invoke();
@@ -27,7 +27,7 @@ namespace Cliente.Services
 
     public class Product
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public decimal Price { get; set; }
     }
 }
