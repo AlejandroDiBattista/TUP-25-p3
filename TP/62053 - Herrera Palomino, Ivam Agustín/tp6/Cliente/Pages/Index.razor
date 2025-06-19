@@ -1,0 +1,90 @@
+﻿@page "/"
+@page "/productos"
+@inject ApiClient Api
+@inject CartState Cart
+@inject NavigationManager NavManager
+@using TiendaOnline.Frontend.Models
+@using TiendaOnline.Frontend.Services
+
+<h3>Catálogo de Productos</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else if (prod is null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!prod.Any())
+{
+    <p>No se encontraron productos para "<strong>@SearchTerm</strong>". Intenta con otra búsqueda.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        @foreach (var p in prod)
+        {
+            <div class="col">
+                <div class="card h-100 @(p.Stock == 0 ? "out-of-stock" : "")">
+
+                    <div class="card-img-container">
+                        <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" />
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@p.Nombre</h5>
+                        <p class="card-text">@p.Descripcion</p>
+                        <p class="card-text"><strong>Stock:</strong> @p.Stock</p>
+                    </div>
+                    <div class="card-footer">
+                        <p class="fw-bold fs-5">@p.Precio.ToString("C")</p>
+                        <button class="btn btn-primary w-100"
+                                disabled="@(p.Stock == 0)"
+                                @onclick="() => Agregar(p.Id)">
+                            Agregar al Carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Producto>? prod;
+    private string? errorMessage;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "search")] 
+    public string? SearchTerm { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        errorMessage = null; 
+        try
+        {
+            prod = await Api.GetProductos(SearchTerm);
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "No se pudo conectar con el servidor. Intenta más tarde.";
+        }
+    }
+    
+    private async Task Agregar(int pid)
+    {
+        if (Cart.CarritoId is null)
+            Cart.Init(await Api.CrearCarritoAsync());
+
+        await Api.Add(Cart.CarritoId!.Value, pid);
+        var c = await Api.GetCarrito(Cart.CarritoId.Value);
+        if (c is not null)
+        {
+            Cart.SetTotal(c.Items.Sum(i => i.Cantidad));
+        }
+        
+        NavManager.NavigateTo("/carrito");
+    }
+}
