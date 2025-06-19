@@ -122,12 +122,6 @@ namespace cliente.Services
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "Formato de email inválido")]
         public string Email { get; set; }
-
-        // Campos estéticos (no enviados al servidor)
-        [Phone(ErrorMessage = "Teléfono inválido")]
-        public string Telefono { get; set; }
-
-        public string Direccion { get; set; }
     }
 
     public class ItemCarritoDto

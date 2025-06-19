@@ -8,76 +8,121 @@
 <PageTitle>Confirmación de Compra</PageTitle>
 
 <div class="container mt-4">
-  <h1>Confirmación de Compra</h1>
+  <div class="d-flex align-items-center mb-4">
+    <h1 class="display-5 fw-bold mb-0">
+      <i class="fas fa-credit-card text-primary me-2"></i>
+      Confirmación de Compra
+    </h1>
+  </div>
 
   @if (!formEnviado)
   {
-    <EditForm Model="cliente" OnValidSubmit="HandleValidSubmit">
-      <DataAnnotationsValidator />
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="fas fa-user me-2"></i>
+          Información del Cliente
+        </h5>
+        
+        <EditForm Model="cliente" OnValidSubmit="HandleValidSubmit">
+          <DataAnnotationsValidator />
 
-      <div class="mb-3">
-        <label class="form-label">Nombre</label>
-        <InputText class="form-control" @bind-Value="cliente.Nombre" />
-        <ValidationMessage For="@(() => cliente.Nombre)" />
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="fas fa-user me-1"></i>
+                Nombre *
+              </label>
+              <InputText class="form-control" @bind-Value="cliente.Nombre" />
+              <ValidationMessage For="@(() => cliente.Nombre)" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="fas fa-user me-1"></i>
+                Apellido *
+              </label>
+              <InputText class="form-control" @bind-Value="cliente.Apellido" />
+              <ValidationMessage For="@(() => cliente.Apellido)" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">
+              <i class="fas fa-envelope me-1"></i>
+              Email *
+            </label>
+            <InputText type="email" class="form-control" @bind-Value="cliente.Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check me-1"></i>
+              Confirmar compra
+            </button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="VolverAlCarrito">
+              <i class="fas fa-arrow-left me-1"></i>
+              Volver al carrito
+            </button>
+          </div>
+        </EditForm>
       </div>
-
-      <div class="mb-3">
-        <label class="form-label">Apellido</label>
-        <InputText class="form-control" @bind-Value="cliente.Apellido" />
-        <ValidationMessage For="@(() => cliente.Apellido)" />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <InputText type="email" class="form-control" @bind-Value="cliente.Email" />
-        <ValidationMessage For="@(() => cliente.Email)" />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Teléfono</label>
-        <InputText class="form-control" @bind-Value="cliente.Telefono" />
-        <ValidationMessage For="@(() => cliente.Telefono)" />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Dirección</label>
-        <InputText class="form-control" @bind-Value="cliente.Direccion" />
-      </div>
-
-      <button type="submit" class="btn btn-primary">Confirmar compra</button>
-      <button type="button" class="btn btn-secondary ms-2" @onclick="VolverAlCarrito">
-        Volver al carrito
-      </button>
-    </EditForm>
+    </div>
   }
   else if (confirmacion != null)
   {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <strong>¡Muchas gracias por tu compra!</strong><br />
-      Ahora mismo nos comunicaremos contigo.
+      <div class="d-flex align-items-center">
+        <i class="fas fa-check-circle fa-2x me-3 text-success"></i>
+        <div>
+          <h5 class="alert-heading mb-1">¡Compra confirmada exitosamente!</h5>
+          <p class="mb-0">Gracias por tu compra. Nos comunicaremos contigo pronto.</p>
+        </div>
+      </div>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div class="card mt-3">
+    <div class="card shadow-sm mt-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-receipt me-2"></i>
+          Detalles de tu compra
+        </h5>
+      </div>
       <div class="card-body">
-        <h5 class="card-title">Detalles de tu compra</h5>
-        <p><strong>ID Compra:</strong> @confirmacion.Id</p>
-        <p><strong>Fecha:</strong> @confirmacion.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
-        <p><strong>Total:</strong> @confirmacion.Total:C</p>
-        <p><strong>Cliente:</strong> @confirmacion.Nombre @confirmacion.Apellido</p>
-        <p><strong>Email:</strong> @confirmacion.Email</p>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong><i class="fas fa-hashtag me-1"></i>ID Compra:</strong> @confirmacion.Id</p>
+            <p><strong><i class="fas fa-calendar me-1"></i>Fecha:</strong> @confirmacion.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong><i class="fas fa-dollar-sign me-1"></i>Total:</strong> @confirmacion.Total.ToString("C")</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong><i class="fas fa-user me-1"></i>Cliente:</strong> @confirmacion.Nombre @confirmacion.Apellido</p>
+            <p><strong><i class="fas fa-envelope me-1"></i>Email:</strong> @confirmacion.Email</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <button class="btn btn-primary mt-3" @onclick="VolverAlCatalogo">
-      Volver al catálogo
-    </button>
+    <div class="text-center mt-4">
+      <button class="btn btn-primary btn-lg" @onclick="VolverAlCatalogo">
+        <i class="fas fa-home me-2"></i>
+        Volver al catálogo
+      </button>
+    </div>
   }
   else
   {
     <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle me-2"></i>
       Ocurrió un error al confirmar tu compra. Por favor, inténtalo de nuevo.
     </div>
+    
+    <button class="btn btn-outline-secondary" @onclick="VolverAlCarrito">
+      <i class="fas fa-arrow-left me-1"></i>
+      Volver al carrito
+    </button>
   }
 </div>
 

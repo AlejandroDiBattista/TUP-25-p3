@@ -221,11 +221,17 @@ app.MapPut("/carritos/{carritoId:int}/confirmar", async (
     if (carrito == null) return Results.NotFound("Carrito no encontrado.");
     if (!carrito.Items.Any()) return Results.BadRequest("Carrito vacío.");
 
+    // Guardar información de la compra
     carrito.NombreCliente = cliente.Nombre;
     carrito.ApellidoCliente = cliente.Apellido;
     carrito.EmailCliente = cliente.Email;
     carrito.Fecha = DateTime.UtcNow;
     carrito.Total = carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+
+    // Limpiar el carrito después de confirmar la compra
+    db.ItemsCompra.RemoveRange(carrito.Items);
+    carrito.Items.Clear();
+    carrito.Total = 0;
 
     await db.SaveChangesAsync();
     return Results.Ok(new {
