@@ -52,8 +52,7 @@
                                 </button>
                                 <span class="px-4 py-2 text-lg font-semibold text-gray-800">@item.Cantidad</span>
                                 <button @onclick="() => UpdateQuantity(item, 1)" 
-                                        class="p-2 bg-gray-100 rounded-r-md hover:bg-gray-200 transition-colors text-gray-700"
-                                        disabled="@(item.Articulo != null && item.Cantidad >= item.Articulo.CantidadDisponible)">
+                                        class="p-2 bg-gray-100 rounded-r-md hover:bg-gray-200 transition-colors text-gray-700">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -81,7 +80,7 @@
     @if (!string.IsNullOrEmpty(statusMessage))
     {
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+            <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-md">
                 <p class="text-xl font-semibold mb-4 @(isError ? "text-red-600" : "text-green-600")">@statusMessage</p>
                 <button @onclick="ClearStatusMessage" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                     Cerrar
@@ -106,96 +105,70 @@
     }
 
     private async Task LoadCartItems()
-{
-    isLoading = true;
-    ClearStatusMessage();
-
-    if (CartStateService.CartId == null)
     {
-        cartItemsDisplay = new List<ItemCarritoDisplay>();
+        isLoading = true;
+        ClearStatusMessage();
+
+        if (CartStateService.CartId == null)
+        {
+            cartItemsDisplay = new();
+            isLoading = false;
+            return;
+        }
+
+        var backendCartItems = await ApiService.GetCarritoItemsAsync(CartStateService.CartId);
+
+        if (backendCartItems != null && backendCartItems.Any())
+        {
+            var productos = await ApiService.GetProductosAsync() ?? new();
+            cartItemsDisplay = backendCartItems.Select(item =>
+            {
+                var art = productos.FirstOrDefault(p => p.Id == item.ArticuloId);
+                return new ItemCarritoDisplay
+                {
+                    Articulo = art,
+                    Cantidad = item.Unidades,
+                    PrecioUnitario = item.ValorPorUnidad
+                };
+            }).Where(x => x.Articulo != null).ToList();
+        }
+        else
+        {
+            cartItemsDisplay = new();
+        }
+
         isLoading = false;
-        return;
+        StateHasChanged();
     }
 
-    var backendCartItems = await ApiService.GetCarritoItemsAsync(CartStateService.CartId);
-
-    if (backendCartItems != null && backendCartItems.Any())
-    {
-        var allProducts = await ApiService.GetProductosAsync() ?? new List<ArticuloInventario>();
-
-        Console.WriteLine($"[UI] Productos en catálogo: {allProducts.Count}");
-
-        cartItemsDisplay = new List<ItemCarritoDisplay>();
-
-        foreach (var backendItem in backendCartItems)
-        {
-            var product = allProducts.FirstOrDefault(p => p.Id == backendItem.ArticuloId);
-
-            if (product == null)
-            {
-                Console.WriteLine($"[WARN] Producto con ID {backendItem.ArticuloId} no encontrado en catálogo.");
-                continue;
-            }
-
-            cartItemsDisplay.Add(new ItemCarritoDisplay
-            {
-                Articulo = product,
-                Cantidad = backendItem.Unidades,
-                PrecioUnitario = backendItem.ValorPorUnidad
-            });
-        }
-    }
-    else
-    {
-        cartItemsDisplay = new List<ItemCarritoDisplay>();
-        if (CartStateService.CartItems.Any() && backendCartItems != null)
-        {
-            CartStateService.SetCartItems(new List<DetalleCarritoMemoria>());
-        }
-    }
-
-    isLoading = false;
-    StateHasChanged();
-}
-
-
-    private async Task UpdateQuantity(ItemCarritoDisplay itemToUpdate, int change)
+    private async Task UpdateQuantity(ItemCarritoDisplay item, int change)
     {
         ClearStatusMessage();
         isError = false;
 
-        if (CartStateService.CartId == null || itemToUpdate.Articulo == null) return;
-
-        int newQuantity = itemToUpdate.Cantidad + change;
-
-        if (newQuantity <= 0)
-        {
-            await RemoveItem(itemToUpdate.Articulo.Id);
+        if (CartStateService.CartId == null || item.Articulo == null)
             return;
-        }
 
-        if (newQuantity > itemToUpdate.Articulo.CantidadDisponible)
+        int nuevaCantidad = item.Cantidad + change;
+
+        if (nuevaCantidad <= 0)
         {
-            SetStatusMessage($"No hay suficiente stock para '{itemToUpdate.Articulo.Denominacion}'. Solo quedan {itemToUpdate.Articulo.CantidadDisponible} unidades.", true);
+            await RemoveItem(item.Articulo.Id);
             return;
         }
 
         try
         {
-            bool success = await ApiService.AddItemToCarritoAsync(CartStateService.CartId, itemToUpdate.Articulo.Id, newQuantity);
-            if (success)
+            bool ok = await ApiService.AddItemToCarritoAsync(CartStateService.CartId, item.Articulo.Id, nuevaCantidad);
+            if (ok)
             {
-                itemToUpdate.Cantidad = newQuantity;
-                SetStatusMessage($"Cantidad de '{itemToUpdate.Articulo.Denominacion}' actualizada.", false);
-            }
-            else
-            {
-                SetStatusMessage($"Error al actualizar la cantidad de '{itemToUpdate.Articulo.Denominacion}'.", true);
+                item.Cantidad = nuevaCantidad;
+                SetStatusMessage($"Cantidad de '{item.Articulo.Denominacion}' actualizada a {nuevaCantidad}.", false);
             }
         }
         catch (Exception ex)
         {
-            SetStatusMessage($"Error al actualizar: {ex.Message}", true);
+            SetStatusMessage(ex.Message, true);
         }
     }
 
@@ -216,12 +189,12 @@
             }
             else
             {
-                SetStatusMessage("Error al remover el artículo del carrito.", true);
+                SetStatusMessage("Error al remover el artículo.", true);
             }
         }
         catch (Exception ex)
         {
-            SetStatusMessage($"Error al remover: {ex.Message}", true);
+            SetStatusMessage(ex.Message, true);
         }
     }
 
@@ -234,44 +207,36 @@
 
         try
         {
-            bool success = await ApiService.ClearCarritoAsync(CartStateService.CartId);
-            if (success)
+            bool ok = await ApiService.ClearCarritoAsync(CartStateService.CartId);
+            if (ok)
             {
                 cartItemsDisplay.Clear();
                 SetStatusMessage("Carrito vaciado correctamente.", false);
             }
-            else
-            {
-                SetStatusMessage("Error al vaciar el carrito.", true);
-            }
         }
         catch (Exception ex)
         {
-            SetStatusMessage($"Error al vaciar: {ex.Message}", true);
+            SetStatusMessage(ex.Message, true);
         }
     }
 
     private void GoToConfirm()
-{
-    if (CartStateService.CartId == null || !cartItemsDisplay.Any())
     {
-        SetStatusMessage("El carrito está vacío. Añade productos antes de confirmar.", true);
-        return;
+        if (CartStateService.CartId == null || !cartItemsDisplay.Any())
+        {
+            SetStatusMessage("Tu carrito está vacío. Agrega productos antes de confirmar.", true);
+            return;
+        }
+
+        NavManager.NavigateTo($"/confirmar-compra/{CartStateService.CartId}");
     }
 
-    NavManager.NavigateTo($"/confirmar-compra/{CartStateService.CartId}");
-}
+    private void GoToHome() => NavManager.NavigateTo("/");
 
-
-    private void GoToHome()
+    private void SetStatusMessage(string msg, bool error)
     {
-        NavManager.NavigateTo("/");
-    }
-
-    private void SetStatusMessage(string message, bool isErrorMessage)
-    {
-        statusMessage = message;
-        isError = isErrorMessage;
+        statusMessage = msg;
+        isError = error;
         StateHasChanged();
     }
 
@@ -282,8 +247,5 @@
         StateHasChanged();
     }
 
-    public void Dispose()
-    {
-        CartStateService.OnChange -= StateHasChanged;
-    }
+    public void Dispose() => CartStateService.OnChange -= StateHasChanged;
 }
