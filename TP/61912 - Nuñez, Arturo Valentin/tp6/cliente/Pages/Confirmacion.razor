@@ -1,0 +1,102 @@
+@page "/confirmacion/{carritoId:int}"
+@using cliente.Services
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@inject ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Confirmación de Compra</PageTitle>
+
+<div class="container mt-4">
+  <h1>Confirmación de Compra</h1>
+
+  @if (!formEnviado)
+  {
+    <EditForm Model="cliente" OnValidSubmit="HandleValidSubmit">
+      <DataAnnotationsValidator />
+
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="cliente.Nombre" />
+        <ValidationMessage For="@(() => cliente.Nombre)" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Apellido</label>
+        <InputText class="form-control" @bind-Value="cliente.Apellido" />
+        <ValidationMessage For="@(() => cliente.Apellido)" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText type="email" class="form-control" @bind-Value="cliente.Email" />
+        <ValidationMessage For="@(() => cliente.Email)" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <InputText class="form-control" @bind-Value="cliente.Telefono" />
+        <ValidationMessage For="@(() => cliente.Telefono)" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Dirección</label>
+        <InputText class="form-control" @bind-Value="cliente.Direccion" />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Confirmar compra</button>
+      <button type="button" class="btn btn-secondary ms-2" @onclick="VolverAlCarrito">
+        Volver al carrito
+      </button>
+    </EditForm>
+  }
+  else if (confirmacion != null)
+  {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <strong>¡Muchas gracias por tu compra!</strong><br />
+      Ahora mismo nos comunicaremos contigo.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-body">
+        <h5 class="card-title">Detalles de tu compra</h5>
+        <p><strong>ID Compra:</strong> @confirmacion.Id</p>
+        <p><strong>Fecha:</strong> @confirmacion.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Total:</strong> @confirmacion.Total:C</p>
+        <p><strong>Cliente:</strong> @confirmacion.Nombre @confirmacion.Apellido</p>
+        <p><strong>Email:</strong> @confirmacion.Email</p>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-3" @onclick="VolverAlCatalogo">
+      Volver al catálogo
+    </button>
+  }
+  else
+  {
+    <div class="alert alert-danger">
+      Ocurrió un error al confirmar tu compra. Por favor, inténtalo de nuevo.
+    </div>
+  }
+</div>
+
+@code {
+  [Parameter] public int carritoId { get; set; }
+
+  private ClienteDto cliente = new ClienteDto();
+  private ConfirmacionDto confirmacion;
+  private bool formEnviado = false;
+
+  private async Task HandleValidSubmit()
+  {
+    formEnviado = true;
+    confirmacion = await Api.ConfirmarCompraAsync(carritoId, cliente);
+  }
+
+  private void VolverAlCarrito() =>
+    Nav.NavigateTo($"/carrito/{carritoId}");
+
+  private void VolverAlCatalogo() =>
+    Nav.NavigateTo("/");
+}

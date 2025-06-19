@@ -1,4 +1,59 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using cliente.Services
+@inject ApiService Api
+@inject NavigationManager Nav
+@inherits LayoutComponentBase
+
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <i class="fas fa-mobile-alt me-2"></i>
+        Tienda Xiaomi
+      </a>
+      <button class="cart-button position-relative ms-auto" @onclick="GoToCart">
+        <i class="fas fa-shopping-cart"></i>
+        @if (itemCount > 0)
+        {
+          <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+            @itemCount
+          </span>
+        }
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main class="container py-4">
+  <CascadingValue Value="carritoId">
     @Body
-</div>
+  </CascadingValue>
+</main>
+
+@code {
+  private int carritoId;
+  private int itemCount;
+
+  protected override async Task OnInitializedAsync()
+  {
+    carritoId = await Api.CrearCarritoAsync();
+    Api.CartChanged += OnCartChanged;
+    await RefreshItemCount();
+  }
+
+  private void OnCartChanged()
+  {
+    _ = InvokeAsync(async () => {
+      await RefreshItemCount();
+      StateHasChanged();
+    });
+  }
+
+  private async Task RefreshItemCount()
+  {
+    var c = await Api.GetCarritoAsync(carritoId);
+    itemCount = c.Items.Sum(i => i.Cantidad);
+  }
+
+  private void GoToCart() =>
+    Nav.NavigateTo($"/carrito/{carritoId}");
+}
