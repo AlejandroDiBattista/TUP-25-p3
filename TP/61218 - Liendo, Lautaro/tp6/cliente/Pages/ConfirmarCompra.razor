@@ -1,0 +1,133 @@
+@page "/confirmar-compra/{IdCarrito}"
+
+@using cliente.DTOs
+@using cliente.Models
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<h3 class="text-2xl font-bold mb-4">Confirmar Compra</h3>
+
+@if (cargando)
+{
+    <p>Cargando carrito...</p>
+}
+else if (carrito == null || carrito.Count == 0)
+{
+    <p>El carrito está vacío o no existe.</p>
+    <button @onclick="VolverAlCatalogo" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Volver al catálogo</button>
+}
+else
+{
+    <div class="mb-6">
+        <p><b>Total ítems:</b> @TotalItems</p>
+        <p><b>Importe total:</b> $@TotalImporte.ToString("F2")</p>
+    </div>
+
+    <EditForm Model="datosCliente" OnValidSubmit="ProcesarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-4">
+            <label class="block font-semibold">Nombre:</label>
+            <InputText @bind-Value="datosCliente.NombreSolicitante" class="border rounded px-2 py-1 w-full" />
+            <ValidationMessage For="@(() => datosCliente.NombreSolicitante)" />
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-semibold">Apellido:</label>
+            <InputText @bind-Value="datosCliente.ApellidoSolicitante" class="border rounded px-2 py-1 w-full" />
+            <ValidationMessage For="@(() => datosCliente.ApellidoSolicitante)" />
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-semibold">Email:</label>
+            <InputText @bind-Value="datosCliente.CorreoElectronicoContacto" type="email" class="border rounded px-2 py-1 w-full" />
+            <ValidationMessage For="@(() => datosCliente.CorreoElectronicoContacto)" />
+        </div>
+
+        <div class="flex gap-4 mt-4">
+            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">Confirmar compra</button>
+            <button type="button" @onclick="VaciarCarrito" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Vaciar carrito</button>
+        </div>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <p class="text-red-600 mt-4">@mensajeError</p>
+    }
+}
+
+@code {
+    [Parameter] public string IdCarrito { get; set; }
+
+    bool cargando = true;
+    List<DetalleCarritoMemoria> carrito = new();
+    string mensajeError;
+
+    DatosClienteDTO datosCliente = new DatosClienteDTO();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        try
+        {
+            Console.WriteLine($"[ConfirmarCompra] Cargando carrito con ID: {IdCarrito}");
+            carrito = await Http.GetFromJsonAsync<List<DetalleCarritoMemoria>>($"carritos/{IdCarrito}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Error] No se pudo obtener el carrito: {ex.Message}");
+            carrito = new List<DetalleCarritoMemoria>();
+        }
+        cargando = false;
+        StateHasChanged();
+    }
+
+    int TotalItems => carrito?.Sum(i => i.Unidades) ?? 0;
+    double TotalImporte => carrito?.Sum(i => i.Unidades * i.ValorPorUnidad) ?? 0;
+
+    async Task ProcesarCompra()
+    {
+        mensajeError = null;
+        try
+        {
+            var respuesta = await Http.PutAsJsonAsync($"carritos/{IdCarrito}/confirmar", datosCliente);
+            if (respuesta.IsSuccessStatusCode)
+            {
+                NavManager.NavigateTo("/compra-confirmada");
+            }
+            else
+            {
+                var errorJson = await respuesta.Content.ReadAsStringAsync();
+                mensajeError = $"Error al confirmar compra: {errorJson}";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error inesperado: {ex.Message}";
+        }
+    }
+
+    async Task VaciarCarrito()
+    {
+        try
+        {
+            await Http.DeleteAsync($"carritos/{IdCarrito}");
+            carrito.Clear();
+            NavManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al vaciar el carrito: {ex.Message}";
+        }
+    }
+
+    void VolverAlCatalogo()
+    {
+        NavManager.NavigateTo("/");
+    }
+}

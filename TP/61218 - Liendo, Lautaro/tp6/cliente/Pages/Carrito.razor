@@ -3,6 +3,8 @@
 @inject NavigationManager NavManager
 @inject CartStateService CartStateService
 
+@implements IDisposable
+
 <PageTitle>Tu Carrito de Compras</PageTitle>
 
 <div class="container mx-auto px-4 py-8">
@@ -76,7 +78,6 @@
         </div>
     }
 
-    <!-- Mensaje modal simple para stock o errores -->
     @if (!string.IsNullOrEmpty(statusMessage))
     {
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -91,71 +92,73 @@
 </div>
 
 @code {
-    private List<ItemCarritoDisplay> cartItemsDisplay = new List<ItemCarritoDisplay>(); // Lista de ítems para mostrar
-    private bool isLoading = true; // Indicador de carga
-    private string? statusMessage; // Mensaje para el usuario
-    private bool isError = false; // Indica si el mensaje es de error
+    private List<ItemCarritoDisplay> cartItemsDisplay = new();
+    private bool isLoading = true;
+    private string? statusMessage;
+    private bool isError = false;
 
-    // Propiedad calculada para el total del carrito
     private double TotalCarrito => cartItemsDisplay.Sum(item => item.Subtotal);
 
-    // Se ejecuta al inicializar el componente o al navegar a él
     protected override async Task OnInitializedAsync()
     {
-        // Suscribirse al evento OnChange del servicio de estado del carrito
         CartStateService.OnChange += StateHasChanged;
         await LoadCartItems();
     }
 
-    // Carga los ítems del carrito desde el backend y los prepara para mostrar
     private async Task LoadCartItems()
+{
+    isLoading = true;
+    ClearStatusMessage();
+
+    if (CartStateService.CartId == null)
     {
-        isLoading = true;
-        ClearStatusMessage();
-
-        if (CartStateService.CartId == null)
-        {
-            // No hay carrito activo, la lista display será vacía
-            cartItemsDisplay = new List<ItemCarritoDisplay>();
-            isLoading = false;
-            return;
-        }
-
-        var backendCartItems = await ApiService.GetCarritoItemsAsync(CartStateService.CartId);
-
-        if (backendCartItems != null && backendCartItems.Any())
-        {
-            // Obtener detalles completos de los artículos para la visualización
-            var allProducts = await ApiService.GetProductosAsync();
-            cartItemsDisplay = new List<ItemCarritoDisplay>();
-
-            foreach (var backendItem in backendCartItems)
-            {
-                var product = allProducts?.FirstOrDefault(p => p.Id == backendItem.ArticuloId);
-                if (product != null)
-                {
-                    cartItemsDisplay.Add(new ItemCarritoDisplay
-                    {
-                        Articulo = product,
-                        Cantidad = backendItem.Unidades,
-                        PrecioUnitario = backendItem.ValorPorUnidad
-                    });
-                }
-            }
-        }
-        else
-        {
-            cartItemsDisplay = new List<ItemCarritoDisplay>();
-            if (CartStateService.CartItems.Any() && backendCartItems != null)
-            {
-                 CartStateService.SetCartItems(new List<DetalleCarritoMemoria>());
-            }
-        }
+        cartItemsDisplay = new List<ItemCarritoDisplay>();
         isLoading = false;
-        StateHasChanged();
+        return;
     }
 
-    // Actualiza la cantidad de un ítem en el carrito
+    var backendCartItems = await ApiService.GetCarritoItemsAsync(CartStateService.CartId);
+
+    if (backendCartItems != null && backendCartItems.Any())
+    {
+        var allProducts = await ApiService.GetProductosAsync() ?? new List<ArticuloInventario>();
+
+        Console.WriteLine($"[UI] Productos en catálogo: {allProducts.Count}");
+
+        cartItemsDisplay = new List<ItemCarritoDisplay>();
+
+        foreach (var backendItem in backendCartItems)
+        {
+            var product = allProducts.FirstOrDefault(p => p.Id == backendItem.ArticuloId);
+
+            if (product == null)
+            {
+                Console.WriteLine($"[WARN] Producto con ID {backendItem.ArticuloId} no encontrado en catálogo.");
+                continue;
+            }
+
+            cartItemsDisplay.Add(new ItemCarritoDisplay
+            {
+                Articulo = product,
+                Cantidad = backendItem.Unidades,
+                PrecioUnitario = backendItem.ValorPorUnidad
+            });
+        }
+    }
+    else
+    {
+        cartItemsDisplay = new List<ItemCarritoDisplay>();
+        if (CartStateService.CartItems.Any() && backendCartItems != null)
+        {
+            CartStateService.SetCartItems(new List<DetalleCarritoMemoria>());
+        }
+    }
+
+    isLoading = false;
+    StateHasChanged();
+}
+
+
     private async Task UpdateQuantity(ItemCarritoDisplay itemToUpdate, int change)
     {
         ClearStatusMessage();
@@ -196,7 +199,6 @@
         }
     }
 
-    // Remueve un ítem del carrito
     private async Task RemoveItem(int articuloId)
     {
         ClearStatusMessage();
@@ -223,7 +225,6 @@
         }
     }
 
-    // Vacía todo el carrito
     private async Task ClearCart()
     {
         ClearStatusMessage();
@@ -251,14 +252,16 @@
     }
 
     private void GoToConfirm()
+{
+    if (CartStateService.CartId == null || !cartItemsDisplay.Any())
     {
-        if (CartStateService.CartId == null || !cartItemsDisplay.Any())
-        {
-            SetStatusMessage("El carrito está vacío. Añade productos antes de confirmar.", true);
-            return;
-        }
-        NavManager.NavigateTo("/confirmacion");
+        SetStatusMessage("El carrito está vacío. Añade productos antes de confirmar.", true);
+        return;
     }
+
+    NavManager.NavigateTo($"/confirmar-compra/{CartStateService.CartId}");
+}
+
 
     private void GoToHome()
     {
