@@ -1,12 +1,15 @@
 @page "/productos"
 @using cliente.Models
 @inject cliente.Services.ApiService ApiService
+@inject cliente.Services.ProductoService ProductoService
 @inject cliente.Services.CarritoService CarritoService
 
 <h3>Catálogo de Productos</h3>
 
-<input @bind="busqueda" placeholder="Buscar..." />
-<button @onclick="Buscar">Buscar</button>
+<div style="margin-bottom: 10px;">
+    <input type="text" class="form-control" style="width: 200px; display: inline-block;" placeholder="Buscar..." @bind="busqueda" />
+    <button class="btn btn-primary" style="margin-left: 5px;" @onclick="Buscar">Buscar</button>
+</div>
 
 @if (productos == null)
 {
@@ -19,7 +22,7 @@ else if (productos.Count == 0)
 else
 {
     <div style="display: flex; flex-wrap: wrap; gap: 16px;">
-        @foreach (var p in productos)
+        @foreach (var p in ProductoService.Productos)
         {
             <div style="border: 1px solid #ccc; padding: 10px; width: 220px;">
                 <img src="@($"http://localhost:5184{p.ImagenUrl}")" alt="@p.Nombre" style="width:200px;height:200px;object-fit:cover;" />
@@ -27,7 +30,9 @@ else
                 <p>@p.Descripcion</p>
                 <p><b>Precio:</b> $@p.Precio</p>
                 <p><b>Stock:</b> @p.Stock</p>
-                <button class="btn btn-success" @onclick="() => CarritoService.Agregar(p)" disabled="@((p.Stock == 0))">
+                <button class="btn btn-success"
+                        @onclick="() => AgregarAlCarrito(p)"
+                        disabled="@(p.Stock == 0)">
                     Agregar al carrito
                 </button>
             </div>
@@ -44,7 +49,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ApiService.ObtenerProductosAsync();
+        if (ProductoService.Productos.Count == 0)
+        {
+            var productos = await ApiService.GetProductos();
+            ProductoService.SetProductos(productos);
+        }
+
+        productos = ProductoService.Productos;
     }
 
     async Task Buscar()
@@ -54,8 +65,11 @@ else
 
     void AgregarAlCarrito(Producto producto)
     {
-        // Por ahora solo lo agregamos a una lista local
-        carrito.Add(producto);
-        // Más adelante esto se hará con el backend
+        if (producto.Stock > 0)
+        {
+            producto.Stock--;
+            CarritoService.Agregar(producto);
+        }
     }
 }
+

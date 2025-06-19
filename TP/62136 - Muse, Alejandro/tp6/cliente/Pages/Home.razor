@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager Navigation
 
 <PageTitle>Inicio</PageTitle>
 
@@ -55,5 +56,10 @@
         } finally {
             cargando = false;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/productos", true);
     }
 }

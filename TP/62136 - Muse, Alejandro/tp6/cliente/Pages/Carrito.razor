@@ -1,4 +1,5 @@
 @page "/carrito"
+@using cliente.Services
 @inject cliente.Services.CarritoService CarritoService
 @inject NavigationManager Navigation
 
@@ -27,13 +28,13 @@ else
                     <td>@item.Producto.Nombre</td>
                     <td>$@item.Producto.Precio</td>
                     <td>
-                        <button @onclick="() => CarritoService.Quitar(item.Producto)">-</button>
+                        <button @onclick="() => QuitarUnidad(item)">-</button>
                         @item.Cantidad
-                        <button @onclick="() => CarritoService.Agregar(item.Producto)">+</button>
+                        <button @onclick="() => AgregarUnidad(item)" disabled="@(item.Producto.Stock == 0)">+</button>
                     </td>
                     <td>$@(item.Producto.Precio * item.Cantidad)</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => CarritoService.Eliminar(item.Producto)">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item)">Eliminar</button>
                     </td>
                 </tr>
             }
@@ -41,12 +42,48 @@ else
     </table>
     <p><b>Total:</b> $@CarritoService.Total</p>
     <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="btn btn-success" style="margin-left: 10px;" @onclick="IrAConfirmar">
+        Realizar compra
+    </button>
 }
 
 @code {
     void VaciarCarrito()
     {
+        foreach (var item in CarritoService.Items)
+        {
+            item.Producto.Stock += item.Cantidad;
+        }
         CarritoService.Vaciar();
         Navigation.NavigateTo("/productos");
+    }
+
+    void Eliminar(CarritoItem item)
+    {
+        item.Producto.Stock += item.Cantidad;
+        CarritoService.Eliminar(item.Producto);
+    }
+
+    void AgregarUnidad(CarritoItem item)
+    {
+        if (item.Producto.Stock > 0)
+        {
+            item.Producto.Stock--;
+            CarritoService.Agregar(item.Producto);
+        }
+    }
+
+    void QuitarUnidad(CarritoItem item)
+    {
+        if (item.Cantidad > 0)
+        {
+            item.Producto.Stock++;
+            CarritoService.Quitar(item.Producto);
+        }
+    }
+
+    void IrAConfirmar()
+    {
+        Navigation.NavigateTo("confirmar");
     }
 }

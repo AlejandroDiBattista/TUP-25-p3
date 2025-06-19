@@ -17,11 +17,14 @@ public class CarritoService
     public void Agregar(Producto producto)
     {
         var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-        if (item != null)
-            item.Cantidad++;
-        else
+        if (item == null)
+        {
             Items.Add(new CarritoItem { Producto = producto, Cantidad = 1 });
-
+        }
+        else
+        {
+            item.Cantidad++;
+        }
         OnChange?.Invoke();
     }
 
@@ -57,4 +60,10 @@ public class CarritoService
     public int Cantidad => Items.Sum(i => i.Cantidad);
 
     public decimal Total => Items.Sum(i => i.Producto.Precio * i.Cantidad);
+
+    public int CantidadEnCarrito(Producto producto)
+    {
+        var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+        return item?.Cantidad ?? 0;
+    }
 }
