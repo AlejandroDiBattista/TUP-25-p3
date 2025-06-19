@@ -207,10 +207,7 @@ app.MapPost("/carritos/{carritoId}/confirmar", async (string carritoId, [FromBod
     {
         var producto = await db.Productos.FindAsync(item.Id);
         productos.Add(producto);
-        if (producto == null || producto.Stock < item.Cantidad)
-        {
-            return Results.BadRequest($"Stock insuficiente para {producto?.Nombre}");
-        }
+       
     }
 
     var compra = new Compra
