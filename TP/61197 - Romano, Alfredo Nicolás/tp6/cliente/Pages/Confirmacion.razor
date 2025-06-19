@@ -71,6 +71,8 @@ else
         {
             mensaje = "¡Compra confirmada! ¡Gracias por tu compra, " + form.Nombre + "!";
             await Http.DeleteAsync($"/carritos/{carritoId}");
+            await Task.Delay(5000); 
+            Nav.NavigateTo("/"); 
         }
         else
         {
