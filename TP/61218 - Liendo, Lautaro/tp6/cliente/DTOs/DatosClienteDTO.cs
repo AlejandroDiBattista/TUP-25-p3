@@ -1,11 +1,19 @@
-// DTOs/DatosClienteDTO.cs
+using System.ComponentModel.DataAnnotations;
+
 namespace cliente.DTOs
 {
-    // Data Transfer Object para enviar los datos del cliente al backend al confirmar la compra.
     public class DatosClienteDTO
     {
-        public string NombreSolicitante { get; set; } = string.Empty; // Nombre del cliente
-        public string ApellidoSolicitante { get; set; } = string.Empty; // Apellido del cliente
-        public string CorreoElectronicoContacto { get; set; } = string.Empty; // Email del cliente
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [MinLength(1, ErrorMessage = "El nombre no puede estar vacío.")]
+        public string NombreSolicitante { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        [MinLength(1, ErrorMessage = "El apellido no puede estar vacío.")]
+        public string ApellidoSolicitante { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
+        [EmailAddress(ErrorMessage = "El correo electrónico no es válido.")]
+        public string CorreoElectronicoContacto { get; set; } = string.Empty;
     }
 }

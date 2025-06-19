@@ -4,7 +4,7 @@ using servidor.Data;
 using servidor.Models;
 using servidor.DTOs;
 using servidor.Helpers;
-using Microsoft.AspNetCore.Http; // Para StatusCodes
+using Microsoft.AspNetCore.Http;
 
 var constructorAppWeb = WebApplication.CreateBuilder(args);
 
@@ -27,7 +27,6 @@ var aplicacion = constructorAppWeb.Build();
 
 aplicacion.UseCors("AccesoAppCliente");
 
-// Inicialización base de datos y datos de ejemplo
 using (var alcanceServicio = aplicacion.Services.CreateScope())
 {
     var contextoDBInicial = alcanceServicio.ServiceProvider.GetRequiredService<TiendaContext>();
@@ -56,9 +55,8 @@ var sesionesDeComprarArticulos = new ConcurrentDictionary<string, List<DetalleCa
 aplicacion.MapGet("/", () => Results.Ok(new { MensajeServicio = "API de Tienda de Ropa Activa", HoraDelSistema = DateTime.Now }));
 
 aplicacion.MapGet("/productos", async (TiendaContext gestorDB) =>
-{
-    return await gestorDB.InventarioArticulos.ToListAsync();
-});
+    await gestorDB.InventarioArticulos.ToListAsync()
+);
 
 aplicacion.MapGet("/productos/buscar/{textoConsulta}", async (TiendaContext gestorDB, string textoConsulta) =>
 {
@@ -89,30 +87,25 @@ aplicacion.MapGet("/carritos/{identificadorCarrito}", (string identificadorCarri
     return Results.Ok(elementosEnCarrito);
 });
 
-aplicacion.MapDelete("/carritos/{idCarritoAVaciar}", (string idCarritoAVaciar) =>
+aplicacion.MapDelete("/carritos/{idCarritoAVaciar}", async (string idCarritoAVaciar, TiendaContext gestorDB) =>
 {
     if (!sesionesDeComprarArticulos.TryGetValue(idCarritoAVaciar, out var carrito))
         return Results.NotFound("Carrito no encontrado para vaciar.");
 
-    // Al vaciar el carrito, devolver stock reservado
-    using var scope = aplicacion.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<TiendaContext>();
-
     foreach (var item in carrito)
     {
-        var articulo = db.InventarioArticulos.Find(item.ArticuloId);
+        var articulo = await gestorDB.InventarioArticulos.FindAsync(item.ArticuloId);
         if (articulo != null)
         {
             articulo.CantidadDisponible += item.Unidades;
         }
     }
-    db.SaveChanges();
+    await gestorDB.SaveChangesAsync();
 
     sesionesDeComprarArticulos[idCarritoAVaciar] = new List<DetalleCarritoMemoria>();
     return Results.Ok();
 });
 
-// Agregar o actualizar artículo en carrito y reservar stock
 aplicacion.MapPut("/carritos/{idCarrito}/anadir/{idArticulo}", async (string idCarrito, int idArticulo, int cantidadSolicitada, TiendaContext gestorDB) =>
 {
     if (cantidadSolicitada <= 0)
@@ -125,16 +118,13 @@ aplicacion.MapPut("/carritos/{idCarrito}/anadir/{idArticulo}", async (string idC
     var itemsDelCarrito = sesionesDeComprarArticulos.GetOrAdd(idCarrito, _ => new List<DetalleCarritoMemoria>());
     var itemExistenteEnCarrito = itemsDelCarrito.FirstOrDefault(i => i.ArticuloId == idArticulo);
 
-    // Cantidad reservada actualmente en el carrito para este artículo (antes del cambio)
     int cantidadReservadaAntes = itemExistenteEnCarrito?.Unidades ?? 0;
 
-    // Stock "real" disponible considerando la cantidad reservada en el carrito
     int stockRealDisponible = articuloDelInventario.CantidadDisponible + cantidadReservadaAntes;
 
     if (cantidadSolicitada > stockRealDisponible)
         return Results.BadRequest($"Stock insuficiente para '{articuloDelInventario.Denominacion}'. Solo hay {stockRealDisponible} unidades disponibles.");
 
-    // Ajustar stock disponible en la DB: devolver la cantidad reservada antes y restar la nueva cantidad solicitada
     articuloDelInventario.CantidadDisponible = stockRealDisponible - cantidadSolicitada;
     await gestorDB.SaveChangesAsync();
 
@@ -155,7 +145,6 @@ aplicacion.MapPut("/carritos/{idCarrito}/anadir/{idArticulo}", async (string idC
     return Results.Ok(itemsDelCarrito);
 });
 
-// Remover o reducir cantidad de artículo en carrito y devolver stock
 aplicacion.MapDelete("/carritos/{idCarrito}/remover/{idArticulo}", async (string idCarrito, int idArticulo, int cantidadAReducir, TiendaContext gestorDB) =>
 {
     if (!sesionesDeComprarArticulos.TryGetValue(idCarrito, out var itemsDelCarrito))
@@ -169,7 +158,6 @@ aplicacion.MapDelete("/carritos/{idCarrito}/remover/{idArticulo}", async (string
     if (cantidadAReducirReal > itemParaGestionar.Unidades)
         cantidadAReducirReal = itemParaGestionar.Unidades;
 
-    // Ajustar stock en la base de datos devolviendo la cantidad reducida
     var articulo = await gestorDB.InventarioArticulos.FindAsync(idArticulo);
     if (articulo == null)
         return Results.NotFound("Artículo no encontrado en inventario.");
@@ -189,87 +177,56 @@ aplicacion.MapDelete("/carritos/{idCarrito}/remover/{idArticulo}", async (string
     return Results.Ok(itemsDelCarrito);
 });
 
-// Confirmar compra (solo valida, no modifica stock porque ya está reservado)
-aplicacion.MapPut("/carritos/{idCarrito}/confirmar", async (
-    HttpContext contextoHttp,
-    string idCarrito,
-    TiendaContext gestorDB
-) =>
+aplicacion.MapPut("/carritos/{idCarrito}/confirmar", async (string idCarrito, DatosClienteDTO infoComprador, TiendaContext gestorDB) =>
 {
-    try
+    if (!ValidacionUtil.EsDatosClienteValidos(infoComprador))
     {
-        using var lectorDeContenido = new StreamReader(contextoHttp.Request.Body);
-        var cuerpoSolicitud = await lectorDeContenido.ReadToEndAsync();
-
-        DatosClienteDTO infoComprador;
-        try
-        {
-            infoComprador = System.Text.Json.JsonSerializer.Deserialize<DatosClienteDTO>(cuerpoSolicitud);
-
-            if (!ValidacionUtil.EsDatosClienteValidos(infoComprador))
-            {
-                return Results.BadRequest(new { error = "Datos del cliente incompletos. Se requieren Nombre, Apellido y Correo Electrónico." });
-            }
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            return Results.BadRequest(new { error = "Formato de los datos del cliente inválido." });
-        }
-
-        if (!sesionesDeComprarArticulos.TryGetValue(idCarrito, out var elementosParaConfirmar))
-            return Results.BadRequest(new { error = "El identificador del carrito proporcionado no existe o es inválido." });
-
-        if (elementosParaConfirmar.Count == 0)
-            return Results.BadRequest(new { error = "El carrito está vacío, no se puede finalizar la compra." });
-
-        // Validar que los artículos todavía existen (stock ya reservado)
-        foreach (var detalleActual in elementosParaConfirmar)
-        {
-            var articuloEnStock = await gestorDB.InventarioArticulos.FindAsync(detalleActual.ArticuloId);
-            if (articuloEnStock == null)
-                return Results.BadRequest(new { error = $"Artículo con ID {detalleActual.ArticuloId} no encontrado en el inventario." });
-        }
-
-        double totalTransaccion = 0;
-        var nuevoRegistroCompra = new RegistroCompra
-        {
-            FechaRealizacion = DateTime.Now,
-            NombreCliente = infoComprador.NombreSolicitante,
-            ApellidoCliente = infoComprador.ApellidoSolicitante,
-            EmailCliente = infoComprador.CorreoElectronicoContacto,
-            Detalles = new List<DetalleCompra>()
-        };
-
-        foreach (var itemAProcesar in elementosParaConfirmar)
-        {
-            var articuloParaRegistro = await gestorDB.InventarioArticulos.FindAsync(itemAProcesar.ArticuloId);
-
-            nuevoRegistroCompra.Detalles.Add(new DetalleCompra
-            {
-                ArticuloInventarioId = articuloParaRegistro.Id,
-                CantidadAdquirida = itemAProcesar.Unidades,
-                PrecioUnitarioAlMomento = articuloParaRegistro.ValorUnitario
-            });
-
-            totalTransaccion += articuloParaRegistro.ValorUnitario * itemAProcesar.Unidades;
-        }
-        nuevoRegistroCompra.MontoTotal = totalTransaccion;
-        gestorDB.HistorialCompras.Add(nuevoRegistroCompra);
-        await gestorDB.SaveChangesAsync();
-
-        // Vaciar carrito después de confirmar
-        sesionesDeComprarArticulos[idCarrito] = new List<DetalleCarritoMemoria>();
-
-        return Results.Ok(new { ID_ConfirmacionCompra = nuevoRegistroCompra.Id, ValorFinalCompra = nuevoRegistroCompra.MontoTotal });
+        return Results.BadRequest(new { error = "Datos del cliente incompletos. Se requieren Nombre, Apellido y Correo Electrónico." });
     }
-    catch (Exception)
+
+    if (!sesionesDeComprarArticulos.TryGetValue(idCarrito, out var elementosParaConfirmar))
+        return Results.BadRequest(new { error = "El identificador del carrito proporcionado no existe o es inválido." });
+
+    if (elementosParaConfirmar.Count == 0)
+        return Results.BadRequest(new { error = "El carrito está vacío, no se puede finalizar la compra." });
+
+    foreach (var detalleActual in elementosParaConfirmar)
     {
-        return Results.Problem(
-            statusCode: StatusCodes.Status500InternalServerError,
-            title: "Error interno del servidor",
-            detail: "Ha ocurrido un error inesperado al procesar su compra. Por favor, inténtelo de nuevo."
-        );
+        var articuloEnStock = await gestorDB.InventarioArticulos.FindAsync(detalleActual.ArticuloId);
+        if (articuloEnStock == null)
+            return Results.BadRequest(new { error = $"Artículo con ID {detalleActual.ArticuloId} no encontrado en el inventario." });
     }
+
+    double totalTransaccion = 0;
+    var nuevoRegistroCompra = new RegistroCompra
+    {
+        FechaRealizacion = DateTime.Now,
+        NombreCliente = infoComprador.NombreSolicitante,
+        ApellidoCliente = infoComprador.ApellidoSolicitante,
+        EmailCliente = infoComprador.CorreoElectronicoContacto,
+        Detalles = new List<DetalleCompra>()
+    };
+
+    foreach (var itemAProcesar in elementosParaConfirmar)
+    {
+        var articuloParaRegistro = await gestorDB.InventarioArticulos.FindAsync(itemAProcesar.ArticuloId);
+
+        nuevoRegistroCompra.Detalles.Add(new DetalleCompra
+        {
+            ArticuloInventarioId = articuloParaRegistro.Id,
+            CantidadAdquirida = itemAProcesar.Unidades,
+            PrecioUnitarioAlMomento = articuloParaRegistro.ValorUnitario
+        });
+
+        totalTransaccion += articuloParaRegistro.ValorUnitario * itemAProcesar.Unidades;
+    }
+    nuevoRegistroCompra.MontoTotal = totalTransaccion;
+    gestorDB.HistorialCompras.Add(nuevoRegistroCompra);
+    await gestorDB.SaveChangesAsync();
+
+    sesionesDeComprarArticulos[idCarrito] = new List<DetalleCarritoMemoria>();
+
+    return Results.Ok(new { ID_ConfirmacionCompra = nuevoRegistroCompra.Id, ValorFinalCompra = nuevoRegistroCompra.MontoTotal });
 });
 
 aplicacion.Run();

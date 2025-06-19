@@ -2,10 +2,10 @@
 
 @using cliente.DTOs
 @using cliente.Models
-@inject HttpClient Http
+@inject cliente.Services.ApiService ApiService
 @inject NavigationManager NavManager
 
-<h3 class="text-2xl font-bold mb-4">Confirmar Compra</h3>
+<h3>Confirmar Compra</h3>
 
 @if (cargando)
 {
@@ -13,47 +13,43 @@
 }
 else if (carrito == null || carrito.Count == 0)
 {
-    <p>El carrito está vacío o no existe.</p>
-    <button @onclick="VolverAlCatalogo" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Volver al catálogo</button>
+    <p>El carrito está vacío.</p>
+    <button @onclick="VolverAlCatalogo">Volver al catálogo</button>
 }
 else
 {
-    <div class="mb-6">
-        <p><b>Total ítems:</b> @TotalItems</p>
-        <p><b>Importe total:</b> $@TotalImporte.ToString("F2")</p>
-    </div>
+    <p><b>Total ítems:</b> @TotalItems</p>
+    <p><b>Importe total:</b> $@TotalImporte.ToString("F2")</p>
 
     <EditForm Model="datosCliente" OnValidSubmit="ProcesarCompra">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-4">
-            <label class="block font-semibold">Nombre:</label>
-            <InputText @bind-Value="datosCliente.NombreSolicitante" class="border rounded px-2 py-1 w-full" />
+        <div>
+            <label>Nombre:</label><br />
+            <InputText @bind-Value="datosCliente.NombreSolicitante" />
             <ValidationMessage For="@(() => datosCliente.NombreSolicitante)" />
         </div>
-
-        <div class="mb-4">
-            <label class="block font-semibold">Apellido:</label>
-            <InputText @bind-Value="datosCliente.ApellidoSolicitante" class="border rounded px-2 py-1 w-full" />
+        <div>
+            <label>Apellido:</label><br />
+            <InputText @bind-Value="datosCliente.ApellidoSolicitante" />
             <ValidationMessage For="@(() => datosCliente.ApellidoSolicitante)" />
         </div>
-
-        <div class="mb-4">
-            <label class="block font-semibold">Email:</label>
-            <InputText @bind-Value="datosCliente.CorreoElectronicoContacto" type="email" class="border rounded px-2 py-1 w-full" />
+        <div>
+            <label>Email:</label><br />
+            <InputText @bind-Value="datosCliente.CorreoElectronicoContacto" type="email" />
             <ValidationMessage For="@(() => datosCliente.CorreoElectronicoContacto)" />
         </div>
 
-        <div class="flex gap-4 mt-4">
-            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">Confirmar compra</button>
-            <button type="button" @onclick="VaciarCarrito" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Vaciar carrito</button>
-        </div>
+        <br />
+
+        <button type="submit">Confirmar compra</button>
+        <button type="button" @onclick="VaciarCarrito" style="margin-left:10px;">Vaciar carrito</button>
     </EditForm>
 
     @if (!string.IsNullOrEmpty(mensajeError))
     {
-        <p class="text-red-600 mt-4">@mensajeError</p>
+        <p style="color:red">@mensajeError</p>
     }
 }
 
@@ -61,7 +57,7 @@ else
     [Parameter] public string IdCarrito { get; set; }
 
     bool cargando = true;
-    List<DetalleCarritoMemoria> carrito = new();
+    List<DetalleCarritoMemoria> carrito;
     string mensajeError;
 
     DatosClienteDTO datosCliente = new DatosClienteDTO();
@@ -75,12 +71,12 @@ else
     {
         try
         {
-            Console.WriteLine($"[ConfirmarCompra] Cargando carrito con ID: {IdCarrito}");
-            carrito = await Http.GetFromJsonAsync<List<DetalleCarritoMemoria>>($"carritos/{IdCarrito}");
+            carrito = await ApiService.GetCarritoItemsAsync(IdCarrito);
+            if (carrito == null)
+                carrito = new List<DetalleCarritoMemoria>();
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"[Error] No se pudo obtener el carrito: {ex.Message}");
             carrito = new List<DetalleCarritoMemoria>();
         }
         cargando = false;
@@ -93,37 +89,22 @@ else
     async Task ProcesarCompra()
     {
         mensajeError = null;
-        try
+        bool exito = await ApiService.ConfirmCompraAsync(IdCarrito, datosCliente);
+        if (exito)
         {
-            var respuesta = await Http.PutAsJsonAsync($"carritos/{IdCarrito}/confirmar", datosCliente);
-            if (respuesta.IsSuccessStatusCode)
-            {
-                NavManager.NavigateTo("/compra-confirmada");
-            }
-            else
-            {
-                var errorJson = await respuesta.Content.ReadAsStringAsync();
-                mensajeError = $"Error al confirmar compra: {errorJson}";
-            }
+            NavManager.NavigateTo("/compra-confirmada");
         }
-        catch (Exception ex)
+        else
         {
-            mensajeError = $"Error inesperado: {ex.Message}";
+            mensajeError = "Error al confirmar compra. Revisa que los datos estén completos y sean válidos.";
         }
     }
 
     async Task VaciarCarrito()
     {
-        try
-        {
-            await Http.DeleteAsync($"carritos/{IdCarrito}");
-            carrito.Clear();
-            NavManager.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            mensajeError = $"Error al vaciar el carrito: {ex.Message}";
-        }
+        await ApiService.ClearCarritoAsync(IdCarrito);
+        carrito.Clear();
+        NavManager.NavigateTo("/");
     }
 
     void VolverAlCatalogo()
