@@ -31,9 +31,21 @@ else
             {
                 <tr>
                     <td>@item.Nombre</td>
-                    <td>@item.Cantidad</td>
+                    <td>
+                          <input type="number" min="1" max="@item.Stock"
+                          value="@cantidades[item.ProductoId]"
+                          @oninput="(e) => ActualizarCantidad(item, e.Value?.ToString())"
+                          style="width:60px" />
+                          <div class="text-muted small">[Stock disponible: @item.Stock]</div>
+                        <div class="text-danger small" style="min-height: 1.2em;">
+                            @if (errores.ContainsKey(item.ProductoId))
+                        {
+                            <span>@errores[item.ProductoId]</span>
+                        }
+                        </div>
+                    </td>
                     <td>$@item.Precio</td>
-                    <td>$@item.Importe</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
                     <td>
                         <button class="btn btn-danger btn-sm" @onclick="() => QuitarDelCarrito(item)">Quitar</button>
                     </td>
@@ -41,16 +53,23 @@ else
             }
         </tbody>
     </table>
-    <p><b>Total: $@items.Sum(i => i.Importe)</b></p>
+    <p><b>Total: $@items.Sum(i => i.Precio * i.Cantidad)</b></p>
     <button class="btn btn-success mt-3" @onclick="IrAConfirmar">Confirmar compra</button>
 }
 
 @code {
     List<ItemCarritoDto>? items;
+    private Dictionary<int, int> cantidades = new();
+    private Dictionary<int, string> errores = new();
 
     protected override async Task OnInitializedAsync()
     {
         items = await CartService.ObtenerItems();
+
+        foreach (var item in items)
+        {
+            cantidades[item.ProductoId] = item.Cantidad;
+        }
     }
 
     void IrAConfirmar()
@@ -62,6 +81,43 @@ else
     {
         await CartService.EliminarProducto(item.ProductoId);
         items = await CartService.ObtenerItems();
-        StateHasChanged(); // Fuerza la actualización de la UI
+
+        // Actualizar cantidades también
+        cantidades.Clear();
+        foreach (var nuevoItem in items)
+        {
+            cantidades[nuevoItem.ProductoId] = nuevoItem.Cantidad;
+        }
+
+        StateHasChanged();
     }
+
+    async Task ActualizarCantidad(ItemCarritoDto item, string? nuevoValor)
+{
+    errores.Remove(item.ProductoId);
+
+    if (int.TryParse(nuevoValor, out int nuevaCantidad))
+    {
+        if (nuevaCantidad <= 0)
+        {
+            errores[item.ProductoId] = "La cantidad debe ser mayor a 0.";
+            return;
+        }
+
+        if (nuevaCantidad > item.Stock)
+        {
+            errores[item.ProductoId] = $"Máximo disponible: {item.Stock}.";
+            nuevaCantidad = item.Stock;
+        }
+
+        cantidades[item.ProductoId] = nuevaCantidad;
+        item.Cantidad = nuevaCantidad;
+        item.Importe = item.Precio * nuevaCantidad;
+
+        // ✅ Guardar el cambio en el backend
+        await CartService.ActualizarCantidad(item.ProductoId, nuevaCantidad);
+    }
+}
+
+
 }

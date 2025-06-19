@@ -95,13 +95,27 @@ app.MapGet("/carritos/{carritoId}", async (TiendaContext db, string carritoId) =
     if (carrito == null)
         return Results.NotFound();
 
-    return Results.Ok(carrito.Items.Select(i => new {
-        i.ProductoId,
-        i.Producto.Nombre,
-        i.Producto.Precio,
-        i.Cantidad,
-        Importe = i.Cantidad * i.Producto.Precio
-    }));
+    var itemsDto = carrito.Items.Select(i =>
+    {
+        // Obtener el stock global del producto desde DB
+        var productoDb = db.Productos.First(p => p.Id == i.ProductoId);
+        int stockGlobal = productoDb.Stock;
+
+        // Stock disponible = lo que hay en la base + lo que el usuario ya tiene en el carrito
+        int stockDisponible = stockGlobal + i.Cantidad;
+
+        return new
+        {
+            i.ProductoId,
+            i.Producto.Nombre,
+            i.Producto.Precio,
+            i.Cantidad,
+            Importe = i.Cantidad * i.Producto.Precio,
+            Stock = i.Producto.Stock,
+        };
+    });
+
+    return Results.Ok(itemsDto);
 });
 
 // Vaciar un carrito
@@ -119,6 +133,7 @@ app.MapDelete("/carritos/{carritoId}", async (TiendaContext db, string carritoId
     return Results.NoContent();
 });
 
+
 // Agregar o actualizar producto en el carrito
 app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, string carritoId, int productoId, int cantidad) =>
 {
@@ -133,10 +148,16 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, string
     if (carrito == null || producto == null)
         return Results.NotFound();
 
-    if (producto.Stock < cantidad)
+    var itemExistente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    int cantidadActualEnCarrito = itemExistente?.Cantidad ?? 0;
+
+    // Calculamos stock disponible real: stock actual + la cantidad que ya tiene el carrito para ese producto
+    int stockDisponible = producto.Stock + cantidadActualEnCarrito;
+
+    if (cantidad > stockDisponible)
         return Results.BadRequest("No hay suficiente stock");
 
-    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    var item = itemExistente;
     if (item == null)
     {
         item = new ItemCarrito { ProductoId = productoId, Cantidad = cantidad, CarritoId = carritoId };
@@ -148,13 +169,10 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, string
         db.ItemsCarrito.Update(item);
     }
 
-    // Descontar stock
-    producto.Stock -= cantidad;
-    if (producto.Stock < 0) producto.Stock = 0;
-
     await db.SaveChangesAsync();
     return Results.Ok();
 });
+
 
 // Eliminar o reducir cantidad de producto en el carrito
 app.MapDelete("/carritos/{carritoId}/{productoId}", async (TiendaContext db, string carritoId, int productoId) =>
@@ -181,14 +199,20 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, string ca
     if (carrito == null || !carrito.Items.Any())
         return Results.BadRequest("Carrito vacío o no encontrado");
 
-    // Validar stock
+    //  Verificar si hay stock suficiente para cada producto
     foreach (var item in carrito.Items)
     {
         if (item.Producto.Stock < item.Cantidad)
             return Results.BadRequest($"No hay suficiente stock para {item.Producto.Nombre}");
     }
 
-    // Descontar stock y registrar compra
+    //  Descontar el stock real de cada producto
+    foreach (var item in carrito.Items)
+    {
+        item.Producto.Stock -= item.Cantidad;
+    }
+
+    // 💾 Registrar la compra
     var nuevaCompra = new Compra
     {
         Fecha = DateTime.Now,
@@ -204,9 +228,12 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, string ca
         }).ToList()
     };
 
-    
     db.Compras.Add(nuevaCompra);
+
+    // 🧹 Vaciar carrito (eliminar ítems)
     db.ItemsCarrito.RemoveRange(carrito.Items);
+
+    // 💾 Guardar todo
     await db.SaveChangesAsync();
 
     return Results.Ok(new { Mensaje = "Compra confirmada" });

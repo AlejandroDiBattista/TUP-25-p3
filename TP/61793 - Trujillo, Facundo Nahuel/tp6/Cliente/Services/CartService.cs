@@ -72,6 +72,12 @@ namespace cliente.Services
         {
             public string CarritoId { get; set; }
         }
+        public async Task ActualizarCantidad(int productoId, int cantidad)
+        {
+            await InicializarCarrito();
+            await _http.PutAsync($"/carritos/{CarritoId}/{productoId}?cantidad={cantidad}", null);
+            OnCarritoActualizado?.Invoke();
+        }
     }
     
 
@@ -82,6 +88,7 @@ namespace cliente.Services
         public decimal Precio { get; set; }
         public int Cantidad { get; set; }
         public decimal Importe { get; set; }
+        public int Stock { get; set; }
     }
 }
 

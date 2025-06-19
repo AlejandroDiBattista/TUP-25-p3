@@ -25,7 +25,6 @@ else
                         <p class="card-text">@producto.Descripcion</p>
                         <p>Precio: $@producto.Precio</p>
                         <p>Stock: @producto.Stock</p>
-                        <input type="number" min="1" max="@producto.Stock" @bind="cantidades[producto.Id]" style="width:60px" />
                         <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto.Id)">Agregar al carrito</button>
                     </div>
                 </div>
@@ -41,26 +40,50 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarProductos();
         productos = await ProductoService.ObtenerProductos();
         if (productos != null)
             foreach (var p in productos)
                 cantidades[p.Id] = 1;
     }
-
+    
     async Task AgregarAlCarrito(int productoId)
-    {
-        int cantidad = cantidades.ContainsKey(productoId) ? cantidades[productoId] : 1;
-        await CartService.AgregarProducto(productoId, cantidad);
+{
+    // Obtener cantidad actual del producto en el carrito
+    var itemsCarrito = await CartService.ObtenerItems();
+    var existente = itemsCarrito.FirstOrDefault(i => i.ProductoId == productoId);
+    int cantidadActual = existente?.Cantidad ?? 0;
 
-        // Actualiza el stock localmente
-        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
-        if (producto != null)
-        {
-            producto.Stock -= cantidad;
-            if (producto.Stock < 0) producto.Stock = 0;
-        }
+    int nuevaCantidad = cantidadActual + 1;
+
+    // Obtener stock actual del producto
+    var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+    if (producto != null && nuevaCantidad > producto.Stock + cantidadActual)
+    {
+        // Ya se llegó al máximo posible en stock
+        return;
     }
 
+    await CartService.ActualizarCantidad(productoId, nuevaCantidad);
+
+    // Descontar stock visualmente en catálogo
+    if (producto != null)
+    {
+        producto.Stock -= 1;
+        if (producto.Stock < 0) producto.Stock = 0;
+    }
+}
+    private async Task CargarProductos()
+{
+    productos = await ProductoService.ObtenerProductos();
+
+    if (productos != null)
+    {
+        cantidades.Clear(); // resetear cantidades
+        foreach (var p in productos)
+            cantidades[p.Id] = 1;
+    }
+}
     IEnumerable<Producto> productosFiltrados =>
         string.IsNullOrWhiteSpace(busqueda)
             ? productos ?? Enumerable.Empty<Producto>()
