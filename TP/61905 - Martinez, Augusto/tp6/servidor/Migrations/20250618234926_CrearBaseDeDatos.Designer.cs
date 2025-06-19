@@ -11,8 +11,8 @@ using servidor.Data;
 namespace servidor.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250618181940_CorregirProductoVentaItems")]
-    partial class CorregirProductoVentaItems
+    [Migration("20250618234926_CrearBaseDeDatos")]
+    partial class CrearBaseDeDatos
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -97,7 +97,7 @@ namespace servidor.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("double");
 
                     b.Property<int>("Stock")
                         .HasColumnType("INTEGER");
@@ -105,26 +105,6 @@ namespace servidor.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Productos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Descripcion = "Ultrabook con Intel i7.",
-                            ImagenUrl = "/images/laptop.jpg",
-                            Nombre = "Laptop Dell XPS 13",
-                            Precio = 1299.99m,
-                            Stock = 15
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Descripcion = "Smartphone con pantalla OLED.",
-                            ImagenUrl = "/images/iphone.jpg",
-                            Nombre = "iPhone 14 Pro",
-                            Precio = 999.00m,
-                            Stock = 10
-                        });
                 });
 
             modelBuilder.Entity("servidor.Models.Usuario", b =>
@@ -262,7 +242,7 @@ namespace servidor.Migrations
                     b.HasOne("servidor.Models.Producto", "Producto")
                         .WithMany("VentaItems")
                         .HasForeignKey("ProductoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("servidor.Models.Venta", "Venta")

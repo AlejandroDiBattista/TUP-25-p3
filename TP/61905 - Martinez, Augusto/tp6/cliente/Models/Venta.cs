@@ -1,19 +1,16 @@
-namespace Cliente.Models
-{
-    public class Venta
-    {
-        public int Id { get; set; }
-        public DateTime Fecha { get; set; } = DateTime.UtcNow;
-        public string ClienteNombre { get; set; } = string.Empty;
-        public string ClienteEmail { get; set; } = string.Empty;
-        public List<VentaItem> Items { get; set; } = new List<VentaItem>();
-    }
+using Cliente.Models;
 
-    public class VentaItem
-    {
-        public int Id { get; set; }
-        public int ProductoId { get; set; }
-        public int Cantidad { get; set; }
-        public decimal PrecioUnitario { get; set; }
-    }
+namespace Cliente.Models;
+
+public class Venta
+{
+    public int Id { get; set; }
+    public int UsuarioId { get; set; }
+    public DateTime Fecha { get; set; }
+    public decimal Total { get; set; }
+    public string NombreCliente { get; set; }
+    public string ApellidoCliente { get; set; }
+    public string EmailCliente { get; set; }
+    public List<VentaItem> VentaItems { get; set; } = new();
 }
+

@@ -9,23 +9,25 @@ namespace servidor.Models
         public int Id { get; set; }
 
         [Required]
-        public int ProductoId { get; set; } // ✅ Clave foránea sin anotación para evitar conflictos
+        [ForeignKey("Producto")] // ✅ Definición clara de clave foránea
+        public int ProductoId { get; set; } 
 
         [Required]
-        public int VentaId { get; set; } // ✅ Clave foránea sin anotación para evitar conflictos
+        [ForeignKey("Venta")] // ✅ Definición clara de clave foránea
+        public int VentaId { get; set; } 
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser al menos 1.")]
         public int Cantidad { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")] // ✅ Asegura precisión en la base de datos
+        [Column(TypeName = "decimal(18,2)")] 
         public decimal PrecioUnitario { get; set; }
 
         [NotMapped]
         public decimal Total => Cantidad * PrecioUnitario;
 
-        // ✅ Propiedades de navegación correctamente definidas sin `[ForeignKey]`
+        // ✅ Relaciones correctamente referenciadas
         public Producto Producto { get; set; } = null!;
         public Venta Venta { get; set; } = null!;
     }

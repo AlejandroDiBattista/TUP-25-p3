@@ -18,19 +18,19 @@ namespace servidor.Services
             _logger = logger;
         }
 
-        // Obtener todos los productos con manejo de excepciones mejorado
+        // ✅ Obtener todos los productos con validación mejorada
         public async Task<List<Producto>> ObtenerProductosAsync()
         {
             try
             {
                 var productos = await _context.Productos.AsNoTracking().ToListAsync();
 
-                if (productos.Count == 0)
+                if (productos == null || productos.Count == 0)
                 {
                     _logger.LogWarning("No se encontraron productos en la base de datos.");
                 }
 
-                return productos;
+                return productos ?? new List<Producto>();
             }
             catch (System.Exception ex)
             {
@@ -39,7 +39,7 @@ namespace servidor.Services
             }
         }
 
-        // Obtener un producto específico por ID con validaciones
+        // ✅ Obtener un producto específico por ID con validaciones
         public async Task<Producto> ObtenerProductoPorIdAsync(int id)
         {
             try
@@ -58,7 +58,7 @@ namespace servidor.Services
             }
         }
 
-        // Método optimizado para agregar productos iniciales solo si la tabla está vacía
+        // ✅ Agregar productos iniciales solo si la tabla está vacía
         public async Task AgregarProductosInicialesAsync()
         {
             try

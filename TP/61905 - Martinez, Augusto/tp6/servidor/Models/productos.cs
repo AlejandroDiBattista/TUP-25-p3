@@ -7,6 +7,7 @@ namespace servidor.Models
     public class Producto
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // ✅ Genera automáticamente `Id`
         public int Id { get; set; }
 
         [Required]
@@ -18,16 +19,17 @@ namespace servidor.Models
         public string Descripcion { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
+        [Column(TypeName = "double")]
         public decimal Precio { get; set; }
 
         [Required]
+        [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")] // ✅ Validación para evitar valores incorrectos
         public int Stock { get; set; }
 
         [MaxLength(300)]
         public string ImagenUrl { get; set; } = string.Empty;
 
-        // ✅ Agregar relación con `VentaItem`
-        public List<VentaItem> VentaItems { get; set; } = new List<VentaItem>();
+        // ✅ Relación con `VentaItem`
+        public List<VentaItem> VentaItems { get; set; } = new();
     }
 }

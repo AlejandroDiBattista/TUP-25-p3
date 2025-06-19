@@ -19,29 +19,31 @@ namespace servidor.Services
         }
 
         // ✅ Obtener todos los carritos
-        public async Task<List<Carrito>> ObtenerCarritosAsync()
+       public async Task<Carrito> ObtenerCarritoAsync(int usuarioId)
+{
+    try
+    {
+        var carrito = await _context.Carritos
+                                    .Include(c => c.CarritoItems)
+                                    .ThenInclude(ci => ci.Producto) // ✅ Carga los productos asociados
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId); // ✅ Obtiene solo el carrito del usuario
+
+        if (carrito == null)
         {
-            try
-            {
-                var carritos = await _context.Carritos
-                                             .Include(c => c.CarritoItems)
-                                             .ThenInclude(ci => ci.Producto) // 🔥 Carga los productos asociados a los ítems
-                                             .AsNoTracking()
-                                             .ToListAsync();
-
-                if (!carritos.Any())
-                {
-                    _logger.LogWarning("No se encontraron carritos en la base de datos.");
-                }
-
-                return carritos;
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError($"Error al obtener carritos: {ex.Message}");
-                return new List<Carrito>();
-            }
+            _logger.LogWarning($"No se encontró carrito para el usuario ID {usuarioId}.");
+            return null;
         }
+
+        return carrito;
+    }
+    catch (System.Exception ex)
+    {
+        _logger.LogError($"Error al obtener carrito para el usuario ID {usuarioId}: {ex.Message}");
+        return null;
+    }
+}
+
 
         // ✅ Obtener carrito por CarritoId (NO por UsuarioId)
         public async Task<Carrito> ObtenerCarritoPorIdAsync(Guid carritoId)

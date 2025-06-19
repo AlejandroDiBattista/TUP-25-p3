@@ -3,27 +3,26 @@
 @using Cliente.Services
 @using System.ComponentModel.DataAnnotations
 @inject CarritoService CarritoService
-@inject VentaService VentaService
 @inject NavigationManager Navigation
 
 <PageTitle>Confirmar Compra</PageTitle>
 
 <h2>Confirmar Compra</h2>
 
-@if (carrito.Any())
+@if (CarritoService.Items.Any())
 {
     <div class="mb-4">
         <h4>Resumen del Carrito</h4>
         <ul>
-            @foreach (var item in carrito)
+            @foreach (var item in CarritoService.Items)
             {
-                <li>@item.Cantidad × @item.Producto.Nombre - $@(item.Cantidad * item.Producto.Precio)</li>
+                <li>@item.Cantidad × @item.Nombre - $@(item.Cantidad * item.PrecioUnitario)</li>
             }
         </ul>
-        <p><strong>Total:</strong> $@TotalCompra</p>
+        <p><strong>Total:</strong> $@CarritoService.Total</p>
     </div>
 
-    <EditForm Model="@formulario" OnValidSubmit="ProcesarCompra">
+    <EditForm Model="@formulario" OnValidSubmit="EnviarFormulario">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -35,6 +34,10 @@
             <label>Email:</label>
             <InputText type="email" class="form-control" @bind-Value="formulario.Email" />
         </div>
+        <div class="mb-3">
+            <label>Confirmar Email:</label>
+            <InputText type="email" class="form-control" @bind-Value="formulario.ConfirmarEmail" />
+        </div>
 
         <button type="submit" class="btn btn-success">Confirmar Compra</button>
     </EditForm>
@@ -45,41 +48,24 @@ else
 }
 
 @code {
-    private List<CarritoItem> carrito = new();
+     protected override async Task OnInitializedAsync()
+    {
+        await CarritoService.CargarDesdeApiAsync(1); // 👈 recarga del backend
+    }
     private FormularioCompra formulario = new();
-    private decimal TotalCompra => carrito.Sum(item => item.Cantidad * item.Producto.Precio);
 
-    protected override async Task OnInitializedAsync()
+    private async Task EnviarFormulario()
     {
-        await CargarCarrito();
-    }
+        if (formulario.Email != formulario.ConfirmarEmail)
+        {
+            Console.WriteLine("Los emails no coinciden.");
+            return;
+        }
 
-    private async Task CargarCarrito()
-    {
-        carrito = await CarritoService.ObtenerCarritoAsync(usuarioId) ?? new List<CarritoItem>();
-    }
-
-    private async Task ProcesarCompra()
-    {
         try
         {
-            var venta = new Venta
-            {
-                UsuarioId = usuarioId,
-                VentaItems = carrito
-            };
-
-            var resultado = await VentaService.RegistrarVentaAsync(venta);
-
-            if (resultado)
-            {
-                await CarritoService.VaciarCarritoAsync(usuarioId);
-                Navigation.NavigateTo("/confirmacion");
-            }
-            else
-            {
-                Console.WriteLine("Error al procesar la compra.");
-            }
+            await CarritoService.ConfirmarCompraAsync(1, formulario.Nombre, formulario.Email);
+            Navigation.NavigateTo("/confirmacion");
         }
         catch (Exception ex)
         {
@@ -95,5 +81,9 @@ else
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "El email no es válido")]
         public string Email { get; set; }
+
+        [Required(ErrorMessage = "Confirma tu email")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string ConfirmarEmail { get; set; }
     }
 }

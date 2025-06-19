@@ -25,6 +25,12 @@ namespace servidor.Models
         [Range(0.01, double.MaxValue, ErrorMessage = "El precio unitario debe ser mayor a 0.")]
         public decimal PrecioUnitario { get; set; }
 
+        [NotMapped]
+        public string Nombre { get; set; }
+
+        [NotMapped]
+        public string ImagenUrl { get; set; }
+
         [NotMapped] 
         public decimal Total => Cantidad * PrecioUnitario;
 

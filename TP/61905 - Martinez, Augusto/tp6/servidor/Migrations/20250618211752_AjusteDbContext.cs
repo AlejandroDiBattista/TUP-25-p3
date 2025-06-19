@@ -2,14 +2,20 @@
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace servidor.Migrations
 {
     /// <inheritdoc />
-    public partial class CorregirProductoVentaItems : Migration
+    public partial class AjusteDbContext : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_VentaItems_Productos_ProductoId",
+                table: "VentaItems");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_VentaItems_Productos_ProductoId1",
                 table: "VentaItems");
@@ -17,6 +23,16 @@ namespace servidor.Migrations
             migrationBuilder.DropIndex(
                 name: "IX_VentaItems_ProductoId1",
                 table: "VentaItems");
+
+            migrationBuilder.DeleteData(
+                table: "Productos",
+                keyColumn: "Id",
+                keyValue: 1);
+
+            migrationBuilder.DeleteData(
+                table: "Productos",
+                keyColumn: "Id",
+                keyValue: 2);
 
             migrationBuilder.DropColumn(
                 name: "ProductoId1",
@@ -162,6 +178,14 @@ namespace servidor.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_VentaItems_Productos_ProductoId",
+                table: "VentaItems",
+                column: "ProductoId",
+                principalTable: "Productos",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Ventas_Usuarios_UsuarioId",
                 table: "Ventas",
                 column: "UsuarioId",
@@ -180,6 +204,10 @@ namespace servidor.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Carritos_Usuarios_UsuarioId",
                 table: "Carritos");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_VentaItems_Productos_ProductoId",
+                table: "VentaItems");
 
             migrationBuilder.DropForeignKey(
                 name: "FK_Ventas_Usuarios_UsuarioId",
@@ -283,10 +311,27 @@ namespace servidor.Migrations
                 oldClrType: typeof(decimal),
                 oldType: "decimal(18,2)");
 
+            migrationBuilder.InsertData(
+                table: "Productos",
+                columns: new[] { "Id", "Descripcion", "ImagenUrl", "Nombre", "Precio", "Stock" },
+                values: new object[,]
+                {
+                    { 1, "Ultrabook con Intel i7.", "/images/laptop.jpg", "Laptop Dell XPS 13", 1299.99m, 15 },
+                    { 2, "Smartphone con pantalla OLED.", "/images/iphone.jpg", "iPhone 14 Pro", 999.00m, 10 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_VentaItems_ProductoId1",
                 table: "VentaItems",
                 column: "ProductoId1");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_VentaItems_Productos_ProductoId",
+                table: "VentaItems",
+                column: "ProductoId",
+                principalTable: "Productos",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_VentaItems_Productos_ProductoId1",

@@ -1,9 +1,9 @@
 ﻿@page "/"
-@using Cliente.Services
 @using Cliente.Models
+@using Cliente.Services
 @inject ApiService ApiService
-@inject NavigationManager Navigation
 @inject CarritoService CarritoService
+@inject NavigationManager Navigation
 
 <PageTitle>Catálogo de productos</PageTitle>
 
@@ -33,7 +33,7 @@
     {
         <div class="alert alert-danger">Error: @error</div>
     }
-    else if (productosFiltrados != null && productosFiltrados.Any())
+    else if (productosFiltrados.Any())
     {
         <div class="row row-cols-1 row-cols-md-3 g-4">
             @foreach (var producto in productosFiltrados)
@@ -47,8 +47,8 @@
                             <p><strong>Stock:</strong> @producto.Stock</p>
                         </div>
                         <div class="card-footer text-end">
-                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
-                                Agregar al carrito
+                            <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">
+                                ➕ Añadir al carrito
                             </button>
                         </div>
                     </div>
@@ -64,15 +64,32 @@
 
 @code {
     private List<Producto> productos = new();
-    private string error;
+    private string error = string.Empty;
     private bool cargando = true;
     private int contadorCarrito = 0;
     private string busqueda = "";
+    private Guid carritoId = Guid.Empty;
+    private int usuarioId = 1;
 
     protected override async Task OnInitializedAsync()
     {
+        await InicializarCarrito();
         await CargarProductos();
-        contadorCarrito = await CarritoService.ObtenerContadorProductosAsync(); // ✅ Obtiene el contador real
+        await ActualizarContadorCarrito();
+    }
+
+    private async Task InicializarCarrito()
+    {
+        var carrito = await CarritoService.ObtenerCarritoAsync(usuarioId);
+        if (carrito != null)
+        {
+            carritoId = carrito.Id;
+            CarritoService.CargarItems(carrito.CarritoItems);
+        }
+        else
+        {
+            error = "No se pudo cargar el carrito. Intenta recargar la página.";
+        }
     }
 
     private async Task CargarProductos()
@@ -84,7 +101,7 @@
         }
         catch (Exception ex)
         {
-            error = ex.Message;
+            error = $"Error al cargar productos: {ex.Message}";
         }
         finally
         {
@@ -93,26 +110,50 @@
         }
     }
 
-    private IEnumerable<Producto> productosFiltrados => string.IsNullOrWhiteSpace(busqueda)
-        ? productos
-        : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
-
     private async Task AgregarAlCarrito(Producto producto)
     {
-        if (producto.Stock > 0)
+        try
         {
-            await CarritoService.AgregarProductoAsync(producto); // ✅ Usa un método asíncrono
-            contadorCarrito = await CarritoService.ObtenerContadorProductosAsync();
-            StateHasChanged();
+            if (carritoId == Guid.Empty)
+            {
+                error = "No se pudo identificar tu carrito. Intenta recargar.";
+                return;
+            }
+
+            var response = await CarritoService.AgregarProductoAsync(carritoId, producto.Id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await ActualizarContadorCarrito();
+            }
+            else
+            {
+                error = "Error al agregar producto al carrito.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            error = $"No hay stock disponible para {producto.Nombre}";
+            error = $"Error al agregar producto: {ex.Message}";
         }
+
+        StateHasChanged();
+    }
+
+    private async Task ActualizarContadorCarrito()
+    {
+        if (carritoId == Guid.Empty)
+            return;
+
+        contadorCarrito = await CarritoService.ObtenerContadorProductosAsync(carritoId);
     }
 
     private void IrAlCarrito()
     {
         Navigation.NavigateTo("/carrito");
     }
+
+    private IEnumerable<Producto> productosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? productos
+            : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 }
