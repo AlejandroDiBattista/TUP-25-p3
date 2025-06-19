@@ -1,0 +1,113 @@
+@page "/carrito"
+@using System.Net.Http.Json
+
+<h1>Carrito de Compras</h1>
+
+@if (carrito == null || !carrito.Items.Any())
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Importe</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito.Items)
+            {
+                <tr>
+                    <td>@item.Producto?.Nombre</td>
+                    <td>
+                        <button @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad - 1)" disabled="@(item.Cantidad <= 1)">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto?.Stock)">+</button>
+                    </td>
+                    <td>$@item.Producto?.Precio</td>
+                    <td>$@(item.Cantidad * (item.Producto?.Precio ?? 0))</td>
+                    <td><button class="btn btn-danger" @onclick="() => EliminarProducto(item.ProductoId)">Eliminar</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><b>Total: $@carrito.Items.Sum(i => i.Cantidad * (i.Producto?.Precio ?? 0))</b></p>
+    <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
+}
+
+@code {
+    private Carrito? carrito;
+    private int carritoId = 1; // Simulación, luego se debe obtener dinámicamente
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        carrito = await Http.GetFromJsonAsync<Carrito>($"http://localhost:5000/carritos/{carritoId}");
+        CarritoService.SetCantidad(carrito?.Items.Sum(i => i.Cantidad) ?? 0);
+        if (carrito != null)
+        {
+            foreach (var item in carrito.Items)
+            {
+                item.Producto = await Http.GetFromJsonAsync<Producto>($"http://localhost:5000/productos?query={item.ProductoId}");
+            }
+        }
+    }
+
+    private async Task CambiarCantidad(int productoId, int nuevaCantidad)
+    {
+        await Http.PutAsJsonAsync($"http://localhost:5000/carritos/{carritoId}/{productoId}", nuevaCantidad);
+        await CargarCarrito();
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        await Http.DeleteAsync($"http://localhost:5000/carritos/{carritoId}/{productoId}");
+        await CargarCarrito();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await Http.DeleteAsync($"http://localhost:5000/carritos/{carritoId}");
+        await CargarCarrito();
+    }
+
+    private void ConfirmarCompra()
+    {
+        // Redirigir a la página de confirmación (a implementar)
+    }
+
+    public class Carrito
+    {
+        public int Id { get; set; }
+        public List<ItemCarrito> Items { get; set; } = new();
+    }
+    public class ItemCarrito
+    {
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public Producto? Producto { get; set; }
+    }
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
+    }
+    [Inject]
+    public HttpClient Http { get; set; } = default!;
+    [Inject]
+    public CarritoService CarritoService { get; set; } = default!;
+}

@@ -1,0 +1,119 @@
+@page "/confirmacion"
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
+
+<h1>Confirmación de Compra</h1>
+
+@if (carrito == null || !carrito.Items.Any())
+{
+    <p>No hay productos en el carrito para confirmar.</p>
+}
+else if (compraConfirmada)
+{
+    <div class="alert alert-success">¡Compra confirmada! Gracias por tu pedido.</div>
+    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+}
+else
+{
+    <div>
+        <h3>Resumen de la compra</h3>
+        <ul>
+            @foreach (var item in carrito.Items)
+            {
+                <li>@item.Cantidad x @item.Producto?.Nombre - $@(item.Cantidad * (item.Producto?.Precio ?? 0))</li>
+            }
+        </ul>
+        <p><b>Total: $@carrito.Items.Sum(i => i.Cantidad * (i.Producto?.Precio ?? 0))</b></p>
+    </div>
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label>Nombre</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" required />
+        </div>
+        <div class="mb-3">
+            <label>Apellido</label>
+            <InputText class="form-control" @bind-Value="cliente.Apellido" required />
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="cliente.Email" required />
+        </div>
+        <button class="btn btn-success" type="submit">Confirmar compra</button>
+    </EditForm>
+}
+
+@code {
+    private Carrito? carrito;
+    private Cliente cliente = new();
+    private bool compraConfirmada = false;
+    private int carritoId = 1; // Simulación, luego se debe obtener dinámicamente
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        carrito = await Http.GetFromJsonAsync<Carrito>($"http://localhost:5000/carritos/{carritoId}");
+        CarritoService.SetCantidad(carrito?.Items.Sum(i => i.Cantidad) ?? 0);
+        if (carrito != null)
+        {
+            foreach (var item in carrito.Items)
+            {
+                item.Producto = await Http.GetFromJsonAsync<Producto>($"http://localhost:5000/productos?query={item.ProductoId}");
+            }
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var response = await Http.PutAsJsonAsync($"http://localhost:5000/carritos/{carritoId}/confirmar", cliente);
+        if (response.IsSuccessStatusCode)
+        {
+            compraConfirmada = true;
+            carrito = new Carrito();
+        }
+    }
+
+    private void VolverAlCatalogo()
+    {
+        NavigationManager.NavigateTo("/catalogo");
+    }
+
+    public class Carrito
+    {
+        public int Id { get; set; }
+        public List<ItemCarrito> Items { get; set; } = new();
+    }
+    public class ItemCarrito
+    {
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public Producto? Producto { get; set; }
+    }
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; } = string.Empty;
+    }
+    public class Cliente
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+    }
+    [Inject]
+    public HttpClient Http { get; set; } = default!;
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject]
+    public CarritoService CarritoService { get; set; } = default!;
+}

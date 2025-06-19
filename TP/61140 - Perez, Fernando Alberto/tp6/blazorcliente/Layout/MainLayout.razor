@@ -1,0 +1,15 @@
+﻿@page "/"
+@inherits LayoutComponentBase
+@inject CarritoService CarritoService
+
+<Header CarritoCount="@CarritoService.Cantidad" />
+<div class="container" style="margin-top: 80px;">
+    @Body
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+    }
+}
