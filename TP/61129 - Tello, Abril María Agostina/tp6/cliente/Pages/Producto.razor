@@ -1,3 +1,4 @@
+@page "/"
 @page "/productos"
 @using cliente.Services
 @using cliente.Modelos
@@ -10,7 +11,7 @@
 <div class="fondo-productos">
     <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="/">
                 <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
             </a>
             
@@ -21,18 +22,15 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/productos">Productos</a>
+                        <a class="nav-link active" aria-current="page" href="/">Productos</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
-                        <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
-                        <span style="margin-right: 0.3em;">Carrito</span>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            @CarritoService.Items.Sum(i => i.Cantidad)
-                        </span>
+                            <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                            <span style="margin-right: 0.3em;">Carrito</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @CarritoService.Items.Sum(i => i.Cantidad)
+                            </span>
                         </a>
                     </li>
                 </ul>
@@ -46,12 +44,6 @@
     </nav>
     
     <div class="container mt-5 pt-5">
-        @if (mostrarMensaje)
-        {
-            <div class="mensaje-flotante">
-                ¡Agregado al carrito exitosamente!
-            </div>
-        }
         
         @if (productos == null)
         {
@@ -113,16 +105,8 @@
     private async Task AgregarAlCarrito(cliente.Modelos.Producto producto)
     {
         await CarritoService.AgregarAlCarrito(producto);
-        mostrarMensaje = true;
-        StateHasChanged();
-        await OcultarMensaje();
-        Console.WriteLine($"Producto agregado al carrito: {producto.Nombre}");
-    }
-
-    private async Task OcultarMensaje()
-    {
-        await Task.Delay(1500);
-        mostrarMensaje = false;
+        await ApiService.RestarStockAsync(producto.Id, 1);
+        productos = await ApiService.GetProductosAsync();
         StateHasChanged();
     }
 
@@ -144,4 +128,4 @@
         return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
     }
 
-}    
+}

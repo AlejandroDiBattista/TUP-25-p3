@@ -1,8 +1,7 @@
 namespace cliente.Modelos
 {
-    public class CarritoItem
+    public class StockDTO
     {
-        public int ProductoId { get; set; }
         public int Cantidad { get; set; }
     }
 }

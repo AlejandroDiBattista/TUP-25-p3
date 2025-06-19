@@ -1,14 +1,17 @@
 @page "/carrito"
 @using cliente.Modelos
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Routing
 @inject cliente.Services.CarritoService CarritoService
 @inject NavigationManager NavigationManager
+@inject cliente.Services.ApiService ApiService
 
-<PageTitle>Carrito</PageTitle>
+<PageTitle>Carrito de compras</PageTitle>
 
 <div class="fondo-productos">
     <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="/">
                 <img src="imagenes/Rare-Beauty-Logo.png" alt="Logo" width="100" height="55" class="d-inline-block align-text-top">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,18 +21,15 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/productos">Productos</a>
+                        <a class="nav-link active" aria-current="page" href="/">Productos</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center position-relative" href="/carrito">
-                        <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
-                        <span style="margin-right: 0.3em;">Carrito</span>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            @CarritoService.Items.Sum(i => i.Cantidad)
-                        </span>
+                            <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
+                            <span style="margin-right: 0.3em;">Carrito</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @CarritoService.Items.Sum(i => i.Cantidad)
+                            </span>
                         </a>
                     </li>
                 </ul>
@@ -44,7 +44,11 @@
                 <h2 class="mb-0" style="font-family: 'Tangerine', serif ; font-size: 3.5em; text-shadow:4px 4px 4px #908f8f ;">Carrito de compras</h2>
             </div>
             
-            @if (CarritoService.Items.Count == 0)
+            @if (productos == null)
+            {
+                <p>Cargando productos...</p>
+            }
+            else if (CarritoService.Items.Count == 0)
             {
                 <p style="font-family:'Cabin', Arial, sans-serif; ;">El carrito está vacío</p>
             }
@@ -63,24 +67,26 @@
                     <tbody>
                         @foreach (var item in CarritoService.Items)
                         {
+                            var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
                             <tr>
-                                <td>@item.Producto.Nombre</td>
+                                <td>@producto?.Nombre</td>
                                 <td>
-                                    <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.Producto)">-</button>
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(producto)">-</button>
                                     @item.Cantidad
                                     <button class="btn btn-sm btn-secondary"
-                                    @onclick="() => Agregar(item.Producto)"
-                                    disabled="@(item.Cantidad >= item.Producto.Stock)">
-                                    +
+                                            @onclick="() => Agregar(producto)"
+                                            disabled="@(producto == null || producto.Stock == 0)">
+                                        +
                                     </button>
                                 </td>
-                                <td>$@item.PrecioUnitario</td>
-                                <td>$@item.Importe</td>
+                                <td>@(producto != null ? $"${producto.Precio}" : "-")</td>
+                                <td>@(producto != null ? $"${producto.Precio * item.Cantidad}" : "-")</td>
                                 <td>
-                                    <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item.Producto)">Eliminar</button>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(producto)">Eliminar</button>
                                 </td>
                             </tr>
-                        }
+}
+
                     </tbody>
                 </table>
 
@@ -91,7 +97,7 @@
                                 Total de la compra
                             </div>
                             <div style="font-size: 2em; font-weight: bold; color: #c02d76;">
-                                $@CarritoService.Total
+                                $@CarritoService.CalcularTotal(productos)
                             </div>
                         </div>
                         <div class="d-flex flex-column flex-sm-row gap-2 mt-3 mt-sm-0">
@@ -113,16 +119,71 @@
 </div>
 
 @code {
-    private async Task Agregar(cliente.Modelos.Producto producto) => await CarritoService.AgregarAlCarrito(producto);
-    private async Task Quitar(cliente.Modelos.Producto producto) => await CarritoService.QuitarDelCarrito(producto);
-    
+
+    private List<cliente.Modelos.Producto> productos;
+
+        protected override async Task OnInitializedAsync()
+        {
+            productos = await ApiService.GetProductosAsync();
+        }
+
+    private async Task Agregar(cliente.Modelos.Producto producto)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.ProductoId == producto.Id);
+        if (producto != null && producto.Stock > 0)
+        {
+            await CarritoService.AgregarAlCarrito(producto);
+            await ApiService.RestarStockAsync(producto.Id, 1);
+            productos = await ApiService.GetProductosAsync();
+            StateHasChanged();
+        }
+    }
+    private async Task Quitar(cliente.Modelos.Producto producto)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.ProductoId == producto.Id);
+        if (item != null && item.Cantidad > 0)
+        {
+            await CarritoService.QuitarDelCarrito(producto);
+            await ApiService.SumarStockAsync(producto.Id, 1);
+            productos = await ApiService.GetProductosAsync();
+            StateHasChanged();
+        }
+    }
     private async Task Eliminar(cliente.Modelos.Producto producto)
     {
-        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+        var item = CarritoService.Items.FirstOrDefault(i => i.ProductoId == producto.Id);
         if (item != null)
-            CarritoService.Items.Remove(item);
-           await CarritoService.GuardarCarritoAsync();
+        {
+            try
+            {
+                await ApiService.SumarStockAsync(producto.Id, item.Cantidad);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al sumar stock: {ex.Message}");
+            }
+            await CarritoService.EliminarProductoDelCarrito(producto.Id);
+            productos = await ApiService.GetProductosAsync();
+            StateHasChanged();
+        }
     }
-    private async Task Vaciar() => await CarritoService.VaciarCarrito();
+    private async Task Vaciar()
+    {
+        var itemsCopia = CarritoService.Items.ToList();
+        foreach (var item in itemsCopia)
+        {
+            try
+            {
+                await ApiService.SumarStockAsync(item.ProductoId, item.Cantidad);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al sumar stock: {ex.Message}");
+            }
+        }
+        await CarritoService.VaciarCarrito();
+        productos = await ApiService.GetProductosAsync();
+        StateHasChanged();
+    }
     private void ConfirmarCompra() => NavigationManager.NavigateTo("/confirmacion");
 }
