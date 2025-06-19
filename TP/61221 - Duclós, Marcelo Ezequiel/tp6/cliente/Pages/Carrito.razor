@@ -1,0 +1,143 @@
+@page "/carrito"
+@using cliente.Models
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<div class="page-container">
+    <div class="container">
+        <h1>Carrito de Compras</h1>
+
+        @if (!CarritoService.Items.Any())
+        {
+            <div class="alert alert-info">El carrito está vacío.</div>
+        }        else
+        {
+            <table class="table carrito-tabla">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>                    @foreach (var item in CarritoService.Items)
+                    {                        <tr>
+                            <td>@item.Producto.Nombre</td>
+                            <td><span class="precio-valor">USD @item.Producto.Precio.ToString("N2")</span></td><td>
+                                <div class="cantidad-controls">
+                                    <button class="btn-cantidad-minus" @onclick="() => DisminuirCantidad(item.Producto.Id)" title="Disminuir cantidad">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <span class="cantidad-numero">@item.Cantidad</span>
+                                    <button class="btn-cantidad-plus" 
+                                            @onclick="() => AumentarCantidad(item.Producto.Id)"
+                                            disabled="@(item.Cantidad >= item.Producto.Stock)"
+                                            title="@(item.Cantidad >= item.Producto.Stock ? "Stock máximo alcanzado" : "Aumentar cantidad")">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                @if (item.Cantidad >= item.Producto.Stock)
+                                {
+                                    <div class="stock-limite-msg">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>Stock máximo alcanzado
+                                    </div>
+                                }
+                            </td>
+                            <td><span class="precio-valor">USD @((item.Producto.Precio * item.Cantidad).ToString("N2"))</span></td>                            <td>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Quitar(item.Producto.Id)" title="Eliminar producto">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+        </tbody>
+    </table>
+
+    <!-- Resumen del carrito -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-danger" @onclick="VaciarCarrito">
+                    <i class="bi bi-trash me-2"></i>Vaciar carrito
+                </button>
+                <a href="/" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Seguir comprando
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Resumen</h5>
+                    <div class="d-flex justify-content-between">
+                        <span>Total de artículos:</span>
+                        <strong>@CarritoService.Items.Sum(i => i.Cantidad)</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Total a pagar:</span>
+                        <strong class="text-success">USD @(CarritoService.Items.Sum(i => i.Cantidad * i.Producto.Precio).ToString("N2"))</strong>
+                    </div>
+                    <hr>
+                    <div class="d-grid">
+                        <button class="btn btn-success btn-lg" @onclick="IrAConfirmacion">
+                            <i class="bi bi-check-circle me-2"></i>Confirmar compra
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}    </div>
+</div>
+
+@code {
+    private void Quitar(int productoId)
+    {
+        CarritoService.QuitarDelCarrito(productoId);
+    }
+
+    private void VaciarCarrito()
+    {
+        CarritoService.VaciarCarrito();
+    }
+
+    private void IrAConfirmacion()
+    {
+        NavigationManager.NavigateTo("/confirmacion");
+    }    private async void AumentarCantidad(int productoId)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+        {
+            if (item.Cantidad < item.Producto.Stock)
+            {
+                CarritoService.ModificarCantidad(productoId, item.Cantidad + 1);
+            }
+            else
+            {
+                // Mostrar mensaje de stock insuficiente
+                await JS.InvokeVoidAsync("alert", $"No hay más stock disponible para {item.Producto.Nombre}. Stock máximo: {item.Producto.Stock}");
+            }
+        }
+    }
+
+    private void DisminuirCantidad(int productoId)
+    {
+        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null)
+        {
+            if (item.Cantidad > 1)
+            {
+                CarritoService.ModificarCantidad(productoId, item.Cantidad - 1);
+            }
+            else
+            {
+                // Si cantidad es 1, quitar el producto completamente
+                Quitar(productoId);
+            }
+        }
+    }
+}

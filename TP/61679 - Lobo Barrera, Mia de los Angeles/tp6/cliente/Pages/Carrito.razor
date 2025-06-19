@@ -1,0 +1,91 @@
+@page "/carrito"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using cliente.Modelos
+
+<h1>Carrito de Compra</h1>
+
+@if (carrito == null)
+{
+    <p>Cargando carrito...</p>
+}
+else if (carrito.Items == null || carrito.Items.Count == 0)
+{
+    <p>El carrito está vacío.</p>
+    <button class="btn btn-secondary" @onclick="IrAlCatalogo">Volver al catálogo</button>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" @onclick="() => ModificarCantidad(item, -1)">-</button>
+                        @item.Cantidad
+                        <button class="btn btn-secondary btn-sm" @onclick="() => ModificarCantidad(item, 1)">+</button>
+                    </td>
+                    <td>@item.PrecioUnitario</td>
+                    <td>@(item.Cantidad * item.PrecioUnitario)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="btn btn-primary" @onclick="ConfirmarCompra">Confirmar compra</button>
+}
+
+@code {
+    private Carrito carrito;
+    private int carritoId;
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+    private async Task CargarCarrito()
+    {
+        carrito = await Http.GetFromJsonAsync<Carrito>($"/carritos/{carritoId}");
+    }
+    private async Task ModificarCantidad(CarritoItem item, int delta)
+    {
+        if (delta > 0)
+        {
+            var response = await Http.PutAsync($"/carritos/{carritoId}/{item.ProductoId}?cantidad={delta}", null);
+            if (response.IsSuccessStatusCode)
+                await CargarCarrito();
+        }
+        else
+        {
+            var response = await Http.DeleteAsync($"/carritos/{carritoId}/{item.ProductoId}?cantidad={Math.Abs(delta)}");
+            if (response.IsSuccessStatusCode)
+                await CargarCarrito();
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        var response = await Http.DeleteAsync($"/carritos/{carritoId}");
+        if (response.IsSuccessStatusCode)
+            await CargarCarrito();
+    }
+
+    private void ConfirmarCompra()
+    {
+        Navigation.NavigateTo($"/confirmacion?carritoId={carritoId}");
+    }
+
+    private void IrAlCatalogo()
+    {
+        Navigation.NavigateTo("/catalogo");
+    }
+}

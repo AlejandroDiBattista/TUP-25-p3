@@ -2,13 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <Nullable>disable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="microsoft.entityframeworkcore" Version="9.0.5" />
-    <PackageReference Include="microsoft.entityframeworkcore.sqlite" Version="9.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.4.24267.1" />
   </ItemGroup>
 
 </Project>

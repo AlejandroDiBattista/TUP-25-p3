@@ -1,26 +1,114 @@
+using Microsoft.JSInterop;
 using System.Net.Http.Json;
-
-namespace cliente.Services;
-
-public class ApiService {
-    private readonly HttpClient _httpClient;
-
-    public ApiService(HttpClient httpClient) {
-        _httpClient = httpClient;
-    }
-
-    public async Task<DatosRespuesta> ObtenerDatosAsync() {
-        try {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "No se recibieron datos del servidor", Fecha = DateTime.Now };
-        } catch (Exception ex) {
-            Console.WriteLine($"Error al obtener datos: {ex.Message}");
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
+using cliente.models;
+#nullable enable
+namespace cliente.Services
+{
+    public class ApiService
+    {
+        private readonly HttpClient _http;
+        private readonly CarritoStorage _storage;
+        public event Action? CarritoActualizado;
+        private int _contadorCarrito;
+        public int ContadorCarrito
+        {
+            get => _contadorCarrito;
+            private set
+            {
+                if (_contadorCarrito != value)
+                {
+                    _contadorCarrito = value;
+                    CarritoActualizado?.Invoke();
+                }
+            }
         }
-    }
-}
+        public void EstablecerContadorCarrito(int nuevoValor)
+        {
+            ContadorCarrito = nuevoValor;
+        }
+        public ApiService(HttpClient http, IJSRuntime js)
+        {
+            _http = http;
+            _storage = new CarritoStorage(js);
+        }
+            public async Task<int> ObtenerOCrearCarrito()
+        {
+            var id = await _storage.ObtenerCarritoId();
+            if (id.HasValue) return id.Value;
 
-public class DatosRespuesta {
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
+            var nuevoId = await CrearCarrito();
+            await _storage.GuardarCarritoId(nuevoId);
+            return nuevoId;
+        }
+        public async Task LimpiarCarritoId()
+        {
+            await _storage.LimpiarCarritoId();
+        }
+        public async Task<List<Producto>> GetProductos(string? busqueda = null)
+        {
+            var url = "/productos" + (string.IsNullOrWhiteSpace(busqueda) ? "" : $"?busqueda={busqueda}");
+            return await _http.GetFromJsonAsync<List<Producto>>(url) ?? new();
+        }
+
+        public async Task<int> CrearCarrito()
+        {
+            var resp = await _http.PostAsync("/carritos", null);
+            return int.Parse(await resp.Content.ReadAsStringAsync());
+        }
+
+        public async Task<List<Compras>> GetCarrito(int carritoId)
+        {
+            return await _http.GetFromJsonAsync<List<Compras>>($"/carritos/{carritoId}") ?? new();
+        }
+
+        public async Task VaciarCarrito(int carritoId)
+        {
+            await _http.DeleteAsync($"/carritos/{carritoId}");
+        }
+
+        public async Task ConfirmarCompra(int carritoId, ConfirmarCompra confirmacion)
+        {
+            var response = await _http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", confirmacion);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error al confirmar compra: {response.StatusCode} - {error}");
+            }
+        }
+
+        public async Task AgregarOActualizarProducto(int carritoId, int productoId, int cantidad)
+        {
+            var response = await _http.PutAsJsonAsync($"/carritos/{carritoId}/{productoId}", cantidad);
+            response.EnsureSuccessStatusCode();
+        }
+        
+        public async Task EliminarProducto(int carritoId, int productoId)
+        {
+            await _http.DeleteAsync($"/carritos/{carritoId}/{productoId}");
+        }
+
+        public async Task ActualizarContadorCarrito(int carritoId)
+        {
+            var items = await GetCarrito(carritoId);
+            ContadorCarrito = items.Sum(i => i.Cantidad);
+        }
+
+        private class CarritoStorage
+        {
+            private readonly IJSRuntime js;
+            public CarritoStorage(IJSRuntime js) => this.js = js;
+
+            public async Task GuardarCarritoId(int id) =>
+                await js.InvokeVoidAsync("localStorage.setItem", "carritoId", id.ToString());
+
+            public async Task<int?> ObtenerCarritoId()
+            {
+                var idStr = await js.InvokeAsync<string>("localStorage.getItem", "carritoId");
+                return int.TryParse(idStr, out var id) ? id : (int?)null;
+            }
+
+            public async Task LimpiarCarritoId() =>
+                await js.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+        }  
+    }
 }

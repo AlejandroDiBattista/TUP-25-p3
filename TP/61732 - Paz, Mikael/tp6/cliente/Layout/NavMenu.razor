@@ -1,0 +1,34 @@
+@using cliente.Services
+@inject CarritoState CarritoState
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img src="/favicon.png" alt="Logo" style="height:32px;" /> Tienda Online
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Catálogo</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link position-relative" href="/carrito">
+                        Carrito
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">@CarritoState.Cantidad</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CarritoState.OnChange += StateHasChanged;
+    }
+    public void Dispose()
+    {
+        CarritoState.OnChange -= StateHasChanged;
+    }
+}

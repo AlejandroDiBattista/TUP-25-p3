@@ -1,6 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using Servidor.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
+// Configuración de CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
@@ -9,20 +12,34 @@ builder.Services.AddCors(options => {
     });
 });
 
-// Agregar controladores si es necesario
+// Configuración de Entity Framework Core con SQLite
+builder.Services.AddDbContext<TiendaContext>(options =>
+    options.UseSqlite("Data Source=tienda.db"));
+
+// Agregar controladores
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+// Aplica migraciones pendientes al iniciar
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TiendaContext>();
+    dbContext.Database.Migrate();
+}
+
+// Configuración del pipeline HTTP
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
 }
 
-// Usar CORS con la política definida
 app.UseCors("AllowClientApp");
+app.UseRouting();
+app.UseAuthorization();
+app.MapControllers();
 
-// Mapear rutas básicas
+// Endpoint básico de prueba
 app.MapGet("/", () => "Servidor API está en funcionamiento");
 
 // Ejemplo de endpoint de API

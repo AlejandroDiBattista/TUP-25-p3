@@ -1,4 +1,53 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
+@using cliente.Services
+@inject CartService CartService
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow">
+    <div class="container-fluid">
+        
+        <a class="navbar-brand fw-bold text-primary" href="/">
+            <img src="https://cdn-icons-png.flaticon.com/512/2909/2909761.png" alt="Logo" width="30" height="30" class="me-2" />
+            Perfumería Online
+        </a>
+
+        
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/compras">
+                    📄 Compras
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/carrito">
+                    🛒 Carrito (@total)
+                </NavLink>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+<div style="padding-top: 80px;">
     @Body
 </div>
+
+@code {
+    private int total;
+
+    protected override void OnInitialized()
+    {
+        total = CartService.TotalItems();
+        CartService.OnChange += Actualizar;
+    }
+
+    private void Actualizar()
+    {
+        total = CartService.TotalItems();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= Actualizar;
+    }
+}

@@ -1,0 +1,99 @@
+@using cliente.Services
+@inject NotificationService NotificationService
+
+<div class="fixed top-5 right-5 z-50 flex flex-col gap-2 items-end">
+    @foreach (var n in notifications)
+    {
+        var isClosing = closingNotifications.Contains(n.Id);
+        <div @key="n.Id" class="@GetStyles(n.Type) @(isClosing ? "translate-x-128" : "translate-x-0")">
+            <i class="fas @( n.Type == "success" ? "fa-check-circle" : n.Type == "error" ? "fa-exclamation-circle" : "fa-info-circle") mr-2"></i>
+            <p class="grow">@n.Message</p>
+            <button class="text-white text-lg focus:outline-none" @onclick="() => CloseNotification(n.Id)" aria-label="Cerrar notificación">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<NotificationService.Notification> notifications = new();
+    private Dictionary<Guid, System.Timers.Timer> _timers = new();
+    private HashSet<Guid> closingNotifications = new();
+
+    protected override void OnInitialized()
+    {
+        notifications = NotificationService.Notifications.ToList();
+        NotificationService.OnNotifyChanged += UpdateNotifications;
+    }
+
+    private void UpdateNotifications()
+    {
+        InvokeAsync(() =>
+        {
+            // Mostrar todas las notificaciones, incluso las que están cerrando
+            notifications = NotificationService.Notifications.ToList();
+            StateHasChanged();
+        });
+
+        // Inicia expiración para nuevas notificaciones
+        foreach (var n in NotificationService.Notifications)
+        {
+            if (!_timers.ContainsKey(n.Id))
+            {
+                var timer = new System.Timers.Timer(2500);
+                timer.Elapsed += (s, e) =>
+                {
+                    InvokeAsync(() => CloseNotification(n.Id));
+                    timer.Dispose();
+                    _timers.Remove(n.Id);
+                };
+                timer.AutoReset = false;
+                timer.Start();
+                _timers[n.Id] = timer;
+            }
+        }
+    }
+
+    private void CloseNotification(Guid id)
+    {
+        if (!closingNotifications.Contains(id))
+        {
+            closingNotifications.Add(id);
+            StateHasChanged();
+            // Espera la duración de la animación antes de eliminar
+            var timer = new System.Timers.Timer(500);
+            timer.Elapsed += (s, e) =>
+            {
+                InvokeAsync(() =>
+                {
+                    NotificationService.Remove(id);
+                    closingNotifications.Remove(id);
+                    StateHasChanged();
+                });
+                timer.Dispose();
+            };
+            timer.AutoReset = false;
+            timer.Start();
+        }
+    }
+
+    private string GetStyles(string type)
+    {
+        var baseClasses = "px-4 py-3 rounded-md shadow-lg transition-all duration-500 min-w-32 max-w-96 text-white relative flex items-center gap-2";
+        var colorClass = type switch
+        {
+            "success" => "bg-green-600",
+            "error" => "bg-red-600",
+            _ => "bg-violet-700"
+        };
+        return $"{baseClasses} {colorClass}";
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnNotifyChanged -= UpdateNotifications;
+        foreach (var timer in _timers.Values)
+            timer.Dispose();
+        _timers.Clear();
+    }
+}

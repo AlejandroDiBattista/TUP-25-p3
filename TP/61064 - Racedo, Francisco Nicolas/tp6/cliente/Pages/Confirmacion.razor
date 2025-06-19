@@ -1,0 +1,457 @@
+@using cliente.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+@page "/confirmacion"
+@inject cliente.Services.ApiService Api
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<style>
+    .card-resumen {
+        border-radius: 1rem;
+        box-shadow: 0 2px 12px 0 rgba(60,60,120,0.10);
+        margin-bottom: 2rem;
+        background: #fff;
+        min-height: 320px;
+        font-size: 1.15rem;
+    }
+    .card-cliente {
+        border-radius: 1rem;
+        box-shadow: 0 2px 12px 0 rgba(60,60,120,0.10);
+        margin-bottom: 2rem;
+        background: #fff;
+        min-height: 320px;
+        font-size: 1.08rem;
+    }
+    .btn-confirmar {
+        border-radius: 2rem;
+        font-weight: bold;
+        padding: 0.5rem 1.5rem;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-confirmar:hover {
+        background: #198754;
+        color: #fff;
+    }
+    .btn-cancelar {
+        border-radius: 2rem;
+        font-weight: bold;
+        padding: 0.5rem 1.5rem;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-cancelar:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+    .modal-card {
+        border-radius: 1rem;
+        box-shadow: 0 2px 12px 0 rgba(60,60,120,0.15);
+        background: #fff;
+    }
+    .btn-celeste-modificar {
+        background-color: #0aa6c8;
+        color: #fff;
+        border: none;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-celeste-modificar:hover, .btn-celeste-modificar:focus {
+        background-color: #0887a6;
+        color: #fff;
+    }
+    .btn-modificar {
+        background-color: #fd7e14;
+        color: #fff;
+        border: none;
+        border-radius: 2rem;
+        font-weight: bold;
+        padding: 0.5rem 1.5rem;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-modificar:hover, .btn-modificar:focus {
+        background-color: #c76a0b;
+        color: #fff;
+    }
+    .icon-success-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 96px;
+        height: 96px;
+        background: none;
+        margin: 0 auto 8px auto;
+    }
+</style>
+
+<h2>Confirmación de Compra</h2>
+
+@if (ventaExitosa)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                            <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">¡Compra realizada con éxito!</h5>
+                    <p>Tu pedido ha sido procesado correctamente.</p>
+                    <p>Recibirás un correo de confirmación en breve.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (items is null)
+{
+    <p>Cargando resumen del carrito...</p>
+}
+else if (items.Count == 0)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                            <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">El carrito está vacío</h5>
+                    <p>Agrega productos para realizar una compra.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4 align-items-stretch">
+        <div class="col-12 col-lg-7">
+            <div class="card card-resumen p-4 h-100">
+                <h4 class="mb-4">Resumen de la compra</h4>
+                @foreach (var item in items)
+                {
+                    <div class="card flex-row flex-wrap flex-md-nowrap align-items-center shadow border border-primary bg-light p-2 mb-3" style="min-height:200px; max-height:280px;">
+                        <div class="d-flex align-items-center justify-content-center bg-white border-end border-2 border-primary" style="min-width:200px;max-width:240px;width:45%;min-height:200px;max-height:240px;">
+                            <img src="@item.ImagenUrl" alt="@item.Nombre" class="img-fluid rounded" style="max-height:200px;max-width:100%;object-fit:contain;">
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-between p-3" style="min-width:160px;width:55%;min-height:200px;">
+                            <h5 class="card-title mb-2" style="font-weight:bold;font-size:1.2rem;">@item.Nombre</h5>
+                            <div class="card-text text-muted small mb-2" style="font-size:0.95rem;">Cantidad: <b>@item.Cantidad</b></div>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2" style="font-size:1.25rem;">$@item.Precio.ToString("N2")</span>
+                                <span class="badge bg-secondary" style="font-size:1.15rem;">Subtotal: $@item.Subtotal.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div class="mt-4 text-end">
+                    <span class="badge bg-warning text-dark" style="font-size:1.3rem;">Total: $@items.Sum(i => i.Subtotal).ToString("N2")</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-5 d-flex justify-content-center align-items-start">
+            <div class="card card-cliente p-4" style="min-height:420px; max-width:420px; width:100%;">
+                <h4 class="mb-4">Datos del Cliente</h4>
+                <EditForm EditContext="editContext" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    @if (formIntentado && editContext.GetValidationMessages().Any())
+                    {
+                        <ValidationSummary />
+                    }
+                    <div class="mb-3">
+                        <label>Nombre:</label>
+                        <InputText class="form-control" @bind-Value="form.Nombre" />
+                        <ValidationMessage For="@(() => form.Nombre)" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Apellido:</label>
+                        <InputText class="form-control" @bind-Value="form.Apellido" />
+                        <ValidationMessage For="@(() => form.Apellido)" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Email:</label>
+                        <div class="position-relative">
+                            <InputText class="form-control pe-5" @bind-Value="form.Email" @oninput="OnEmailInput" @onblur="OnEmailBlur" />
+                            @if (editContext != null && !string.IsNullOrWhiteSpace(form.Email)
+                                && !editContext.GetValidationMessages(() => form.Email).Any()
+                                && form.Email.IndexOf('@') > 0 && form.Email.LastIndexOf(".com", StringComparison.OrdinalIgnoreCase) > form.Email.IndexOf('@') + 1 && form.Email.EndsWith(".com", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); z-index:2; pointer-events:none; background:none; border:none; padding:0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="12" fill="#28a745"/>
+                                        <path d="M17 8.5l-5.25 7L7 12.5" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                    </svg>
+                                </span>
+                            }
+                        </div>
+                        @if ((emailTocado || formIntentado) && (!string.IsNullOrWhiteSpace(form.Email) && editContext.GetValidationMessages(() => form.Email).Any()))
+                        {
+                            <div class="text-danger small mt-1">
+                                @foreach (var msg in editContext.GetValidationMessages(() => form.Email))
+                                {
+                                    <div>@msg</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button class="btn btn-success btn-confirmar flex-fill" type="submit" disabled="@enviando">Confirmar compra</button>
+                        <button class="btn btn-danger btn-cancelar flex-fill" type="button" @onclick="MostrarCancelarModal" disabled="@enviando">Cancelar compra</button>
+                        <button class="btn btn-modificar flex-fill" type="button" @onclick="VolverAlCarrito" disabled="@enviando">
+                            <i class="bi bi-arrow-left"></i> Modificar compra
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(mensaje))
+                    {
+                        <div class="alert alert-info mt-3">@mensaje</div>
+                    }
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (mostrarCancelacion)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header justify-content-center border-0" style="background: none;">
+                    <div class="icon-success-circle mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="white" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="12" fill="#dc3545"/>
+                            <path d="M8 8l8 8M16 8l-8 8" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="modal-body text-center">
+                    <h5 class="modal-title mb-3">Compra cancelada</h5>
+                    <p>La compra fue cancelada con éxito.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0">
+                    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (mostrarConfirmarCancelacion)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header">
+                    <h5 class="modal-title">¿Desea cancelar la compra?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Si acepta, la compra será cancelada y no podrá recuperse.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @onclick="AceptarCancelarCompra">Aceptar</button>
+                    <button class="btn btn-secondary" @onclick="CancelarCancelarCompra">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (mostrarConfirmarCompra)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-card">
+                <div class="modal-header">
+                    <h5 class="modal-title">¿Desea confirmar la compra?</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Si acepta, la compra será procesada y no podrá modificarse.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" @onclick="AceptarConfirmarCompra">Aceptar</button>
+                    <button class="btn btn-secondary" @onclick="CancelarConfirmarCompra">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    #nullable enable
+    List<CarritoItemDto>? items;
+    Guid carritoId;
+    ConfirmacionForm form = new();
+    bool enviando = false;
+    string mensaje = "";
+    bool ventaExitosa = false;
+    bool mostrarCancelacion = false;
+    bool mostrarConfirmarCancelacion = false;
+    bool mostrarConfirmarCompra = false;
+    bool confirmarCompraPendiente = false;
+    private EditContext editContext;
+    private bool formIntentado = false;
+    private bool emailTocado = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener carritoId de localStorage (idéntico a Catalogo.razor y Carrito.razor)
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+        {
+            carritoId = await Api.CrearCarritoAsync();
+            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+        }
+        items = await Api.GetCarritoAsync(carritoId);
+        editContext = new EditContext(form);
+        await base.OnInitializedAsync();
+    }
+
+    async Task ConfirmarCompra()
+    {
+        formIntentado = true;
+        emailTocado = true;
+        editContext?.Validate();
+        if (!editContext.Validate())
+            return;
+        // En vez de ejecutar directamente, mostramos el modal de confirmación
+        mostrarConfirmarCompra = true;
+        confirmarCompraPendiente = true;
+    }
+
+    async void AceptarConfirmarCompra()
+    {
+        mostrarConfirmarCompra = false;
+        if (confirmarCompraPendiente)
+        {
+            confirmarCompraPendiente = false;
+            enviando = true;
+            mensaje = "";
+            try
+            {
+                var dto = new cliente.Services.ConfirmarCompraDto
+                {
+                    Nombre = form.Nombre,
+                    Apellido = form.Apellido,
+                    Email = form.Email
+                };
+                var ok = await Api.ConfirmarCompraAsync(carritoId, dto);
+                if (ok)
+                {
+                    ventaExitosa = true;
+                    StateHasChanged(); // Forzar renderizado inmediato del modal de éxito
+                }
+                else
+                {
+                    mensaje = "No se pudo confirmar la compra. Verifica los datos o el stock.";
+                }
+            }
+            catch (Exception ex)
+            {
+                mensaje = $"Error: {ex.Message}";
+            }
+            finally
+            {
+                enviando = false;
+            }
+        }
+    }
+
+    void CancelarConfirmarCompra()
+    {
+        mostrarConfirmarCompra = false;
+        confirmarCompraPendiente = false;
+    }
+
+    void VolverAlCatalogo()
+    {
+        // Elimina el carritoId del localStorage para forzar la creación de un nuevo carrito
+        JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+        JS.InvokeVoidAsync("localStorage.setItem", "contadorCarrito", "0");
+        items = new List<CarritoItemDto>();
+        Navigation.NavigateTo("/catalogo", forceLoad: true, replace: true);
+    }
+
+    void MostrarCancelarModal()
+    {
+        mostrarConfirmarCancelacion = true;
+    }
+
+    void AceptarCancelarCompra()
+    {
+        mostrarConfirmarCancelacion = false;
+        mostrarCancelacion = true;
+    }
+
+    void CancelarCancelarCompra()
+    {
+        mostrarConfirmarCancelacion = false;
+    }
+
+    void VolverAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+
+    private void OnEmailInput(ChangeEventArgs e)
+    {
+        form.Email = e.Value?.ToString() ?? string.Empty;
+        if (emailTocado || formIntentado)
+        {
+            editContext?.NotifyFieldChanged(new FieldIdentifier(form, nameof(form.Email)));
+            editContext?.Validate();
+        }
+    }
+    private void OnEmailBlur(FocusEventArgs e)
+    {
+        emailTocado = true;
+        editContext?.NotifyFieldChanged(new FieldIdentifier(form, nameof(form.Email)));
+        editContext?.Validate();
+    }
+    public class ConfirmacionForm
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        [CustomValidation(typeof(ConfirmacionForm), nameof(ValidarEmailPersonalizado))]
+        public string Email { get; set; }
+
+        public static ValidationResult ValidarEmailPersonalizado(string email, ValidationContext context)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return ValidationResult.Success;
+
+            int atIdx = email.IndexOf('@');
+            int lastAtIdx = email.LastIndexOf('@');
+            bool endsWithCom = email.EndsWith(".com", StringComparison.OrdinalIgnoreCase);
+
+            if (atIdx < 3)
+                return new ValidationResult("Debe haber al menos 3 caracteres antes de '@'.");
+            if (atIdx != lastAtIdx)
+                return new ValidationResult("El email solo puede tener un '@'.");
+            if (atIdx == -1)
+                return new ValidationResult("El email debe contener '@'.");
+            if (!endsWithCom)
+                return new ValidationResult("El email debe finalizar con '.com'.");
+            return ValidationResult.Success;
+        }
+    }
+}

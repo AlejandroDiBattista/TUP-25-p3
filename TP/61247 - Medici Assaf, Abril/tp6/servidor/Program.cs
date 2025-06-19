@@ -1,31 +1,105 @@
+using Microsoft.EntityFrameworkCore;
+using Servidor.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios CORS para permitir solicitudes desde el cliente
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Agregar controladores si es necesario
-builder.Services.AddControllers();
+builder.Services.AddDbContext<PaginaContext>(opt =>
+    opt.UseSqlite("Data Source=tienda.db"));
 
 var app = builder.Build();
 
-// Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
-    app.UseDeveloperExceptionPage();
-}
+app.UseCors();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseHttpsRedirection();
 
-// Usar CORS con la política definida
-app.UseCors("AllowClientApp");
+var carritos = new Dictionary<string, Dictionary<int, int>>();
 
-// Mapear rutas básicas
-app.MapGet("/", () => "Servidor API está en funcionamiento");
+app.MapGet("/productos", async (PaginaContext db) =>
+    await db.Productos.ToListAsync());
 
-// Ejemplo de endpoint de API
-app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+app.MapPost("/carritos/{carritoId}/agregar/{productoId}", async (string carritoId, int productoId, PaginaContext db) =>
+{
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null || producto.CantidadDisponible <= 0)
+        return Results.BadRequest("Sin stock");
+
+    if (!carritos.ContainsKey(carritoId))
+        carritos[carritoId] = new Dictionary<int, int>();
+
+    if (!carritos[carritoId].ContainsKey(productoId))
+        carritos[carritoId][productoId] = 0;
+
+    carritos[carritoId][productoId]++;
+    producto.CantidadDisponible--;
+    await db.SaveChangesAsync();
+
+    return Results.Ok();
+});
+
+app.MapGet("/carritos/{carritoId}", async (string carritoId, PaginaContext db) =>
+{
+    if (!carritos.TryGetValue(carritoId, out var items) || items.Count == 0)
+        return Results.Ok(new List<object>());
+
+    var productos = await db.Productos.Where(p => items.Keys.Contains(p.ProductoId)).ToListAsync();
+
+    var resultado = productos.Select(p => new {
+        producto = p,
+        cantidad = items[p.ProductoId]
+    });
+
+    return Results.Ok(resultado);
+});
+
+
+app.MapDelete("/carritos/{carritoId}/quitar/{productoId}", async (string carritoId, int productoId, PaginaContext db) =>
+{
+    if (carritos.TryGetValue(carritoId, out var items) && items.ContainsKey(productoId))
+    {
+        items[productoId]--;
+        var producto = await db.Productos.FindAsync(productoId);
+        if (producto != null)
+        {
+            producto.CantidadDisponible++;
+            await db.SaveChangesAsync();
+        }
+        if (items[productoId] <= 0)
+            items.Remove(productoId);
+    }
+    return Results.Ok();
+});
+
+app.MapDelete("/carritos/{carritoId}", async (string carritoId, PaginaContext db) =>
+{
+    if (carritos.TryGetValue(carritoId, out var items))
+    {
+        foreach (var kv in items)
+        {
+            var producto = await db.Productos.FindAsync(kv.Key);
+            if (producto != null)
+            {
+                producto.CantidadDisponible += kv.Value;
+            }
+        }
+        await db.SaveChangesAsync();
+        carritos.Remove(carritoId);
+    }
+    return Results.Ok();
+});
 
 app.Run();

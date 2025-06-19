@@ -1,0 +1,68 @@
+@inherits LayoutComponentBase
+
+<nav class="navbar navbar-custom mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand align-text-center"  style="color: aliceblue" href="/">
+            <img src="icon-192.png" alt="Logo" width="40" height="40" class="d-inline-block align-text-center" />
+            ABISTORE
+        </a>
+        <form class="d-flex ms-auto" @onsubmit="Buscar">
+            <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" @bind="busqueda" />
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+        @{
+            int totalProductos = Tienda.Carrito?.Sum(item => item.Cantidad) ?? 0;
+        }
+        <a class="btn position-relative ms-3 me-2" style="color: rgb(255, 255, 255);" href="/carrito">
+            <i class="bi bi-cart" style="font-size: 1rem;"></i>
+            @if (totalProductos > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger text-dark">
+                    @totalProductos
+                </span>
+            }
+        </a>
+       
+
+        <button class="btn btn-outline-secondary ms-2" @onclick="ToggleDarkMode">
+            @((isDarkMode ? "Modo claro" : "Modo oscuro"))
+        </button>
+    </div>
+</nav>
+
+
+@code {
+    [Inject] public TiendaService Tienda { get; set; }
+
+    private string busqueda = "";
+
+    private async Task Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            NavigationManager.NavigateTo($"/?q={busqueda}");
+        else
+            NavigationManager.NavigateTo("/");
+    }
+
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+        protected override void OnInitialized()
+    {
+        Tienda.OnCarritoChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Tienda.OnCarritoChanged -= StateHasChanged;
+    }
+
+    @inject IJSRuntime jsRuntime;
+    private bool isDarkMode = false;
+
+    private async Task ToggleDarkMode()
+    {
+        isDarkMode = !isDarkMode;
+        await jsRuntime.InvokeVoidAsync("toggleDarkMode", isDarkMode);
+
+    }
+}

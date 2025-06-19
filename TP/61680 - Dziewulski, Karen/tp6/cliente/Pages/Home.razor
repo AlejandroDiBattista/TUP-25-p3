@@ -1,59 +1,104 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Modelos
+@inject CarritoService CarritoService
 @inject ApiService ApiService
+@inject NavigationManager Nav
+@inject Buscador Buscador
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+@if (cargando)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos == null)
+{
+    <p class="text-danger">Error al cargar los productos.</p>
+}
+else if (productosFiltrados.Count == 0)
+{
+    <p>No se encontraron productos para "@q"</p>
+}
+else
+{
+    <div class="container mt-3">
+        <div class="row">
+            @foreach (var producto in productosFiltrados)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@producto.ImagenUrl" class="card-img-top" style="object-fit: cover; height: 200px;" alt="Imagen de @producto.Nombre" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p><strong>Precio:</strong> $@producto.Precio</p>
+                            <p><strong>Stock:</strong> @producto.Stock</p>
+                            <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
+                                Agregar al carrito
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
     </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private List<Producto>? productos;
+    private List<Producto> productosFiltrados = new();
+    private bool cargando = true;
+    private string q = ""; // Este es el término que mostrás cuando no hay resultados
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
+    protected override async Task OnInitializedAsync()
+    {
+        Buscador.NotifyTerminoChanged += FiltrarProductos;
+        await CarritoService.Inicializar();
+
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync();
+            productosFiltrados = new List<Producto>(productos ?? Enumerable.Empty<Producto>());
+        }
+        catch
+        {
+            productos = null;
+        }
+        finally
+        {
             cargando = false;
         }
     }
+
+    private async void FiltrarProductos(string termino)
+    {
+        q = termino;
+
+        if (string.IsNullOrWhiteSpace(termino))
+        {
+            productosFiltrados = new List<Producto>(productos ?? Enumerable.Empty<Producto>());
+        }
+        else
+        {
+            productosFiltrados = (productos ?? new List<Producto>())
+                .Where(p => p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Buscador.NotifyTerminoChanged -= FiltrarProductos;
+    }
+
+  private async Task AgregarAlCarrito(Producto producto)
+{
+    if (producto.Stock > 0)
+    {
+        await CarritoService.AgregarProductoAsync(producto); // LLAMA AL SERVIDOR
+        StateHasChanged();
+    }
+}
+
+
 }

@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
-
+using cliente.Services;
+using cliente.Modelo;
 namespace cliente.Services;
 
 public class ApiService {

@@ -1,0 +1,86 @@
+@page "/"
+@using Cliente.Models
+@inject TiendaService ServiceTienda
+
+@if (productos == null)
+{
+    <p>Cargando productos...</p>
+}
+else if (productos.Count == 0)
+{
+    <div class="alert alert-warning">No hay productos :(</div>
+}
+else
+{
+    <div class="container">
+        @if (!string.IsNullOrEmpty(mensajeStock))
+        {
+            <div class="alert alert-danger text-center">@mensajeStock</div>
+        }
+        <div class="row justify-content-center">
+            @foreach (var producto in productosFiltrados)
+            {
+                <div class="col-12 col-md-4 d-flex justify-content-center mb-4">
+                    <div class="tarjeta-producto">
+                        <img src="@producto.ImagenUrl"
+                             alt="@producto.Titulo"
+                             class="tarjeta-img" />
+                        <div class="p-3 d-flex flex-column">
+                            <h5>@producto.Titulo</h5>
+                            <p>@producto.Detalle</p>
+                            <p><strong>$@producto.Valor</strong></p>
+                            <p>
+                                @if (producto.CantidadDisponible == 0)
+                                {
+                                    <span class="text-danger">Sin stock</span>
+                                }
+                                else
+                                {
+                                    <span>Stock: @producto.CantidadDisponible</span>
+                                }
+                            </p>
+                            <button class="btn btn-primary mt-auto"
+                                @onclick="() => Agregar(producto.ProductoId)"
+                                disabled="@(producto.CantidadDisponible == 0)">
+                                    Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    string? mensajeStock = null;
+    List<Producto> productos = new();
+    List<Producto> productosFiltrados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ServiceTienda.ObtenerProductosAsync() ?? new List<Producto>();
+        FiltrarProductos();
+    }
+
+    void FiltrarProductos()
+    {
+        productosFiltrados = productos;
+    }
+
+    async Task Agregar(int id)
+    {
+        var resultado = await ServiceTienda.AgregarAlCarrito(id);
+        if (!resultado)
+        {
+            mensajeStock = "¡No hay más stock disponible para este producto!";
+        }
+        else
+        {
+            mensajeStock = null;
+            productos = await ServiceTienda.ObtenerProductosAsync() ?? new List<Producto>();
+            FiltrarProductos();
+        }
+        StateHasChanged();
+    }
+}

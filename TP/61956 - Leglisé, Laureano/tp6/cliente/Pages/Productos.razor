@@ -1,0 +1,142 @@
+@page "/"
+@using cliente.Services
+@inject NavigationManager Nav
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+@using Microsoft.AspNetCore.Components
+
+<h2>Catálogo de Productos</h2>
+
+<div class="row">
+    @if (productos == null)
+    {
+        <div class="col-12 text-center">
+            <span>Cargando productos...</span>
+        </div>
+    }
+    else if (!productos.Any())
+    {
+        <div class="col-12 text-center">
+            <span>No se encontraron productos.</span>
+        </div>
+    }
+    else
+    {
+        @foreach (var producto in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@producto.ImagenUrl" class="card-img-top" style="height:200px;object-fit:contain;" />
+                    <div class="card-body">
+                        <h5 class="card-title">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
+                        <p><b>Precio:</b> $@producto.Precio</p>
+                        <p><b>Stock:</b> @producto.Stock</p>
+                        <button class="btn btn-success" @onclick="() => AgregarAlCarrito(producto)" disabled="@((producto.Stock == 0))">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? q { get; set; }
+
+    private List<Producto>? productos;
+    private Guid? carritoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerOCrearCarrito();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task ObtenerOCrearCarrito()
+    {
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (Guid.TryParse(idStr, out var id))
+        {
+            carritoId = id;
+        }
+        else
+        {
+            // Crear nuevo carrito si no existe
+            var response = await Http.PostAsync("/carritos", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var nuevoId = await response.Content.ReadFromJsonAsync<Guid>();
+                carritoId = nuevoId;
+                await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId.ToString());
+            }
+        }
+    }
+
+    private async Task CargarProductos()
+    {
+        var url = "/productos";
+        if (!string.IsNullOrWhiteSpace(q))
+            url += $"?q={Uri.EscapeDataString(q)}";
+
+        productos = await Http.GetFromJsonAsync<List<Producto>>(url);
+    }
+
+    private async Task AgregarAlCarrito(Producto producto)
+    {
+        // Siempre verifica si el carrito existe antes de agregar
+        await ObtenerOCrearCarrito();
+
+        if (carritoId == null)
+        {
+            await JS.InvokeVoidAsync("alert", "No se pudo crear el carrito.");
+            return;
+        }
+
+        var response = await Http.PutAsync($"/carritos/{carritoId}/{producto.Id}?cantidad=1", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            producto.Stock--;
+            StateHasChanged();
+        }
+        else
+        {
+            // Si el carrito fue eliminado (por ejemplo, después de confirmar compra), lo eliminamos del localStorage y volvemos a intentar
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+                carritoId = null;
+                await ObtenerOCrearCarrito();
+                // Intentar de nuevo agregar el producto
+                response = await Http.PutAsync($"/carritos/{carritoId}/{producto.Id}?cantidad=1", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    producto.Stock--;
+                    StateHasChanged();
+                    return;
+                }
+            }
+            var error = await response.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"No se pudo agregar al carrito: {error}");
+        }
+    }
+
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+}

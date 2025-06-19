@@ -1,59 +1,250 @@
 ﻿@page "/"
-@using cliente.Services
+@using cliente.Models
 @inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject IJSRuntime JS
+@implements IDisposable
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+<div class="page-container">
+    <div class="catalogo-container">
+        <h1 class="text-center mb-4">Catálogo de Productos</h1>
+        
+        <div class="mb-4">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control form-control-lg" 
+                       placeholder="Buscar productos..." 
+                       @bind="busqueda" 
+                       @bind:event="oninput" />
+            </div>
         </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
+        @if (cargando)
+        {
+            <div class="d-flex justify-content-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
                 </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
+            </div>
+        }
+    else if (productos != null && productos.Any())
+    {
+        <div class="productos-grid">
+            @foreach (var producto in productos.Where(p => 
+                string.IsNullOrWhiteSpace(busqueda) || 
+                p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)))
+            {                <div class="producto-card @(TieneStockDisponible(producto) ? "" : "sin-stock")">
+                    <img src="@($"http://localhost:5184{producto.ImagenUrl}")" 
+                         class="producto-imagen" 
+                         alt="@producto.Nombre">
+                    <div class="producto-detalles">
+                        <h4 class="mb-2">@producto.Nombre</h4>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">USD @producto.Precio.ToString("N2")</h5>
+                            @{
+                                var stockDisponible = ObtenerStockDisponible(producto);
+                            }
+                            @if (stockDisponible == 0)
+                            {
+                                <span class="badge bg-secondary">Sin stock</span>
+                            }
+                            else if (stockDisponible <= 3)
+                            {
+                                <span class="badge bg-danger">¡Últimas @stockDisponible unidades!</span>
+                            }
+                            else
+                            {
+                                <span class="stock-info stock-normal">Stock: @stockDisponible</span>
+                            }
+                        </div>
+                        <div class="d-grid gap-2 mt-auto">
+                            @if (TieneStockDisponible(producto))
+                            {
+                                <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">
+                                    <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="bi bi-x-circle me-2"></i>Sin stock
+                                </button>
+                            }
+                            <button class="btn btn-outline-secondary" @onclick="() => MostrarModal(producto)">
+                                <i class="bi bi-info-circle me-2"></i>Ver detalles
+                            </button>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
+    }
+</div>
+
+@if (mostrarToast)
+{
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-cart-check me-2"></i>
+                <strong class="me-auto">Producto agregado</strong>
+                <button type="button" class="btn-close" @onclick="() => mostrarToast = false"></button>
+            </div>
+            <div class="toast-body">
+                @toastMensaje
+            </div>
+        </div>
     </div>
+}
+
+@if (productoSeleccionado != null)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@productoSeleccionado.Nombre</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="@($"http://localhost:5184{productoSeleccionado.ImagenUrl}")" 
+                         class="img-fluid mb-3" 
+                         alt="@productoSeleccionado.Nombre">
+                    <p>@productoSeleccionado.Descripcion</p>                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">USD @productoSeleccionado.Precio.ToString("N2")</h5>
+                        @{
+                            var stockDisponibleModal = ObtenerStockDisponible(productoSeleccionado);
+                        }
+                        @if (stockDisponibleModal == 0)
+                        {
+                            <span class="badge bg-secondary">Sin stock</span>
+                        }
+                        else if (stockDisponibleModal <= 3)
+                        {
+                            <span class="badge bg-danger">¡Últimas @stockDisponibleModal unidades!</span>
+                        }
+                        else
+                        {
+                            <span class="stock-info stock-normal">Stock: @stockDisponibleModal</span>
+                        }
+                    </div>
+                </div>                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cerrar</button>
+                    @{
+                        var stockDisponibleBoton = ObtenerStockDisponible(productoSeleccionado);
+                    }
+                    @if (stockDisponibleBoton > 0)
+                    {
+                        <button type="button" class="btn btn-primary" @onclick="() => AgregarAlCarrito(productoSeleccionado)">
+                            <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-secondary" disabled>
+                            <i class="bi bi-x-circle me-2"></i>Sin stock
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
 </div>
 
 @code {
-    private DatosRespuesta datos;
+    private List<Producto> productos;
     private string error;
-    private bool cargando = false;
+    private bool cargando = true;
+    private bool mostrarToast = false;
+    private string toastMensaje = "";
+    private Producto productoSeleccionado;
+    private string busqueda = "";    protected override async Task OnInitializedAsync()
+    {
+        // Suscribirse a los cambios del carrito
+        CarritoService.OnChange += () =>
+        {
+            InvokeAsync(StateHasChanged);
+        };
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
-            datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
+        }
+    }private void AgregarAlCarrito(Producto producto)
+    {
+        // Calcular stock disponible considerando lo que ya está en el carrito
+        var cantidadEnCarrito = CarritoService.Items
+            .Where(i => i.Producto.Id == producto.Id)
+            .Sum(i => i.Cantidad);
+        
+        var stockDisponible = producto.Stock - cantidadEnCarrito;
+        
+        if (stockDisponible <= 0)
+        {
+            toastMensaje = "No hay más stock disponible";
+            mostrarToast = true;
+            return;
+        }
+
+        CarritoService.AgregarAlCarrito(producto, 1);
+        toastMensaje = $"{producto.Nombre} agregado al carrito";
+        mostrarToast = true;
+        
+        // Cerrar modal si estaba abierto
+        if (productoSeleccionado?.Id == producto.Id)
+        {
+            CerrarModal();
+        }
+        
+        InvokeAsync(async () =>
+        {
+            await Task.Delay(3000);
+            mostrarToast = false;
+            StateHasChanged();
+        });
+    }
+
+    private void MostrarModal(Producto producto)
+    {
+        productoSeleccionado = producto;
+    }
+
+    private void CerrarModal()
+    {
+        productoSeleccionado = null;
+    }
+
+    // Métodos helper para calcular stock disponible
+    private int ObtenerStockDisponible(Producto producto)
+    {
+        var cantidadEnCarrito = CarritoService.Items
+            .Where(i => i.Producto.Id == producto.Id)
+            .Sum(i => i.Cantidad);
+        
+        return Math.Max(0, producto.Stock - cantidadEnCarrito);
+    }    private bool TieneStockDisponible(Producto producto)
+    {
+        return ObtenerStockDisponible(producto) > 0;
+    }
+
+    public void Dispose()
+    {
+        // Desuscribirse del evento para evitar memory leaks
+        if (CarritoService != null)
+        {
+            CarritoService.OnChange -= () => InvokeAsync(StateHasChanged);
         }
     }
 }

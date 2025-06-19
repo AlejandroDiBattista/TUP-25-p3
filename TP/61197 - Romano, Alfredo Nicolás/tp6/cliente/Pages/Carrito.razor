@@ -1,0 +1,114 @@
+@page "/carrito"
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<header>
+    <h1 class="logo" style="cursor:pointer" @onclick='() => Nav.NavigateTo("/")'>LUCARBA</h1>
+</header>
+
+<div class="carrito">
+    @if (items == null)
+    {
+        <p>Cargando carrito...</p>
+    }
+    else if (!items.Any())
+    {
+        <p>El carrito está vacío.</p>
+        <span class="volver" @onclick='() => Nav.NavigateTo("/")'>← Volver al catálogo</span>
+    }
+    else
+    {
+        <h2>Carrito de compras</h2>
+        <table class="tabla-carrito">
+            <tr><th>Producto</th><th>Unidades</th><th>Precio</th><th>Importe</th><th>Acciones</th></tr>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Precio</td>
+                    <td>$@(item.Precio * item.Cantidad)</td>
+                    <td>
+                        <button class="btn-cantidad" @onclick="() => CambiarCantidad(item, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Stock)">+</button>
+                        <button class="btn-cantidad" @onclick="() => CambiarCantidad(item, item.Cantidad - 1)" disabled="@(item.Cantidad <= 1)">-</button>
+                        <button class="btn-eliminar" @onclick="() => EliminarDelCarrito(item)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </table>
+        <div class="resumen"><b>Total: $@TotalCarritoImporte</b></div>
+        <button class="btn-vaciar" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn-confirmar" @onclick='() => Nav.NavigateTo("/confirmacion")'>Confirmar compra</button>
+        <span class="volver" @onclick='() => Nav.NavigateTo("/")'>← Volver al catálogo</span>
+    }
+</div>
+
+@code {
+    string carritoId;
+    List<ItemCarritoDto> items;
+    int TotalCarrito => items?.Sum(i => i.Cantidad) ?? 0;
+    decimal TotalCarritoImporte => items?.Sum(i => i.Precio * i.Cantidad) ?? 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        carritoId = await ObtenerOCrearCarrito();
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        items = await Http.GetFromJsonAsync<List<ItemCarritoDto>>($"/carritos/{carritoId}");
+    }
+
+    async Task CambiarCantidad(ItemCarritoDto item, int nuevaCantidad)
+    {
+        if (nuevaCantidad < 1 || nuevaCantidad > item.Stock)
+            return;
+
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/carritos/{carritoId}/{item.Id}")
+        {
+            Content = new StringContent(nuevaCantidad.ToString(), System.Text.Encoding.UTF8, "application/json")
+        };
+        var resp = await Http.SendAsync(request);
+        if (resp.IsSuccessStatusCode)
+            await CargarCarrito();
+    }
+
+    async Task EliminarDelCarrito(ItemCarritoDto item)
+    {
+        await Http.DeleteAsync($"/carritos/{carritoId}/{item.Id}");
+        await CargarCarrito();
+    }
+
+    async Task VaciarCarrito()
+    {
+        await Http.DeleteAsync($"/carritos/{carritoId}");
+        await CargarCarrito();
+    }
+
+    async Task<string> ObtenerOCrearCarrito()
+    {
+        var id = await localStorage.GetItemAsync<string>("carritoId");
+        if (string.IsNullOrEmpty(id))
+        {
+            var resp = await Http.PostAsync("/carritos", null);
+            var obj = await resp.Content.ReadFromJsonAsync<CarritoIdDto>();
+            id = obj?.CarritoId;
+            if (!string.IsNullOrEmpty(id))
+                await localStorage.SetItemAsync("carritoId", id);
+        }
+        return id;
+    }
+
+    class ItemCarritoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public int Cantidad { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+    class CarritoIdDto { public string CarritoId { get; set; } }
+}

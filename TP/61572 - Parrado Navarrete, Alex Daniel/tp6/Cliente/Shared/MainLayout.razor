@@ -1,0 +1,18 @@
+@inherits LayoutComponentBase
+@inject CartState CartState
+
+<header>
+    <h1>Drinksr</h1>
+    <nav>
+        <a href="/">Inicio</a> |
+        <a href="/carrito">🛒 (@CartState.Items)</a>
+    </nav>
+</header>
+
+<main class="main-content">
+    @Body
+</main>
+
+<footer>
+    © Derechos Reservados.-- Drinksr
+</footer>

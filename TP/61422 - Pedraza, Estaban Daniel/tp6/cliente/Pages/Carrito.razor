@@ -1,0 +1,110 @@
+@page "/carrito"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject CarritoStateService CarritoStateService
+@inject NavigationManager Navigation
+
+<h3>Carrito</h3>
+
+@if (carritoModel is null)
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
+}
+else if (carritoModel.Items.Count == 0)
+{
+    <div class="alert alert-warning">No hay productos en el carrito.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carritoModel.Items)
+            {
+                <tr>
+                    <td>@item.Producto?.Nombre</td>
+                    <td>$@item.PrecioUnitario</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" @onclick="() => DisminuirCantidad(item)">-</button>
+                        @item.Cantidad
+                        <button class="btn btn-secondary btn-sm" @onclick="() => CambiarCantidad(item.ProductoId, 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                    </td>
+                    <td>$@(item.Cantidad * item.PrecioUnitario)</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarProducto(item.ProductoId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-between">
+        <button class="btn btn-warning" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-success" @onclick="IrAConfirmacion">Confirmar compra</button>
+    </div>
+}
+
+@code {
+    private cliente.Models.Carrito carritoModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        if (!string.IsNullOrEmpty(carritoId))
+        {
+            carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        }
+    }
+
+    private async Task DisminuirCantidad(ItemCarrito item)
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        if (item.Cantidad > 1)
+        {
+            await CarritoService.AgregarProductoAsync(carritoId, item.ProductoId, -1);
+        }
+        else
+        {
+            await CarritoService.EliminarProductoAsync(carritoId, item.ProductoId);
+        }
+        carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        CarritoStateService.NotificarCambio();
+    }
+
+    private async Task CambiarCantidad(int productoId, int delta)
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        await CarritoService.AgregarProductoAsync(carritoId, productoId, delta);
+        carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        CarritoStateService.NotificarCambio();
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        await CarritoService.EliminarProductoAsync(carritoId, productoId);
+        carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        CarritoStateService.NotificarCambio();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        var carritoId = await CarritoStateService.GetCarritoIdAsync();
+        await CarritoService.VaciarCarritoAsync(carritoId);
+        carritoModel = await CarritoService.ObtenerCarritoAsync(carritoId);
+        CarritoStateService.NotificarCambio();
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmar");
+    }
+}

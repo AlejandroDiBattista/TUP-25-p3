@@ -1,0 +1,67 @@
+﻿@page "/carrito"
+@using cliente.Modelo
+@using cliente.Services
+@inject CartService CartService
+@inject NavigationManager Navigation
+
+<h3>Carrito de compras</h3>
+
+@if (items is null)
+{
+    <p>Cargando...</p>
+}
+else if (!items.Any())
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Importe</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Precio</td>
+                    <td>$@item.Importe</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => QuitarDelCarrito(item)">Quitar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><b>Total: $@items.Sum(i => i.Importe)</b></p>
+    <button class="btn btn-success mt-3" @onclick="IrAConfirmar">Confirmar compra</button>
+}
+
+@code {
+    List<ItemCarritoDto>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await CartService.ObtenerItems();
+    }
+
+    void IrAConfirmar()
+    {
+        Navigation.NavigateTo("/confirmar");
+    }
+
+    async Task QuitarDelCarrito(ItemCarritoDto item)
+    {
+        await CartService.EliminarProducto(item.ProductoId);
+        items = await CartService.ObtenerItems();
+        StateHasChanged(); // Fuerza la actualización de la UI
+    }
+}

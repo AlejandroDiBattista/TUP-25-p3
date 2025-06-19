@@ -1,59 +1,129 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using modelos_compartidos
+@inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
 
-<PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+<h2 class="mb-4">Nuestros Productos</h2>
+
+<div class="container mt-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3></h3>
+        </div>
+        <div class="col-md-6 text-end">
+            <input class="form-control form-control-lg w-75 d-inline-block" type="text" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
         </div>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+    @if (productos == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando productos...</span>
+            </div>
+            <p>Cargando productos...</p>
+        </div>
+    }
+    else if (!productosFiltrados.Any()) 
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-box-seam display-1 text-muted"></i>
+            <p class="lead mt-3">No se encontraron productos.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var producto in productosFiltrados)
+            {
+                var cantidadEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id)?.Cantidad ?? 0;
+                var stockDisponible = producto.Stock - cantidadEnCarrito;
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-dark">@producto.Nombre</h5>
+                            <p class="card-text text-muted flex-grow-1">@producto.Descripcion</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fs-4 fw-bold text-success">$@producto.Precio</span>
+                                @if (stockDisponible > 0)
+                                {
+                                    <span class="badge bg-info text-dark">Stock: @stockDisponible</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Sin Stock</span>
+                                }
+                            </div>
+                            <button class="btn btn-primary mt-auto"
+                                    @onclick="() => AgregarAlCarrito(producto)"
+                                    disabled="@(stockDisponible == 0)" id="btn-agregar-@producto.Id">
+                                @if (stockDisponible == 0)
+                                {
+                                    <span>Producto Agotado</span>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-cart-plus"></i> Añadir al Carrito</span>
+                                }
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
         </div>
-    </div>
+    }
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    #nullable enable
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    private List<Producto>? productos;
+    private string busqueda = string.Empty;
+    private IEnumerable<Producto> productosFiltrados => string.IsNullOrWhiteSpace(busqueda)
+        ? productos ?? new List<Producto>()
+        : productos?.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                                p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) ?? new List<Producto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductosAsync();
+        CarritoService.OnChange += StateHasChanged;
+        CarritoService.OnStockChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+        CarritoService.OnStockChange -= StateHasChanged;
+    }
+
+    private async Task CargarProductosAsync()
+    {
+        productos = null;
+        Console.WriteLine("--> DEBUG: Cargando productos desde la API...");
+        var fetchedProducts = await ApiService.GetProductos();
+        if (fetchedProducts != null)
+        {
+            productos = fetchedProducts;
+            Console.WriteLine($"--> DEBUG: {productos.Count} productos cargados.");
         }
+        else
+        {
+            productos = new List<Producto>();
+            Console.WriteLine("--> ERROR: No se pudieron cargar los productos de la API.");
+        }
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        var cantidadEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id)?.Cantidad ?? 0;
+        var stockDisponible = producto.Stock - cantidadEnCarrito;
+        if (stockDisponible > 0)
+        {
+            CarritoService.AgregarAlCarrito(producto);
+        }
+        StateHasChanged();
     }
 }

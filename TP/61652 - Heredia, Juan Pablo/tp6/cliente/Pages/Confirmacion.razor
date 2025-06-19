@@ -1,0 +1,71 @@
+@page "/confirmacion"
+@using cliente.models
+@using Microsoft.AspNetCore.Components.Forms
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+<div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 2rem;">
+    <h2 style="color: rgb(216, 214, 214); margin-bottom: 2rem;">Confirmar Compra</h2>
+
+    @if (items is null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <EditForm Model="confirmacion" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem; color: rgb(216, 214, 214); min-width: 300px;">
+
+                <div style="width: 100%;">
+                    <label>Nombre</label><br />
+                    <InputText @bind-Value="confirmacion.NombreCliente" class="form-control" placeholder="Nombre" />
+                    <ValidationMessage For="@(() => confirmacion.NombreCliente)" />
+                </div>
+
+                <div style="width: 100%;">
+                    <label>Apellido</label><br />
+                    <InputText @bind-Value="confirmacion.ApellidoCliente" class="form-control" placeholder="Apellido" />
+                    <ValidationMessage For="@(() => confirmacion.ApellidoCliente)" />
+                </div>
+
+                <div style="width: 100%;">
+                    <label>Email</label><br />
+                    <InputText @bind-Value="confirmacion.EmailCliente" class="form-control" placeholder="Email" type="email" />
+                    <ValidationMessage For="@(() => confirmacion.EmailCliente)" />
+                </div>
+
+                <p><strong>Total ítems:</strong> @items.Sum(i => i.Cantidad)</p>
+                <p><strong>Importe total:</strong> $@items.Sum(i => i.Cantidad * i.PrecioUnitario)</p>
+
+                <button type="submit" class="boton boton-verde" style="margin-top: 1rem;">Confirmar</button>
+            </div>
+        </EditForm>
+    }
+</div>
+@code{
+    #nullable enable
+    List<Compras>? items;
+    ConfirmarCompra confirmacion = new();
+    int carritoId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        carritoId = await ApiService.ObtenerOCrearCarrito();
+        items = await ApiService.GetCarrito(carritoId);
+    }
+    async Task ConfirmarCompra()
+    {
+        try
+        {
+            await ApiService.ConfirmarCompra(carritoId, confirmacion);
+            await ApiService.LimpiarCarritoId();
+            Nav.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", ex.Message);
+        }
+    }
+}

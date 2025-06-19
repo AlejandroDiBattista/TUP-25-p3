@@ -9,26 +9,24 @@ main {
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-image: linear-gradient(180deg, #D35400 0%, #A04000 70%);
 }
 
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
+    background: linear-gradient(90deg, #F39C12 0%, #E67E22 100%);
+    border-bottom: 1px solid #D35400;
     justify-content: flex-end;
     height: 3.5rem;
     display: flex;
     align-items: center;
-}
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
+}.top-row ::deep a, .top-row ::deep .btn-link {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
-    }
-
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+        color: white;
+    }    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
         text-decoration: underline;
+        color: #FFF5EE;
     }
 
     .top-row ::deep a:first-child {

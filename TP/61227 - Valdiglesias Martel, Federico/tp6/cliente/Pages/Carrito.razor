@@ -1,0 +1,130 @@
+@page "/carrito"
+@using cliente.modelos
+@using cliente.Services
+@inject ApiService Api
+@inject EstadoCarrito EstadoCarrito
+@inject NavigationManager Navigation
+
+
+<PageTitle>Carrito de Compras</PageTitle>
+
+<div class="container my-5">
+    <h3><i class="bi bi-cart3 me-2"></i>Mi Carrito de Compras</h3>
+    <hr />
+
+    @if (compra == null)
+    {
+        <p><em>Cargando carrito...</em></p>
+    }
+    else if (!compra.Items.Any())
+    {
+        <div class="text-center p-5">
+            <h4>Tu carrito está vacío.</h4>
+            <p>¡Agrega productos desde nuestro catálogo!</p>
+            <a href="/" class="btn btn-primary">Ir al Catálogo</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8">
+                @foreach (var item in compra.Items)
+                {
+                    <div class="card mb-3">
+                        <div class="row g-0">
+                            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                                <img src="@item.ImagenUrl" class="img-fluid rounded-start" alt="@item.NombreProducto"
+                                    style="max-height: 100px; max-width: 100px; object-fit: contain;">
+                            </div>
+                            <div class="col-md-10">
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.NombreProducto</h5>
+                                    <p class="card-text">Precio Unitario: @item.PrecioUnitario.ToString("C")</p>
+                                    <div class="d-flex align-items-center">
+                                        <p class="card-text me-3">Cantidad:</p>
+                                        <div class="input-group" style="max-width: 150px;">
+                                            <button class="btn btn-outline-secondary"
+                                                @onclick="() => DecrementarCantidad(item.ProductoId)">-</button>
+                                            <input type="text" class="form-control text-center" value="@item.Cantidad" readonly>
+                                            <button class="btn btn-outline-secondary"
+                                                @onclick="() => IncrementarCantidad(item.ProductoId)">+</button>
+                                        </div>
+                                    </div>
+                                    <p class="card-text mt-2"><b>Subtotal: @((item.Cantidad *
+                                                                                item.PrecioUnitario).ToString("C"))</b></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                        }
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Resumen de la Compra</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Subtotal</span>
+                                <span>@compra.Total.ToString("C")</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Envío</span>
+                                <span>GRATIS</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between fs-5">
+                                <strong>Total</strong>
+                                <strong>$ @compra.Total.ToString()</strong>
+                            </li>
+                        </ul>
+                        <div class="d-grid gap-2 mt-3">
+                            <button class="btn btn-primary" @onclick="IrAConfirmacion">Confirmar Compra</button>
+                            <button class="btn btn-outline-danger" @onclick="VaciarElCarrito">Vaciar Carrito</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    private CompraRespuestaDto? compra;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        compra = await Api.GetCarritoAsync();
+        StateHasChanged();
+    }
+
+    private async Task IncrementarCantidad(int productoId)
+    {
+        await Api.AgregarAlCarrito(productoId);
+        await CargarCarrito();
+    }
+
+    private async Task DecrementarCantidad(int productoId)
+    {
+        await Api.EliminarDelCarrito(productoId);
+        await CargarCarrito();
+    }
+
+    private async Task VaciarElCarrito()
+    {
+        if (EstadoCarrito.CarritoId.HasValue)
+        {
+            await CargarCarrito();
+        }
+    }
+
+    private void IrAConfirmacion()
+    {
+        Navigation.NavigateTo("/confirmacion");
+    }
+}

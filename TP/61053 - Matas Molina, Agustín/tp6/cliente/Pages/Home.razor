@@ -1,59 +1,197 @@
 ﻿@page "/"
+@using TuProyecto.Models
 @using cliente.Services
 @inject ApiService ApiService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject CarritoService CarritoService
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Mi Tienda</PageTitle>
+
+<style>
+    body {
+        padding-top: 56px;
+    }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary py-1 fixed-top" style="min-height:44px;">
+    <div class="container-fluid">
+        <a class="navbar-brand py-0" href="/" style="font-size:1.2rem;">Mundo Pc</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <NavLink class="nav-link px-2" href="/">Home</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-2" href="/productos">Productos</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-2" href="/Carrito">Mi Carrito</NavLink>
+                </li>
+            </ul>
+            <form class="d-flex" role="search" onsubmit="return false;">
+                <input class="form-control form-control-sm me-2"
+                       type="search"
+                       placeholder="Buscar"
+                       aria-label="Buscar"
+                       style="height:28px; font-size:0.95rem;"
+                       @bind="textoBusqueda"
+                       @bind:event="oninput" />
+            </form>
+        </div>
+    </div>
+</nav>
+<div class="banner-home" style="width:100vw; margin:0 auto 2rem auto; text-align:center;">
+    <img src="imagenes/Banner.jpeg"
+         alt="Banner Promocional"
+         style="width:100vw; max-width:100vw; height:auto; max-height:400px; display:block; border-radius:12px; margin:0 auto;">
+</div>
 
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+        <div class="col-12">
+            <h2>Productos destacados</h2>
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert alert-success text-center">@mensaje</div>
+            }
+            @if (productos == null)
+            {
+                <div class="alert alert-info">Cargando productos...</div>
+            }
+            else if (productos.Count == 0)
+            {
+                <div class="alert alert-warning">No hay productos disponibles.</div>
+            }
+            else
+            {
+                var productosFiltrados = string.IsNullOrWhiteSpace(textoBusqueda)
+                    ? productos
+                    : productos.Where(p =>
+                        (p.Nombre?.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (p.Descripcion?.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ?? false)
+                    ).ToList();
+
+                var productosPorSlide = 3;
+                var totalSlides = (int)Math.Ceiling(productosFiltrados.Count / (double)productosPorSlide);
+                <div id="carouselDestacados" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-inner">
+                        @for (int slide = 0; slide < totalSlides; slide++)
+                        {
+                            <div class="carousel-item @(slide == 0 ? "active" : "")">
+                                <div class="d-flex justify-content-center">
+                                    @for (int j = 0; j < productosPorSlide; j++)
+                                    {
+                                        int index = slide * productosPorSlide + j;
+                                        if (index >= productosFiltrados.Count)
+                                            break;
+                                        var prod = productosFiltrados[index];
+                                        <div class="card h-100 mx-2" style="width: 22rem;">
+                                            @if (!string.IsNullOrWhiteSpace(prod.ImagenUrl))
+                                            {
+                                                <img src="@prod.ImagenUrl"
+                                                     class="card-img-top"
+                                                     alt="@prod.Nombre"
+                                                     style="max-height:180px;object-fit:contain;"
+                                                     id="img-prod-@prod.Id" />
+                                            }
+                                            else
+                                            {
+                                                <div style="height:180px;display:flex;align-items:center;justify-content:center;background:#222;color:#fff;">
+                                                    Sin imagen
+                                                </div>
+                                            }
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">@prod.Nombre</h5>
+                                                <p class="card-text">@prod.Descripcion</p>
+                                                <p class="card-text"><b>$@prod.Precio</b></p>
+                                                <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                                                    <button class="btn btn-primary"
+                                                            @onclick="() => Comprar(prod.Id)"
+                                                            disabled="@( (CarritoService.CarritoActual?.Items.FirstOrDefault(p => p.Producto.Id == prod.Id)?.Cantidad ?? 0) >= prod.Stock )">
+                                                        Comprar
+                                                    </button>
+                                                    @if (productoAgregadoId == prod.Id)
+                                                    {
+                                                        <span style="
+                                                            position: absolute;
+                                                            bottom: 110%;
+                                                            left: 50%;
+                                                            transform: translateX(-50%);
+                                                            background: #28a745;
+                                                            color: white;
+                                                            padding: 0.3em 0.8em;
+                                                            border-radius: 1em;
+                                                            font-size: 0.95em;
+                                                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                                            white-space: nowrap;
+                                                            z-index: 10;">
+                                                            ¡Agregado al carrito!
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacados" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacados" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
                 </div>
             }
         </div>
     </div>
 </div>
 
-@code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success text-center">@mensaje</div>
+}
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+@code {
+    private List<Producto> productos;
+    private string textoBusqueda = "";
+    private string mensaje = "";
+    private int? productoAgregadoId = null;
+    private Dictionary<int, int> stockVisible = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.GetProductosAsync();
+        foreach (var prod in productos)
+        {
+            stockVisible[prod.Id] = prod.Stock;
         }
+    }
+
+    private void ComprarProducto(int productoId)
+    {
+        Console.WriteLine($"Comprar producto {productoId}");
+    }
+
+    private async Task ComprarAnimado(int productoId)
+    {
+        await JS.InvokeVoidAsync("flyToCart", $"#img-prod-{productoId}", "#iconoCarrito");
+        ComprarProducto(productoId); // Lógica real de compra
+    }
+
+    private async Task Comprar(int productoId)
+    {
+        await CarritoService.AgregarOActualizarProductoAsync(productoId, 1);
+        productoAgregadoId = productoId;
+        StateHasChanged();
+        await Task.Delay(1500); // La burbuja se oculta después de 1.5 segundos
+        productoAgregadoId = null;
+        StateHasChanged();
     }
 }

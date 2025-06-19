@@ -1,59 +1,148 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
 @inject ApiService ApiService
-
-<PageTitle>Inicio</PageTitle>
+@inject NavigationManager Navigation
+@inject CarritoState CarritoState
+@inject LocalStorageService LocalStorage
 
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+    <div class="row mb-4 align-items-center">
+        <div class="col-2">
+            <img src="/favicon.png" alt="Logo" style="height:48px;">
+        </div>
+        <div class="col-6">
+            <input class="form-control" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+        </div>
+        <div class="col-4 text-end">
+            <button class="btn btn-outline-primary position-relative" @onclick="IrAlCarrito">
+                <span class="bi bi-cart"></span> Carrito
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">@cantidadCarrito</span>
+            </button>
         </div>
     </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+        @if (cargando)
+        {
+            <div class="col-12"><div class="alert alert-info">Cargando productos...</div></div>
+        }
+        else if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <div class="col-12"><div class="alert alert-danger">@errorMsg</div></div>
+        }
+        else if (productos != null)
+        {
+            @foreach (var p in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@p.ImagenUrl" class="img-catalogo card-img-top" alt="@p.Nombre" />
+                        <div class="card-body">
+                            <h5 class="card-title">@p.Nombre</h5>
+                            <p class="card-text">@p.Descripcion</p>
+                            <p class="card-text"><b>Precio:</b> $@p.Precio</p>
+                            <p class="card-text"><b>Stock:</b> @p.Stock</p>
+                            <button class="btn btn-success w-100" @onclick="() => AgregarAlCarrito(p)" disabled="@(p.Stock == 0)">Agregar al carrito</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
-        </div>
+        }
+        else
+        {
+            <div class="col-12"><div class="alert alert-danger">No se pudieron cargar los productos.</div></div>
+        }
     </div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
+    private List<ProductoDto> productos;
+    private string busqueda = string.Empty;
     private bool cargando = false;
+    private int cantidadCarrito = 0;
+    private Guid carritoId;
+    private string? errorMsg;    protected override async Task OnInitializedAsync()
+    {
+        await InicializarCarrito();
+        await CargarProductos();
+    }
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    private async Task CargarProductos()
+    {
+        cargando = true;
+        errorMsg = null;
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync(busqueda);
         }
+        catch (Exception ex)
+        {
+            errorMsg = "No se pudieron cargar los productos. Intente más tarde.";
+        }
+        cargando = false;
+    }    private async Task InicializarCarrito()
+    {
+        try
+        {
+            // Obtener carritoId de localStorage
+            var idStr = await LocalStorage.GetItemAsync("carritoId");
+            
+            // Si no hay carrito guardado o no se puede obtener, crear uno nuevo
+            if (!Guid.TryParse(idStr, out carritoId) || carritoId == Guid.Empty)
+            {
+                await CrearNuevoCarrito();
+                return;
+            }
+
+            // Intentar obtener el carrito existente
+            try
+            {
+                var carrito = await ApiService.ObtenerCarritoAsync(carritoId);
+                if (carrito != null)
+                {
+                    cantidadCarrito = carrito.Items?.Sum(i => i.Cantidad) ?? 0;
+                    CarritoState.Cantidad = cantidadCarrito;
+                    return;
+                }
+            }
+            catch
+            {
+                // Si falla al obtener el carrito, crear uno nuevo
+                await CrearNuevoCarrito();
+            }
+        }
+        catch
+        {
+            await CrearNuevoCarrito();
+        }
+    }
+
+    private async Task CrearNuevoCarrito()
+    {
+        var nuevo = await ApiService.CrearCarritoAsync();
+        carritoId = nuevo?.Id ?? Guid.NewGuid();
+        await LocalStorage.SetItemAsync("carritoId", carritoId.ToString());
+        cantidadCarrito = 0;
+        CarritoState.Cantidad = 0;
+    }
+
+    private async Task AgregarAlCarrito(ProductoDto producto)
+    {
+        if (carritoId == Guid.Empty)
+            await InicializarCarrito();
+        var carrito = await ApiService.AgregarProductoAsync(carritoId, producto.Id, 1);
+        cantidadCarrito = carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
+        CarritoState.Cantidad = cantidadCarrito;
+    }
+
+    private void IrAlCarrito()
+    {
+        Navigation.NavigateTo("/carrito");
+    }
+
+    private async Task OnBusquedaChanged(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? string.Empty;
+        await CargarProductos();
     }
 }

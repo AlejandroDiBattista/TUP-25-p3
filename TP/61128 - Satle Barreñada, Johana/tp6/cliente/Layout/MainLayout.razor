@@ -1,0 +1,41 @@
+﻿@using cliente.Services
+@inject CarritoService CarritoService
+@inherits LayoutComponentBase
+@implements IDisposable
+
+<div class="cabecera">
+    <a href="/" class="logo">🛍️ Tienda Online</a>
+
+    <a href="/carrito" class="carrito-link">
+        🛒 Carrito (@CarritoService.CantidadTotal)
+    </a>
+</div>
+
+
+
+
+<div class="page">
+    @Body
+</div>
+
+
+@code {
+    private int cantidadEnCarrito;
+
+    protected override void OnInitialized()
+    {
+        cantidadEnCarrito = CarritoService.CantidadTotal;
+        CarritoService.OnChange += Actualizar;
+    }
+
+    private void Actualizar()
+    {
+        cantidadEnCarrito = CarritoService.CantidadTotal;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= Actualizar;
+    }
+}

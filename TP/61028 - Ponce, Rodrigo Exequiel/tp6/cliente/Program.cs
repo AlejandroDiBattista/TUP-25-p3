@@ -8,13 +8,12 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Configurar el HttpClient para apuntar al servidor API
-builder
-    .Services
-        .AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:7000") });
 
 // Registrar el servicio API
-builder
-    .Services
-    .AddScoped<ApiService>();
+builder.Services.AddScoped<ServicioProductos>();
+builder.Services.AddScoped<ServicioCarrito>();
+builder.Services.AddSingleton<cliente.Services.BusquedaService>();
 
 await builder.Build().RunAsync();
+

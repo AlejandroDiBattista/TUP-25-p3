@@ -1,81 +1,289 @@
-# TP6: 2do Parcial
-**Desarrollo full‑stack con C# — Blazor WASM + Minimal API + EF Core/SQLite**
+# Resultado Segundo Parcial 
 
+El presente listado muestra los resultados del segundo parcial.
+- 🟢 : Aprobaron 
+- 🟡 : Deben recuperar (funciona con errores)
+- 🔴 : Deben corregir (no funciona)
+
+Para **regularizar** deben tener al menos 3 prácticos presentados, el primer parcial aprobado y el segundo parcial que funcione.
+
+Para **promocionar** deben tener todos los prácticos presentados y los dos parciales aprobados.
+
+- ✅ : Práctico presentado
+- ❓ : Práctico no presentado
+
+Las personas que falten presentar el segundo parcial no podrán promocionar pero podrán regularizar.
+
+Las personas que les falte presentar prácticos lo pueden presentar y recuperar la posibilidad de promocionar.
+
+> [!IMPORTANT]
+> La fecha límite para presentar los trabajos es el 
+> **Viernes 20 a las 23:59 hs.**
 ---
 
-## 1. Objetivo
+> [!NOTE]
+> Ver al final como presentar el trabajo y corregir errores al subir el trabajo.
 
-Diseñar y construir una aplicación web completa (“Tienda Online”) que demuestre dominio de:
+# Informe de la comisión C3
 
-* **Frontend**: Blazor WebAssembly para la experiencia de usuario.  
-* **Backend**:  Minimal API en C# que exponga un servicio REST.  
-* **Persistencia**: Entity Framework Core con SQLite.  
+## Alumnos que aprobaron
+```
+61200 Gauna Serrano, Martín Javier   32   ✅✅🟢❓❓🟢
+61450 Jiménez Paz, Patricio Agustín  33   ✅✅🟢✅✅🟢
+```
 
-> **Fechas clave**
-> El trabajo puede ser presentado hasta el día **sábado 14 de junio a las 23:59 hs**. 
+## Alumnos que deben recuperar
+```
+61667 Acosta, Maira                  34   ✅✅🟢✅✅🟡
+      no descuenta stock al agregar al carrito
+
+62055 Ahumada, Aiquén                34   ✅✅🟢✅✅🟡
+      no descuenta stock al agregar al carrito
+
+61626 Diaz Londero, Sergio Gonzalo   27   ✅✅🟢✅✅🟡
+      debe mostrar directamente la lista de productos, no descuenta stock
+
+61271 Donelli, Gerardo Exequiel      34   ✅✅🟢✅✅🟡
+      no descuenta stock, pesima presentacion
+
+61221 Duclós, Marcelo Ezequiel       33   ✅✅🟢✅✅🟡
+      no descuenta stock, no controla stock, el carrito no dice la cantidad de unidades
+
+62093 Frías Silva, Juan Segundo      29   ✅✅🟢✅❓🟡
+      no descuenta stock.
+
+61627 Juárez Fernández, Lourdes Abril35   ✅✅🟢✅✅🟡
+      no descuenta stock, no controla stock, no permite volver al catalogo
+
+61473 Lagoria García, Tomás Gustavo  30   ✅✅🟢✅✅🟡
+      no inicia en home, muestra alert, el subtotal dice '3100.0.ToString("C")'
+
+61794 Lobo Campero, Hernán Ignacio   23   ✅✅🟢✅✅🟡
+      No descuenta stock, al agregar al carrito comienza de 1.
+
+61818 Lopez Tisera, Gaston           29   ✅✅🟢✅❓🟡
+      no muestra imagen, no descuenta stock, mala presentacion
+
+61445 Martínez Campero, Santiago     34   ✅✅🟢✅✅🟡
+      no descuenta stock, al agregar vuelve a 1, doble busqueda
+
+61676 Massey, Maximiliano            32   ✅✅🟢✅✅🟡
+      no muestra productos al iniciar, no descuenta stock, no controla stock
+
+61032 Moya, Mariano                  24   ✅✅🟢✅✅🟡
+      no descuenta stock al agregar al carrito
+
+61037 Paz, Rodrigo Federico          30   ✅✅🟢✅✅🟡
+      no controla stock en el carrito.
+
+61028 Ponce, Rodrigo Exequiel        33   ✅✅🟢✅✅🟡
+      no controla stock, no actualiza stock, no muestra imagen
+
+61197 Romano, Alfredo Nicolás        33   ✅✅🟢✅❓🟡
+      no actualiza stock
+
+61478 Soto, Antonella                29   ✅✅🟢✅✅🟡
+      no agrega al carrito
+
+61129 Tello, Abril María Agostina    33   ✅✅🟢✅✅🟡
+      no actualiza stock
+
+62555 Verón, Matias Gabriel          27   ✅✅🟢✅✅🟡
+      al agregar al carrito lo reinicia (debe acumular la cantidad)
+```
+
+## Alumnos que deben corregir
+```
+61956 Leglisé, Laureano              28   ✅✅🟢✅❓🔴
+      'RequiredAttribute' no se encontró
+
+61679 Lobo Barrera, Mia de los Angele35   ✅✅🟢✅✅🔴
+      "Carrito" no contiene una definición para "Items"
+
+61579 Marti, Gonzalo                 27   ✅✅🟢✅❓🔴
+      no muestra productos, IGUAL que 61572
+
+61113 Oriz Caballero, Juan José      31   ✅✅🟢✅✅🔴
+      Archivos corruptos
+
+61312 Paz Berrondo, Lucas David      25   ✅✅🟢✅✅🔴
+      no funciona
+
+61096 Suarez Vece, Leandro Andres    31   ✅✅🟢✅✅🔴
+      El espacio de nombres 'Servidor.Models' ya contiene una definición para 'Producto'
+
+61793 Trujillo, Facundo Nahuel       35   ✅✅🟢✅✅🔴
+      'ApiService' no se encontró
+```
+
+## Alumnos que no presentaron
+```
+61203 Acevedo Costello, Juan Ignacio 31   ✅✅🟢✅❓❓
+61118 Barrios, Santiago Alexis       28   ✅✅🟢❓❓❓
+61319 Carabajal, José Gabriel        30   ✅✅🟢✅❓❓
+61214 Collazos Cortez, Máximo Albert 28   ✅✅🟢❓❓❓
+61141 Di Clemente, María Antonela    25   ✅✅🟢✅✅❓
+61139 Gallo, María Matilde           20   ✅✅🟢❓❓❓
+61352 García Moya, José Ignacio      29   ✅✅🟢✅✅❓      
+61624 Godoy, Alan                    30   ✅✅🟢✅✅❓
+61595 González Patti, Valentín       29   ✅✅🟢✅❓❓
+61562 Helguera, Agustina Elizabeth   30   ✅✅🟢❓❓❓
+62053 Herrera Palomino, Ivam Agustín 35   ✅✅🟢✅✅❓
+61059 Palavecino, Fabricio Gaston    27   ✅✅🟢❓❓❓
+61248 Palma Collado, Nahuel          34   ✅✅🟢✅✅❓
+61596 Zamora, Gonzalo Alejandro      30   ✅✅🟢❓❓❓
+61862 Zerda, Thomas                  29   ✅✅🟢❓❓❓
+```
+
 
 ---
+# Informe de la comisión C5
 
-## 2. Requisitos funcionales
+## Alumnos que aprobaron
+```
+61290 Azubel, Tomas                  33   ✅✅🟢✅✅🟢
+61072 Casavalle Castillo, Bruno      23   ✅✅🟢✅✅🟢
+61908 Costilla, Ignacio              25   ✅✅🟢✅✅🟢
+61041 Iosa Molina, Nicolás           33   ✅✅🟢✅✅🟢
+61247 Medici Assaf, Abril            34   ✅✅🟢✅✅🟢
+61588 Mussa, Agustín                 33   ✅✅🟢✅✅🟢
+61422 Pedraza, Estaban Daniel        28   ✅✅🟢✅❓🟢
+61671 Quinteros, Gabriel             28   ✅✅🟢✅✅🟢
+61064 Racedo, Francisco Nicolas      33   ✅✅🟢✅✅🟢
+62104 Robledo, Juan Gerardo          31   ✅✅🟢✅✅🟢
+61340 Tognalli, Mateo Fabrizio       33   ✅✅🟢✅✅🟢
+61988 Villada, Guillermo Nicolás     23   ✅✅🟢❓✅🟢
 
-### 2.1 Frontend – Blazor WASM
+```
 
-1. **Catálogo de productos**  
-   * Listado de productos disponible y buscable.  
-   * Cabecera fija con logo (home), buscador e ícono de carrito con contador de ítems.  
-   * Tarjetas con imagen, nombre, descripción, stock y precio.  
-   * Botón **Agregar al carrito** (valida stock) → redirige al carrito.  
+## Alumnos que deben recuperar
+```
 
-2. **Carrito de compra**  
-   * Lista de productos, unidades, precio unitario e importe.  
-   * Controles +/- para modificar cantidad (ajusta stock en tiempo real).  
-   * Botones **Vaciar carrito** y **Confirmar compra** → redirige a la confirmación.  
+61491 Acuña, Alejo Gabriel           33   ✅✅🟢✅✅🟡
+      No actualiza el stock, no permite volver al catalogo
 
-3. **Confirmación de compra**  
-   * Resumen (total ítems e importe).  
-   * Formulario con Nombre, Apellido y Email (obligatorios).  
-   * Botón **Confirmar** registra compra, limpia carrito → vuelve al catálogo.  
+61189 Buzza, Juliana                 24   ✅✅🟢✅✅🟡
+      solo funciona una vez, al confirmar carrito deja de funcionar
 
-### 2.2 Backend – Minimal API
+61314 Morales, Ignacio Agustin      24   ✅✅🟢✅✅🟡
+      debe ir directamente al catalogo, no controla stock en el carrito
 
-* Funciones del API necesarias:  
-  * `GET /productos` (+ búsqueda por query).  
+61345 Caro, Tobias                   22   ✅✅🟢✅✅🟡
+      no actualiza stock
 
-  * `POST /carritos` (inicializa el carrito).
-  * `GET /carritos/{carrito}` → Trae los ítems del carrito.  
-  * `DELETE /carritos/{carrito}` → Vacía el carrito.
-  * `PUT /carritos/{carrito}/confirmar` (detalle + datos cliente).  
+61611 Coronel, Julieta Antonella     26   ✅✅🟢✅✅🟡
+      no actualiza stock, mejorar presentacion
 
-  * `PUT /carritos/{carrito}/{producto}` → Agrega un producto al carrito (o actualiza cantidad).  
-  * `DELETE /carritos/{carrito}/{producto}` → Elimina un producto del carrito (o reduce cantidad).
+61673 Delgado, Augusto Emanuel       21   ✅✅🟢✅❓🟡
+      no funciona, no muestra productos
 
-* Todas las operaciones deben validar stock y persistir cambios.  
+61051 Diaz, Agustin Emanuel          26   ✅✅🟢✅✅🟡
+      no actualiza stock,
 
----
+61050 Diaz Sánchez, Nelson Santiago  34   ✅✅🟢✅✅🟡
+      no tiene forma de volver al catalogo, no actualiza stock
 
-### 3. Modelo de datos
-  * Productos: `Id`, `Nombre`, `Descripción`, `Precio`, `Stock`, `ImagenUrl`.
-  * Compras: `Id`, `Fecha`, `Total`, `NombreCliente`, `ApellidoCliente`, `EmailCliente`.
-  * Items de compra: `Id`, `ProductoId`, `CompraId`, `Cantidad`, `PrecioUnitario`.
+61680 Dziewulski, Karen              33   ✅✅🟢✅✅🟡
+      me da error al confirmar la compra, no actualiza stock, ni controla el stock
 
-  El sistema debe cargar al menos 10 productos de ejemplo al iniciar.
-  Deben ser registros consistentes (por ejemplo celulares, accesorios, gaseosas, etc.).
-  Deben tener imágenes representativas.
+61060 Fioretti, Elian Enrique        28   ✅✅🟢✅✅🟡
+      no actualiza stock al agregar al carrito, estetica muy cuidada
 
-  Se debe usar Entity Framework Core para definir el modelo y usar SQLite como base de datos.
+61540 Garcia Mc Guiness, Gonzalo     31   ✅✅🟢✅✅🟡
+      no muestra imagen de producto, no actualiza stock
 
-### 4. Desarrollo del sistema
-* El trabajo es estrictamente individual (no se permite el trabajo en grupo).
-* Copiar el trabajo lleva a recursar la materia.
-* Puedes usar cualquier recurso para el desarrollo, pero debes poder defender el código.
-* Se deben realizar confirmaciones (Commit) periódicas para mostrar el avance del proyecto (al menos 10).
-* Solo se aceptan las entregas mediante las peticiones de incorporación al repositorio de GitHub (pull request).
-* Asegúrese de que el legajo, nombre y apellido estén en el título del pull request.
-* Para ser aprobado, el sistema debe funcionar correctamente y cumplir con todos los requisitos.
-* El trabajo debe ser defendido explicando oralmente qué realiza cada línea de código.
-* Dispone de Bootstrap para el diseño de la interfaz, pero no es obligatorio. 
-* Se entregan dos proyectos `servidor` y `cliente` para que tenga un punto de entrada. El código de ambos solo tiene el esqueleto del proyecto, no contiene ninguna funcionalidad y debe ser modificado por completo para desarrollar la solución. 
-* Para probar el sistema debe ir a la carpeta del servidor y ejecutar el comando `dotnet run` para iniciar el servidor. Luego, en otra terminal, ir a la carpeta del cliente y ejecutar `dotnet run` para iniciar el cliente.
+61688 García Romano, Lucas           33   ✅✅🟢✅✅🟡
+      no realiza busqueda, no actualiza stock
+
+61042 Gonzalez, Luis David           31   ✅✅🟢✅✅🟡
+      no tiene imagenes, no actualiza stock, en el carrito no controla stock
+
+61652 Heredia, Juan Pablo            29   ✅✅🟢✅✅🟡
+      no actualiza stock, al agregar al carrito no incrementa la cantidad
+
+61218 Liendo, Lautaro                31   ✅✅🟢✅✅🟡
+      no tiene imagen, no va al carrito al comprar, me dice
+
+61535 Mainardi, Facundo              32   ✅✅🟢✅✅🟡
+      no actualiza stock
+
+61905 Martinez, Augusto              23   ✅❓🟢✅❓🟡
+      no muestra imagenes, no confirma compra
+
+61053 Matas Molina, Agustín          32   ✅✅🟢✅✅🟡
+      no actualiza stock, no vacia el carrito al confirmar la compra
+
+61848 Mazza Leon, Fabrizio Lautaro   33   ✅✅🟢✅✅🟡
+      no actualiza el stock
+
+61048 Medina, Luciano                26   ✅✅🟢✅✅🟡
+      muestra las imagenes
+
+61122 Molina Hernando, Nahuel        32   ✅✅🟢✅✅🟡
+      no agrega al carrito
+
+62136 Muse, Alejandro                30   ✅✅🟢✅✅🟡
+      ir directamente al catalogo, no actualiza stock, no verifica el stock, no permite confirmar pedido
+
+61985 Orqueda, Francisco Nicolás     25   ✅✅🟢✅✅🟡
+      no actualiza stock
+
+61644 Ortega, Fernando Nicolas       35   ✅✅🟢✅✅🟡
+      no actualiza stock, no controla stock, me da mensaje al confimar
+
+61732 Paz, Mikael                    24   ✅✅🟢✅✅🟡
+      no funciona, no muestra productos
+
+61125 Rocha, Luca                    31   ✅✅🟢✅✅🟡
+      no muestra imagen, no agrega al carrito, doble navegacion, ir al catalogo directamente
+
+61128 Satle Barreñada, Johana        24   ✅✅🟢❓✅🟡
+      no actualiza stock
+
+61227 Valdiglesias Martel, Federico  34   ✅✅🟢✅✅🟡
+      cuando confirma no vuelve al catalogo, no carga toda las imagenes
+```
+
+## Alumnos que deben corregir 
+```
+61328 Moussa Cancino, Mario Matias   29   ✅✅🟢✅✅🔴
+      internal server error
+
+61496 Parache, Ariana Agustina       30   ✅✅🟢❓❓🔴
+      The entity type 'ItemCarrito' requires a primary key to be defined
+
+61962 Robledo, Rocio Micaela         15   ✅✅🟢❓✅🔴
+      'Layout' no existe en el espacio de nombres 'Cliente'
+```
+
+## Alumnos que no presentaron
+```
+61252 Aguirre Rojas, Lourdes Valenti 24   ✅✅🟢❓❓❓
+61226 Luna, Andres Maximiliano       30   ✅✅🟢✅✅❓
+61912 Nuñez, Arturo Valentin         22   ✅✅🟢❓❓❓
+61140 Perez, Fernando Alberto        23   ✅✅🟢❓✅❓
+61052 Reynoso, Braian Nicolás        34   ✅✅🟢✅✅❓
+61914 Robles, Leandro Gonzalo        17   ✅✅🟢✅✅❓
+```
+
+> [!IMPORTANT]
+> Nota 1: **Consultar si no figura en el listado**.
+
+> Nota 2: **Algunos alumnos han tenido problemas al subir el trabajo**.
+> En varios casos fue porque trabajaron sobre una versión del repositorio no actualizada.
+> 
+> Si tuviste problemas te recomiendo que hagas lo siguiente:
+> 1. Copia la carpeta del TP6 de tu carpeta a un lugar seguro (el escritorio, por ejemplo).
+> 2. En GitHub Desktop elegí la rama `Main`.
+> 3. Actualizá el repositorio con `fetch`.
+> 4. Creá una nueva rama.
+> 5. Copiá la carpeta que habías guardado en lugar de la carpeta TP6.
+> 6. Marcá los archivos a subir (asegurándote que solo estén marcados los archivos de tu carpeta).
+> 7. Confirmá los cambios (Commit).
+> 8. Publicá los cambios a tu repositorio.
+> 9. Realizá el Pull Request.
+> 10. Revisa que tu Pull Request figure en la solapa "Pull Request" del repositorio en Github.
 
 
-> **Consejo**: comienza por el modelo de datos y pruebas unitarias del API; luego integra el cliente gradualmente. Versiona tu progreso con commits descriptivos: te será más fácil depurar y justificar tus decisiones en la defensa. ¡Éxitos!
+
+

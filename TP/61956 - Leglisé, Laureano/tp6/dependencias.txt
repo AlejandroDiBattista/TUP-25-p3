@@ -1,0 +1,7 @@
+lado servidor
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet add package Microsoft.EntityFrameworkCore.Design
+
+lado cliente
+dotnet add package Microsoft.AspNetCore.Components.WebAssembly
+dotnet add package Microsoft.AspNetCore.Components.WebAssembly.DevServer

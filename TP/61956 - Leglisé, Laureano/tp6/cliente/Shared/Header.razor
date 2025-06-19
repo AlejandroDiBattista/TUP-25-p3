@@ -1,0 +1,164 @@
+@using Microsoft.JSInterop
+@using cliente.Services
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject CarritoService CarritoService
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/" style="font-weight:bold; font-size:1.7rem;">
+            🛒 Tienda Online
+        </a>
+        <input class="form-control ms-auto me-3"
+               type="search"
+               placeholder="Buscar productos..."
+               @bind="busqueda"
+               @bind:event="oninput"
+               style="max-width:300px;" />
+        <button class="btn btn-light position-relative" @onclick="MostrarPopupCarrito">
+            <span class="bi bi-cart"></span>
+            @if (contador > 0)
+            {
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">@contador</span>
+            }
+        </button>
+    </div>
+</nav>
+<div style="height:70px"></div>
+
+<!-- Modal Carrito -->
+@if (mostrarPopup)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3)">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Carrito</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarPopupCarrito"></button>
+                </div>
+                <div class="modal-body">
+                    @if (itemsCarrito == null)
+                    {
+                        <div>Cargando...</div>
+                    }
+                    else if (!itemsCarrito.Any())
+                    {
+                        <div>El carrito está vacío.</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var item in itemsCarrito)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@item.Producto.Nombre</span>
+                                    <span>x @item.Cantidad</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarPopupCarrito">Cerrar</button>
+                    <button class="btn btn-primary" @onclick="IrAlCarrito">Ir al carrito</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string _busqueda = "";
+    private string busqueda
+    {
+        get => _busqueda;
+        set
+        {
+            if (_busqueda != value)
+            {
+                _busqueda = value;
+                BuscarDinamico();
+            }
+        }
+    }
+
+    private int contador = 0;
+    private bool mostrarPopup = false;
+    private List<CarritoService.ItemCarrito>? itemsCarrito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarContador();
+        Nav.LocationChanged += Nav_LocationChanged;
+        _ = PeriodicUpdate();
+    }
+
+    private async Task PeriodicUpdate()
+    {
+        while (true)
+        {
+            await ActualizarContador();
+            await Task.Delay(3000); // cada 3 segundos
+        }
+    }
+
+    private async void Nav_LocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        await ActualizarContador();
+        StateHasChanged();
+    }
+
+    private async Task ActualizarContador()
+    {
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (Guid.TryParse(idStr, out var id))
+        {
+            var items = await CarritoService.ObtenerItems(id);
+            contador = items.Sum(i => i.Cantidad);
+        }
+        else
+        {
+            contador = 0;
+        }
+        StateHasChanged();
+    }
+
+   private void BuscarDinamico()
+    {
+        var uri = Nav.ToBaseRelativePath(Nav.Uri).ToLower();
+        if (!string.IsNullOrWhiteSpace(busqueda))
+    {
+        Nav.NavigateTo($"/?q={Uri.EscapeDataString(busqueda)}", forceLoad: false);
+    }
+    else
+    {
+        Nav.NavigateTo("/", forceLoad: false);
+    }
+    }
+
+    private async Task MostrarPopupCarrito()
+    {
+        mostrarPopup = true;
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (Guid.TryParse(idStr, out var id))
+        {
+            itemsCarrito = await CarritoService.ObtenerItems(id);
+        }
+        else
+        {
+            itemsCarrito = new();
+        }
+        StateHasChanged();
+    }
+
+    private void CerrarPopupCarrito()
+    {
+        mostrarPopup = false;
+    }
+
+    private void IrAlCarrito()
+    {
+        mostrarPopup = false;
+        Nav.NavigateTo("/carrito");
+    }
+}

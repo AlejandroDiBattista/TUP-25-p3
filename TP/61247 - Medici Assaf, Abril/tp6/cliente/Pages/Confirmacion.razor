@@ -1,0 +1,61 @@
+@page "/confirmar"
+@using Microsoft.AspNetCore.Components.Forms
+@inject TiendaService Tienda
+@inject NavigationManager Nav
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h2 class="text-center mb-4">Confirmar Compra</h2>
+
+            <EditForm Model="@cliente" OnValidSubmit="Confirmar">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>Nombre</label>
+                    <InputText class="form-control" @bind-Value="cliente.Nombre" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Apellido</label>
+                    <InputText class="form-control" @bind-Value="cliente.Apellido" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Email</label>
+                    <InputText class="form-control" @bind-Value="cliente.email" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger text-center">@error</div>
+                }
+
+                <p class="text-center"><strong>Total a pagar: $@Tienda.CalcularTotal()</strong></p>
+
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-success" type="submit">Confirmar compra</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    DatosCliente cliente = new();
+    string error;
+
+    async Task Confirmar()
+    {
+    if (string.IsNullOrWhiteSpace(cliente.email) || !System.Text.RegularExpressions.Regex.IsMatch(cliente.email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        {
+            error = "El email no es válido";
+            return;
+        }
+        error = null;
+        await Tienda.ConfirmarCompra(cliente);
+        await Tienda.VaciarCarrito();
+        Nav.NavigateTo("/");
+    }
+}

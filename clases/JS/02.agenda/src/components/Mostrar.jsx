@@ -13,5 +13,6 @@ export function Mostrar({contacto, alBorrar, alEditar}) {
                 <button onClick={() => alBorrar(contacto.id)}><Trash2 /> Borrar</button>
             </div>
         </Tarjeta>
+
     );
 }

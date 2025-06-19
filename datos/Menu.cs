@@ -27,9 +27,9 @@ public class Menu {
             Consola.Limpiar();
             Consola.Escribir($"=== {Titulo} ===", ConsoleColor.Cyan);
             for (int i = 0; i < Opciones.Count; i++) {
-                Consola.Escribir($"{i + 1}. {Opciones[i].Descripcion}");
+                Consola.Escribir($"{i + 1}  {Opciones[i].Descripcion}");
             }
-            Consola.Escribir("0. Salir");
+            Consola.Escribir("0  Salir");
             var eleccion = Consola.ElegirOpcion($"\nElija una opción (0-{Opciones.Count}): ", Opciones.Count);
 
             if (eleccion == 0) break; 

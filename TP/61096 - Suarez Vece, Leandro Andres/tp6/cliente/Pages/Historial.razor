@@ -1,0 +1,134 @@
+﻿@page "/historial"
+@using cliente.Services
+@inject ApiService ApiService
+
+<PageTitle>Historial</PageTitle>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center">Lista de productos </h1>
+        </div>
+    </div>
+@if (datos.Count > 0)
+{
+        @foreach(var compra in datos){
+            string collapseId = "collapse_" + compra.Id_compra;
+
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID Compra</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Email</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Ver</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@compra.Id_compra</td>
+                    <td>@compra.NombreCliente</td>
+                    <td>@compra.ApellidoCliente</td>
+                    <td>@compra.EmailCliente</td>
+                    <td>@compra.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>$@compra.Total</td>
+                     <td>
+                    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#@collapseId">
+                        Ver Productos
+                    </button>
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="7">
+                        <div id="@collapseId" class="collapse">
+                            <div class="d-flex flex-wrap gap-3">
+                                     <Card Items="compra.Items"/>
+
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+
+            </tbody>
+        </table>
+
+         @* <div class="d-flex flex-wrap gap-4 justify-content-start"> 
+            <Card Items="datos"/>
+        </div> *@
+        }
+        <div class="text-center my-3">
+            <button class="btn btn-secondary" @onclick="async ()=> CargarPaginacion(-1)">Prev</button>
+            <button class="btn btn-secondary" @onclick="async ()=> CargarPaginacion(1)">Next</button>
+        </div>
+}
+else
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Error al cargar los productos</h4>
+        <p>@error</p>
+    </div>
+        <div class="text-center my-3">
+            <button class="btn btn-secondary" @onclick="async ()=> CargarPaginacion(-1)">Prev</button>
+            <button class="btn btn-secondary" @onclick="async ()=> CargarPaginacion(1)">Next</button>
+        </div>
+
+}
+</div>
+
+
+@implements IDisposable 
+@code {
+    private List<CompraGetDto> datos;
+    private Page page = new Page();
+    private string? error;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        
+        ApiService.OnChange += StateHasChanged;
+        ApiService.OnBuscar += OnBuscar;
+        await ObtenerDatos();
+
+    }
+
+    private async Task CargarPaginacion(int cantidad)
+    {
+        var aux = page.pageIndex+ cantidad;
+        page.pageIndex = Math.Max(0, aux);
+        datos = await ApiService.ObtenerHistorial(page);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnChange -= StateHasChanged;
+        ApiService.OnBuscar -= OnBuscar;
+    }
+
+    private async Task ObtenerDatos()
+    {
+        try
+        {
+             @* datos = await ApiService.ObtenerProductos(texto);  *@
+             datos = await ApiService.ObtenerHistorial(page);
+
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+
+    }
+
+    private async void OnBuscar(string texto)
+    {
+        await ObtenerDatos();
+        StateHasChanged();
+    }
+  
+   
+}

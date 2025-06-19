@@ -1,0 +1,33 @@
+@page "/productos"
+@using Cliente.Models2
+
+<h3>Catálogo de Productos</h3>
+
+<input @bind="busqueda" placeholder="Buscar producto..." />
+
+<ul>
+    @foreach (var producto in ProductosFiltrados)
+    {
+        <li>
+            <strong>@producto.Nombre</strong> - @producto.Descripcion - $@producto.Precio
+            <br />
+            <img src="@producto.ImagenUrl" alt="@producto.Nombre" width="100" />
+        </li>
+    }
+</ul>
+
+@code {
+    private string busqueda = string.Empty;
+
+    // Ejemplo de productos (puedes cargarlos desde la API)
+    private List<Producto> productos = new()
+    {
+        new Producto { Nombre = "Chocolate", Descripcion = "Chocolate dulce", Precio = 100, Stock = 10, ImagenUrl = "https://images.example.com/chocolate.jpg" },
+        new Producto { Nombre = "Caramelos", Descripcion = "Caramelos surtidos", Precio = 50, Stock = 20, ImagenUrl = "https://images.example.com/caramelos.jpg" }
+    };
+
+    private IEnumerable<Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? productos
+            : productos.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
+}

@@ -112,3 +112,303 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Estilos del nav */
+.header {
+    background-color: #f0f0f0;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.7rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: #e0e0e0;
+}
+
+.carrito-link {
+    position: relative;
+}
+
+.carrito-cantidad {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+/* Estilos del catálogo */
+.productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.producto {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 1rem;
+    width: 200px;
+    text-align: center;
+}
+
+/* Estilo para el mensaje al agregar producto al carrito */
+.mensaje-exito {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 0.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    font-weight: bold;
+}
+
+/* Estilos para los mensajes */
+.mensaje-centrado {
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.mensaje-error {
+    color: #c0392b;
+}
+
+.mensaje-vacio {
+    color: #7f8c8d;
+}
+
+/* Estilos para el buscador */
+.buscador {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.buscador input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    width: 300px;
+}
+
+.buscador button {
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buscar {
+    background-color: #007bff;
+    color: white;
+}
+
+.buscar:hover {
+    background-color: #0056b3;
+}
+
+.limpiar {
+    background-color: #dc3545;
+    color: white;
+}
+
+.limpiar:hover {
+    background-color: #a71d2a;
+}
+
+/* Estilos para el carrito */
+.carrito-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.carrito-table th,
+.carrito-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.carrito-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.carrito-total-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 1rem;
+    margin-left: 2rem;
+    gap: 0.6rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+
+}
+
+.carrito-total {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.carrito-boton {
+    padding: 0.6rem 1.4rem;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.carrito-boton:hover {
+    background-color: #ddd;
+}
+
+/* Estilos para la página de confirmación de compra */
+.contenedor-confirmacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    width: 100%;
+}
+
+.confirmar-formulario {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: #fafafa;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.input-form {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.boton-confirmar {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.boton-confirmar:hover {
+    background-color: #218838;
+}
+
+/* Estilos para home */
+.contenedor-home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 4rem;
+    text-align: center;
+    gap: 1.5rem;
+    min-height: 80vh;
+    width: 100%;
+}
+
+.titulo-home {
+    font-size: 2rem;
+    color: #333;
+}
+
+.descripcion-home {
+    max-width: 600px;
+    font-size: 1.2rem;
+    color: #555;
+}
+
+.botones-home {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.boton-home {
+    background-color: #007bff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.boton-home:hover {
+    background-color: #0056b3;
+}
+
+.boton-home.secundario {
+    background-color: #6c757d;
+}
+
+.card-servidor {
+    background-color: #f8f9fa;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ccc;
+    max-width: 400px;
+}
+
+.mensaje-info, .mensaje-error {
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.mensaje-info {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+}
+
+.mensaje-error {
+    background-color: #f8d7da;
+    color: #842029;
+}

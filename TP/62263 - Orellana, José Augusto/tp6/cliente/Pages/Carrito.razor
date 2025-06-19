@@ -1,0 +1,133 @@
+@page "/carrito"
+@inject HttpClient Http
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h3>Carrito de Compras</h3>
+
+@if (items == null)
+{
+    <div class="mensaje-centrado">Cargando carrito...</div>
+}
+else if (!items.Any())
+{
+    <div class="mensaje-centrado mensaje-vacio">El carrito está vacío.</div>
+}
+else
+{
+    <table class="carrito-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <img src="@item.imagenUrl" style="width: 50px; height: 50px; object-fit: cover;" />
+                            @item.nombreProducto
+                        </div>
+                    </td>
+                    <td>$@item.precioUnitario.ToString("F2")</td>
+                    <td>
+                        <button @onclick="() => ModificarCantidad(item.productoId, -1)" style="margin-right: 0.5rem; border-radius: 50%;">–</button>
+                        @item.cantidad
+                        <button @onclick="() => ModificarCantidad(item.productoId, +1)" style="margin-left: 0.5rem; border-radius: 50%;">+</button>
+                    </td>
+                    <td>@($"${(item.cantidad * item.precioUnitario):F2}")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="carrito-total-box">
+        <p class="carrito-total">
+            Total: @($"${items.Sum(i => i.cantidad * i.precioUnitario):F2}")
+        </p>
+        <button class="carrito-boton" @onclick="Vaciar">Vaciar carrito</button>
+        <button class="carrito-boton" @onclick="Confirmar">Confirmar compra</button>
+    </div>
+}
+
+@code {
+    List<ItemCarritoDTO>? items;
+    string mensaje = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Console.WriteLine($"CarritoId en Carrito.razor: {CarritoService.CarritoId}");
+
+        await CarritoService.InicializarCarritoAsync();
+
+        if (CarritoService.CarritoId != null)
+        {
+            items = await Http.GetFromJsonAsync<List<ItemCarritoDTO>>(
+                $"http://localhost:5184/carritos/{CarritoService.CarritoId}");
+        }
+    }
+
+    async Task ModificarCantidad(int productoId, int delta)
+    {
+        if (CarritoService.CarritoId == null) return;
+
+        bool ok = false;
+
+        if (delta > 0)
+        {
+            ok = await CarritoService.AgregarProducto(productoId);
+            if (!ok) mensaje = "No se pudo aumentar la cantidad.";
+        }
+        else
+        {
+            ok = await CarritoService.EliminarUnidad(productoId);
+            if (!ok) mensaje = "No se pudo disminuir la cantidad.";
+        }
+
+        if (ok)
+        {
+            // Refrescar los ítems del carrito
+            items = await Http.GetFromJsonAsync<List<ItemCarritoDTO>>(
+                $"http://localhost:5184/carritos/{CarritoService.CarritoId}");
+        }
+    }
+
+
+    async Task Vaciar()
+    {
+        if (CarritoService.CarritoId == null) return;
+
+        var ok = await CarritoService.VaciarCarrito(); // ✅ Usar el método del servicio
+
+        if (ok)
+        {
+            items = new List<ItemCarritoDTO>();
+            mensaje = "Carrito vaciado.";
+        }
+        else
+        {
+            mensaje = "Error al vaciar carrito.";
+        }
+    }
+
+    void Confirmar()
+    {
+        // Por ahora redirigimos a /confirmar
+        NavigationManager.NavigateTo("/confirmar");
+    }
+
+    public class ItemCarritoDTO
+    {
+        public int productoId { get; set; }
+        public string nombreProducto { get; set; } = "";
+        public decimal precioUnitario { get; set; }
+        public int cantidad { get; set; }
+        public string imagenUrl { get; set; } = "";
+    }
+}

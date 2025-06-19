@@ -8,9 +8,12 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Configurar el HttpClient para apuntar al servidor API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+// IMPORTANTE: La URL debe terminar con "/" para que las rutas relativas funcionen
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184/") });
 
-// Registrar el servicio API
+// Registrar los servicios
 builder.Services.AddScoped<ApiService>();
+builder.Services.AddScoped<ProductoService>();
+builder.Services.AddScoped<CarritoService>();
 
 await builder.Build().RunAsync();

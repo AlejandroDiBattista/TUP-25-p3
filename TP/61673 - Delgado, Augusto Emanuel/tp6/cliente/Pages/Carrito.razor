@@ -1,0 +1,135 @@
+@page "/carrito"
+@using modelos_compartidos
+@inject cliente.Services.CarritoService CarritoService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="carrito-container">
+    <h3>Tu Carrito</h3>
+
+    @if (CarritoService.Items.Any())
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Productos en Carrito</h5>
+                        <a href="/" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                            <i class="bi bi-arrow-left"></i> Volver al Catálogo
+                        </a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in CarritoService.Items)
+                        {
+                            var stockDisponible = item.Producto.Stock;
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <img src="@item.Producto.ImagenUrl" class="img-thumbnail me-3" alt="@item.Producto.Nombre" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <strong>@item.Producto.Nombre</strong>
+                                        <small class="carrito-cantidad-precio d-block">@item.Cantidad x $@item.Producto.Precio</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-danger me-2" @onclick="() => RemoverProducto(item.Producto.Id)">
+                                        <i class="bi bi-dash-circle"></i>
+                                    </button>
+                                    <span class="fw-bold me-2">@item.Cantidad</span>
+                                    <button class="btn btn-sm btn-outline-success"
+                                            @onclick="() => AgregarProducto(item.Producto)"
+                                            disabled="@(item.Cantidad >= stockDisponible)"> 
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                </div>
+                                <span>$@(item.Producto.Precio * item.Cantidad)</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="card-footer text-end">
+                        <button class="btn btn-warning" @onclick="VaciarTodoElCarrito">
+                            <i class="bi bi-trash"></i> Vaciar Carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card p-3 sticky-top" style="top: 80px;">
+                    <h4 class="mb-3">Resumen del Pedido</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Ítems:
+                            <span class="badge bg-primary rounded-pill">@CarritoService.TotalItemsEnCarrito</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
+                            <strong>Total a Pagar:</strong>
+                            <strong>$@CarritoService.TotalCarrito</strong>
+                        </li>
+                    </ul>
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-success btn-lg" @onclick="ProcederAlPago">
+                            <i class="bi bi-credit-card"></i> Proceder al Pago
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x display-1 carrito-vacio-icon"></i>
+            <p class="lead mt-3">Tu carrito está vacío.</p>
+            <a href="/" class="btn btn-primary mt-3">Volver a la Tienda</a>
+        </div>
+    }
+</div>
+
+@code {
+    #nullable enable 
+
+    protected override void OnInitialized()
+    {
+        CarritoService.OnChange += StateHasChanged;
+        Console.WriteLine("--> DEBUG: Carrito.razor suscrito a CarritoService.OnChange");
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+        Console.WriteLine("--> DEBUG: Carrito.razor desuscrito de CarritoService.OnChange");
+    }
+
+    private void AgregarProducto(Producto producto)
+    {
+        CarritoService.AgregarAlCarrito(producto);
+        StateHasChanged();
+    }
+
+    private void RemoverProducto(int productoId)
+    {
+        CarritoService.RemoverDelCarrito(productoId);
+        StateHasChanged();
+    }
+
+    private void VaciarTodoElCarrito()
+    {
+        Console.WriteLine("--> DEBUG: Clic en 'Vaciar Carrito'.");
+        CarritoService.VaciarCarrito();
+    }
+
+    private async Task ProcederAlPago()
+    {
+        Console.WriteLine("--> DEBUG: Botón 'Proceder al Pago' clickeado en Carrito.razor.");
+        try
+        {
+            await Task.Delay(50); 
+            Navigation.NavigateTo("/checkout");
+            Console.WriteLine("--> DEBUG: Navegación a /checkout iniciada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> ERROR: Excepción al intentar navegar a /checkout: {ex.Message}");
+        }
+    }
+}

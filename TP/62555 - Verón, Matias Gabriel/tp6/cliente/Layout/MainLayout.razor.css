@@ -1,7 +1,9 @@
 .page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    min-height: 60vh;
+    margin: 0;
+    padding: 0;
+    background: transparent;
 }
 
 main {
@@ -74,4 +76,26 @@ main {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
+}
+@media (min-width: 1024px) {
+    .sidebar {
+        width: 300px;
+    }
+
+    .top-row, article {
+        padding-left: 3rem !important;
+        padding-right: 2rem !important;
+    }
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.page {
+    margin-top: 70px; 
 }

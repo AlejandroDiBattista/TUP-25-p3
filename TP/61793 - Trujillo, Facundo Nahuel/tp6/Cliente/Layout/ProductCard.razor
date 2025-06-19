@@ -1,0 +1,53 @@
+@using cliente.Modelo
+@using cliente.Services
+@inject CartService CartService
+
+<div class="product-card">
+    <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" class="product-img" />
+    <h3>@Producto.Nombre</h3>
+    <p>@Producto.Descripcion</p>
+    <p class="price">$@Producto.Precio</p>
+    <p>Stock: @Producto.Stock</p>
+    <button @onclick="AgregarAlCarrito">Agregar al carrito</button>
+</div>
+
+@code {
+    [Parameter]
+    public Producto Producto { get; set; }
+
+    [Parameter]
+    public EventCallback<Producto> OnAgregarAlCarrito { get; set; }
+
+    void AgregarAlCarrito()
+    {
+        OnAgregarAlCarrito.InvokeAsync(Producto);
+    }
+}
+
+<style>
+    .product-card {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 10px;
+        text-align: center;
+    }
+
+    .product-card img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .product-card button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .product-card button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+</style>

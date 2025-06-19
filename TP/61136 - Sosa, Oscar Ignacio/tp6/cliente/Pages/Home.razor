@@ -1,6 +1,6 @@
 ﻿@page "/"
-@using cliente.Services
-@inject ApiService ApiService
+@using Cliente.Models2
+@inject Cliente.Services.ApiService ApiService
 
 <PageTitle>Inicio</PageTitle>
 
@@ -21,7 +21,8 @@
         <div class="col-12">            
             @if (cargando) {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
+            } else if (datos != null) {
+                <div class="card" style="width: 300px;">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>
@@ -30,7 +31,7 @@
                         <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                 </div>
-            } else if (error != null) {
+            } else if (!string.IsNullOrEmpty(error)) {
                 <div class="alert alert-danger">
                     Error: @error
                 </div>
@@ -40,14 +41,14 @@
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
+    private DatosRespuesta? datos = null;
+    private string error = string.Empty;
     private bool cargando = false;
 
     private async Task ObtenerDatosDelServidor() {
         try {
             cargando = true;
-            error = null;
+            error = string.Empty;
             datos = await ApiService.ObtenerDatosAsync();
         } catch (Exception ex) {
             error = ex.Message;

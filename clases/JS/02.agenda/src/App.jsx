@@ -1,21 +1,12 @@
 import './App.css'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { Plus } from "lucide-react"
 import { Editar, Listar } from './components';
 import { contactosIniciales } from './data/contactosIniciales';
 
-function App() {
-    let [proximoId,   setProximoId]   = useState(10);     // Para asignar un nuevo ID
-    let [modoEdicion, setModoEdicion] = useState(false);  // Permite saber si estamos en modo edición o no
-
-    // Lista de contactos (inicializada con algunos contactos)
+function useGuardarContactos() {
     let [contactos, setContactos] = useState(contactosIniciales);
-    // Contacto que se está editando o agregando
-    let [contacto,  setContacto]  = useState({id: 0, nombre: "", email: "", edad: 0});
 
-    function guardarContactos(){
-        localStorage.setItem("contactos", JSON.stringify(contactos));
-    }
     function cargarContactos(){
         let contactosGuardados = localStorage.getItem("contactos");
         if(contactosGuardados) {
@@ -24,6 +15,31 @@ function App() {
             setContactos(contactosIniciales);
         }
     }
+
+    function guardarContactos(){
+        localStorage.setItem("contactos", JSON.stringify(contactos));
+    }
+
+    useEffect(() => {
+        cargarContactos([]);
+    }, []);
+    
+    useEffect(() => {
+        guardarContactos();
+    }, [contactos]);
+
+    return [contactos, setContactos];
+}
+
+function App() {
+    let [proximoId,   setProximoId]   = useState(10);     // Para asignar un nuevo ID
+    let [modoEdicion, setModoEdicion] = useState(false);  // Permite saber si estamos en modo edición o no
+
+    // Lista de contactos (inicializada con algunos contactos)
+    // Contacto que se está editando o agregando
+    let [contacto,  setContacto]  = useState({id: 0, nombre: "", email: "", edad: 0});
+    let [contactos, setContactos] = useGuardarContactos(); // Hook personalizado para manejar contactos
+    
 
     function guardarContacto(nuevo) {
         if(nuevo.id === 0) { // Si estamos agregando un nuevo contacto
@@ -59,9 +75,8 @@ function App() {
     }
 
     // Cuerpo principal del componente App
-    useEffect(() => {
-        alert("Cambiando modo...");
-    }, [ modoEdicion ]); 
+    
+
     
     return (
         <div className="app">
