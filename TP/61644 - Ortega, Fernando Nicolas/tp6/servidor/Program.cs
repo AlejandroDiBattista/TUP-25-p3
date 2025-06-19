@@ -103,9 +103,18 @@ app.MapDelete("/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext
         .Include(c => c.Articulos)
         .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (compra == null) return Results.NotFound();
+    if (compra == null)
+        return Results.NotFound();
 
-    db.ArticulosCompra.RemoveRange(compra.Articulos);
+    foreach (var articulo in compra.Articulos)
+    {
+        var producto = await db.Productos.FindAsync(articulo.ProductoId);
+        if (producto != null)
+        {
+            producto.Stock += articulo.Cantidad;
+        }
+    }
+    compra.Articulos.Clear();
     await db.SaveChangesAsync();
 
     return Results.Ok();
@@ -138,63 +147,52 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, i
             PrecioUnitario = producto.Precio
         };
         compra.Articulos.Add(articulo);
+
+        producto.Stock -= cantidadDto.Cantidad;
     }
     else
     {
-        if (producto.Stock + articulo.Cantidad < cantidadDto.Cantidad)
-            return Results.BadRequest("No hay stock suficiente");
+        int diferencia = cantidadDto.Cantidad - articulo.Cantidad;
+        if (diferencia > 0)
+        {
+            if (producto.Stock < diferencia)
+                return Results.BadRequest("No hay stock suficiente");
 
+            producto.Stock -= diferencia;
+        }
+        else if (diferencia < 0)
+        {
+            producto.Stock += (-diferencia);
+        }
         articulo.Cantidad = cantidadDto.Cantidad;
     }
 
     await db.SaveChangesAsync();
-    var articulosDto = compra.Articulos.Select(a => new {
-        a.Id,
-        a.ProductoId,
-        Producto = new {
-            a.Producto.Id,
-            a.Producto.Nombre,
-            a.Producto.Precio,
-            a.Producto.ImagenUrl
-        },
-        a.Cantidad,
-        a.PrecioUnitario
-    });
-    return Results.Ok(articulosDto);
+    return Results.Ok();
 });
 app.MapDelete("/carritos/{carritoId:int}/{productoId:int}", async (int carritoId, int productoId, TiendaDbContext db) =>
 {
     var compra = await db.Compras
         .Include(c => c.Articulos)
-        .ThenInclude(a => a.Producto)
         .FirstOrDefaultAsync(c => c.Id == carritoId);
 
-    if (compra == null) return Results.NotFound();
+    if (compra == null)
+        return Results.NotFound();
 
     var articulo = compra.Articulos.FirstOrDefault(a => a.ProductoId == productoId);
+    if (articulo == null)
+        return Results.NotFound();
 
-    if (articulo == null) return Results.NotFound();
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto != null)
+    {
+        producto.Stock += articulo.Cantidad;
+    }
 
     compra.Articulos.Remove(articulo);
-    db.ArticulosCompra.Remove(articulo);
-
     await db.SaveChangesAsync();
 
-    // Devuelve solo los artículos restantes como DTO
-    var articulosDto = compra.Articulos.Select(a => new {
-        a.Id,
-        a.ProductoId,
-        Producto = new {
-            a.Producto.Id,
-            a.Producto.Nombre,
-            a.Producto.Precio,
-            a.Producto.ImagenUrl
-        },
-        a.Cantidad,
-        a.PrecioUnitario
-    });
-
-    return Results.Ok(articulosDto);
+    return Results.Ok();
 });
 app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, ClienteDto cliente, TiendaDbContext db) =>
 {
@@ -222,18 +220,14 @@ app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, ClienteD
     compra.EmailCliente = cliente.Email;
     compra.Total = compra.Articulos.Sum(a => a.Cantidad * a.PrecioUnitario);
 
-    // Validar y actualizar stock
     foreach (var articulo in compra.Articulos)
     {
-        if (articulo.Producto.Stock < articulo.Cantidad)
-            return Results.BadRequest($"No hay stock suficiente para {articulo.Producto.Nombre}");
-
-        articulo.Producto.Stock -= articulo.Cantidad;
+        if (articulo.Producto.Stock < 0)
+            return Results.BadRequest($"Stock inconsistente para {articulo.Producto.Nombre}");
     }
 
     await db.SaveChangesAsync();
 
-    // Devuelve un resumen de la compra
     var resumen = new
     {
         compra.Id,

@@ -25,7 +25,14 @@ public class CarritoService
             CarritoId = await _apiService.CrearCarritoAsync();
         }
 
-        var ok = await _apiService.AgregarOActualizarProductoEnCarritoAsync(CarritoId, producto.Id, cantidad);
+        var existente = Articulos.FirstOrDefault(a => a.ProductoId == producto.Id);
+        int nuevaCantidad = cantidad;
+        if (existente != null)
+        {
+            nuevaCantidad = existente.Cantidad + cantidad;
+        }
+
+        var ok = await _apiService.AgregarOActualizarProductoEnCarritoAsync(CarritoId, producto.Id, nuevaCantidad);
 
         if (!ok)
         {
@@ -36,10 +43,9 @@ public class CarritoService
             return;
         }
 
-        var existente = Articulos.FirstOrDefault(a => a.ProductoId == producto.Id);
         if (existente != null)
         {
-            existente.Cantidad += cantidad;
+            existente.Cantidad = nuevaCantidad;
         }
         else
         {
@@ -112,6 +118,26 @@ public class CarritoService
 
     public void Vaciar()
     {
+        Articulos.Clear();
+        CarritoId = 0;
+        Mensaje = "";
+        OnChange?.Invoke();
+    }
+
+    public async Task VaciarAsync()
+    {
+        if (CarritoId != 0)
+        {
+            var ok = await _apiService.VaciarCarritoAsync(CarritoId);
+            if (!ok)
+            {
+                CarritoId = 0;
+                Articulos.Clear();
+                Mensaje = "El carrito se perdió o hubo un error. Agregue los productos nuevamente.";
+                OnChange?.Invoke();
+                return;
+            }
+        }
         Articulos.Clear();
         CarritoId = 0;
         Mensaje = "";

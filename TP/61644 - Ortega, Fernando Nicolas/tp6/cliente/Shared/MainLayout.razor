@@ -7,14 +7,17 @@
         Tienda Online MOTO GP
     </a>
     <div class="ms-auto">
-        <a href="/carrito" class="btn btn-outline-primary position-relative" style="width: 50px; height: 50px;">
-            <img src="img/carrito.png" alt="Carrito" style="width:32px; height:32px;" />
-            @if (CarritoService.TotalArticulos() > 0)
-            {
-                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">
-                    @CarritoService.TotalArticulos()
-                </span>
-            }
+        <a href="/carrito" class="btn btn-outline-primary" style="width: 70px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center;">
+            <div style="position: relative; display: inline-block;">
+                <img src="img/carrito.png" alt="Carrito" style="width:32px; height:32px;" />
+                @if (CarritoService.TotalArticulos() > 0)
+                {
+                    <span class="badge bg-danger position-absolute"
+                          style="top: -8px; right: -8px; font-size: 0.8rem; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
+                        @CarritoService.TotalArticulos()
+                    </span>
+                }
+            </div>
         </a>
     </div>
 </div>

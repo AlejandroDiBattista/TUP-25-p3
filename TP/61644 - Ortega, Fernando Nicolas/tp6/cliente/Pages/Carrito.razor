@@ -1,7 +1,9 @@
 @page "/carrito"
 @inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @using cliente.Services
+
 <div class="fondo">
     <div class="container mt-4"> 
         <PageTitle>Carrito</PageTitle>
@@ -40,7 +42,10 @@
                                             disabled="@(articulo.Cantidad <= 1)">-</button>
                                     <span class="mx-2">@articulo.Cantidad</span>
                                     <button class="btn btn-sm btn-secondary"
-                                            @onclick="async () => await CambiarCantidad(articulo, articulo.Cantidad + 1)">+</button>
+                                            @onclick="async () => await CambiarCantidad(articulo, articulo.Cantidad + 1)"
+                                            disabled="@(GetStockDisponible(articulo.ProductoId) == 0)">
+                                        +
+                                    </button>
                                 </td>
                                 <td>$@(articulo.Cantidad * articulo.PrecioUnitario)</td>
                                 <td>
@@ -67,10 +72,37 @@
 </div>
 @implements IDisposable
 @code {
+    private List<Producto> productos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CarritoService.OnChange += ActualizarProductos;
+        await CargarProductos();
+    }
+
+    private async void ActualizarProductos()
+    {
+        await CargarProductos();
+        StateHasChanged();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await ApiService.ObtenerProductosAsync();
+    }
+
+    private int GetStockDisponible(int productoId)
+    {
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+        return producto?.Stock ?? 0;
+    }
+
     private async Task CambiarCantidad(ArticuloCarrito articulo, int nuevaCantidad)
     {
-        if (nuevaCantidad > 0)
-            await CarritoService.CambiarCantidadAsync(articulo.ProductoId, nuevaCantidad);
+        if (nuevaCantidad < 1) return;
+        if (GetStockDisponible(articulo.ProductoId) == 0 && nuevaCantidad > articulo.Cantidad) return;
+
+        await CarritoService.CambiarCantidadAsync(articulo.ProductoId, nuevaCantidad);
     }
 
     private async Task Quitar(int productoId)
@@ -78,9 +110,10 @@
         await CarritoService.QuitarAsync(productoId);
     }
 
-    private void Vaciar()
+    private async Task Vaciar()
     {
-        CarritoService.Vaciar();
+        await CarritoService.VaciarAsync();
+        StateHasChanged();
     }
 
     private void ConfirmarCompra()
@@ -88,13 +121,13 @@
         Navigation.NavigateTo("/confirmacion");
     }
 
-    protected override void OnInitialized()
-    {
-        CarritoService.OnChange += StateHasChanged;
-    }
-
     public void Dispose()
     {
-        CarritoService.OnChange -= StateHasChanged;
+        CarritoService.OnChange -= ActualizarProductos;
+    }
+
+    private void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
     }
 }
