@@ -70,6 +70,22 @@ public class ApiService
         }
 
     }
+    public async Task CambiarStockProd(int id, int cantidad)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.PutAsync($"producto/stock/{id}/{cantidad}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Cambios realizados");
+                OnChange?.Invoke();
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"Error al obtener datos: {ex.Message}");
+        }
+    }
 
     public async Task VaciarCarrito()
     {
@@ -115,7 +131,7 @@ public class ApiService
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Producto agregado o modificado");
-                AgregarProductoMemoria(dto, producto, stock);
+                AgregarProductoMemoria(dto, producto, stock - dto.Cantidad);
                 OnChange?.Invoke();
             }
 
@@ -135,6 +151,10 @@ public class ApiService
     public async Task EliminarTodoProductMemoria()
     {
 
+        foreach (var p in ListaProductos)
+        {
+            CambiarStockProd(p.ProductoId, p.Cantidad);
+        }
         _listaProductos.Clear();
         Compra = null;
         NotifyStateChanged();
