@@ -59,10 +59,31 @@ else
         }
     }
 
-    private void AgregarAlCarrito(int productoId)
+    private int carritoId = 0;
+
+    private async Task<int> ObtenerOCrearCarrito()
     {
-        // Lógica para agregar al carrito (a implementar)
-        CarritoService.SetCantidad(CarritoService.Cantidad + 1);
+        // Aquí podrías guardar el carritoId en localStorage/cookie para mantener la sesión
+        if (carritoId == 0)
+        {
+            var response = await Http.PostAsync("http://localhost:5000/carritos", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var carrito = await response.Content.ReadFromJsonAsync<Carrito>();
+                carritoId = carrito?.Id ?? 0;
+            }
+        }
+        return carritoId;
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        var id = await ObtenerOCrearCarrito();
+        if (id > 0)
+        {
+            await Http.PutAsJsonAsync($"http://localhost:5000/carritos/{id}/{productoId}", 1); // 1 unidad por defecto
+            CarritoService.SetCantidad(CarritoService.Cantidad + 1);
+        }
     }
 
     public class Producto

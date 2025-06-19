@@ -52,11 +52,12 @@ public class AppDbContext : DbContext
 }
 
 // Middleware para inicializar la base de datos
-using (var scope = app.Services.CreateScope())
+app.Lifetime.ApplicationStarted.Register(() =>
 {
+    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.EnsureCreated();
-}
+});
 
 app.MapGet("/", () => "Servidor funcionando correctamente");
 
@@ -189,3 +190,10 @@ public class Compra
 record DataModel(string Name, int Age);
 
 app.Run();
+
+// Inicialización de la base de datos
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.EnsureCreated();
+}
