@@ -70,13 +70,6 @@
         </div>
 
         <div class="mt-4">
-            <h4>Agregar producto</h4>
-            <input type="number" @bind="productoId" placeholder="ID del producto" class="form-control mb-2" />
-            <input type="number" @bind="productoCantidad" min="1" placeholder="Cantidad" class="form-control mb-2" />
-            <button class="btn btn-outline-primary" @onclick="AgregarProductoAlCarrito">🛒 Agregar al carrito</button>
-        </div>
-
-        <div class="mt-4">
             <h4>Detalles del Cliente</h4>
             <EditForm Model="@formulario" OnValidSubmit="EnviarFormulario">
                 <DataAnnotationsValidator />
@@ -110,8 +103,6 @@
     private int cantidadProductos;
     private int usuarioId = 1;
     private FormularioCompra formulario = new();
-    private int productoId;
-    private int productoCantidad = 1;
     private Guid carritoId = Guid.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -180,7 +171,7 @@
             error = $"Error al obtener cantidad de productos: {ex.Message}";
         }
     }
-    
+
     private async Task ActualizarCantidad(int productoId, int cambio)
     {
         var item = CarritoService.Items.FirstOrDefault(p => p.ProductoId == productoId);
@@ -192,26 +183,6 @@
         await CarritoService.ActualizarCantidadAsync(productoId, nuevaCantidad);
         await CarritoService.CargarDesdeApiAsync(usuarioId); // o carritoId si usás eso
         await ActualizarCantidad(); // 👉 refresca el total visual también, usando tu método original
-    }
-
-
-    private async Task AgregarProductoAlCarrito()
-    {
-        if (carritoId == Guid.Empty || productoId <= 0)
-        {
-            error = "Debe indicar un ID de producto válido.";
-            return;
-        }
-
-        var response = await CarritoService.AgregarProductoAsync(carritoId, productoId);
-        if (response.IsSuccessStatusCode)
-        {
-            await InicializarCarrito();
-        }
-        else
-        {
-            error = "No se pudo agregar el producto al carrito.";
-        }
     }
 
     private async Task EnviarFormulario()
