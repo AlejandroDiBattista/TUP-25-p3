@@ -2,11 +2,10 @@
 
 @using cliente.DTOs
 @using cliente.Models
-@inject HttpClient Http
+@inject ApiService ApiService
 @inject NavigationManager NavManager
 
 <div class="max-w-xl mx-auto mt-12 p-6 bg-white rounded-lg shadow-lg">
-
     <h3 class="text-3xl font-bold mb-6 text-center text-gray-800">Confirmar Compra</h3>
 
     @if (cargando)
@@ -17,7 +16,7 @@
     {
         <p class="text-center text-red-600 mb-4 font-semibold">El carrito está vacío.</p>
         <div class="text-center">
-            <button @onclick="VolverAlCatalogo" 
+            <button @onclick="VolverAlCatalogo"
                     class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                 Volver al catálogo
             </button>
@@ -36,14 +35,14 @@
 
             <div>
                 <label class="block font-medium mb-1">Nombre:</label>
-                <InputText @bind-Value="datosCliente.NombreSolicitante" 
+                <InputText @bind-Value="datosCliente.NombreSolicitante"
                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 <ValidationMessage For="@(() => datosCliente.NombreSolicitante)" class="text-red-600 text-sm" />
             </div>
 
             <div>
                 <label class="block font-medium mb-1">Apellido:</label>
-                <InputText @bind-Value="datosCliente.ApellidoSolicitante" 
+                <InputText @bind-Value="datosCliente.ApellidoSolicitante"
                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 <ValidationMessage For="@(() => datosCliente.ApellidoSolicitante)" class="text-red-600 text-sm" />
             </div>
@@ -61,12 +60,12 @@
             }
 
             <div class="flex justify-between mt-6">
-                <button type="submit" 
+                <button type="submit"
                         class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow-md transition">
                     Confirmar compra
                 </button>
 
-                <button type="button" @onclick="VaciarCarrito" 
+                <button type="button" @onclick="VaciarCarrito"
                         class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-md shadow-md transition">
                     Vaciar carrito
                 </button>
@@ -93,7 +92,7 @@
     {
         try
         {
-            carrito = await Http.GetFromJsonAsync<List<DetalleCarritoMemoria>>($"carritos/{IdCarrito}");
+            carrito = await ApiService.GetCarritoItemsAsync(IdCarrito) ?? new List<DetalleCarritoMemoria>();
         }
         catch
         {
@@ -109,28 +108,21 @@
     async Task ProcesarCompra()
     {
         mensajeError = null;
-        try
+
+        var exito = await ApiService.ConfirmCompraAsync(IdCarrito, datosCliente);
+        if (exito)
         {
-            var respuesta = await Http.PutAsJsonAsync($"carritos/{IdCarrito}/confirmar", datosCliente);
-            if (respuesta.IsSuccessStatusCode)
-            {
-                NavManager.NavigateTo("/compra-confirmada");
-            }
-            else
-            {
-                var errorJson = await respuesta.Content.ReadAsStringAsync();
-                mensajeError = $"Error al confirmar compra: {errorJson}";
-            }
+            NavManager.NavigateTo("/compra-confirmada");
         }
-        catch (Exception ex)
+        else
         {
-            mensajeError = $"Error inesperado: {ex.Message}";
+            mensajeError = "No se pudo confirmar la compra. Verificá los datos e intentá nuevamente.";
         }
     }
 
     async Task VaciarCarrito()
     {
-        await Http.DeleteAsync($"carritos/{IdCarrito}");
+        await ApiService.ClearCarritoAsync(IdCarrito);
         carrito.Clear();
         NavManager.NavigateTo("/");
     }
