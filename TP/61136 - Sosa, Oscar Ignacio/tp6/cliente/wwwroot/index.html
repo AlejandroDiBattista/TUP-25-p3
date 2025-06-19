@@ -42,11 +42,28 @@
             font-size: 18px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            position: relative;
+            display: inline-block;
+            text-transform: uppercase;
         }
 
         a.btn-success:hover {
             background-color: #1e7e34;
             color: #200dcc;
+        }
+
+        /* Contador de carrito */
+        .contador-carrito {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+            padding: 2px 7px;
+            font-weight: bold;
+            user-select: none;
         }
 
         /* Centrar contenido y limitar ancho */
@@ -62,7 +79,10 @@
         <h1>BIENVENIDO A TIENDA ONLINE</h1>
         <p>Las mejores ofertas de dulces</p>
 
-        <a href="carrito.html" class="btn btn-success">Ver carrito</a>
+        <a href="catalogo.html" class="btn btn-success" id="btnCatalogo">
+            IR AL CATALOGO
+            <span class="contador-carrito" id="contadorCarrito">0</span>
+        </a>
     </div>
 
     <div id="blazor-error-ui" style="text-align:center; margin-top:3rem; color:#f3efef;">
@@ -71,7 +91,32 @@
         <span class="dismiss" style="cursor:pointer;">🗙</span>
     </div>
 
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        // Función para obtener carrito del localStorage
+        function obtenerCarrito() {
+            return JSON.parse(localStorage.getItem('carrito')) || [];
+        }
+
+        // Función para actualizar contador en esta página
+        function actualizarContador() {
+            const carrito = obtenerCarrito();
+            const total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            const contador = document.getElementById('contadorCarrito');
+            contador.textContent = total;
+            // Ocultar contador si no hay productos
+            contador.style.display = total > 0 ? 'inline-block' : 'none';
+        }
+
+        // Actualizar contador al cargar la página
+        actualizarContador();
+
+        // Escuchar cambios en localStorage (si modifican carrito en otra pestaña)
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'carrito') {
+                actualizarContador();
+            }
+        });
+    </script>
 </body>
 
 </html>

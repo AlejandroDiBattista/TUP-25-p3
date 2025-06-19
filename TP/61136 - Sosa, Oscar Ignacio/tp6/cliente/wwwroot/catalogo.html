@@ -122,27 +122,29 @@
   <main class="productos" id="productos-container"></main>
 
   <script>
-    // Intentamos cargar el stock guardado en localStorage o si no, usamos el array original.
     const productosOriginales = [
-      { id: 1, nombre: "Chocolate Milka", descripcion: "Chocolate suave con leche", precio: 950, stock: 10, imagen: "img/milka.jpg" },
-      { id: 2, nombre: "Bon o Bon", descripcion: "Bombón de maní", precio: 120, stock: 20, imagen: "img/bonobon.jpg" },
+      { id: 1, nombre: "Chocolate Milka", descripcion: "Chocolate suave con leche", precio: 950, stock: 30, imagen: "img/milka.jpg" },
+      { id: 2, nombre: "Bon o Bon", descripcion: "Bombón de maní", precio: 120, stock: 30, imagen: "img/bonobon.jpg" },
       { id: 3, nombre: "Sugus", descripcion: "Caramelos masticables", precio: 80, stock: 30, imagen: "img/sugus.jpg" },
-      { id: 4, nombre: "Rocklets", descripcion: "Grageas de chocolate", precio: 250, stock: 15, imagen: "img/rocklets.jpg" },
-      { id: 5, nombre: "Mogul", descripcion: "Gomitas frutales", precio: 180, stock: 12, imagen: "img/mogul.jpg" },
-      { id: 6, nombre: "Tita", descripcion: "Galletita rellena con chocolate", precio: 90, stock: 25, imagen: "img/tita.jpg" },
-      { id: 7, nombre: "Rhodesia", descripcion: "Galletita con dulce de leche y chocolate", precio: 90, stock: 22, imagen: "img/rhodesia.jpg" },
-      { id: 8, nombre: "Menta Cristal", descripcion: "Caramelo de menta", precio: 70, stock: 35, imagen: "img/menta.jpg" },
-      { id: 9, nombre: "Caramelos Arcor", descripcion: "Surtido de caramelo duro", precio: 60, stock: 50, imagen: "img/arcor.jpg" },
-      { id: 10, nombre: "Chocolinas", descripcion: "Galletitas de chocolate", precio: 350, stock: 18, imagen: "img/chocolinas.jpg" },
-      { id: 11, nombre: "Alfajor Jorgito", descripcion: "Alfajor clásico de dulce de leche", precio: 180, stock: 40, imagen: "img/jorgito.jpg" },
+      { id: 4, nombre: "Rocklets", descripcion: "Grageas de chocolate", precio: 250, stock: 30, imagen: "img/rocklets.jpg" },
+      { id: 5, nombre: "Mogul", descripcion: "Gomitas frutales", precio: 180, stock: 30, imagen: "img/mogul.jpg" },
+      { id: 6, nombre: "Tita", descripcion: "Galletita rellena con chocolate", precio: 90, stock: 30, imagen: "img/tita.jpg" },
+      { id: 7, nombre: "Rhodesia", descripcion: "Galletita con dulce de leche y chocolate", precio: 90, stock: 30, imagen: "img/rhodesia.jpg" },
+      { id: 8, nombre: "Menta Cristal", descripcion: "Caramelo de menta", precio: 70, stock: 30, imagen: "img/menta.jpg" },
+      { id: 9, nombre: "Caramelos Arcor", descripcion: "Surtido de caramelo duro", precio: 60, stock: 30, imagen: "img/arcor.jpg" },
+      { id: 10, nombre: "Chocolinas", descripcion: "Galletitas de chocolate", precio: 350, stock: 30, imagen: "img/chocolinas.jpg" },
+      { id: 11, nombre: "Alfajor Jorgito", descripcion: "Alfajor clásico de dulce de leche", precio: 180, stock: 30, imagen: "img/jorgito.jpg" },
       { id: 12, nombre: "Bananita Dolca", descripcion: "Banana bañada en chocolate", precio: 100, stock: 30, imagen: "img/bananita.jpg" },
-      { id: 13, nombre: "Kinder Bueno", descripcion: "Chocolate con crema de avellanas", precio: 400, stock: 8, imagen: "img/kinder.jpg" },
-      { id: 14, nombre: "KitKat", descripcion: "Barra de chocolate con galleta", precio: 350, stock: 16, imagen: "img/kitkat.jpg" },
-      { id: 15, nombre: "M&M's", descripcion: "Confites de chocolate", precio: 300, stock: 10, imagen: "img/mms.jpg" }
+      { id: 13, nombre: "Kinder Bueno", descripcion: "Chocolate con crema de avellanas", precio: 400, stock: 30, imagen: "img/kinder.jpg" },
+      { id: 14, nombre: "KitKat", descripcion: "Barra de chocolate con galleta", precio: 350, stock: 30, imagen: "img/kitkat.jpg" },
+      { id: 15, nombre: "M&M's", descripcion: "Confites de chocolate", precio: 300, stock: 30, imagen: "img/mms.jpg" }
     ];
 
     // Cargar productos con stock guardado o originales
     let productos = JSON.parse(localStorage.getItem('productosStock')) || productosOriginales;
+
+    // Asegurarse que todos los productos comiencen con stock 30 cada vez que se carga la página
+    productos = productos.map(p => ({ ...p, stock: 30 }));
 
     const carritoIcon = document.querySelector('.carrito-icon');
     const cont = document.getElementById('productos-container');
@@ -168,11 +170,8 @@
     }
 
     function agregarAlCarrito(p) {
-      // Buscar producto en carrito
       const carrito = obtenerCarrito();
       const idxCarrito = carrito.findIndex(x => x.id === p.id);
-
-      // Buscar producto en productos para actualizar stock
       const idxProd = productos.findIndex(x => x.id === p.id);
       if (idxProd === -1) return;
 
@@ -181,7 +180,6 @@
         return;
       }
 
-      // Validar si ya está en carrito y no superar stock
       if (idxCarrito !== -1) {
         if (carrito[idxCarrito].cantidad + 1 > productos[idxProd].stock) {
           alert('No hay más stock disponible en el carrito.');
@@ -192,14 +190,11 @@
         carrito.push({ ...p, cantidad: 1 });
       }
 
-      // Disminuir stock en productos
       productos[idxProd].stock--;
 
-      // Guardar cambios
       guardarCarrito(carrito);
       guardarStock();
 
-      // Re-renderizar para actualizar stock y botón
       renderizar(buscador.value);
     }
 
@@ -226,7 +221,6 @@
 
     buscador.addEventListener('input', (e) => renderizar(e.target.value));
 
-    // Iniciar renderizado y contador carrito
     renderizar();
     actualizarContadorCarrito();
   </script>
