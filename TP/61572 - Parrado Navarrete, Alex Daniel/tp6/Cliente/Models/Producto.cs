@@ -1,4 +1,4 @@
-namespace TiendaOnline.Server.Models;
+namespace cliente.Models;
 
 public class Producto
 {

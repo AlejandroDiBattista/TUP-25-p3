@@ -1,0 +1,112 @@
+@page "/carrito"
+@using cliente.Models
+@using cliente.Services
+
+@inject HttpClient        Http
+@inject CartState         CartState
+@inject NavigationManager Nav
+
+<h1>Tu carrito</h1>
+
+@if (items is null)
+{
+    <p><em>Cargando carrito…</em></p>
+}
+else if (!items.Any())
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio</th>
+          <th>Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var it in items!)
+        {
+         <tr>
+           <td>@GetName(it.ProductoId)</td>
+           <td>
+             <button class="btn btn-sm btn-secondary"
+                     @onclick="() => ChangeQty(it, it.Cantidad - 1)"
+                     disabled="@(it.Cantidad <= 1)">–</button>
+             <span class="mx-2">@it.Cantidad</span>
+             <button class="btn btn-sm btn-secondary"
+                     @onclick="() => ChangeQty(it, it.Cantidad + 1)">+</button>
+           </td>
+           <td>@it.PrecioUnitario.ToString("C")</td>
+           <td>@((it.Cantidad * it.PrecioUnitario).ToString("C"))</td>
+           <td>
+             <button class="btn btn-danger btn-sm"
+                     @onclick="() => Remove(it.ProductoId)">X</button>
+           </td>
+         </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="fw-bold">
+      Total: @((items!.Sum(i => i.Cantidad * i.PrecioUnitario)).ToString("C"))
+    </p>
+
+    <button class="btn btn-outline-danger me-2" @onclick="EmptyCart">
+      Vaciar carrito
+    </button>
+    <button class="btn btn-success" @onclick='() => Nav.NavigateTo("/confirmacion")'>
+      Confirmar compra
+    </button>
+}
+
+@code {
+    private List<Producto>?   productos;
+    private List<ItemCompra>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Http.GetFromJsonAsync<List<Producto>>("/productos");
+        items      = await Http.GetFromJsonAsync<List<ItemCompra>>(
+                        $"/carritos/{CartState.CartId}");
+    }
+
+    string GetName(int pid)
+        => productos!.First(p => p.Id == pid).Nombre;
+
+    private async Task ChangeQty(ItemCompra it, int qty)
+    {
+        var putResp = await Http.PutAsJsonAsync(
+            $"/carritos/{CartState.CartId}/{it.ProductoId}",
+            new { Cantidad = qty });
+        putResp.EnsureSuccessStatusCode();
+
+        await CartState.RefreshCountAsync(Http);
+        items = await Http.GetFromJsonAsync<List<ItemCompra>>(
+                    $"/carritos/{CartState.CartId}");
+    }
+
+    private async Task Remove(int pid)
+    {
+        var delResp = await Http.DeleteAsync($"/carritos/{CartState.CartId}/{pid}");
+        delResp.EnsureSuccessStatusCode();
+
+        await CartState.RefreshCountAsync(Http);
+        items = await Http.GetFromJsonAsync<List<ItemCompra>>(
+                    $"/carritos/{CartState.CartId}");
+    }
+
+    private async Task EmptyCart()
+    {
+        var delAll = await Http.DeleteAsync($"/carritos/{CartState.CartId}");
+        delAll.EnsureSuccessStatusCode();
+
+        CartState.SetCartId(0);
+        await CartState.RefreshCountAsync(Http);
+        items = new();
+    }
+}

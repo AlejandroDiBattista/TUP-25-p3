@@ -1,0 +1,106 @@
+@page "/confirmacion"
+@using Microsoft.JSInterop
+@using cliente.Models
+@using cliente.Services
+
+@inject HttpClient        Http
+@inject CartState         CartState
+@inject IJSRuntime        JS
+@inject NavigationManager Nav
+
+<h1 class="text-center mb-4">Confirmación de Compra</h1>
+
+@if (items is null)
+{
+    <p><em>Cargando ítems…</em></p>
+}
+else
+{
+    <p>
+      Total ítems: <strong>@items.Sum(i => i.Cantidad)</strong><br />
+      Importe: <strong>@items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</strong>
+    </p>
+
+    <EditForm Model="cliente">
+      <DataAnnotationsValidator />
+      <ValidationSummary />
+
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="cliente.Nombre" />
+        <ValidationMessage For="() => cliente.Nombre" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Apellido</label>
+        <InputText class="form-control" @bind-Value="cliente.Apellido" />
+        <ValidationMessage For="() => cliente.Apellido" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText type="email" class="form-control" @bind-Value="cliente.Email" />
+        <ValidationMessage For="() => cliente.Email" />
+      </div>
+
+      <!-- botón que abre el modal -->
+      <button type="button"
+              class="btn btn-danger btn-lg w-100"
+              data-bs-toggle="modal"
+              data-bs-target="#confirmModal">
+        Confirmar compra
+      </button>
+    </EditForm>
+}
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="confirmModalLabel">¿Estás seguro?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Quieres confirmar la compra por <strong>@items?.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>
+        <button @onclick="OnConfirm"
+                type="button"
+                class="btn btn-danger"
+                data-bs-dismiss="modal">
+          Sí, confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@code {
+    private List<ItemCompra>? items;
+    private Cliente cliente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Carga los ítems desde el servidor
+        items = await Http.GetFromJsonAsync<List<ItemCompra>>($"/carritos/{CartState.CartId}");
+    }
+
+    private async Task OnConfirm()
+    {
+        // Envía confirmación al servidor
+        await Http.PutAsJsonAsync(
+            $"/carritos/{CartState.CartId}/confirmar",
+            new {
+                NombreCliente   = cliente.Nombre,
+                ApellidoCliente = cliente.Apellido,
+                EmailCliente    = cliente.Email
+            });
+
+        // Alert nativo de JS
+        await JS.InvokeVoidAsync("showGraciasModal");
+
+        // Resetea carrito y vuelve al catálogo
+        CartState.SetCartId(0);
+        Nav.NavigateTo("/");
+    }
+}
