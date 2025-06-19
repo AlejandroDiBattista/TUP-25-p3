@@ -28,12 +28,30 @@ namespace cliente.Services
             }
         }
 
-        public void CambiarCantidad(int productoId, int nuevaCantidad)
+        public void CambiarCantidad(int productoId, int nuevaCantidad, List<Producto> productosCatalogo = null)
         {
             var item = Items.FirstOrDefault(i => i.Producto.Id == productoId);
-            if (item != null && nuevaCantidad > 0 && nuevaCantidad <= item.Producto.Stock)
+            if (item != null)
             {
-                item.Cantidad = nuevaCantidad;
+                int cantidadAnterior = item.Cantidad;
+                if (nuevaCantidad == 0)
+                {
+                    items.Remove(item);
+                }
+                else if (nuevaCantidad > 0 && nuevaCantidad <= item.Producto.Stock + cantidadAnterior)
+                {
+                    item.Cantidad = nuevaCantidad;
+                }
+                // Actualizar stock en catálogo si se pasa la lista
+                if (productosCatalogo != null)
+                {
+                    var productoCatalogo = productosCatalogo.FirstOrDefault(p => p.Id == productoId);
+                    if (productoCatalogo != null)
+                    {
+                        productoCatalogo.Stock += (cantidadAnterior - nuevaCantidad);
+                        if (productoCatalogo.Stock < 0) productoCatalogo.Stock = 0;
+                    }
+                }
             }
         }
         
