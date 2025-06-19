@@ -21,7 +21,8 @@ else
         {
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                 <div class="card h-100">
-                    <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" style="height: 200px; object-fit: contain; padding: 10px;">
+                    @* --- LA CORRECCIÓN CLAVE ESTÁ AQUÍ --- *@
+                    <img src="@($"http://localhost:5184{p.ImagenUrl}")" class="card-img-top" alt="@p.Nombre" style="height: 200px; object-fit: contain; padding: 10px;">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">@p.Nombre</h5>
                         <p class="card-text flex-grow-1">@p.Descripcion</p>
@@ -74,20 +75,21 @@ else
         currentProductId = productoId;
         await InvokeAsync(StateHasChanged);
 
+        try
+        {
+            var success = await CarritoService.AgregarProductoAlCarrito(productoId);
+            if (success)
+            {
+                NavManager.NavigateTo("/carrito");
+            }
+        }
+        catch (Exception ex)
+        {
+             Console.WriteLine($"Excepción no controlada al agregar al carrito: {ex.Message}");
+        }
         
-        var success = await CarritoService.AgregarProductoAlCarrito(productoId);
-
-        if (success)
-        {
-            NavManager.NavigateTo("/carrito");
-        }
-        else
-        {
-            // Opcional: mostrar un mensaje de error
-            Console.WriteLine("Error al agregar el producto.");
-            isAddingToCart = false;
-            currentProductId = 0;
-            await InvokeAsync(StateHasChanged);
-        }
+        isAddingToCart = false;
+        currentProductId = 0;
+        await InvokeAsync(StateHasChanged);
     }
 }

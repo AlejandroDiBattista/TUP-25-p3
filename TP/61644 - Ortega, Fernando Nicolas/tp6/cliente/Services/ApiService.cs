@@ -71,6 +71,11 @@ public class ApiService
         var response = await _httpClient.DeleteAsync($"/carritos/{carritoId}/{productoId}");
         return response.IsSuccessStatusCode;
     }
+    public async Task<bool> VaciarCarritoAsync(int carritoId)
+    {
+        var response = await _httpClient.DeleteAsync($"carritos/{carritoId}");
+        return response.IsSuccessStatusCode;
+    }
 }
 
 public class DatosRespuesta {

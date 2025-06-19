@@ -3,11 +3,14 @@ using Cliente.Services;
 using Cliente.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Moq.Protected;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text;
+using System.Threading;
+using System.Linq.Expressions;
 
 namespace Cliente.Tests;
 
@@ -37,14 +40,12 @@ public class CarritoServiceTests
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(expectedCarritoId.ToString(), Encoding.UTF8, "application/json")
-        };
-
-        _mockHttpHandler
+        };        _mockHttpHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
+                It.IsAny<HttpRequestMessage>(),
+                It.IsAny<CancellationToken>())
             .ReturnsAsync(response);
 
 
@@ -94,14 +95,12 @@ public class CarritoServiceTests
         };
 
 
-        var addResponse = new HttpResponseMessage(HttpStatusCode.OK);
-
-        _mockHttpHandler
+        var addResponse = new HttpResponseMessage(HttpStatusCode.OK);        _mockHttpHandler
             .Protected()
             .SetupSequence<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
+                It.IsAny<HttpRequestMessage>(),
+                It.IsAny<CancellationToken>())
             .ReturnsAsync(carritoResponse)
             .ReturnsAsync(addResponse);
 

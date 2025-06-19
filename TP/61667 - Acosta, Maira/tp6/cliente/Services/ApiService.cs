@@ -92,7 +92,6 @@ public class ApiService
         return response.IsSuccessStatusCode;
     }
 
-    // ⚠️ CORREGIDO: Maneja errores de stock insuficiente
     public async Task CambiarCantidadCarritoAsync(string carritoId, int productoId, int delta)
     {
         var response = await _httpClient.PutAsync(

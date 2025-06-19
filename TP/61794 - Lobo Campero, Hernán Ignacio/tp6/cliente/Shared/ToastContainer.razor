@@ -4,13 +4,15 @@
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
-<!-- Contenedor de toasts en la parte superior central con estilo TUC BYTE -->
+<!-- Contenedor de toast único en la parte superior central -->
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1055; min-width: 350px; margin-top: 20px;">
-    @foreach (var toast in toasts)
-    {        <div id="toast-@toast.Id" class="toast align-items-center text-white border-0 @GetToastClass(toast.Type) mb-2 fade-in-up" 
+    @if (toasts.Any())
+    {
+        var toast = toasts.First();
+        <div id="toast-@toast.Id" class="toast align-items-center text-white border-0 @GetToastClass(toast.Type) fade-in-up" 
              role="alert" aria-live="assertive" aria-atomic="true" 
              data-bs-autohide="true" data-bs-delay="@toast.Duration" 
-             style="width: 100%; min-width: 300px; box-shadow: var(--shadow-orange-lg); border-radius: var(--border-radius-md); backdrop-filter: blur(10px);">
+             style="width: 100%; min-width: 300px; box-shadow: var(--shadow-orange-lg); border-radius: var(--border-radius-md); backdrop-filter: blur(10px); transition: all 0.3s ease;">
             <div class="d-flex">
                 <div class="toast-body d-flex align-items-center p-3">
                     <i class="@GetIconClass(toast.Type) me-3 fs-5"></i>
@@ -36,17 +38,20 @@
       public void Dispose()
     {
         ToastService.OnToastRequested -= ShowToastHandler;
-    }
-      public class ToastModel
+    }    public class ToastModel
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Message { get; set; } = "";
         public ToastType Type { get; set; }
         public int Duration { get; set; } = 4000;
-    }      private async Task ShowToast(string message, ToastType type, int duration)
+    }    private async Task ShowToast(string message, ToastType type, int duration)
     {
         try
         {
+            // Limpiar cualquier toast existente
+            toasts.Clear();
+            
+            // Crear el nuevo toast
             var toast = new ToastModel
             {
                 Message = message,
@@ -57,7 +62,6 @@
             toasts.Add(toast);
             await InvokeAsync(StateHasChanged);
             
-
             try
             {
                 await JSRuntime.InvokeVoidAsync("showToast", toast.Id);
@@ -67,16 +71,13 @@
                 Console.WriteLine($"Error al mostrar toast: {ex.Message}");
             }
             
-
+            // Auto-remover después del tiempo especificado
             _ = Task.Run(async () =>
             {
                 try
                 {
                     await Task.Delay(duration);
-                    await InvokeAsync(() =>
-                    {
-                        RemoveToast(toast.Id);
-                    });
+                    await InvokeAsync(() => RemoveToast(toast.Id));
                 }
                 catch (Exception ex)
                 {
@@ -88,7 +89,7 @@
         {
             Console.WriteLine($"Error en ShowToast: {ex.Message}");
         }
-    }      private void RemoveToast(string id)
+    }private void RemoveToast(string id)
     {
         try
         {

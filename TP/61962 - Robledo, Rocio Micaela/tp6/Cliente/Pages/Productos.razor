@@ -1,47 +1,55 @@
-@page "/"
-@using Cliente.Models
-@inject HttpClient Http
+@page "/"                             
+@using Cliente.Models                
+@inject HttpClient Http              
 
 <h3>Catálogo de Productos</h3>
 
+
 <input type="text" @bind="busqueda" placeholder="Buscar productos..." class="form-control mb-4" />
+
 
 @if (productos == null)
 {
     <p>Cargando...</p>
 }
+
 else if (!ProductosFiltrados.Any())
 {
     <p>No hay productos que coincidan con la búsqueda.</p>
 }
 else
 {
+
     <div class="grid-productos">
         @foreach (var p in ProductosFiltrados)
         {
+
             <ProductoCard Producto="p" OnProductoAgregado="RecargarCarrito" /> 
         }
     </div>
 }
 
 @code {
-    private List<Producto>? productos;
-    private string busqueda = string.Empty;
+    private List<Producto>? productos;   
+    private string busqueda = string.Empty; 
 
     protected override async Task OnInitializedAsync()
     {
+      
         productos = await Http.GetFromJsonAsync<List<Producto>>("api/productos");
     }
 
+
     private IEnumerable<Producto> ProductosFiltrados =>
-        string.IsNullOrWhiteSpace(busqueda)
+        string.IsNullOrWhiteSpace(busqueda)   
             ? productos!
-            : productos!.Where(p =>
+            : productos!.Where(p =>           
                 p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
                 p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 
     private async Task RecargarCarrito()
     {
         Console.WriteLine("Producto agregado al carrito.");
+        
     }
 }

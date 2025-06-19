@@ -20,16 +20,18 @@ namespace Cliente.Services
             var existente = items.FirstOrDefault(i => i.ProductoId == item.ProductoId);
             if (existente != null)
             {
-                existente.Cantidad += item.Cantidad;
+                existente.Cantidad += 1; 
             }
             else
             {
+                item.Cantidad = 1; 
                 items.Add(item);
             }
 
             Console.WriteLine($"Producto agregado. TotalItems: {TotalItems}");
-            OnChange?.Invoke(); 
+            OnChange?.Invoke();
         }
+
         public bool PuedeAgregar(int productoId, int stockMaximo)
         {
             var item = items.FirstOrDefault(i => i.ProductoId == productoId);
@@ -40,6 +42,10 @@ namespace Cliente.Services
             items.Clear();
             Console.WriteLine("Carrito vaciado.");
             OnChange?.Invoke();
+        }
+        public int CantidadEnCarrito(int productoId)
+        {
+            return items.FirstOrDefault(i => i.ProductoId == productoId)?.Cantidad ?? 0;
         }
 }
 }

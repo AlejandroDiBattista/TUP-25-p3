@@ -1,7 +1,5 @@
 ﻿@page "/"
-@using cliente.modelos
-@using cliente.Services
-@using cliente.Layout
+@implements IDisposable
 @inject ApiService Api
 
 <PageTitle>Catálogo de Productos</PageTitle>
@@ -48,8 +46,18 @@
     [SupplyParameterFromQuery(Name = "q")]
     public string? TerminoBusqueda { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        Api.OnCatalogoChange += StateHasChanged;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         listaProductos = await Api.ObtenerProductosAsync(TerminoBusqueda);
+    }
+
+    public void Dispose()
+    {
+        Api.OnCatalogoChange -= StateHasChanged;
     }
 }

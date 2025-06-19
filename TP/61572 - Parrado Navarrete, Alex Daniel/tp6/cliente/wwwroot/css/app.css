@@ -1,343 +1,237 @@
-/* Fuente general y fondo */
-body {
-    background-color: #f7f7f7; /* rojo oscuro fuerte */
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+:root {
+  /* Paleta */
+  --primary: #2a9d8f;
+  --primary-dark: #23867a;
+  --secondary: #264653;
+  --accent: #e9c46a;
+  --bg: #f0f3f5;
+  --card-bg: #ffffff;
+  --text: #333333;
 }
 
-/* Header */
-header {
-    background-color: #352e2e; 
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  font-family: 'Montserrat', sans-serif;
+  color: var(--text);
 }
 
-header h1 {
-    font-size: 1.8rem;
-    margin: 0;
+/* 2) Navbar */
+.navbar {
+  background: var(--card-bg) !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  padding: 0.75rem 2rem;
+}
+.navbar-brand {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--primary) !important;
+  display: flex;
+  align-items: center;
+}
+.navbar-brand img {
+  margin-right: 0.5rem;
+  width: 36px;
+  height: 36px;
+}
+.navbar-nav .nav-link {
+  font-weight: 500;
+  color: var(--secondary) !important;
+  margin-left: 1rem;
+}
+.navbar-nav .nav-link:hover {
+  color: var(--primary-dark) !important;
 }
 
-/* Footer */
+/* 3) Contenedor */
+.container, .container-fluid {
+  max-width: 1140px;
+  padding: 2rem 1rem;
+}
+
+/* 4) Encabezados */
+h1 {
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--secondary);
+}
+
+/* 5) Tarjetas */
+.card {
+  background-color: var(--card-bg);
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform .3s ease, box-shadow .3s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+.card-body {
+  padding: 1.25rem;
+}
+.card-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--secondary);
+}
+.card-text {
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+/* 6) Botones */
+.btn {
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: background .2s, transform .1s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  transform: translateY(-2px);
+}
+.btn-secondary {
+  background: var(--secondary);
+  border: none;
+  color: #fff;
+}
+.btn-secondary:hover {
+  background: darken(var(--secondary), 10%);
+}
+.btn-success {
+  background: var(--accent);
+  border: none;
+  color: var(--secondary);
+}
+.btn-success:hover {
+  background: darken(var(--accent), 10%);
+}
+
+/* 7) Alertas */
+.alert {
+  border-radius: 0.75rem;
+  font-weight: 500;
+}
+
+/* 8) Input + Buscar */
+.input-group .form-control {
+  border-radius: 0.75rem 0 0 0.75rem;
+  border: 1px solid #ced4da;
+}
+.input-group .btn {
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
+/* 9) Tabla carrito */
+.table {
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.table thead {
+  background: var(--primary);
+  color: #fff;
+}
+.table tbody tr:hover {
+  background: rgba(42,157,143,0.05);
+}
+.table td, .table th {
+  vertical-align: middle;
+  border-top: none;
+}
+
+/* 10) Links */
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* 11) Footer (si lo agregas) */
 footer {
-    background-color: #003cff; /* verde pastel */
-    padding: 1rem;
-    text-align: center;
-    font-size: 0.9rem;
-    margin-top: 2rem;
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--secondary);
+  font-size: 0.9rem;
+}
+/* asegurar que el backdrop y el modal estén por delante de todo */
+.modal-backdrop.show {
+  z-index: 1040 !important;
+}
+.modal.show .modal-dialog {
+  z-index: 1050 !important;
+}
+/* Modal backdrop más oscuro */
+.modal-backdrop.show {
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
-/* Contenido principal */
-.main-content {
-    padding: 2rem;
+/* Centrar el contenido del modal */
+.modal-dialog {
+  max-width: 400px;
+  margin: 1.75rem auto;
 }
 
-/* Títulos */
-h2, h3 {
-    color: #444;
-}
-
-/* Buscador */
-input[type="text"] {
-    padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    width: 100%;
-    max-width: 300px;
-    margin-bottom: 1rem;
-}
-
-/* Botones generales */
-button, .btn {
-    padding: 0.5rem 1rem;
-    background-color: #eeb6bc;
-    border: none;
-    border-radius: 6px;
-    color: rgb(255, 0, 0);
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-}
-
-button:hover, .btn:hover {
-    background-color: #eeb6bc;
-}
-
-/* Tarjetas de productos */
-.product-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 1rem;
-    width: 250px;
-    margin: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: white;
-}
-
-.product-card img {
-    width: 100%;
-    max-width: 200px;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
-
-.product-card h5 {
-    margin: 0.5rem 0;
-    font-size: 1.2rem;
-    color: #222;
-}
-
-.product-card p {
-    font-size: 0.95rem;
-    text-align: center;
-}
-
-/* Layout de productos */
-.products-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-/* Carrito de compras */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-}
-
-th, td {
-    padding: 0.75rem;
-    border-bottom: 1px solid #ccc;
-    text-align: left;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .product-card {
-        width: 90%;
-    }
-
-    header, .main-content {
-        padding: 1rem;
-    }
-}
-products-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-}
-
-
-.product-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 220px;
-    text-align: center;
-    transition: transform 0.2s;
-}
-
-.product-card img {
-    width: 100%;
-    max-width: 200px;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-}
-
-
-.product-card .btn {
-    background-color: #ff6f61;
-    border: none;
-    color: white;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.product-card .btn:hover {
-    background-color: #f7022b;
-}
-
-
-@media (max-width: 768px) {
-    .products-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .product-card {
-        width: 90%;
-    }
-}
-
-.btn-agregar {
-    background-color: #00ff15;   
-    color: white;               
-    font-weight: bold;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    border-radius: 10px;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.2s ease-in-out, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-}
-
-.btn-agregar:hover {
-    background-color: #19d800;  /* tono más fuerte al pasar mouse */
-    transform: scale(1.03);
-}
-
-
-    .top-bar {
-    background-color: #b71c1c; /* fondo fuerte */
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: white; /* Asegura que el texto por defecto sea blanco */
-}
-
-.logo {
-    color: #ffffff; /* ✅ TEXTO BLANCO para que se vea */
-    font-size: 1.6rem;
-    font-weight: bold;
-}
-
-.nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 1rem;
-}
-.products-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.product-card {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    width: 220px;
-    text-align: center;
-    transition: transform 0.2s;
-}
-
-.product-card:hover {
-    transform: scale(1.03);
-}
-
-.product-card img {
-    max-height: 160px;
-    object-fit: contain;
-    margin-bottom: 0.5rem;
-}
-
-.product-card h5 {
-    font-weight: 600;
-    margin: 0.5rem 0 0.2rem 0;
-    font-size: 1.05rem;
-}
-
-.product-card p {
-    font-size: 0.9rem;
-    margin: 0.2rem 0;
-}
-
-.btn-agregar {
-    margin-top: 0.7rem;
-    background-color: #06f125;
-    border: none;
-    color: #333;
-    padding: 0.4rem 1rem;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.2s;
-}
-
-.btn-agregar:hover {
-    background-color: #34bb0b;
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
+/* Redondear esquinas y sombra suave */
 .modal-content {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 10px;
-    text-align: center;
-    max-width: 400px;
-    box-shadow: 0 0 12px rgba(0,0,0,0.2);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
-.btn-confirmar, .btn-cancelar {
-    padding: 0.5rem 1rem;
-    margin: 0.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
+/* Cabecera con degradado y texto grande */
+.modal-header {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: #fff;
+  border-bottom: none;
+  padding: 1rem 1.5rem;
 }
 
-.btn-confirmar {
-    background: #c2f9c9;
+.modal-header .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.btn-cancelar {
-    background: #f9c2c2;
+/* Botones más anchos y con transición */
+.modal-footer .btn {
+  min-width: 120px;
+  border-radius: 0.375rem;
+  transition: transform 0.1s ease-in-out;
 }
-.top-bar {
-    background-color: #ff6600;
-    padding: 1rem 2rem;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: bold;
-    font-size: 1.2rem;
+.modal-footer .btn:hover {
+  transform: scale(1.05);
 }
 
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: white;
+/* Cuerpo con un poco de padding extra */
+.modal-body {
+  padding: 1.5rem;
+  font-size: 1rem;
+  color: #333;
+  text-align: center;
 }
 
-.nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 1rem;
+/* Botón de “Confirmar” destacado */
+.btn-confirm {
+  background-color: #ff4b2b;
+  border-color: #ff416c;
+  color: #fff;
 }
-
-.main-content {
-    padding-top: 1rem;
+.btn-confirm:hover {
+  background-color: #ff416c;
+  border-color: #ff4b2b;
 }

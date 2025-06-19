@@ -110,24 +110,27 @@
             ActualizarProductosPagina();
             StateHasChanged();
         }
-    }
-
-    private async Task AgregarAlCarrito(int productoId)
+    }    private async Task AgregarAlCarrito(int productoId)
     {
         if (productosAgregando.Contains(productoId)) return;
         
         try
         {
             productosAgregando.Add(productoId);
-            StateHasChanged();            var exito = await CarritoService.AgregarProductoAsync(productoId, 1);            if (exito)
-            {
+            StateHasChanged();
 
+            var exito = await CarritoService.AgregarProductoAsync(productoId, 1);
+
+            if (exito)
+            {
+                // Actualizar el carrito
                 var nuevaCantidad = await CarritoService.ObtenerCantidadItemsAsync();
                 ActualizarCarrito?.Invoke(nuevaCantidad);
                 
+                // Actualizar los productos desde el servidor para reflejar el stock real
+                await ActualizarStockDesdeServidor();
 
                 ToastService.ShowSuccess("Producto agregado al carrito exitosamente");
-                
 
                 productosAgregadosConExito.Add(productoId);
                 StateHasChanged();
@@ -138,12 +141,13 @@
                     productosAgregadosConExito.Remove(productoId);
                     await InvokeAsync(StateHasChanged);
                 });
-            }            else
+            }
+            else
             {
-
                 ToastService.ShowError("Error al agregar producto. Posibles causas: Stock insuficiente o problema de conexión.");
             }
-        }        catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
             ToastService.ShowError("Error inesperado al agregar el producto. Por favor, inténtalo nuevamente.");
@@ -152,6 +156,37 @@
         {
             productosAgregando.Remove(productoId);
             StateHasChanged();
+        }
+    }
+
+    public async Task ActualizarStockDesdeServidor()
+    {
+        try
+        {
+            var productosActualizados = await ApiService.GetProductosAsync(busquedaActual);
+            if (productosActualizados != null)
+            {
+                todosLosProductos = productosActualizados;
+                ActualizarProductosPagina();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar stock: {ex.Message}");
+        }
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            // Verificar si venimos de la página del carrito y actualizar stock
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            if (uri.Fragment.Contains("from-cart") || uri.Query.Contains("refresh=true"))
+            {
+                await ActualizarStockDesdeServidor();
+            }
         }
     }
 }

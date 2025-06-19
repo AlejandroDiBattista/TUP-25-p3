@@ -1,5 +1,6 @@
 @page "/carrito"
 @using cliente.Services
+@using Microsoft.AspNetCore.SignalR.Client
 @inject CarritoService CarritoService
 @inject NavigationManager NavigationManager
 
@@ -45,7 +46,7 @@
                             <td>
                                 <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad - 1)" disabled="@(item.Cantidad == 1)">-</button>
                                 <span class="mx-2">@item.Cantidad</span>
-                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.StockTotal)">+</button>
                             </td>
                             <td>$ @((item.Cantidad * item.PrecioUnitario).ToString())</td>
                             <td>
@@ -71,11 +72,39 @@
 @code
 {
     cliente.Services.Carrito? carrito;
+    private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         carrito = await CarritoService.GetCarritoAsync();
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5184/stockhub")
+            .Build();
+
+        hubConnection.On<int, int>("StockActualizado", (productoId, nuevoStock) =>
+        {
+            if (carrito is not null)
+            {
+                var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+                if (item is not null)
+                {
+                    item.Producto.Stock = nuevoStock;
+                    StateHasChanged();
+                }
+            }
+        });
+
+        await hubConnection.StartAsync();
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+    
 
     async Task CambiarCantidad(int productoId, int nuevaCantidad)
     {

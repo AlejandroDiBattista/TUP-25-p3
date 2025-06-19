@@ -17,16 +17,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configuración de CORS
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                            policy =>
-                            {
-                                policy.AllowAnyOrigin()
-                                    .AllowAnyHeader()
-                                    .AllowAnyMethod();
-                            });
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowClientApp", policy => {
+        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 
@@ -52,16 +48,15 @@ else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
+    app.UseHttpsRedirection(); // Solo usar HTTPS en producción
 }
-
-app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
-app.UseRouting();
+app.UseCors("AllowClientApp");
 
-app.UseCors(MyAllowSpecificOrigins);
+app.UseRouting();
 
 // INICIALIZACIÓN DE LA BASE DE DATOS 
 using (var scope = app.Services.CreateScope())

@@ -1,0 +1,126 @@
+@page "/carrito/{carritoId:int}"
+@using cliente.Services
+@using Microsoft.AspNetCore.Components
+@inject ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Tu Carrito</PageTitle>
+
+<div class="container mt-4">
+  <div class="d-flex align-items-center mb-4">
+    <h1 class="display-5 fw-bold mb-0">
+      <i class="fas fa-shopping-cart text-primary me-2"></i>
+      Tu Carrito
+    </h1>
+  </div>
+
+  @if (carrito == null)
+  {
+    <div class="alert alert-info">
+      <i class="fas fa-spinner fa-spin me-2"></i>
+      Cargando carrito…
+    </div>
+  }
+  else if (carrito.Items == null || carrito.Items.Count == 0)
+  {
+    <div class="alert alert-warning mb-4">
+      <i class="fas fa-shopping-basket me-2"></i>
+      Tu carrito está vacío.
+    </div>
+    <button class="btn btn-primary" @onclick="VolverAlCatalogo">
+      <i class="fas fa-arrow-left me-2"></i>
+      Volver al catálogo
+    </button>
+  }
+  else
+  {
+    <div class="card shadow-sm mb-4">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="text-center">Cantidad</th>
+              <th class="text-end">Precio</th>
+              <th class="text-end">Subtotal</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var item in carrito.Items)
+            {
+              <tr>
+                <td class="align-middle">@item.Nombre</td>
+                <td class="text-center align-middle">@item.Cantidad</td>
+                <td class="text-end align-middle">@item.PrecioUnitario.ToString("C")</td>
+                <td class="text-end align-middle">@item.Subtotal.ToString("C")</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary me-1"
+                          title="Agregar uno más"
+                          @onclick="@(() => Modificar(item.ProductoId, 1))">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger"
+                          title="Eliminar del carrito"
+                          @onclick="@(() => Modificar(item.ProductoId, -item.Cantidad))">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+            <tr class="table-light fw-bold">
+              <td colspan="3" class="text-end">Total:</td>
+              <td class="text-end">@carrito.Total.ToString("C")</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end">
+      <button class="btn btn-outline-danger" @onclick="Vaciar">
+        <i class="fas fa-trash-alt me-1"></i>
+        Vaciar carrito
+      </button>
+      <button class="btn btn-primary" @onclick="IrConfirmacion">
+        <i class="fas fa-check me-1"></i>
+        Confirmar compra
+      </button>
+    </div>
+  }
+</div>
+
+@code {
+  [Parameter] public int carritoId { get; set; }
+  private CarritoDto carrito;
+
+  protected override async Task OnInitializedAsync()
+    => await LoadCarrito();
+
+  private async Task LoadCarrito()
+    => carrito = await Api.GetCarritoAsync(carritoId);
+
+  private async Task Modificar(int productoId, int delta)
+  {
+    if (delta > 0)
+      await Api.AddToCarritoAsync(carritoId, productoId, delta);
+    else
+      await Api.RemoveFromCarritoAsync(carritoId, productoId);
+
+    await LoadCarrito();
+  }
+
+  private async Task Vaciar()
+  {
+    await Api.VaciarCarritoAsync(carritoId);
+    carrito.Items.Clear();
+    carrito.Total = 0;
+  }
+
+  private void IrConfirmacion()
+    => Nav.NavigateTo($"/confirmacion/{carritoId}");
+
+  private void VolverAlCatalogo()
+    => Nav.NavigateTo("/");
+}

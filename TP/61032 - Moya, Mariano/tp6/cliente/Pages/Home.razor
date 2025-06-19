@@ -20,11 +20,7 @@
         </div>
     </div>
 
-    <div style="margin-bottom:1.5rem; display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
-        <input type="text" @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." style="padding:0.5rem; width:250px; border-radius:4px; border:1px solid #ccc;" />
-        <button @onclick="Buscar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#00796b; color:#fff; border:none;">Buscar</button>
-        <button @onclick="Limpiar" class="btn-anim" style="padding:0.5rem 1rem; border-radius:4px; background:#bdbdbd; color:#333; border:none;">Limpiar</button>
-    </div>
+
 
 
     <div style="display: flex; justify-content: center;">
@@ -47,7 +43,7 @@
                         <p style="color:#444; margin-bottom:0.5rem; text-align:center; min-height:48px;">@prod.Descripcion</p>
                         <p style="margin:0.2rem 0;"><b>Precio:</b> $@prod.Precio</p>
                         <p style="margin:0.2rem 0;"><b>Stock:</b> @prod.Stock</p>
-                        <button @onclick="() => AgregarAlCarrito(prod.Id)" class="btn-anim" style="margin-top:0.7rem; padding:0.5rem 1.2rem; border-radius:6px; background:#388e3c; color:#fff; border:none; font-weight:bold; font-size:1rem; transition:background 0.2s;">Agregar al carrito</button>
+                        <button @onclick="() => AgregarAlCarrito(prod.Id)" class="btn-anim @(prod.Stock == 0 ? "btn-sin-stock" : "btn-con-stock")" style="margin-top:0.7rem; padding:0.5rem 1.2rem; border-radius:6px; border:none; font-weight:bold; font-size:1rem; transition:background 0.2s;" disabled="@(prod.Stock == 0)">Agregar al carrito</button>
                     </div>
                 }
             }
@@ -74,11 +70,25 @@
     }
 </div>
 
+<style>
+    .btn-con-stock {
+        background: #388e3c;
+        color: #fff;
+    }
+    .btn-sin-stock {
+        background: #bdbdbd !important;
+        color: #888 !important;
+        cursor: not-allowed;
+    }
+</style>
+
 @code {
 
     private DatosRespuesta datos;
     private string error;
     List<Cliente.Services.ProductoDto>? productos;
+    [Inject] Cliente.Services.BusquedaService BusquedaService { get; set; }
+    [Inject] Cliente.Services.StockService StockService { get; set; }
     string busqueda = string.Empty;
     string mensaje = string.Empty;
     bool mensajeVisible = false;
@@ -96,10 +106,34 @@
     }
 
 
+
     protected override async Task OnInitializedAsync()
     {
+        BusquedaService.OnBusquedaChanged += BusquedaChangedHandler;
+        StockService.OnStockChanged += StockChangedHandler;
         productos = await ProductoService.GetProductosAsync();
         await ActualizarCantidadCarrito();
+    }
+
+    private async void StockChangedHandler()
+    {
+        productos = await ProductoService.GetProductosAsync(busqueda);
+        await ActualizarCantidadCarrito();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Siempre refresca productos y carrito al navegar a Home
+        productos = await ProductoService.GetProductosAsync(busqueda);
+        await ActualizarCantidadCarrito();
+    }
+
+    private async void BusquedaChangedHandler(string texto)
+    {
+        busqueda = texto;
+        productos = await ProductoService.GetProductosAsync(busqueda);
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ActualizarCantidadCarrito()
@@ -116,28 +150,33 @@
         StateHasChanged();
     }
 
-    async Task Buscar()
-    {
-        productos = await ProductoService.GetProductosAsync(busqueda);
-    }
 
-    async Task Limpiar()
-
-    {
-        busqueda = string.Empty;
-        productos = await ProductoService.GetProductosAsync();
-    }
 
     async Task AgregarAlCarrito(int productoId)
     {
+        var prod = productos?.FirstOrDefault(p => p.Id == productoId);
+        if (prod == null || prod.Stock == 0)
+            return;
         var ok = await CarritoService.AgregarProductoAsync(productoId, 1);
-        mensaje = ok ? "Producto agregado al carrito" : "No se pudo agregar el producto";
+        if (ok)
+        {
+            // Refrescar productos desde el backend para obtener el stock actualizado
+            productos = await ProductoService.GetProductosAsync(busqueda);
+            mensaje = "Producto agregado al carrito";
+        }
+        else
+        {
+            mensaje = "No se pudo agregar el producto (stock insuficiente)";
+        }
         mensajeVisible = true;
         await ActualizarCantidadCarrito();
-        StateHasChanged();
         await Task.Delay(1500);
         mensajeVisible = false;
         mensaje = string.Empty;
         StateHasChanged();
+    }
+    public void Dispose()
+    {
+        StockService.OnStockChanged -= StockChangedHandler;
     }
 }

@@ -19,16 +19,14 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/">Inicio</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="catalogo">Productos</a>
-          </li>
+          
           <li class="nav-item">
                     <a class="nav-link d-flex align-items-center position-relative" href="carrito">
-                    <span class="bi bi-cart" style="font-size: 1.3em; margin-right: 0.3em;"></span>
-                    <span style="margin-right: 0.3em;">Carrito</span>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                       @CarritoService.Items.Sum(i => i.Cantidad)
-                    </span>
+                        <img src="img/iconopng.png" alt="Carrito" width="28" height="28" style="margin-right: 0.3em;">
+                        
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                           @CarritoService.Items.Sum(i => i.Cantidad)
+                        </span>
                     </a>
                 </li>
         </ul>
@@ -66,6 +64,7 @@ else
                         <button class="btn btn-sm btn-secondary" @onclick="() => CarritoService.Quitar(item.Producto)" disabled="@(item.Cantidad == 1)">-</button>
                         <span class="mx-2">@item.Cantidad</span>
                         <button class="btn btn-sm btn-secondary" @onclick="() => CarritoService.Agregar(item.Producto)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                       
                     </td>
                     <td>$@(item.Producto.Precio * item.Cantidad)</td>
                     <td>

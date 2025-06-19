@@ -5,6 +5,7 @@
 @using cliente.Services
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.SignalR.Client
 
 <div class="fondo-productos">
     <div class="container mt-4">
@@ -47,7 +48,8 @@
 
 @code {
     List<Producto>? productos;
-
+    private HubConnection? hubConnection;
+    
     [Parameter]
     [SupplyParameterFromQuery]
     public string? q { get; set; }
@@ -55,6 +57,32 @@
     protected override async Task OnParametersSetAsync()
     {
         productos = await ProductoService.GetProductosAsync(q);
+        if (hubConnection == null)
+        {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("http://localhost:5184/stockhub")
+                .Build();
+
+            hubConnection.On<int, int>("StockActualizado", (productoId, nuevoStock) =>
+            {
+                var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+                if (producto != null)
+                {
+                    producto.Stock = nuevoStock;
+                    StateHasChanged();
+                }
+            });
+
+            await hubConnection.StartAsync();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     async Task AgregarAlCarrito(int productoId)

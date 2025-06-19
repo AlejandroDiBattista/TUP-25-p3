@@ -105,7 +105,6 @@ app.MapPut("/api/carritos/{carritoId}/{productoId}", async (
     return Results.Ok("Producto agregado al carrito");
 });
 
-app.MapPut("/api/carritos/{carritoId}/cantidad/{productoId}", async (
     Guid carritoId,
     int productoId,
     int delta,

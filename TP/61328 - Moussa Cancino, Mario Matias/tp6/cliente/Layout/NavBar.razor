@@ -1,0 +1,271 @@
+@inject CartService CartService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<nav class="navbar">
+    <div class="navbar-container">
+        <!-- Logo/Marca a la izquierda -->
+        <div class="navbar-brand" @onclick="@(() => Navigation.NavigateTo("/"))">
+            <svg class="brand-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="m1 1 4 4 16 3 -4 8H7L5 6H2"></path>
+            </svg>
+            <span class="brand-text">ImportadosYa</span>
+        </div>
+
+        <!-- Botones de navegación a la derecha -->
+        <div class="navbar-actions">
+            <!-- Botón Catálogo -->
+            <a href="/" class="nav-button @(IsCurrentPage("/") ? "active" : "")" title="Ver catálogo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                </svg>
+                <span>Catálogo</span>
+            </a>
+            
+            <!-- Botón Carrito -->
+            <button class="cart-button" @onclick="@(() => Navigation.NavigateTo("/carrito"))" title="Ver carrito">
+                <div class="cart-icon-container">
+                    <svg class="cart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="m1 1 4 4 16 3 -4 8H7L5 6H2"></path>
+                    </svg>
+                    @if (cartItemCount > 0)
+                    {
+                        <span class="cart-badge">@cartItemCount</span>
+                    }
+                </div>
+                <span class="cart-text">Carrito</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        height: 70px;
+    }
+
+    /* Logo/Marca a la izquierda */
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        color: white;
+        text-decoration: none;
+    }
+
+    .navbar-brand:hover {
+        transform: scale(1.05);
+    }
+
+    .brand-icon {
+        color: white;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .brand-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        letter-spacing: -0.5px;
+    }
+
+    /* Acciones/botones a la derecha */
+    .navbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .nav-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        position: relative;
+        backdrop-filter: blur(10px);
+        border: 2px solid transparent;
+    }
+
+    .nav-button:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-button.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .cart-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .cart-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .cart-button:active {
+        transform: translateY(0);
+    }
+
+    .cart-icon-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .cart-icon {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #333333;
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .cart-text {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .navbar-container {
+            padding: 0 16px;
+            height: 60px;
+        }
+
+        .brand-text {
+            font-size: 1.25rem;
+        }
+
+        .nav-button span,
+        .cart-text {
+            display: none;
+        }
+
+        .nav-button,
+        .cart-button {
+            padding: 10px 12px;
+            min-width: 44px;
+            justify-content: center;
+        }
+
+        .navbar-actions {
+            gap: 8px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .navbar-container {
+            padding: 0 12px;
+        }
+
+        .brand-text {
+            display: none;
+        }
+
+        .nav-button,
+        .cart-button {
+            padding: 8px 10px;
+        }
+    }
+</style>
+
+@code {
+    private int cartItemCount;
+
+    protected override void OnInitialized()
+    {
+        // Suscribirse a cambios en el carrito
+        CartService.OnChange += UpdateCartCount;
+        UpdateCartCount();
+    }
+
+    private void UpdateCartCount()
+    {
+        cartItemCount = CartService.ItemCount;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsCurrentPage(string path)
+    {
+        var currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        return string.Equals(currentPath, path.TrimStart('/'), StringComparison.OrdinalIgnoreCase) ||
+               (string.IsNullOrEmpty(currentPath) && path == "/");
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= UpdateCartCount;
+    }
+}

@@ -1,59 +1,105 @@
 using cliente.Modelos;
-using System.Linq;
 
-namespace cliente.Services
+namespace cliente.Services;
+
+public class CartService
 {
-    public class CartService
+    public List<CarritoItem> Items { get; private set; } = new();
+    public Guid? CartId { get; private set; }
+    
+    // Nueva propiedad para calcular el total de ítems
+    public int ItemCount => Items.Sum(item => item.Cantidad);
+    
+    // Diccionario para trackear el stock reservado por producto
+    private Dictionary<int, int> _reservedStock = new();
+    
+    public event Action? OnChange;
+
+    private readonly ApiService _apiService;
+
+    public CartService(ApiService apiService)
     {
-        public event Action OnChange;
-        private readonly ApiService _apiService;
-        private Guid? _cartId;
-        private Dictionary<int, int> _items = new Dictionary<int, int>();
-        public IReadOnlyDictionary<int, int> Items => _items;
-        private Dictionary<int, Producto> _productDetails = new Dictionary<int, Producto>();
-
-        public CartService(ApiService apiService) { _apiService = apiService; }
-
-        public async Task AddToCartAsync(Producto producto) {
-            await EnsureCartExistsAsync();
-            await _apiService.AddProductToCartAsync(_cartId.Value, producto.Id);
-            if (_items.ContainsKey(producto.Id)) {
-                _items[producto.Id]++;
-            } else {
-                _items[producto.Id] = 1;
-                _productDetails[producto.Id] = producto;
-            }
-            NotifyStateChanged();
-        }
-
-        public async Task RemoveFromCartAsync(int productId) {
-            if (!_cartId.HasValue || !_items.ContainsKey(productId)) return;
-            await _apiService.RemoveProductFromCartAsync(_cartId.Value, productId);
-            _items[productId]--;
-            if (_items[productId] == 0) {
-                _items.Remove(productId);
-            }
-            NotifyStateChanged();
-        }
-
-        public async Task EmptyCartAsync() {
-            if (!_cartId.HasValue) return;
-            await _apiService.EmptyCartAsync(_cartId.Value);
-            _items.Clear();
-            NotifyStateChanged();
-        }
-        
-        public async Task ConfirmPurchaseAsync(DatosCliente datosCliente) {
-            if (!_cartId.HasValue || !_items.Any()) return;
-            await _apiService.ConfirmPurchaseAsync(_cartId.Value, datosCliente);
-            _items.Clear();
-            _cartId = null; 
-            NotifyStateChanged();
-        }
-
-        public int GetItemCount() => _items.Sum(i => i.Value);
-        public Producto GetProductDetails(int productId) => _productDetails.GetValueOrDefault(productId);
-        private async Task EnsureCartExistsAsync() { if (!_cartId.HasValue) { _cartId = await _apiService.CreateCartAsync(); } }
-        private void NotifyStateChanged() => OnChange?.Invoke();
+        _apiService = apiService;
     }
+
+    private async Task EnsureCartExistsAsync()
+    {
+        if (!CartId.HasValue)
+        {
+            CartId = await _apiService.CreateCartAsync();
+        }
+    }
+
+    public async Task AddToCart(Producto producto)
+    {
+        await EnsureCartExistsAsync();
+        if (CartId is null) return;
+        
+        var updatedCart = await _apiService.AddProductToCartAsync(CartId.Value, producto.Id);
+        if (updatedCart != null)
+        {
+            Items = updatedCart;
+            
+            // Actualizar stock reservado
+            UpdateReservedStock();
+            
+            NotifyStateChanged();
+        }
+    }
+
+    public async Task RemoveFromCart(int productoId)
+    {
+        if (!CartId.HasValue) return;
+        
+        var updatedCart = await _apiService.RemoveProductFromCartAsync(CartId.Value, productoId);
+        if (updatedCart != null)
+        {
+            Items = updatedCart;
+            
+            // Actualizar stock reservado
+            UpdateReservedStock();
+            
+            NotifyStateChanged();
+        }
+    }
+    
+    public async Task EmptyCartAsync()
+    {
+        if(!CartId.HasValue) return;
+        
+        await _apiService.EmptyCartAsync(CartId.Value);
+        Items.Clear();
+        CartId = null;
+        
+        // Limpiar stock reservado
+        _reservedStock.Clear();
+        
+        NotifyStateChanged();
+    }
+
+    // Método para obtener el stock disponible considerando lo que está en el carrito
+    public int GetAvailableStock(Producto producto)
+    {
+        var reservedForThisProduct = _reservedStock.GetValueOrDefault(producto.Id, 0);
+        return producto.Stock - reservedForThisProduct;
+    }
+
+    // Método para verificar si se puede agregar más cantidad de un producto
+    public bool CanAddToCart(Producto producto)
+    {
+        return GetAvailableStock(producto) > 0;
+    }
+
+    // Método privado para actualizar el stock reservado basado en el carrito actual
+    private void UpdateReservedStock()
+    {
+        _reservedStock.Clear();
+        
+        foreach (var item in Items)
+        {
+            _reservedStock[item.ProductoId] = item.Cantidad;
+        }
+    }
+
+    private void NotifyStateChanged() => OnChange?.Invoke();
 }

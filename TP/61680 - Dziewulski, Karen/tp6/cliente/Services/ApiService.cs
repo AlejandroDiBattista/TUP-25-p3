@@ -40,19 +40,29 @@ public class ApiService
         }
     }
 
-public async Task<bool> ConfirmarCompraAsync(string carritoId, CompraDTO compra)
-{
-    try
+    public async Task<Producto?> ObtenerProductoPorIdAsync(int id)
     {
-        var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", compra);
-        return response.IsSuccessStatusCode;
+        var response = await _httpClient.GetAsync($"/productos/{id}");
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<Producto>();
+        }
+        return null;
     }
-    catch (Exception ex)
+
+    public async Task<bool> ConfirmarCompraAsync(string carritoId, CompraDTO compra)
     {
-        Console.WriteLine($"Error al confirmar compra: {ex.Message}");
-        return false;
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", compra);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar compra: {ex.Message}");
+            return false;
+        }
     }
-}
 
 
 public class DatosRespuesta

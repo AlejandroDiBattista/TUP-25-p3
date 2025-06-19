@@ -1,6 +1,5 @@
 namespace servidor.DTOs;
 
-// DTO para transferir datos de productos entre cliente y servidor
 public class ProductoDto
 {
     public int Id { get; set; }
@@ -11,7 +10,6 @@ public class ProductoDto
     public string ImagenUrl { get; set; } = string.Empty;
 }
 
-// DTO para enviar datos del carrito al cliente (incluye items y totales)
 public class CarritoDto
 {
     public string Id { get; set; } = string.Empty;
@@ -20,7 +18,6 @@ public class CarritoDto
     public int TotalItems { get; set; }
 }
 
-// DTO para items individuales del carrito
 public class ItemCarritoDto
 {
     public int ProductoId { get; set; }
@@ -31,16 +28,11 @@ public class ItemCarritoDto
     public string ImagenUrl { get; set; } = string.Empty;
 }
 
-// DTO para actualizar la cantidad de un producto en el carrito
 public class ActualizarItemCarritoDto
 {
     public int Cantidad { get; set; }
 }
 
-/// <summary>
-/// DTO para confirmar una compra.
-/// Incluye datos del cliente necesarios para completar la transacción.
-/// </summary>
 public class ConfirmarCompraDto
 {
     public string NombreCliente { get; set; } = string.Empty;
@@ -48,9 +40,6 @@ public class ConfirmarCompraDto
     public string EmailCliente { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// DTO para respuesta después de confirmar una compra.
-/// </summary>
 public class CompraConfirmadaDto
 {
     public int CompraId { get; set; }

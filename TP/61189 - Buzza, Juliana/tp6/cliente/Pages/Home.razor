@@ -129,9 +129,7 @@ else
         "/Imagenes/banner3.jpg"  
     };
     private int currentSlideIndex = 0;
-    private System.Timers.Timer? autoSlideTimer;
-
-    protected override async Task OnInitializedAsync()
+    private System.Timers.Timer? autoSlideTimer;    protected override void OnInitialized()
     {
         CartStateService.OnCartIdChanged += HandleCartIdChanged;
         CartId = CartStateService.CartId;
@@ -221,6 +219,7 @@ private async Task AddToCart(cliente.Models.Producto producto)
         if (CartId == null)
         {
             CartId = await ApiService.InitializeCart();
+            CartStateService.SetCartId(CartId); // Actualizar el servicio de estado
             await LoadCartItems(); 
         }
 

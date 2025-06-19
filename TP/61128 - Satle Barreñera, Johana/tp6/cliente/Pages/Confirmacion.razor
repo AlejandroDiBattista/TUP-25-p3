@@ -1,0 +1,73 @@
+@page "/confirmacion"
+@using cliente.Services
+@using cliente.Modelos
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+@inject ProductoService productoService
+
+
+
+
+<h3 class="titulo-confirmacion">✅ Confirmación de Compra</h3>
+
+@if (CarritoService.ProductosEnCarrito.Count == 0)
+{
+    <p class="mensaje-vacio">Tu carrito está vacío.</p>
+}
+else
+{
+    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra" class="formulario-compra">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="errores-validacion" />
+
+        <div class="contenedor-formulario">
+            <h4 class="subtitulo">🛒 Resumen de Compra</h4>
+            <ul class="resumen-compra">
+                <li>Total de ítems: <strong>@CarritoService.ProductosEnCarrito.Sum(p => p.Cantidad)</strong></li>
+                <li>Importe total: <strong>$@CarritoService.CalcularTotal().ToString("N2")</strong></li>
+            </ul>
+
+            <h4 class="subtitulo">🧍 Datos del Cliente</h4>
+
+            <div class="campo">
+                <label>Nombre</label>
+                <InputText class="entrada" @bind-Value="datosCliente.Nombre" />
+                <ValidationMessage For="@(() => datosCliente.Nombre)" class="mensaje-error" />
+            </div>
+
+            <div class="campo">
+                <label>Apellido</label>
+                <InputText class="entrada" @bind-Value="datosCliente.Apellido" />
+                <ValidationMessage For="@(() => datosCliente.Apellido)" class="mensaje-error" />
+            </div>
+
+            <div class="campo">
+                <label>Email</label>
+                <InputText class="entrada" @bind-Value="datosCliente.Email" />
+                <ValidationMessage For="@(() => datosCliente.Email)" class="mensaje-error" />
+            </div>
+
+            <button type="submit" class="boton-confirmar">✅ Confirmar Compra</button>
+        </div>
+    </EditForm>
+}
+
+    @code {
+    private DatosCliente datosCliente = new();
+
+    private async Task ConfirmarCompra()
+{
+    Console.WriteLine($"Compra confirmada por {datosCliente.Nombre} {datosCliente.Apellido} ({datosCliente.Email})");
+    Console.WriteLine($"Total: ${CarritoService.CalcularTotal()}");
+
+    var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
+    Console.WriteLine($"Resultado confirmación: {ok}");
+    if (ok)
+    {
+        Console.WriteLine("Redirigiendo al catálogo...");
+        await productoService.ObtenerProductosAsync();
+        Navigation.NavigateTo("/");
+    }
+}
+}
+}

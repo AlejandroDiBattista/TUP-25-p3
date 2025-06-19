@@ -1,0 +1,145 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
+@page "/confirmacion-compra"
+@inject NavigationManager Navigation
+@inject Cliente.Services.CarritoService CarritoService
+
+
+@if (compraExitosa)
+{
+    <div style="display:flex; justify-content:center; margin:2rem auto; max-width:700px;">
+        <div style="background:white; border-radius:12px; box-shadow:0 6px 32px rgba(0,0,0,0.18); padding:2.5rem 2.5rem 2rem 2.5rem; min-width:320px; text-align:center; flex:1;">
+            <div style="font-size:1.35rem; color:#388e3c; font-weight:bold; margin-bottom:1.2rem;">¡Compra confirmada!</div>
+            <div style="font-size:1.08rem; color:#444; margin-bottom:1.2rem;">Tu compra fue realizada con éxito. Serás redirigido al catálogo...</div>
+        </div>
+        <div style="background:#f1f8e9; border:1px solid #388e3c; border-radius:8px; padding:1.5rem; min-width:260px; max-width:320px; margin-left:2rem; align-self:flex-start;">
+            <h4 style="color:#388e3c; margin-bottom:1rem;">Resumen de la compra</h4>
+            <ul style="list-style:none; padding:0; margin:0 0 1rem 0;">
+                @foreach (var item in resumenItems)
+                {
+                    <li style="margin-bottom:0.7rem; border-bottom:1px solid #e0e0e0; padding-bottom:0.4rem;">
+                        <span style="font-weight:600; color:#00796b;">@item.Nombre</span><br />
+                        <span style="font-size:0.98rem; color:#444;">Cantidad: @item.Cantidad</span><br />
+                        <span style="font-size:0.98rem; color:#888;">Subtotal: $@(item.Cantidad * item.Precio)</span>
+                    </li>
+                }
+            </ul>
+            <div style="font-weight:bold; color:#00796b; font-size:1.08rem;">Total: $@importeTotal</div>
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex; justify-content:center; margin:2rem auto; max-width:700px;">
+        <div style="background:#f1f8e9; border:1px solid #388e3c; border-radius:8px; padding:1.5rem; max-width:400px; flex:1;">
+            <h3 style="color:#388e3c;">Datos del cliente</h3>
+            <EditForm Model="datosCliente" OnValidSubmit="OnConfirmarCompra">
+                <div style="margin-bottom:1rem;">
+                    <label>Nombre:</label><br />
+                    <InputText @bind-Value="datosCliente.Nombre" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+                    @if (!string.IsNullOrEmpty(nombreError))
+                    {
+                        <div style="color:#d32f2f; font-size:0.95rem;">@nombreError</div>
+                    }
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label>Apellido:</label><br />
+                    <InputText @bind-Value="datosCliente.Apellido" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+                    @if (!string.IsNullOrEmpty(apellidoError))
+                    {
+                        <div style="color:#d32f2f; font-size:0.95rem;">@apellidoError</div>
+                    }
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label>Email:</label><br />
+                    <InputText @bind-Value="datosCliente.Email" type="email" style="width:100%; padding:0.5rem; border-radius:4px; border:1px solid #ccc;" />
+                </div>
+                <button type="submit" style="background:#388e3c; color:white; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Confirmar</button>
+                <button type="button" @onclick="VolverAlCatalogo" style="margin-left:1rem; background:#bdbdbd; color:#333; border:none; border-radius:4px; padding:0.5rem 1.2rem;">Cancelar</button>
+            </EditForm>
+        </div>
+        <div style="background:#f1f8e9; border:1px solid #388e3c; border-radius:8px; padding:1.5rem; min-width:260px; max-width:320px; margin-left:2rem; align-self:flex-start;">
+            <h4 style="color:#388e3c; margin-bottom:1rem;">Resumen de la compra</h4>
+            <ul style="list-style:none; padding:0; margin:0 0 1rem 0;">
+                @foreach (var item in resumenItems)
+                {
+                    <li style="margin-bottom:0.7rem; border-bottom:1px solid #e0e0e0; padding-bottom:0.4rem;">
+                        <span style="font-weight:600; color:#00796b;">@item.Nombre</span><br />
+                        <span style="font-size:0.98rem; color:#444;">Cantidad: @item.Cantidad</span><br />
+                        <span style="font-size:0.98rem; color:#888;">Subtotal: $@(item.Cantidad * item.Precio)</span>
+                    </li>
+                }
+            </ul>
+            <div style="font-weight:bold; color:#00796b; font-size:1.08rem;">Total: $@importeTotal</div>
+        </div>
+    </div>
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div style="margin:1rem auto; max-width:400px; color:#d32f2f; background:#fff3e0; border:1px solid #ffb300; border-radius:6px; padding:0.7rem 1.2rem;">@mensaje</div>
+    }
+}
+
+@code {
+    Cliente.Services.CarritoService.DatosClienteDto datosCliente = new();
+    string nombreError = string.Empty;
+    string apellidoError = string.Empty;
+    string mensaje = string.Empty;
+    bool compraExitosa = false;
+    int totalProductos = 0;
+    decimal importeTotal = 0;
+    List<Cliente.Services.CarritoService.ItemCarritoDto> resumenItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CalcularResumen();
+    }
+
+    async Task CalcularResumen()
+    {
+        var items = await CarritoService.ObtenerItemsAsync();
+        resumenItems = items.ToList();
+        totalProductos = items.Sum(x => x.Cantidad);
+        importeTotal = items.Sum(x => x.Cantidad * x.Precio);
+        StateHasChanged();
+    }
+
+    async Task OnConfirmarCompra()
+    {
+        nombreError = string.Empty;
+        apellidoError = string.Empty;
+        bool valido = true;
+        if (string.IsNullOrWhiteSpace(datosCliente.Nombre) || datosCliente.Nombre.Any(char.IsDigit))
+        {
+            nombreError = "El nombre no puede estar vacío ni contener números.";
+            valido = false;
+        }
+        if (string.IsNullOrWhiteSpace(datosCliente.Apellido) || datosCliente.Apellido.Any(char.IsDigit))
+        {
+            apellidoError = "El apellido no puede estar vacío ni contener números.";
+            valido = false;
+        }
+        if (!valido)
+        {
+            StateHasChanged();
+            return;
+        }
+        var ok = await CarritoService.ConfirmarCompraAsync(datosCliente);
+        if (ok)
+        {
+            compraExitosa = true;
+            await CalcularResumen();
+            // Redirigir automáticamente al catálogo después de 2 segundos
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            mensaje = "No se pudo confirmar la compra.";
+        }
+    }
+
+    void VolverAlCatalogo()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

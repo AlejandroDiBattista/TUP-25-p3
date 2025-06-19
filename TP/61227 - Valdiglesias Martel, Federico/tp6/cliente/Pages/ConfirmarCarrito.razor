@@ -5,6 +5,7 @@
 @inject ApiService Api
 @inject EstadoCarrito EstadoCarrito
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Confirmar Compra</PageTitle>
 
@@ -19,6 +20,7 @@
     else
     {
         <div class="row g-5">
+
             <div class="col-md-7">
                 <h4>Tus Datos</h4>
                 <EditForm Model="modelo" OnValidSubmit="ManejarConfirmarCompra">
@@ -55,6 +57,7 @@
                 </EditForm>
             </div>
 
+
             <div class="col-md-5">
                 <div class="card bg-light">
                     <div class="card-body">
@@ -63,14 +66,13 @@
                             @foreach (var item in compra.Items)
                             {
                                 <li class="list-group-item d-flex justify-content-between">
-
                                     <span>@item.NombreProducto (x @item.Cantidad)</span>
-                                    <span>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</span>
+                                    <span>$ @((item.Cantidad * item.PrecioUnitario).ToString())</span>
                                 </li>
                             }
                             <li class="list-group-item d-flex justify-content-between fs-5">
                                 <strong>Total</strong>
-                                <strong>@compra.Total.ToString("C")</strong>
+                                <strong>$ @compra.Total.ToString()</strong>
                             </li>
                         </ul>
                     </div>
@@ -104,15 +106,19 @@
         if (resultado != null)
         {
             EstadoCarrito.LimpiarCarrito();
-            Navigation.NavigateTo("/compra-exitosa");
+
+            await JSRuntime.InvokeVoidAsync("alert", "¡Compra realizada con éxito! Serás redirigido al catálogo.");
+
+
+            Navigation.NavigateTo("/");
         }
         else
         {
-            Console.WriteLine("Hubo un error al confirmar la compra.");
+            await JSRuntime.InvokeVoidAsync("alert", "Hubo un error al procesar tu compra. Por favor, intenta de nuevo.");
             procesando = false;
         }
     }
-
+    
     public class ModeloConfirmacion
     {
         [Required(ErrorMessage = "El nombre es obligatorio.")]

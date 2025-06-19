@@ -89,7 +89,7 @@ else
             }).ToList()
         };
 
-        var response = await ApiService.Http.PutAsJsonAsync("/carritos/confirmar", compra);
+        var response = await ApiService.ConfirmarCompraAsync(compra);
 
         if (response.IsSuccessStatusCode)
         {

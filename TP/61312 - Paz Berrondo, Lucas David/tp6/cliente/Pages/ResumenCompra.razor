@@ -246,15 +246,14 @@
                     <div class="purchase-summary">
                         <div class="summary-row">
                             <span class="summary-label">Número de compra:</span>
-                            <span class="summary-value">#@compraConfirmada.CompraId</span>
-                        </div>
+                            <span class="summary-value">#@compraConfirmada.CompraId</span>                        </div>
                         <div class="summary-row">
                             <span class="summary-label">Total:</span>
                             <span class="summary-value summary-total">AR$ @compraConfirmada.Total.ToString("N2")</span>
                         </div>
                         <div class="summary-row">
                             <span class="summary-label">Fecha:</span>
-                            <span class="summary-value">@compraConfirmada.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                            <span class="summary-value">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
                         </div>
                     </div>
                     

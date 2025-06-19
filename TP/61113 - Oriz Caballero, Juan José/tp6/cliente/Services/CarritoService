@@ -1,0 +1,70 @@
+using Cliente.Modelo;
+using System.Net.Http.Json;
+
+namespace Cliente.Services
+{
+    #nullable enable
+    public class CarritoService
+    {
+        private readonly HttpClient http;
+        public Carrito CarritoActual { get; private set; }
+        public event Action? OnChange;
+
+        public CarritoService(HttpClient http)
+        {
+            this.http = http;
+        }
+
+        public async Task CrearNuevoCarrito()
+        {
+            var res = await http.PostAsync("/carritos", null);
+            var data = await res.Content.ReadFromJsonAsync<CrearCarritoResponse>();
+            CarritoActual = new Carrito { Id = data.CarritoId, Items = new() };
+            NotificarCambio();
+        }
+
+        public async Task CargarCarrito()
+        {
+            if (CarritoActual == null) return;
+            CarritoActual = await http.GetFromJsonAsync<Carrito>($"/carritos/{CarritoActual.Id}");
+            NotificarCambio();
+        }
+
+        public async Task AgregarProducto(int productoId, int cantidad)
+        {
+            await http.PutAsJsonAsync($"/carritos/{CarritoActual.Id}/{productoId}", cantidad);
+            await CargarCarrito();
+        }
+
+        public async Task ModificarCantidad(int productoId, int nuevaCantidad)
+        {
+            await AgregarProducto(productoId, nuevaCantidad);
+        }
+
+        public async Task QuitarProducto(int productoId)
+        {
+            await http.DeleteAsync($"/carritos/{CarritoActual.Id}/{productoId}?cantidad=999");
+            await CargarCarrito();
+        }
+
+        public async Task VaciarCarrito()
+        {
+            await http.DeleteAsync($"/carritos/{CarritoActual.Id}");
+            await CrearNuevoCarrito();
+        }
+
+        public async Task ConfirmarCompra(string nombre, string apellido, string email)
+        {
+            var datos = new ConfirmacionCompraDto { Nombre = nombre, Apellido = apellido, Email = email };
+            await http.PutAsJsonAsync($"/carritos/{CarritoActual.Id}/confirmar", datos);
+            await CrearNuevoCarrito();
+        }
+
+        private void NotificarCambio() => OnChange?.Invoke();
+    }
+
+    public class CrearCarritoResponse
+    {
+        public int CarritoId { get; set; }
+    }
+}

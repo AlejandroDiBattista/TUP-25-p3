@@ -2,20 +2,36 @@
 <html lang="en">
 
 <head>
+    <!-- Configuración básica de codificación y diseño responsivo -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cliente</title>
-    <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="Cliente.styles.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
+    <!-- Título que aparece en la pestaña del navegador -->
+    <title>Cliente</title>
+
+    <!-- Define la base de las URLs relativas (fundamental para Blazor) -->
+    <base href="/" />
+
+    <!-- Estilos de Bootstrap para el diseño responsive -->
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+
+    <!-- Estilos personalizados de tu aplicación -->
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- Ícono de la pestaña del navegador -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <!-- Estilos generados automáticamente por Blazor si usás .razor.css -->
+    <link href="Cliente.styles.css" rel="stylesheet" />
+
+    <!-- Fuente moderna desde Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
+    <!-- Contenedor principal donde se renderiza la aplicación Blazor -->
     <div id="app">
+        <!-- Animación de carga mientras se carga Blazor WebAssembly -->
         <svg class="loading-progress">
             <circle r="40%" cx="50%" cy="50%" />
             <circle r="40%" cx="50%" cy="50%" />
@@ -23,11 +39,14 @@
         <div class="loading-progress-text"></div>
     </div>
 
+    <!-- Interfaz de error de Blazor, se muestra si ocurre un fallo no controlado -->
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+
+    <!-- Script principal que carga y ejecuta Blazor WebAssembly -->
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

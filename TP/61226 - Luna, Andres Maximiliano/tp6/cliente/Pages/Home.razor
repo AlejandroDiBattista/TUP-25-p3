@@ -1,59 +1,135 @@
 ﻿@page "/"
 @using cliente.Services
+@using cliente.Models
+@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject ProductoService ProductoService
+ 
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Tienda online</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+
+
+<header class="top-header"
+    <h2 class="titulo">Productos</h2>
+    <div class="barra-busqueda">
+    <input type="text" placeholder="Buscar productos..." @bind="busqueda" class="form-control" style="max-width: 300px;" />
+        <button class="btn btn-primary" @onclick="BuscarProductos">Buscar</button>
     </div>
-</div>
+    <button class="btn-carrito" @onclick="IrAlCarrito">
+            🛒 Total en carrito: @CarritoService.ObtenerCantidadTotalEnCarrito() productos
+        </button>
+</header>
+
+<main class="productos-grid">
+    @foreach (var producto in productosFiltrados)
+    {
+        <div class="producto-card">
+            <img src="@producto.ImagenUrl" alt="imagen de @producto.Nombre" style="max-width: 100%; height: auto;" />
+            <strong>@producto.Nombre</strong>
+            <p>Precio: $@producto.Precio</p>
+            <p>Descripción: @producto.Descripcion</p>
+            <p>Stock: @producto.StockDisponible</p>
+          
+            
+            
+
+            <div class="controles-cantidad">
+                <button @onclick="() => DisminuirCantidad(producto)">-</button>
+                <span>@producto.Cantidad</span>
+                <button @onclick="() => AumentarCantidad(producto)" disabled="@(producto.StockDisponible <= producto.Cantidad)">+</button>
+            </div>
+
+            <button class="btn-agregar" @onclick="() => AgregarProducto(producto)">
+            Agregar al carrito
+            </button>
+        </div>
+    }
+</main>
 
 @code {
-    private DatosRespuesta datos;
+    
+    private List<Producto> productos = new(); 
+    private List<Producto> productosFiltrados = new();
+    private string busqueda = "";
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override async Task OnInitializedAsync()
+{
+    try
+    {
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync();
+
+        foreach (var producto in productos)
+        {
+            producto.StockDisponible = producto.Stock;
+            producto.Cantidad = 0;
+        }
+
+        productosFiltrados = productos;
+    }
+    catch (Exception ex)
+    {
+        error = ex.Message;
+    }
+    finally
+    {
+        cargando = false;
+    }
+}
+
+ 
+     void AumentarCantidad(Producto producto)
+    {
+        if (producto.Cantidad < producto.Stock)
+        {
+            producto.Cantidad++;
         }
     }
+
+
+        void DisminuirCantidad(Producto producto)
+    {
+        if (producto.Cantidad > 0)
+            producto.Cantidad--;
+    }
+
+     void IrAlCarrito()
+    {
+        NavigationManager.NavigateTo("/carrito");
+    }
+
+    void AgregarProducto(Producto producto)
+    {
+        if (producto.Cantidad <= 0)
+            return;
+
+        for (int i = 0; i < producto.Cantidad; i++)
+        {
+            CarritoService.AgregarAlCarrito(producto);
+        }
+
+        producto.Cantidad = 0;
+    }
+
+
+    private void BuscarProductos()
+    {
+        productosFiltrados = productos
+            .Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void CompraYRedirigir()
+    {
+        CarritoService.VaciarCarrito();
+        Navigation.NavigateTo("/", true);
+    }
+
+    
 }

@@ -47,16 +47,16 @@ app.MapGet("/api/productos", async (TiendaContext db) =>
 // POST /api/compras
 app.MapPost("/api/compras", async (TiendaContext db, List<CarritoItemDTO> items) =>
 {
+    // Ya no se descuenta stock aquí, solo se valida existencia
     foreach (var item in items)
     {
         var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto == null || producto.Stock < item.Cantidad)
-            return Results.BadRequest("Stock insuficiente o producto no encontrado.");
-
-        producto.Stock -= item.Cantidad;
+        if (producto == null)
+            return Results.BadRequest("Producto no encontrado.");
+        // No descontar stock aquí
     }
-    await db.SaveChangesAsync();
-    return Results.Ok(new { mensaje = "Compra confirmada y stock actualizado" });
+    // await db.SaveChangesAsync();
+    return Results.Ok(new { mensaje = "Compra confirmada" });
 });
 
 // --- ENDPOINTS DE CARRITO ---
@@ -92,16 +92,18 @@ app.MapPut("/api/carritos/{carrito}/confirmar", async (TiendaContext db, string 
     if (!carritos.ContainsKey(carrito))
         return Results.NotFound("Carrito no encontrado");
 
-    foreach (var item in carritos[carrito])
-    {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto == null || producto.Stock < item.Cantidad)
-            return Results.BadRequest("Stock insuficiente o producto no encontrado.");
-        producto.Stock -= item.Cantidad;
-    }
-    await db.SaveChangesAsync();
+    // Ya no se descuenta stock aquí, solo se registra la compra
+    // foreach (var item in carritos[carrito])
+    // {
+    //     var producto = await db.Productos.FindAsync(item.ProductoId);
+    //     if (producto == null || producto.Stock < item.Cantidad)
+    //         return Results.BadRequest("Stock insuficiente o producto no encontrado.");
+    //     producto.Stock -= item.Cantidad;
+    // }
+    // await db.SaveChangesAsync();
+
     carritos[carrito].Clear();
-    return Results.Ok(new { mensaje = "Compra confirmada y stock actualizado" });
+    return Results.Ok(new { mensaje = "Compra confirmada" });
 });
 
 // PUT /api/carritos/{carrito}/{producto}
@@ -130,4 +132,30 @@ app.MapDelete("/api/carritos/{carrito}/{producto}", (string carrito, int product
     return Results.Ok();
 });
 
+// RESTAR STOCK
+app.MapPost("/api/productos/{id}/restarstock", async (TiendaContext db, int id, StockDTO dto) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto == null)
+        return Results.NotFound("Producto no encontrado");
+    if (producto.Stock < dto.Cantidad)
+        return Results.BadRequest("Stock insuficiente");
+    producto.Stock -= dto.Cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
+});
+
+// SUMAR STOCK
+app.MapPost("/api/productos/{id}/sumarstock", async (TiendaContext db, int id, StockDTO dto) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto == null)
+        return Results.NotFound("Producto no encontrado");
+    producto.Stock += dto.Cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
+});
+
 app.Run();
+
+public class StockDTO { public int Cantidad { get; set; } }

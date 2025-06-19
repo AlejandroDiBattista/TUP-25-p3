@@ -8,11 +8,11 @@
     <header class="header-fixed">
         <nav class="navbar">
             <div class="nav-brand" @onclick="IrAHome">
-                <span class="logo">🛒 Saint TecnoStore</span>
+                <span class="logo">🛒 ST TecnoStore</span>
             </div>
             
             <div class="nav-search">
-                <input type="text" @bind="terminoBusqueda" @onkeypress="OnBusquedaKeyPress" 
+                <input type="text" @bind="terminoBusqueda" @bind:event="oninput" @onkeydown="OnBusquedaKeyDown" 
                        placeholder="Buscar productos..." class="search-input" />
                 <button @onclick="RealizarBusqueda" class="search-btn">🔍</button>
             </div>
@@ -73,10 +73,13 @@
         }
     }
 
-    private void OnBusquedaKeyPress(KeyboardEventArgs e)
+    // Mejorado para evitar el doble Enter
+    private async Task OnBusquedaKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
+            // Pequeña pausa para asegurar que el binding se complete
+            await Task.Delay(10);
             RealizarBusqueda();
         }
     }

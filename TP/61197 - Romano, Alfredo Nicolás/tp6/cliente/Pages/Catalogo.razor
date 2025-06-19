@@ -67,23 +67,14 @@
     async Task AgregarAlCarrito(ProductoDto p)
     {
         carritoId = await ObtenerOCrearCarrito();
-        var items = await Http.GetFromJsonAsync<List<ItemCarritoDto>>($"/carritos/{carritoId}");
-        var item = items?.FirstOrDefault(i => i.Id == p.Id);
-        int nuevaCantidad = (item?.Cantidad ?? 0) + 1;
 
-        // Validar stock en frontend (opcional, el backend también lo valida)
-        if (nuevaCantidad > p.Stock)
-            return;
+        var resp = await Http.PutAsync($"/carritos/{carritoId}/{p.Id}", null);
 
-        var request = new HttpRequestMessage(HttpMethod.Put, $"/carritos/{carritoId}/{p.Id}")
-        {
-            Content = new StringContent(nuevaCantidad.ToString(), System.Text.Encoding.UTF8, "application/json")
-        };
-        var resp = await Http.SendAsync(request);
         if (resp.IsSuccessStatusCode)
         {
+            // Actualizar el stock localmente
+            p.Stock = Math.Max(0, p.Stock - 1);
             await CargarTotalCarrito();
-            Nav.NavigateTo("/carrito");
         }
     }
 

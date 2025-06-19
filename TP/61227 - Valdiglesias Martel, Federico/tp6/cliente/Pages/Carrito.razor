@@ -39,7 +39,7 @@
                             <div class="col-md-10">
                                 <div class="card-body">
                                     <h5 class="card-title">@item.NombreProducto</h5>
-                                    <p class="card-text">Precio Unitario: @item.PrecioUnitario.ToString("C")</p>
+                                    <p class="card-text">Precio Unitario: $ @item.PrecioUnitario.ToString()</p>
                                     <div class="d-flex align-items-center">
                                         <p class="card-text me-3">Cantidad:</p>
                                         <div class="input-group" style="max-width: 150px;">
@@ -50,8 +50,8 @@
                                                 @onclick="() => IncrementarCantidad(item.ProductoId)">+</button>
                                         </div>
                                     </div>
-                                    <p class="card-text mt-2"><b>Subtotal: @((item.Cantidad *
-                                                                                item.PrecioUnitario).ToString("C"))</b></p>
+                                    <p class="card-text mt-2"><b>Subtotal: $ @((item.Cantidad *
+                                                                                item.PrecioUnitario).ToString())</b></p>
                         </div>
                     </div>
                 </div>
@@ -66,7 +66,7 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between">
                                 <span>Subtotal</span>
-                                <span>@compra.Total.ToString("C")</span>
+                                <span>$ @compra.Total.ToString()</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between">
                                 <span>Envío</span>
@@ -89,7 +89,6 @@
 </div>
 
 @code {
-
     private CompraRespuestaDto? compra;
 
     protected override async Task OnInitializedAsync()
@@ -99,7 +98,14 @@
 
     private async Task CargarCarrito()
     {
-        compra = await Api.GetCarritoAsync();
+        if (EstadoCarrito.CarritoId.HasValue)
+        {
+            compra = await Api.GetCarritoAsync();
+        }
+        else
+        {
+            compra = new CompraRespuestaDto();
+        }
         StateHasChanged();
     }
 
@@ -119,6 +125,7 @@
     {
         if (EstadoCarrito.CarritoId.HasValue)
         {
+            await Api.VaciarCarritoCompletoAsync();
             await CargarCarrito();
         }
     }

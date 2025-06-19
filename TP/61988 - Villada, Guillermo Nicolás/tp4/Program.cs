@@ -1,39 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-
-public class Pregunta
-{
-    public int Id { get; set; } // Asegúrate de que el campo Id está definido como clave primaria
-    public string Texto { get; set; }
-    public List<Respuesta> Respuestas { get; set; } // Relación de uno a muchos con Respuestas
-}
-
-public class Respuesta
-{
-    public int Id { get; set; } // Id de la respuesta
-    public string Texto { get; set; }
-    public bool EsCorrecta { get; set; }
-    public int PreguntaId { get; set; } // Clave foránea hacia la Pregunta
-    public Pregunta Pregunta { get; set; } // Relación de muchos a uno con Pregunta
-}
-
-public class DatosContexto : DbContext
-{
-    public DbSet<Pregunta> Preguntas { get; set; }
-    public DbSet<Respuesta> Respuestas { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlite("Data Source=examen.db"); // Archivo SQLite donde se almacenará la base de datos
-    }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-    }
-}
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 public class Program
 {
@@ -41,75 +9,320 @@ public class Program
     {
         using (var db = new DatosContexto())
         {
-            // Asegurarse de que la base de datos esté creada
             db.Database.EnsureCreated();
-
+            InicializarPreguntas(db);
             MenuPrincipal(db);
+        }
+    }
+
+    public static void InicializarPreguntas(DatosContexto db)
+    {
+        if (!db.Preguntas.Any())
+        {
+            var preguntas = new[]
+            {
+                new Pregunta
+                {
+                    Texto = "¿Cuál es la capital de Argentina?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Buenos Aires", EsCorrecta = true },
+                        new Respuesta { Texto = "Córdoba", EsCorrecta = false },
+                        new Respuesta { Texto = "Rosario", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Cuánto es 2 + 2?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "3", EsCorrecta = false },
+                        new Respuesta { Texto = "4", EsCorrecta = true },
+                        new Respuesta { Texto = "5", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Cuál es el océano más grande?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Atlántico", EsCorrecta = false },
+                        new Respuesta { Texto = "Pacífico", EsCorrecta = true },
+                        new Respuesta { Texto = "Índico", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Quién escribió 'Cien años de soledad'?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Gabriel García Márquez", EsCorrecta = true },
+                        new Respuesta { Texto = "Julio Cortázar", EsCorrecta = false },
+                        new Respuesta { Texto = "Mario Vargas Llosa", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Cuál es el planeta más grande del sistema solar?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Saturno", EsCorrecta = false },
+                        new Respuesta { Texto = "Júpiter", EsCorrecta = true },
+                        new Respuesta { Texto = "Neptuno", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿En qué año llegó el hombre a la Luna?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "1969", EsCorrecta = true },
+                        new Respuesta { Texto = "1972", EsCorrecta = false },
+                        new Respuesta { Texto = "1965", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Cuál es la fórmula química del agua?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "H2O", EsCorrecta = true },
+                        new Respuesta { Texto = "CO2", EsCorrecta = false },
+                        new Respuesta { Texto = "O2", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Quién pintó La Mona Lisa?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Leonardo da Vinci", EsCorrecta = true },
+                        new Respuesta { Texto = "Pablo Picasso", EsCorrecta = false },
+                        new Respuesta { Texto = "Vincent van Gogh", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Qué país ganó el Mundial de Fútbol 2014?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Brasil", EsCorrecta = false },
+                        new Respuesta { Texto = "Alemania", EsCorrecta = true },
+                        new Respuesta { Texto = "Argentina", EsCorrecta = false }
+                    }
+                },
+                new Pregunta
+                {
+                    Texto = "¿Cuál es el metal más liviano?",
+                    Respuestas = new()
+                    {
+                        new Respuesta { Texto = "Litio", EsCorrecta = true },
+                        new Respuesta { Texto = "Aluminio", EsCorrecta = false },
+                        new Respuesta { Texto = "Sodio", EsCorrecta = false }
+                    }
+                }
+            };
+
+            db.Preguntas.AddRange(preguntas);
+            db.SaveChanges();
+            Console.WriteLine("¡Preguntas de ejemplo cargadas!");
         }
     }
 
     public static void MenuPrincipal(DatosContexto db)
     {
-        Console.WriteLine("Bienvenido al sistema de examen!");
-        Console.WriteLine("Ingresa tu nombre para comenzar el examen:");
-
-        string nombre = Console.ReadLine();
-
-        if (string.IsNullOrWhiteSpace(nombre))
+        while (true)
         {
-            Console.WriteLine("Nombre inválido. El examen no puede comenzar.");
-            return;
-        }
+            Console.WriteLine("\n=== Menú Principal ===");
+            Console.WriteLine("1. Tomar examen");
+            Console.WriteLine("2. Ver reportes");
+            Console.WriteLine("3. Salir");
+            Console.Write("Elegí una opción: ");
+            var op = Console.ReadLine();
 
-        Console.WriteLine($"Hola, {nombre}! Vamos a comenzar con el examen.");
-        TomarExamen(db);
+            switch (op)
+            {
+                case "1":
+                    TomarExamen(db);
+                    break;
+                case "2":
+                    MostrarReportes(db);
+                    break;
+                case "3":
+                    return;
+                default:
+                    Console.WriteLine("Opción inválida.");
+                    break;
+            }
+        }
     }
 
     public static void TomarExamen(DatosContexto db)
     {
-        // Obtienes las preguntas y las ordenas aleatoriamente en memoria
-        var preguntas = db.Preguntas.ToList();
-        var random = new Random();
-        preguntas = preguntas.OrderBy(x => random.Next()).ToList(); // Ordena aleatoriamente
+        Console.Write("Ingrese su nombre: ");
+        var nombre = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            Console.WriteLine("Nombre inválido.");
+            return;
+        }
 
-        Console.WriteLine("¡Comencemos el examen!");
+        var preguntas = db.Preguntas.Include(p => p.Respuestas).ToList();
+        var random = new Random();
+        preguntas = preguntas.OrderBy(x => random.Next()).Take(5).ToList();
+
+        if (preguntas.Count == 0)
+        {
+            Console.WriteLine("No hay preguntas disponibles para el examen.");
+            return;
+        }
+
+        int correctas = 0;
+        var respuestasExamen = new List<RespuestaExamen>();
 
         foreach (var pregunta in preguntas)
         {
-            Console.WriteLine($"Pregunta: {pregunta.Texto}");
-
-            // Mostrar las respuestas posibles
-            var respuestas = pregunta.Respuestas.OrderBy(r => random.Next()).ToList(); // Respuestas aleatorias
-
+            Console.WriteLine($"\nPregunta: {pregunta.Texto}");
+            var respuestas = pregunta.Respuestas.OrderBy(r => random.Next()).ToList();
+            char letra = 'a';
+            var letraRespuesta = new Dictionary<char, Respuesta>();
             foreach (var respuesta in respuestas)
             {
-                Console.WriteLine($"{respuesta.Id}. {respuesta.Texto}");
+                Console.WriteLine($"{letra}) {respuesta.Texto}");
+                letraRespuesta[letra] = respuesta;
+                letra++;
             }
 
-            // Pedir al usuario que elija una respuesta
-            int respuestaElegida;
+            char respuestaElegida;
             while (true)
             {
-                Console.Write("Ingresa el número de tu respuesta: ");
-                if (int.TryParse(Console.ReadLine(), out respuestaElegida) &&
-                    respuestas.Any(r => r.Id == respuestaElegida))
+                Console.Write("Elegí la letra de tu respuesta: ");
+                var input = Console.ReadLine().Trim().ToLower();
+                if (input.Length == 1 && letraRespuesta.ContainsKey(input[0]))
                 {
+                    respuestaElegida = input[0];
                     break;
                 }
-                Console.WriteLine("Por favor ingresa una opción válida.");
+                Console.WriteLine("Letra inválida. Elegí a, b, c...");
             }
 
-            var respuestaCorrecta = respuestas.FirstOrDefault(r => r.EsCorrecta);
-            if (respuestaElegida == respuestaCorrecta.Id)
+            var respuestaSeleccionada = letraRespuesta[respuestaElegida];
+            bool esCorrecta = respuestaSeleccionada.EsCorrecta;
+            if (esCorrecta) correctas++;
+
+            respuestasExamen.Add(new RespuestaExamen
             {
+                PreguntaId = pregunta.Id,
+                RespuestaId = respuestaSeleccionada.Id,
+                EsCorrecta = esCorrecta
+            });
+
+            var correctaLetra = letraRespuesta.First(x => x.Value.EsCorrecta).Key;
+            if (respuestaElegida == correctaLetra)
                 Console.WriteLine("¡Respuesta correcta!");
-            }
             else
-            {
-                Console.WriteLine($"Respuesta incorrecta. La respuesta correcta es: {respuestaCorrecta.Texto}");
-            }
+                Console.WriteLine($"Respuesta incorrecta. La correcta era: {correctaLetra}) {letraRespuesta[correctaLetra].Texto}");
         }
 
-        Console.WriteLine("¡Has completado el examen! Gracias por participar.");
+        double nota = correctas;
+        var resultado = new ResultadoExamen
+        {
+            NombreAlumno = nombre,
+            CantidadCorrectas = correctas,
+            TotalPreguntas = preguntas.Count,
+            NotaFinal = nota,
+            Respuestas = respuestasExamen
+        };
+
+        db.ResultadosExamen.Add(resultado);
+        db.SaveChanges();
+
+        Console.WriteLine($"\nExamen finalizado. {nombre}, tu puntaje es {correctas}/{preguntas.Count} (Nota: {nota}).");
+    }
+
+    public static void MostrarReportes(DatosContexto db)
+    {
+        while (true)
+        {
+            Console.WriteLine("\n=== Reportes ===");
+            Console.WriteLine("1. Listado de exámenes rendidos");
+            Console.WriteLine("2. Filtrar resultados por alumno");
+            Console.WriteLine("3. Ranking de mejores alumnos");
+            Console.WriteLine("4. Estadísticas por pregunta");
+            Console.WriteLine("5. Volver");
+            Console.Write("Elegí una opción: ");
+            var op = Console.ReadLine();
+
+            switch (op)
+            {
+                case "1":
+                    ListarExamenes(db);
+                    break;
+                case "2":
+                    FiltrarPorAlumno(db);
+                    break;
+                case "3":
+                    RankingAlumnos(db);
+                    break;
+                case "4":
+                    EstadisticasPreguntas(db);
+                    break;
+                case "5":
+                    return;
+                default:
+                    Console.WriteLine("Opción inválida.");
+                    break;
+            }
+        }
+    }
+
+    public static void ListarExamenes(DatosContexto db)
+    {
+        var examenes = db.ResultadosExamen.ToList();
+        Console.WriteLine("\n--- Exámenes Rendidos ---");
+        foreach (var ex in examenes)
+        {
+            Console.WriteLine($"Alumno: {ex.NombreAlumno} | Correctas: {ex.CantidadCorrectas}/{ex.TotalPreguntas} | Nota: {ex.NotaFinal}");
+        }
+    }
+
+    public static void FiltrarPorAlumno(DatosContexto db)
+    {
+        Console.Write("Nombre del alumno a buscar: ");
+        var nombre = Console.ReadLine().Trim();
+        var examenes = db.ResultadosExamen.Where(e => e.NombreAlumno.ToLower().Contains(nombre.ToLower())).ToList();
+        Console.WriteLine($"\n--- Exámenes de {nombre} ---");
+        foreach (var ex in examenes)
+        {
+            Console.WriteLine($"Correctas: {ex.CantidadCorrectas}/{ex.TotalPreguntas} | Nota: {ex.NotaFinal}");
+        }
+    }
+
+    public static void RankingAlumnos(DatosContexto db)
+    {
+        var ranking = db.ResultadosExamen
+            .GroupBy(e => e.NombreAlumno)
+            .Select(g => new { Alumno = g.Key, MejorNota = g.Max(e => e.NotaFinal) })
+            .OrderByDescending(x => x.MejorNota)
+            .ToList();
+
+        Console.WriteLine("\n--- Ranking de Mejores Alumnos ---");
+        foreach (var r in ranking)
+        {
+            Console.WriteLine($"{r.Alumno} | Mejor Nota: {r.MejorNota}");
+        }
+    }
+
+    public static void EstadisticasPreguntas(DatosContexto db)
+    {
+        var preguntas = db.Preguntas.ToList();
+        Console.WriteLine("\n--- Estadísticas por pregunta ---");
+        foreach (var p in preguntas)
+        {
+            var total = db.RespuestasExamen.Count(r => r.PreguntaId == p.Id);
+            var correctas = db.RespuestasExamen.Count(r => r.PreguntaId == p.Id && r.EsCorrecta);
+            double porc = total > 0 ? (100.0 * correctas / total) : 0;
+            Console.WriteLine($"\"{p.Texto}\" | Respondida: {total} veces | % correctas: {porc:0.00}%");
+        }
     }
 }

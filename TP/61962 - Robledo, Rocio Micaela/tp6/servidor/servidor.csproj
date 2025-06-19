@@ -1,18 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Define que este proyecto es una aplicación web ASP.NET Core -->
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
+
+    <!-- Especifica que el proyecto se ejecuta en .NET 8 -->
+
     <Nullable>enable</Nullable>
+    <!-- Habilita advertencias por valores nulos, para código más seguro -->
+
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Importa automáticamente los espacios de nombres más comunes como System, System.Collections.Generic, etc. -->
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Referencias a paquetes NuGet necesarios para el backend -->
+
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
+    <!-- Permite a Entity Framework Core usar SQLite como base de datos -->
+
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!-- Herramientas de EF Core para usar migraciones desde la consola (como Add-Migration o Update-Database) -->
+
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
+    <!-- Agrega Swagger para documentar y probar tu API REST desde el navegador -->
   </ItemGroup>
 
 </Project>
+

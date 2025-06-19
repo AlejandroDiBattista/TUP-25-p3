@@ -1,0 +1,103 @@
+@page "/carrito"
+@using Cliente.Modelo
+
+@inject CarritoService CarritoService
+@inject NavigationManager Nav
+
+<h1 class="text-2xl font-bold mb-4">Carrito de Compra</h1>
+
+@if (carrito is null)
+{
+    <p>Cargando...</p>
+}
+else if (!carrito.Items.Any())
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table-auto w-full mb-4 border-collapse">
+        <thead class="bg-gray-100 text-left">
+            <tr>
+                <th class="p-2">Producto</th>
+                <th class="p-2">Precio</th>
+                <th class="p-2">Cantidad</th>
+                <th class="p-2">Subtotal</th>
+                <th class="p-2"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carrito.Items)
+            {
+                <tr class="border-b">
+                    <td class="p-2">@item.Producto.Nombre</td>
+                    <td class="p-2">$@item.PrecioUnitario</td>
+                    <td class="p-2 flex gap-2 items-center">
+                        <button @onclick="() => CambiarCantidad(item.Producto.Id, item.Cantidad - 1)" class="px-2 py-1 bg-gray-300 rounded">-</button>
+                        @item.Cantidad
+                        <button @onclick="() => CambiarCantidad(item.Producto.Id, item.Cantidad + 1)" class="px-2 py-1 bg-gray-300 rounded">+</button>
+                    </td>
+                    <td class="p-2">$@(item.Cantidad * item.PrecioUnitario)</td>
+                    <td class="p-2">
+                        <button @onclick="() => EliminarItem(item.Producto.Id)" class="text-red-600 hover:underline">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-right font-bold mb-4">
+        Total: $@carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario)
+    </div>
+
+    <div class="flex gap-4">
+        <button @onclick="VaciarCarrito" class="btn-principal">Vaciar Carrito</button>
+        <button @onclick='ConfirmarCompra' class="btn-principal">Confirmar Compra</button>
+    </div>
+}
+
+@code {
+    private CarritoDto carrito;
+    private bool cargado = false;
+
+  
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!cargado)
+        {
+            carrito = await CarritoService.ObtenerCarrito();
+            cargado = true;
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task CambiarCantidad(int productoId, int nuevaCantidad)
+    {
+        if (nuevaCantidad <= 0)
+        {
+            await EliminarItem(productoId);
+        }
+        else
+        {
+            await CarritoService.ActualizarCantidad(productoId, nuevaCantidad);
+            carrito = await CarritoService.ObtenerCarrito();
+        }
+    }
+
+    private async Task EliminarItem(int productoId)
+    {
+        await CarritoService.EliminarProducto(productoId);
+        carrito = await CarritoService.ObtenerCarrito();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarrito();
+        carrito = await CarritoService.ObtenerCarrito();
+    }
+
+    private void ConfirmarCompra()
+    {
+        Nav.NavigateTo("/confirmacion");
+    }
+}

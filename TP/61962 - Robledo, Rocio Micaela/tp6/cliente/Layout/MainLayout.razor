@@ -1,18 +1,27 @@
-﻿@using Cliente.Services
-@inherits LayoutComponentBase
-@using Cliente.Layout
+﻿@using Cliente.Services       
+@inherits LayoutComponentBase 
+@using Cliente.Layout        
+@namespace Cliente.Layout
+
+@* Importa elementos relacionados con el layout desde Cliente.Layout. *@
+@* Indica que este componente es un layout base que otras páginas pueden usar *@
 
 <div class="page">
+    @* Contenedor principal que estructura toda la página *@
     <div class="sidebar">
+        @* Barra lateral donde se carga el menú de navegación *@
         <NavMenu />
     </div>
 
     <main>
+        @* Zona principal de contenido visible en la página *@
         <div class="top-row">
+            @* Enlace externo que abre en una nueva pestaña la documentación oficial de ASP.NET Core *@
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">Acerca de</a>
         </div>
 
         <article class="content">
+            @* Aquí se inserta el contenido de la página que usa este layout (el cuerpo dinámico) *@
             @Body
         </article>
     </main>

@@ -1,68 +1,72 @@
-﻿@page "/"
+﻿@* --------------------------------------------------------------------------------------
+   Home.razor - Página principal de la tienda online (catálogo de productos)
+   Archivo exhaustivamente comentado línea por línea y por bloque.
+   -------------------------------------------------------------------------------------- *@
+
+@page "/"
 @using cliente.Services
-@inject ApiService ApiService
-@inject CarritoService CarritoService
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JS
+@inject ApiService ApiService // Servicio para consumir la API
+@inject CarritoService CarritoService // Servicio para gestionar el carrito
+@inject NavigationManager NavigationManager // Navegación entre páginas
+@inject IJSRuntime JS // Para invocar funciones JS (alertas)
+@inject ProductoService ProductoService
 
 <PageTitle>Inicio</PageTitle>
 
-
-  <div class="container-fluid">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">NextGen</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active mt-1" aria-current="page" href="#">Home</a>
-            </li>
-          </ul>
-          <form class="d-flex flex-grow-1 justify-content-center" role="search" @onsubmit="OnBuscarSubmit">
-            <input
-              class="form-control me-2 tsearch"
-              type="search"
-              placeholder="Buscar"
-              aria-label="Search"
-              @bind-value="busqueda"
-              @oninput="OnInputBuscar"
-            />
-            <button class="btn btn-outline-dark" type="submit"><i class="bi bi-search"></i></button>
-          </form>
-          <div class="d-flex align-items-center ms-auto">
-            <a class="nav-link mx-2 position-relative" href="/carrito">
-              <i class="bi bi-cart-check-fill fs-2"></i>
-              @if (CarritoService.CantidadTotal > 0)
-              {
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  @CarritoService.CantidadTotal
-                </span>
-              }
-            </a>
-            <a class="nav-link mx-3" href="/confirmacion"><i class="bi bi-bag-fill fs-3 "></i></a>
-          </div>
+<!-- Contenedor principal -->
+<div class="container-fluid" style="margin-top: 80px;">
+  <!-- Navbar superior -->
+  <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">NextGen</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active mt-1" aria-current="page" href="#">Home</a>
+          </li>
+        </ul>
+        <!-- Formulario de búsqueda -->
+        <form class="d-flex flex-grow-1 justify-content-center" role="search" @onsubmit="OnBuscarSubmit">
+          <input
+            class="form-control me-2 tsearch"
+            type="search"
+            placeholder="Buscar"
+            aria-label="Search"
+            @bind-value="busqueda"
+            @oninput="OnInputBuscar"
+          />
+          <button class="btn btn-outline-dark" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+        <!-- Iconos de carrito y compras -->
+        <div class="d-flex align-items-center ms-auto">
+          <a class="nav-link mx-2 position-relative" href="/carrito">
+            <i class="bi bi-cart-check-fill fs-2"></i>
+            @if (CarritoService.CantidadTotal > 0)
+            {
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @CarritoService.CantidadTotal
+              </span>
+            }
+          </a>
+          <a class="nav-link mx-3" href="/confirmacion"><i class="bi bi-bag-fill fs-3 "></i></a>
         </div>
       </div>
-    </nav>
-    
-    <div class="container">
+    </div>
+  </nav>
+  
+  <!-- Catálogo de productos -->
+  <div class="container">
     <div class="row my-4 row-gap-4">
-      @if (productos.Count == 0 && !cargando)
+      @* Si no hay productos cargados *@
+      @if (ProductoService.Productos.Count == 0 && !cargando)
       {
         <p>No hay productos cargados. Presiona el botón para cargar productos.</p>
       }
-      @foreach (var producto in productos)
+      @* Renderiza cada producto como una card *@
+      @foreach (var producto in ProductosFiltrados)
       {
         <div class="col-4">
           <div class="card" style="width: 18rem;">
@@ -79,6 +83,7 @@
       }
     </div>
 
+    <!-- Botón para cargar productos -->
     <div class="row mb-4">
       <div class="col-12">
         <button class="btn btn-primary" @onclick="ObtenerProductos">
@@ -87,6 +92,7 @@
       </div>
     </div>
 
+    <!-- Mensajes de carga y error -->
     <div class="row">
       <div class="col-12">
         @if (cargando)
@@ -100,16 +106,24 @@
       </div>
     </div>
   </div>
-    </div>
-
+</div>
 
 @code {
-  private List<Producto> productos = new();
+  // Mensaje de error (si ocurre)
   private string error;
+  // Indica si se está cargando la lista de productos
   private bool cargando = false;
+  // Texto de búsqueda ingresado por el usuario
   private string busqueda = string.Empty;
+  // Indica si los productos ya fueron cargados (para evitar recarga)
   private bool productosCargados = false;
 
+  // Lista filtrada para mostrar productos sin perder la referencia global
+  private IEnumerable<Producto> ProductosFiltrados => string.IsNullOrWhiteSpace(busqueda)
+      ? ProductoService.Productos
+      : ProductoService.Productos.Where(p => RemoverAcentos(p.Nombre).ToLower().Contains(RemoverAcentos(busqueda).ToLower()));
+
+  // Obtiene la lista de productos desde la API
   private async Task ObtenerProductos()
   {
     if (productosCargados) return;
@@ -117,13 +131,13 @@
     {
       cargando = true;
       error = null;
-      productos = await ApiService.ObtenerProductosAsync();
+      var productosApi = await ApiService.ObtenerProductosAsync();
+      ProductoService.ActualizarProductos(productosApi);
       productosCargados = true;
     }
     catch (Exception ex)
     {
       error = ex.Message;
-      productos = new();
     }
     finally
     {
@@ -132,6 +146,7 @@
     StateHasChanged();
   }
 
+  // Busca productos según el texto ingresado (ignora acentos)
   private async Task BuscarProductos()
   {
     cargando = true;
@@ -139,21 +154,11 @@
     try
     {
       var todos = await ApiService.ObtenerProductosAsync();
-      if (string.IsNullOrWhiteSpace(busqueda))
-      {
-        productos = todos;
-      }
-      else
-      {
-       
-        string busquedaNormalizada = RemoverAcentos(busqueda).ToLower();
-        productos = todos.Where(p => RemoverAcentos(p.Nombre).ToLower().Contains(busquedaNormalizada)).ToList();
-      }
+      ProductoService.ActualizarProductos(todos);
     }
     catch (Exception ex)
     {
       error = ex.Message;
-      productos = new();
     }
     finally
     {
@@ -162,17 +167,18 @@
     StateHasChanged();
   }
 
+  // Evento al enviar el formulario de búsqueda
   private async Task OnBuscarSubmit()
   {
     await BuscarProductos();
   }
 
+  // Evento al escribir en el input de búsqueda (búsqueda en vivo)
   private async Task OnInputBuscar(ChangeEventArgs e)
   {
     busqueda = e.Value?.ToString() ?? string.Empty;
     if (string.IsNullOrWhiteSpace(busqueda))
     {
-        
         await ObtenerProductos();
     }
     else
@@ -181,17 +187,23 @@
     }
   }
 
+  // Agrega un producto al carrito (tanto en servidor como en cliente)
   private async Task AgregarAlCarrito(Producto producto)
   {
-    var exitoServidor = await ApiService.AgregarProductoAlCarritoAsync(producto);
+    // Siempre buscar la referencia global antes de operar
+    var prodGlobal = ProductoService.BuscarPorId(producto.Id);
+    if (prodGlobal == null)
+    {
+        error = "Producto no encontrado en catálogo.";
+        return;
+    }
+    var exitoServidor = await ApiService.AgregarProductoAlCarritoAsync(prodGlobal);
     if (exitoServidor)
     {
-        bool agregadoLocal = CarritoService.AgregarProducto(producto);
+        bool agregadoLocal = CarritoService.AgregarProducto(prodGlobal);
         if (agregadoLocal)
         {
-            
             StateHasChanged();
-            await JS.InvokeVoidAsync("alert", "¡Producto agregado al carrito!");
         }
         else
         {
@@ -204,7 +216,26 @@
     }
   }
 
- 
+  // Cargar productos automáticamente al iniciar la página
+  protected override async Task OnInitializedAsync()
+  {
+    CarritoService.OnChange += RefrescarProductosDesdeCarrito;
+    await ObtenerProductos();
+    productosCargados = true;
+  }
+
+  private async void RefrescarProductosDesdeCarrito()
+  {
+    await ObtenerProductos();
+    StateHasChanged();
+  }
+
+  public void Dispose()
+  {
+    CarritoService.OnChange -= RefrescarProductosDesdeCarrito;
+  }
+
+  // Quita acentos de un texto para búsqueda insensible a tildes
   private static string RemoverAcentos(string texto)
   {
       if (string.IsNullOrEmpty(texto)) return texto;

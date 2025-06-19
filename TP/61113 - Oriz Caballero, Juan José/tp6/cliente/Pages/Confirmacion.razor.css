@@ -1,0 +1,62 @@
+h3 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  margin-bottom: 2rem;
+  padding: 2rem 1.5rem;
+}
+
+.card ul {
+  margin-bottom: 1rem;
+}
+
+.card li {
+  font-size: 1.08rem;
+  margin-bottom: 0.3rem;
+}
+
+.card p strong {
+  color: #27ae60;
+  font-size: 1.1rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #34495e;
+}
+
+input.form-control {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+button.btn-success {
+  width: 100%;
+  font-size: 1.15rem;
+  padding: 0.7rem 0;
+  margin-top: 1.2rem;
+  border-radius: 8px;
+}
+
+.alert {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 1rem 0.5rem;
+  }
+  h3 {
+    font-size: 1.3rem;
+  }
+}

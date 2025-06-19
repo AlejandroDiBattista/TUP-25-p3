@@ -113,7 +113,7 @@ code {
     text-align: start;
 }
 .fondo-productos {
-    background-image: url('/img/McLaren.jpeg'); 
+    background-image: url('/McLaren.jpeg'); 
     background-size: cover; 
     background-position: center;
     background-repeat: no-repeat;

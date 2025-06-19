@@ -50,7 +50,7 @@
 - 61652 : no actualiza stock, al agregar al carrito no incrementa la cantidad
 - 61667 : no descuenta stock al agregar al carrito 
 - 61671 : ok
-- 61673 : no funciona, no muestra productos
+- 61673 : ok
 - 61676 : no muestra productos al iniciar, no descuenta stock, no controla stock
 - 61679 : error - "Carrito" no contiene una definición para "Items"
 - 61680 : me da error al confirmar la compra, no actualiza stock, ni controla el stock

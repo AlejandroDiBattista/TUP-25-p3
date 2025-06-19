@@ -1,0 +1,112 @@
+@page "/carrito"
+@using cliente.Models
+@using cliente.Services
+@inject CarritoService CarritoService
+
+@inject NavigationManager Navigation
+@inject ApiService ApiService
+
+<NavLink href="/" class="text-decoration-none text-dark">
+    <h2 style="cursor: pointer;">Tienda online</h2>
+</NavLink>
+
+@if (CarritoService.ObtenerCarrito().Count == 0)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.ObtenerCarrito())
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@(item.Cantidad * item.Producto.Precio)</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Disminuir(item.Producto.Id)">-</button>
+                        <button class="btn btn-sm btn-success" @onclick="() => Aumentar(item.Producto.Id)"
+                                disabled="@((item.Cantidad >= item.Producto.StockDisponible))">+</button>
+
+                        
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Total</strong></td>
+                <td colspan="2"><strong>$@CarritoService.CalcularTotal()</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="mt-3">
+        <button class="btn btn-secondary me-2" @onclick="VaciarCarrito">Vaciar carrito</button>
+        <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo("/confirmacion"))">Confirmar compra</button>
+    </div>
+}
+
+
+
+@code {    
+    private void VaciarCarrito()   
+    {
+        CarritoService.VaciarCarrito();
+    }
+    private string mensaje = string.Empty;
+
+    private async Task ProcesarCompra()
+    {
+        var carrito = CarritoService.ObtenerCarrito();
+        var orden = new Orden
+        {
+            Items = carrito.Select(p => new ItemOrden
+            {
+                ProductoId = p.Id,
+                NombreProducto = p.Nombre,
+                Precio = p.Precio,
+                Cantidad = p.Cantidad
+            }).ToList(),
+            Total = carrito.Sum(p => p.Precio * p.Cantidad)
+        };
+
+        var exito = await ApiService.ConfirmarCompraAsync(orden);
+
+        if (exito)
+        {
+            mensaje = "Compra confirmada con éxito.";
+            CarritoService.VaciarCarrito();
+        }
+        else
+        {
+            mensaje = "Ocurrió un error al confirmar la compra.";
+        }
+    }
+
+    void Aumentar(int productoId)
+    {
+        CarritoService.AumentarCantidad(productoId);
+        StateHasChanged();
+    }
+
+
+    void Disminuir(int productoId)
+    {
+        CarritoService.DisminuirCantidad(productoId);
+        StateHasChanged();
+    }
+
+    
+}
