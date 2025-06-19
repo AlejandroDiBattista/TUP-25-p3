@@ -52,6 +52,135 @@ app.MapGet("/productos", async (TiendaContext db, string? search) =>
     return await q.ToListAsync();
 });
 
+// POST /carritos
+app.MapPost("/carritos", async (TiendaContext db) =>
+{
+    var c = new Carrito();
+    db.Carritos.Add(c);
+    await db.SaveChangesAsync();
+    return Results.Created($"/carritos/{c.Id}", c);
+});
+
+// GET /carritos/{id}
+app.MapGet("/carritos/{id:guid}", async (TiendaContext db, Guid id) =>
+{
+    var car = await db.Carritos
+                      .Include(c => c.Items).ThenInclude(i => i.Producto)
+                      .AsNoTracking()
+                      .FirstOrDefaultAsync(c => c.Id == id);
+    return car is null ? Results.NotFound() : Results.Ok(car);
+});
+
+// DELETE /carritos/{id}  (vaciar)
+app.MapDelete("/carritos/{id:guid}", async (TiendaContext db, Guid id) =>
+{
+    // Buscamos el carrito con sus items para borrarlos
+    var car = await db.Carritos.Include(c => c.Items)
+        .FirstOrDefaultAsync(c => c.Id == id);
+    
+    if (car is null) return Results.NotFound();
+
+    // Borramos el carrito 
+    db.Carritos.Remove(car);
+    
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+// PUT /carritos/{id}/{productoId}?qty=2
+app.MapPut("/carritos/{id:guid}/{productoId:int}", async (
+    TiendaContext db, Guid id, int productoId, int qty) =>
+{
+    if (qty <= 0) return Results.BadRequest("qty debe ser > 0");
+
+    var car = await db.Carritos.Include(c => c.Items)
+                               .FirstOrDefaultAsync(c => c.Id == id && !c.Cerrado);
+    if (car is null) return Results.NotFound();
+
+    var prod = await db.Productos.FindAsync(productoId);
+    if (prod is null) return Results.NotFound("Producto inexistente");
+
+    var item = car.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    var nuevaCant = (item?.Cantidad ?? 0) + qty;
+
+    if (nuevaCant > prod.Stock)
+        return Results.Conflict($"Solo hay {prod.Stock} unidades");
+
+    if (item is null)
+        car.Items.Add(new CarritoItem { ProductoId = productoId, Cantidad = qty });
+    else
+        item.Cantidad = nuevaCant;
+
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+// DELETE /carritos/{id}/{productoId}?qty=1
+app.MapDelete("/carritos/{id:guid}/{productoId:int}", async (
+    TiendaContext db, Guid id, int productoId, int qty) =>
+{
+    var car = await db.Carritos.Include(c => c.Items)
+                               .FirstOrDefaultAsync(c => c.Id == id && !c.Cerrado);
+    if (car is null) return Results.NotFound();
+
+    var item = car.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    if (item is null) return Results.NotFound();
+
+    item.Cantidad -= qty <= 0 ? 1 : qty;
+    if (item.Cantidad <= 0)
+    {
+        db.ItemsCarrito.Remove(item);
+        
+        await db.SaveChangesAsync();
+
+        var itemsRestantes = await db.ItemsCarrito.CountAsync(i => i.CarritoId == id);
+        if (itemsRestantes == 0)
+            db.Carritos.Remove(car);
+    }
+
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+
+// PUT /carritos/{id}/confirmar
+app.MapPut("/carritos/{id:guid}/confirmar", async (
+    TiendaContext db, Guid id,
+    string nombre, string apellido, string email) =>      // ← sin DTO
+{
+    var car = await db.Carritos.Include(c=>c.Items)
+                               .ThenInclude(i=>i.Producto)
+                               .FirstOrDefaultAsync(c=>c.Id==id && !c.Cerrado);
+    if (car is null) return Results.NotFound();
+    if (!car.Items.Any()) return Results.BadRequest("Carrito vacío");
+
+    foreach (var it in car.Items)
+    {
+        if (it.Cantidad > it.Producto!.Stock)
+            return Results.Conflict($"Sin stock para {it.Producto.Nombre}");
+        it.Producto.Stock -= it.Cantidad;
+    }
+
+    var compra = new Compra
+    {
+        NombreCliente = nombre,
+        ApellidoCliente = apellido,
+        EmailCliente = email,
+        Total = car.Items.Sum(i => i.Cantidad * i.Producto!.Precio),
+        Items = car.Items.Select(i => new ItemCompra
+        {
+            ProductoId     = i.ProductoId,
+            Cantidad       = i.Cantidad,
+            PrecioUnitario = i.Producto!.Precio
+        }).ToList()
+    };
+
+    db.Compras.Add(compra);
+    car.Cerrado = true;
+    await db.SaveChangesAsync();
+
+    return Results.Ok(compra); 
+});
 
 
 app.Run();
