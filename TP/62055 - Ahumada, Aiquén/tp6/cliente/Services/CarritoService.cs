@@ -17,16 +17,29 @@ public class CarritoService
     public void Agregar(Producto producto)
     {
         var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-        if (item != null)
+        int cantidadEnCarrito = item?.Cantidad ?? 0;
+        if (cantidadEnCarrito < producto.Stock + cantidadEnCarrito)
         {
-            if (item.Cantidad < producto.Stock)
+            if (item != null)
+            {
                 item.Cantidad++;
+            }
+            else
+            {
+                
+                var productoCopia = new Producto
+                {
+                    Id = producto.Id,
+                    Nombre = producto.Nombre,
+                    Descripcion = producto.Descripcion,
+                    Precio = producto.Precio,
+                    ImagenUrl = producto.ImagenUrl,
+                    Stock = producto.Stock + cantidadEnCarrito
+                };
+                Items.Add(new ItemCarrito { Producto = productoCopia, Cantidad = 1 });
+            }
+            OnChange?.Invoke();
         }
-        else
-        {
-            Items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
-        }
-        OnChange?.Invoke();
     }
 
     public void Quitar(Producto producto)
