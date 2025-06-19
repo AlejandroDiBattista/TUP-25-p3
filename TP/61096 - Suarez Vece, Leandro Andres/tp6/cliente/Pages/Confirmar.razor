@@ -1,0 +1,32 @@
+﻿@page "/confirmar"
+@using cliente.Services
+@using cliente.Models
+
+@inject ApiService ApiService
+
+<PageTitle>Confirmar</PageTitle>
+
+<h2 class="text-center">Rellene los datos correctamente</h2>
+<Form />
+
+
+@implements IDisposable
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ApiService.OnChange += ActualizarVista;
+    }
+
+    void ActualizarVista()
+    {
+        StateHasChanged(); // Forzar la actualización del menú
+    }
+
+    public void Dispose()
+    {
+        ApiService.OnChange -= ActualizarVista;
+    }
+
+
+
+}

@@ -31,6 +31,7 @@
                 <div class="d-grid gap-2">
                     @if (ApiService.Compra != null)
                     {
+
                         <div class="d-flex justify-content-center align-items-center gap-2">
                             <button type="button" class="btn btn-outline-primary"
                                 @onclick="()=>ModificarCantidad(p.Id, -1)">-</button>
@@ -78,14 +79,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ApiService.OnChange += StateHasChanged;
         InicializarListaCantidades();
 
     }
 
     public void Dispose()
     {
-        ApiService.OnChange -= StateHasChanged;
+        @* ApiService.OnChange -= StateHasChanged; *@
     }
 
 
@@ -112,8 +112,6 @@
         }
         cantidades[productoId] = Math.Max(0, cantidades[productoId] + cambio);
 
-
-        @* ApiService.OnChange += StateHasChanged; *@
     }
 
     private int GetStockTemporal(int productoId, int stockOriginal)
@@ -133,13 +131,21 @@
     {
         cantidades.Clear();
         cantidadesPrevias.Clear();
+        foreach (var x in ApiService.ListaProductos)
+        {
+            Console.WriteLine($"{x.Nombre}-{x.Cantidad}");
+        }
         foreach (var p in Items ?? new List<T>())
         {
             int cantidad = 0;
-            if (p is ItemCompraGtDto itemConCantidad)
+
+            var encontrado = ApiService.ListaProductos.FirstOrDefault(x => x.ProductoId == p.Id);
+            if (encontrado != null)
             {
-                cantidad = itemConCantidad.Cantidad;
+                cantidad = encontrado.Cantidad;
+
             }
+
             cantidades[p.Id] = cantidad;
             cantidadesPrevias[p.Id] = cantidad; // Inicializa la cantidad previa igual a la actual
         }
@@ -179,6 +185,8 @@
                 await ApiService.AgregarProductoAlCarrito(data, nombre, stock);
                 await ApiService.CambiarStockProd(id, -diferencia); // Solo resta la diferencia
                 cantidadesPrevias[id] = cantidadActual; // Actualiza la cantidad previa
+                Console.WriteLine($"{cantidadActual}");
+
             }
             else if (diferencia == 0)
             {

@@ -199,7 +199,7 @@ public class ProductService : IPruductServices
     public async Task ElimnarPorudctoCarrito(int idCompra, int Id_iten)
     {
         var res = await _context.ItemsCompras
-        .Where(x => x.CompraId == idCompra && x.Id_iten == Id_iten)
+        .Where(x => x.CompraId == idCompra && x.ProductoId == Id_iten)
         .FirstOrDefaultAsync();
         if (res != null)
         {

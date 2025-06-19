@@ -13,14 +13,16 @@
         <div class="col-12">
             @* crear una clase que tenga esto como propiedad calculada *@
             <h2 class="text-center">Compras pendientes Precio: $@ApiService.ListaProductos.Sum(x=> x.subTotal)</h2>
+            <h3 class="text-warning text-center">Advertencia: los cambios no se aplican si no los confirma primero</h3>
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <button type="button" class="btn btn-outline-danger"
                 @onclick="async () => await ApiService.VaciarCarrito()">
                 Vaciar Carrito</button>
-                <button type="button" class="btn btn-outline-success" 
-                data-bs-toggle="modal" data-bs-target="#confirmarCompraModal">
+                <NavLink class="btn btn-outline-success" href="/confirmar">
                     Confirmar Compra
-                </button>
+                </NavLink>
+
             </div>
         </div>
     </div>
@@ -29,7 +31,7 @@
         <div class="d-flex flex-wrap gap-4 justify-content-start">
            <Card Items="ApiService.ListaProductos"/>
         </div>
-        <Form/>
+        
 }
 else
 {
@@ -46,6 +48,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         ApiService.OnChange += ActualizarVista;
+        await ApiService.RecargarProductos();
     }
 
     void ActualizarVista()

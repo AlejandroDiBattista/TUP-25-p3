@@ -112,8 +112,8 @@ public class ApiService
             HttpResponseMessage response = await _httpClient.DeleteAsync($"carrito/{Compra.Id_compra}/{id}");
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Producto Eliminado");
                 EliminarProductoMemoria(id);
+                Console.WriteLine($"Producto Eliminado carrito/{Compra.Id_compra}/{id}");
                 OnChange?.Invoke();
             }
 
@@ -131,7 +131,7 @@ public class ApiService
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Producto agregado o modificado");
-                AgregarProductoMemoria(dto, producto, stock - dto.Cantidad);
+                AgregarProductoMemoria(dto, producto, stock);
                 OnChange?.Invoke();
             }
 
@@ -145,7 +145,8 @@ public class ApiService
     public async Task EliminarProductoMemoria(int id)
     {
         var productoExistente = ListaProductos.FirstOrDefault(p => p.ProductoId == id);
-        _listaProductos.Remove(productoExistente);
+
+        ListaProductos.Remove(productoExistente);
         NotifyStateChanged();
     }
     public async Task EliminarTodoProductMemoria()
@@ -167,7 +168,7 @@ public class ApiService
 
         if (productoExistente != null)
         {
-            productoExistente.Cantidad += dto.Cantidad;
+            productoExistente.Cantidad = dto.Cantidad;
         }
         else
         {
@@ -195,6 +196,7 @@ public class ApiService
             if (Compra != null)
             {
                 ListaProductos = await _httpClient.GetFromJsonAsync<List<ItemCompraGtDto>>($"carrito/{Compra.Id_compra}");
+                NotifyStateChanged();
             }
 
         }
@@ -204,6 +206,16 @@ public class ApiService
         }
     }
 
+    public async Task RecargarProductos()
+    {
+        if (Compra != null)
+        {
+            ListaProductos = await _httpClient.GetFromJsonAsync<List<ItemCompraGtDto>>($"carrito/{Compra.Id_compra}");
+            NotifyStateChanged();
+
+        }
+
+    }
 
     public async Task<List<Producto>> ObtenerProductos()
     {
