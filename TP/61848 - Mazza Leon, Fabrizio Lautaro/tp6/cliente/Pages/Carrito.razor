@@ -33,13 +33,11 @@
                         <td>@item.Producto.Nombre</td>
                         <td>$@item.Producto.Precio</td>
                         <td>
-                            <input type="number"
-                                min="1"
-                                max="@item.Producto.Stock"
-                                value="@item.Cantidad"
-                                @onchange="(e) => CambiarCantidad(item.Producto.Id, e.Value?.ToString())"
-                                class="form-control"
-                                style="width: 80px;" />
+                            <div class="input-group" style="width: 120px;">
+                                <button class="btn btn-outline-secondary" @onclick="() => CambiarCantidad(item.Producto.Id, item.Cantidad - 1)" disabled="@(item.Cantidad <= 1)">-</button>
+                                <span class="form-control text-center" style="padding: 0.375rem 0;">@item.Cantidad</span>
+                                <button class="btn btn-outline-secondary" @onclick="() => CambiarCantidad(item.Producto.Id, item.Cantidad + 1)" disabled="@(item.Cantidad >= item.Producto.StockInicial)">+</button>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -75,11 +73,21 @@
 </div>
 
 @code {
-    void CambiarCantidad(int productoId, string nuevaCantidadStr)
+    async void CambiarCantidad(int productoId, int nuevaCantidad)
     {
-        if (int.TryParse(nuevaCantidadStr, out int nuevaCantidad) && nuevaCantidad > 0)
+        if (nuevaCantidad > 0)
         {
+            int diferencia = nuevaCantidad - (CarritoService.Items.FirstOrDefault(i => i.Producto.Id == productoId)?.Cantidad ?? 0);
             CarritoService.CambiarCantidad(productoId, nuevaCantidad);
+            // Actualizar stock en catálogo
+            var productosCatalogo = await StockLocalService.LeerStockAsync();
+            var productoCatalogo = productosCatalogo?.FirstOrDefault(p => p.Id == productoId);
+            if (productoCatalogo != null)
+            {
+                productoCatalogo.Stock -= diferencia;
+                if (productoCatalogo.Stock < 0) productoCatalogo.Stock = 0;
+                await StockLocalService.GuardarStockAsync(productosCatalogo);
+            }
             StateHasChanged();
         }
     }
