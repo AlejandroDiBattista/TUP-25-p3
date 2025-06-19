@@ -7,7 +7,13 @@
 
 <h2 class="titulo-confirmacion">Confirmación de Compra</h2>
 
-@if (!micarrito.Items.Any())
+@if (compraConfirmada)
+{
+    <div class="mensaje-confirmacion">
+        ¡Gracias por tu compra!
+    </div>
+}
+else if (!micarrito.Items.Any())
 {
     <p>No hay productos en el carrito.</p>
 }
@@ -38,15 +44,27 @@ else
 
         <button type="submit" class="boton-confirmar">Confirmar compra</button>
     </EditForm>
-    @if (compraConfirmada)
-{
-    <p class="confirmacion-exitosa">¡Gracias por tu compra!</p>
 }
-}
+
+<style>
+    .mensaje-confirmacion {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #28a745;
+        font-size: 2rem;
+        font-weight: bold;
+        z-index: 9999;
+    }
+</style>
 
 @code {
-    
-
     public class FormularioCompra
     {
         [Required]
@@ -56,17 +74,16 @@ else
         [Required, EmailAddress]
         public string Email { get; set; }
     }
-    FormularioCompra formulario = new();
 
+    FormularioCompra formulario = new();
     bool compraConfirmada = false;
 
-    void ConfirmarCompra()
-  {
-    micarrito.Vaciar();
-    compraConfirmada = true;
-    Navigation.NavigateTo("/home");
-  }
-
-
+    async Task ConfirmarCompra()
+    {
+        compraConfirmada = true;
+        await InvokeAsync(StateHasChanged); 
+        await Task.Delay(2000);
+        micarrito.Vaciar(); 
+        Navigation.NavigateTo("/home");
+    }
 }
-
