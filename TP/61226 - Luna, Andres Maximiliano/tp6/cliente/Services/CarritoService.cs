@@ -18,7 +18,6 @@ public class CarritoService
         if (producto.StockDisponible > 0)
         {
             item.Cantidad++;
-            producto.StockDisponible--;
         }
     }
     else
@@ -30,39 +29,33 @@ public class CarritoService
                 Producto = producto,
                 Cantidad = 1
             });
-            producto.StockDisponible--;
         }
     }
 }
 
-
-
-    public void AumentarCantidad(int productoId)
-{
-    var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
-    if (item != null && item.Producto.StockDisponible > 0)
+    public void AumentarCantidadCarrito(int productoId)
     {
-        item.Cantidad++;
-        item.Producto.StockDisponible--;
+        var item = _items.FirstOrDefault(p => p.Producto.Id == productoId);
+        if (item != null && item.Producto.StockDisponible > 0)
+        {
+            item.Cantidad++;
+            item.Producto.StockDisponible--;
+        }
     }
-}
 
-
-    public void DisminuirCantidad(int productoId)
+    public void DisminuirCantidadCarrito(int productoId)
     {
-    var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+        var item = _items.FirstOrDefault(p => p.Producto.Id == productoId);
         if (item != null && item.Cantidad > 0)
         {
             item.Cantidad--;
             item.Producto.StockDisponible++;
-
             if (item.Cantidad == 0)
             {
                 _items.Remove(item);
             }
         }
-}   
-
+    }
 
     public void EliminarDelCarrito(int productoId)
     {

@@ -97,16 +97,18 @@ else
 
     void Aumentar(int productoId)
     {
-        CarritoService.AumentarCantidad(productoId);
-        StateHasChanged();
+        CarritoService.AumentarCantidadCarrito(productoId);
     }
 
 
     void Disminuir(int productoId)
     {
-        CarritoService.DisminuirCantidad(productoId);
-        StateHasChanged();
+        CarritoService.DisminuirCantidadCarrito(productoId);
     }
 
+    bool PuedeAgregar(Producto producto)
+    {
+        return producto.StockDisponible > 0;
+    }
     
 }

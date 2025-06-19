@@ -35,16 +35,11 @@
             <p>Stock: @producto.StockDisponible</p>
           
             
-            
 
-            <div class="controles-cantidad">
-                <button @onclick="() => DisminuirCantidad(producto)">-</button>
-                <span>@producto.Cantidad</span>
-                <button @onclick="() => AumentarCantidad(producto)" disabled="@(producto.StockDisponible <= producto.Cantidad)">+</button>
-            </div>
-
-            <button class="btn-agregar" @onclick="() => AgregarProducto(producto)">
-            Agregar al carrito
+            <button class="btn btn-success mt-2" 
+                @onclick="() => AgregarAlCarrito(producto)" 
+                disabled="@(!PuedeAgregar(producto))">
+                Agregar al carrito
             </button>
         </div>
     }
@@ -68,7 +63,6 @@
         foreach (var producto in productos)
         {
             producto.StockDisponible = producto.Stock;
-            producto.Cantidad = 0;
         }
 
         productosFiltrados = productos;
@@ -104,19 +98,14 @@
         NavigationManager.NavigateTo("/carrito");
     }
 
-    void AgregarProducto(Producto producto)
+    void AgregarAlCarrito(Producto producto)
     {
-        if (producto.Cantidad <= 0)
-            return;
-
-        for (int i = 0; i < producto.Cantidad; i++)
+        if (producto.StockDisponible > 0)
         {
             CarritoService.AgregarAlCarrito(producto);
+            producto.StockDisponible--;
         }
-
-        producto.Cantidad = 0;
     }
-
 
     private void BuscarProductos()
     {
@@ -131,5 +120,9 @@
         Navigation.NavigateTo("/", true);
     }
 
+    bool PuedeAgregar(Producto producto)
+    {
+        return producto.StockDisponible > 0;
+    }
     
 }
