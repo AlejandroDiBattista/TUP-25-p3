@@ -1,0 +1,307 @@
+@inject CartService CartService
+@inject IConfiguration Configuration
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="product-card">
+    <div class="product-image-container">
+        <img src="@_imageUrl" 
+             alt="@Producto.Nombre" 
+             class="product-image"
+             onerror="this.src='@_fallbackImageUrl'; this.onerror=null;" />
+        <div class="product-overlay">
+            <button class="add-to-cart-btn" 
+                    @onclick="AddToCartHandler" 
+                    disabled="@(!CartService.CanAddToCart(Producto))"
+                    title="Agregar al carrito">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="m1 1 4 4 16 3 -4 8H7L5 6H2"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    
+    <div class="product-info">
+        <h3 class="product-name">@Producto.Nombre</h3>
+        <p class="product-description">@Producto.Descripcion</p>
+        <div class="product-footer">
+            <span class="product-price">@Producto.Precio.ToString("C")</span>
+            <button class="quick-add-btn" 
+                    @onclick="AddToCartHandler" 
+                    disabled="@(!CartService.CanAddToCart(Producto))">
+                @if (CartService.CanAddToCart(Producto))
+                {
+                    <span>Agregar</span>
+                }
+                else
+                {
+                    <span>Agotado</span>
+                }
+            </button>
+        </div>
+        
+        @* Mostrar información de stock en tiempo real *@
+        <div class="stock-info">
+            @{
+                var availableStock = CartService.GetAvailableStock(Producto);
+            }
+            @if (availableStock > 10)
+            {
+                <span class="stock-badge in-stock">En stock</span>
+            }
+            else if (availableStock > 0)
+            {
+                <span class="stock-badge low-stock">Quedan @availableStock</span>
+            }
+            else
+            {
+                <span class="stock-badge out-of-stock">Sin stock</span>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        width: 280px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: #bbb;
+    }
+
+    .product-image-container {
+        position: relative;
+        height: 200px;
+        background: #ffffff;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .product-image {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+
+    .product-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover .product-overlay {
+        opacity: 1;
+    }
+
+    .add-to-cart-btn {
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .add-to-cart-btn:hover {
+        background: #2c2c2c;
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    .product-info {
+        padding: 20px;
+    }
+
+    .product-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: #333;
+        line-height: 1.3;
+    }
+
+    .product-description {
+        font-size: 14px;
+        color: #666;
+        margin: 0 0 16px 0;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .product-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c2c2c;
+    }
+
+    .quick-add-btn {
+        background: #2c2c2c;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .quick-add-btn:hover:not(:disabled) {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    .quick-add-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .quick-add-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .stock-info {
+        margin-top: 8px;
+    }
+
+    .stock-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .stock-badge.in-stock {
+        background: #e8e8e8;
+        color: #2c2c2c;
+    }
+
+    .stock-badge.low-stock {
+        background: #f0f0f0;
+        color: #666;
+    }
+
+    .stock-badge.out-of-stock {
+        background: #ddd;
+        color: #999;
+    }
+</style>
+
+@code {
+    [Parameter] public Producto Producto { get; set; } = null!;
+
+    private string _imageUrl = string.Empty;
+    private string _fallbackImageUrl = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // Pre-calcular las URLs de las imágenes para evitar re-renderizados
+        _imageUrl = GetProductImage();
+        _fallbackImageUrl = GetFallbackImage();
+        
+        // Suscribirse a cambios del carrito para actualizar el stock en tiempo real
+        CartService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // Limpiar la suscripción al destruir el componente
+        CartService.OnChange -= StateHasChanged;
+    }
+
+    protected override bool ShouldRender()
+    {
+        // Solo re-renderizar si es absolutamente necesario
+        return true;
+    }
+
+    private async Task AddToCartHandler()
+    {
+        if (CartService.CanAddToCart(Producto))
+        {
+            await CartService.AddToCart(Producto);
+            
+            // Redirigir al carrito automáticamente
+            Navigation.NavigateTo("/carrito");
+        }
+    }
+
+    private string GetProductImage()
+    {
+        if (string.IsNullOrEmpty(Producto?.ImagenUrl))
+            return _fallbackImageUrl;
+            
+        // CAMBIO CLAVE: Usar rutas relativas del cliente, no del servidor
+        // Las imágenes están en cliente/wwwroot/images, se acceden como "./images/nombre.jpg"
+        var imageName = Producto.ImagenUrl.Replace("images/", "").TrimStart('/');
+        return $"./images/{imageName}";
+    }
+
+    private string GetFallbackImage()
+    {
+        if (Producto == null) return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDI4MCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyODAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxyZWN0IHg9IjEwNSIgeT0iNzUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1MCIgZmlsbD0iI0RERERERCIvPgo8L3N2Zz4K";
+        
+        // Usar una paleta de grises para las imágenes fallback
+        var grayColors = new[] { "666666", "888888", "AAAAAA", "777777", "999999", "555555", "BBBBBB", "CCCCCC" };
+        var color = grayColors[Math.Abs(Producto.Id) % grayColors.Length];
+        var initials = Producto.Nombre?.Length >= 2 ? 
+            Producto.Nombre.Substring(0, 2).ToUpper() : 
+            "PR";
+        
+        // Crear una imagen SVG simple como fallback en escala de grises
+        var svgContent = $@"<svg width='280' height='200' viewBox='0 0 280 200' fill='none' xmlns='http://www.w3.org/2000/svg'>
+            <rect width='280' height='200' fill='#{color}'/>
+            <text x='140' y='110' text-anchor='middle' fill='white' font-family='Arial' font-size='24' font-weight='bold'>{initials}</text>
+        </svg>";
+        
+        var base64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svgContent));
+        return $"data:image/svg+xml;base64,{base64}";
+    }
+}

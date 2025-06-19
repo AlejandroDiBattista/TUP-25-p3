@@ -1,4 +1,4 @@
-namespace cliente.Modelos;
+namespace servidor.Modelos;
 
 public class Producto
 {
