@@ -28,7 +28,7 @@ if (app.Environment.IsDevelopment()) {
 // Usar CORS con la política definida
 app.UseCors("AllowClientApp");
 
-app.UseStaticFiles(); // 
+app.UseStaticFiles(); //.
 
 // Mapear rutas básicas
 app.MapGet("/", () => "Servidor API está en funcionamiento");
@@ -71,7 +71,6 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 }
-
 app.MapPut("/carritos/confirmar", async (TiendaDbContext db, CompraDTO compraDto) =>
 {
     if (compraDto.Items == null || compraDto.Items.Count == 0)
@@ -95,12 +94,10 @@ app.MapPut("/carritos/confirmar", async (TiendaDbContext db, CompraDTO compraDto
         EmailCliente = compraDto.EmailCliente,
         Items = new List<ItemCompra>()
     };
-
     foreach (var item in compraDto.Items)
     {
         var producto = await db.Productos.FindAsync(item.ProductoId);
         producto.Stock -= item.Cantidad;
-
         compra.Items.Add(new ItemCompra
         {
             ProductoId = item.ProductoId,
@@ -108,11 +105,8 @@ app.MapPut("/carritos/confirmar", async (TiendaDbContext db, CompraDTO compraDto
             PrecioUnitario = producto.Precio
         });
     }
-
     db.Compras.Add(compra);
     await db.SaveChangesAsync();
-
     return Results.Ok("Compra registrada correctamente.");
 });
-
 app.Run();
