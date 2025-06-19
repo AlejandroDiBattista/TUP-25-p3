@@ -17,8 +17,7 @@
             <div class="alert alert-info shadow-orange">
                 <i class="bi bi-cart-x fs-1 d-block mb-3 text-gradient"></i>
                 <h4>Tu carrito está vacío</h4>
-                <p>¡Explora nuestro catálogo y encuentra productos increíbles!</p>
-                <a href="/" class="btn btn-primary">
+                <p>¡Explora nuestro catálogo y encuentra productos increíbles!</p>                <a href="/?refresh=true" class="btn btn-primary">
                     <i class="bi bi-arrow-left me-2"></i>Volver al catálogo
                 </a>
             </div>
@@ -86,8 +85,7 @@
                         </button>
                         <button class="btn btn-outline-danger w-100 mb-3" @onclick="VaciarCarrito">
                             <i class="bi bi-trash me-2"></i>Vaciar carrito
-                        </button>
-                        <a href="/" class="btn btn-outline-primary w-100">
+                        </button>                        <a href="/?refresh=true" class="btn btn-outline-primary w-100">
                             <i class="bi bi-arrow-left me-2"></i>Seguir comprando
                         </a>
                     </div>
@@ -150,11 +148,11 @@
         {
             cargando = false;
         }
-    }    private async Task InicializarCarrito()
+    }    private Task InicializarCarrito()
     {
-
         items = new List<Cliente.Models.ItemCompra>();
         total = 0;
+        return Task.CompletedTask;
     }private async Task ModificarCantidad(int productoId, int nuevaCantidad)
     {
         if (nuevaCantidad <= 0)
