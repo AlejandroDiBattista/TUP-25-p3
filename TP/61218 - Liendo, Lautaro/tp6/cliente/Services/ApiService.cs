@@ -38,7 +38,8 @@ namespace cliente.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"productos/buscar/{searchText}");
+                var encodedSearchText = Uri.EscapeDataString(searchText);
+                var response = await _httpClient.GetAsync($"productos/buscar/{encodedSearchText}");
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<List<ArticuloInventario>>();
             }
@@ -48,6 +49,7 @@ namespace cliente.Services
                 return null;
             }
         }
+
 
         public async Task<string?> CreateCarritoAsync()
         {

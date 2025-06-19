@@ -60,17 +60,45 @@ aplicacion.MapGet("/productos", async (TiendaContext gestorDB) =>
 
 aplicacion.MapGet("/productos/buscar/{textoConsulta}", async (TiendaContext gestorDB, string textoConsulta) =>
 {
-    var consultaArticulos = gestorDB.InventarioArticulos.AsQueryable();
-    if (!string.IsNullOrWhiteSpace(textoConsulta))
+    try
     {
-        var textoNormalizado = textoConsulta.ToLowerInvariant();
-        consultaArticulos = consultaArticulos.Where(item =>
-            (item.Denominacion != null && item.Denominacion.ToLowerInvariant().Contains(textoNormalizado)) ||
-            (item.Caracteristicas != null && item.Caracteristicas.ToLowerInvariant().Contains(textoNormalizado))
+        // Logging inicial
+        Console.WriteLine($"[BUSQUEDA] Buscando artículos con: {textoConsulta}");
+
+        // Preparar la consulta base
+        var consultaArticulos = gestorDB.InventarioArticulos.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(textoConsulta))
+        {
+            var textoNormalizado = textoConsulta.ToLowerInvariant();
+
+            consultaArticulos = consultaArticulos.Where(item =>
+                (!string.IsNullOrEmpty(item.Denominacion) && item.Denominacion.ToLower().Contains(textoNormalizado)) ||
+                (!string.IsNullOrEmpty(item.Caracteristicas) && item.Caracteristicas.ToLower().Contains(textoNormalizado))
+            );
+        }
+
+        var resultado = await consultaArticulos.ToListAsync();
+
+        // Logging del resultado
+        Console.WriteLine($"[BUSQUEDA] Se encontraron {resultado.Count} artículos.");
+
+        return Results.Ok(resultado);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERROR BUSQUEDA] {ex.Message}\n{ex.StackTrace}");
+
+        return Results.Problem(
+            title: "Error interno al buscar productos",
+            detail: ex.Message,
+            statusCode: 500
         );
     }
-    return await consultaArticulos.ToListAsync();
 });
+
+
+
 
 aplicacion.MapPost("/carritos", () =>
 {
