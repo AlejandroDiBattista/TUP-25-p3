@@ -1,0 +1,91 @@
+﻿@inject NavigationManager NavManager
+@inject CartState Cart
+@using TiendaOnline.Frontend.Services
+@implements IDisposable
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">📦 Tienda Online</a>
+        
+        @if (_showSearchBox)
+        {
+            <div class="mx-auto w-50">
+                <input class="form-control" 
+                       type="search"
+                       placeholder="Buscar productos..."
+                       @bind="searchTerm" 
+                       @bind:event="oninput" />
+            </div>
+        }
+        else
+        {
+            <div class="mx-auto w-50"></div>
+        }
+        
+        <a class="btn btn-outline-light position-relative" href="/carrito">
+            🛒 Carrito
+            @if (Cart.TotalItems > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @Cart.TotalItems
+                </span>
+            }
+        </a>
+    </div>
+</nav>
+
+@code {
+    private bool _showSearchBox = true;
+    private Timer? _debounceTimer;
+
+    private string? _searchTerm;
+    private string? searchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            _searchTerm = value;
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(HandleSearch, null, 300, Timeout.Infinite);
+        }
+    }
+    
+    protected override void OnInitialized()
+    {
+        Cart.Changed += StateHasChanged;
+        NavManager.LocationChanged += HandleLocationChanged;
+        UpdateSearchBoxVisibility(NavManager.Uri);
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateSearchBoxVisibility(e.Location);
+        StateHasChanged();
+    }
+
+    private void UpdateSearchBoxVisibility(string currentUri)
+    {
+        var uri = new Uri(currentUri);
+        if (uri.AbsolutePath == "/" || uri.AbsolutePath.StartsWith("/productos"))
+        {
+            _showSearchBox = true;
+        }
+        else
+        {
+            _showSearchBox = false;
+        }
+    }
+
+    private void HandleSearch(object? state)
+    {
+        // Navega a la URL con el término de búsqueda.
+        InvokeAsync(() => NavManager.NavigateTo($"/productos?search={searchTerm}"));
+    }
+
+    public void Dispose()
+    {
+        Cart.Changed -= StateHasChanged;
+        NavManager.LocationChanged -= HandleLocationChanged;
+        _debounceTimer?.Dispose(); 
+    }
+}
