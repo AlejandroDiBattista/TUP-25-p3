@@ -95,6 +95,10 @@ public class ApiService
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Producto Eliminado");
+                foreach (var p in ListaProductos)
+                {
+                    CambiarStockProd(p.ProductoId, p.Cantidad);
+                }
                 EliminarTodoProductMemoria();
                 OnChange?.Invoke();
             }
@@ -152,10 +156,7 @@ public class ApiService
     public async Task EliminarTodoProductMemoria()
     {
 
-        foreach (var p in ListaProductos)
-        {
-            CambiarStockProd(p.ProductoId, p.Cantidad);
-        }
+
         _listaProductos.Clear();
         Compra = null;
         NotifyStateChanged();
