@@ -12,22 +12,19 @@
 
 
 
-<header>
-    <div class="header-superior">
-    <h2>Productos</h2>
-    <button class="btn btn-light" @onclick="IrAlCarrito">
-            🛒 Total en carrito: @CarritoService.ObtenerCantidadTotalEnCarrito() productos
-        </button>
-    </div>
 
-    <div class="header-barra">
-        <input type="text" placeholder="Buscar productos..." @bind="busqueda" class="form-control" style="max-width: 300px;" />
+<header class="top-header"
+    <h2 class="titulo">Productos</h2>
+    <div class="barra-busqueda">
+    <input type="text" placeholder="Buscar productos..." @bind="busqueda" class="form-control" style="max-width: 300px;" />
         <button class="btn btn-primary" @onclick="BuscarProductos">Buscar</button>
     </div>
-
+    <button class="btn-carrito" @onclick="IrAlCarrito">
+            🛒 Total en carrito: @CarritoService.ObtenerCantidadTotalEnCarrito() productos
+        </button>
 </header>
 
-<div class="productos-grid">
+<main class="productos-grid">
     @foreach (var producto in productosFiltrados)
     {
         <div class="producto-card">
@@ -46,12 +43,12 @@
                 <button @onclick="() => AumentarCantidad(producto)" disabled="@(producto.StockDisponible <= producto.Cantidad)">+</button>
             </div>
 
-            <button class="btn btn-success mt-2" @onclick="() => AgregarProducto(producto)">
+            <button class="btn-agregar" @onclick="() => AgregarProducto(producto)">
             Agregar al carrito
             </button>
         </div>
     }
-</div>
+</main>
 
 @code {
     
@@ -62,17 +59,30 @@
     private bool cargando = false;
 
     protected override async Task OnInitializedAsync()
+{
+    try
     {
-        if (ProductoService.Productos.Count == 0)
+        cargando = true;
+        productos = await ApiService.ObtenerProductosAsync();
+
+        foreach (var producto in productos)
         {
-            var productos = await ApiService.ObtenerProductosAsync();
-            foreach (var producto in productos)
-                producto.StockDisponible = producto.Stock;
-            ProductoService.Productos = productos;
+            producto.StockDisponible = producto.Stock;
+            producto.Cantidad = 0;
         }
-        productos = ProductoService.Productos;
+
         productosFiltrados = productos;
     }
+    catch (Exception ex)
+    {
+        error = ex.Message;
+    }
+    finally
+    {
+        cargando = false;
+    }
+}
+
  
      void AumentarCantidad(Producto producto)
     {
