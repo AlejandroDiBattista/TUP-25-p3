@@ -67,9 +67,6 @@ namespace servidor.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("ImagenUrl")
                         .HasColumnType("TEXT");
 
@@ -82,6 +79,9 @@ namespace servidor.Migrations
                     b.Property<int>("Stock")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Talle")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Productos");
@@ -90,20 +90,74 @@ namespace servidor.Migrations
                         new
                         {
                             Id = 1,
-                            Descripcion = "Mouse óptico inalámbrico",
-                            ImagenUrl = "mouse.jpg",
-                            Nombre = "Mouse Logitech",
-                            Precio = 3500m,
-                            Stock = 25
+                            ImagenUrl = "BAGGY.jpg",
+                            Nombre = "BAGGY HACK CLEAR",
+                            Precio = 80000m,
+                            Stock = 20,
+                            Talle = "S, M, L, XL"
                         },
                         new
                         {
                             Id = 2,
-                            Descripcion = "Teclado mecánico RGB",
-                            ImagenUrl = "teclado.jpg",
-                            Nombre = "Teclado Redragon",
-                            Precio = 7800m,
-                            Stock = 10
+                            ImagenUrl = "HOODIE.jpg",
+                            Nombre = "HOODIE BLANCO ADDRIPS",
+                            Precio = 15000m,
+                            Stock = 15,
+                            Talle = "M, L, XL"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ImagenUrl = "BAGGY-2.jpg",
+                            Nombre = "BAGGY HACK WASHED BLACK",
+                            Precio = 92000m,
+                            Stock = 10,
+                            Talle = "S, M, L"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ImagenUrl = "SWEATER.jpg",
+                            Nombre = "SWEATER ATHLETIC INGLES",
+                            Precio = 72000m,
+                            Stock = 10,
+                            Talle = "M, L"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ImagenUrl = "JEAN.jpg",
+                            Nombre = "JEAN ADDRIPS CELESTE",
+                            Precio = 80000m,
+                            Stock = 25,
+                            Talle = "S, M, L, XL"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            ImagenUrl = "BUZO.jpg",
+                            Nombre = "BUZO TREKKER BLANCO",
+                            Precio = 90000m,
+                            Stock = 18,
+                            Talle = "M, L, XL"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ImagenUrl = "BAGGY-3.jpg",
+                            Nombre = "BAGGY JAMES",
+                            Precio = 85000m,
+                            Stock = 22,
+                            Talle = "S, M, L, XL"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            ImagenUrl = "BUZO-2.jpg",
+                            Nombre = "BUZO POLAR NEGRO",
+                            Precio = 76000m,
+                            Stock = 12,
+                            Talle = "S, M, L"
                         });
                 });
 

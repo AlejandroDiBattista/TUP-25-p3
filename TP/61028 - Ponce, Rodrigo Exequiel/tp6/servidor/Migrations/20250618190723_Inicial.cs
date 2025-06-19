@@ -19,11 +19,8 @@ namespace servidor.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Fecha = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Total = table.Column<decimal>(type: "TEXT", nullable: false),
-                    NombreCliente = table.Column<string>(type: "TEXT", nullable: true),
-                    ApellidoCliente = table.Column<string>(type: "TEXT", nullable: true),
-                    EmailCliente = table.Column<string>(type: "TEXT", nullable: true)
+                    Fecha = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -37,7 +34,7 @@ namespace servidor.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Nombre = table.Column<string>(type: "TEXT", nullable: true),
-                    Descripcion = table.Column<string>(type: "TEXT", nullable: true),
+                    Talle = table.Column<string>(type: "TEXT", nullable: true),
                     Precio = table.Column<decimal>(type: "TEXT", nullable: false),
                     Stock = table.Column<int>(type: "INTEGER", nullable: false),
                     ImagenUrl = table.Column<string>(type: "TEXT", nullable: true)
@@ -77,11 +74,17 @@ namespace servidor.Migrations
 
             migrationBuilder.InsertData(
                 table: "Productos",
-                columns: new[] { "Id", "Descripcion", "ImagenUrl", "Nombre", "Precio", "Stock" },
+                columns: new[] { "Id", "ImagenUrl", "Nombre", "Precio", "Stock", "Talle" },
                 values: new object[,]
                 {
-                    { 1, "Mouse óptico inalámbrico", "mouse.jpg", "Mouse Logitech", 3500m, 25 },
-                    { 2, "Teclado mecánico RGB", "teclado.jpg", "Teclado Redragon", 7800m, 10 }
+                    { 1, "BAGGY.jpg", "BAGGY HACK CLEAR", 80000m, 20, "S, M, L, XL" },
+                    { 2, "HOODIE.jpg", "HOODIE BLANCO ADDRIPS", 15000m, 15, "M, L, XL" },
+                    { 3, "BAGGY-2.jpg", "BAGGY HACK WASHED BLACK", 92000m, 10, "S, M, L" },
+                    { 4, "SWEATER.jpg", "SWEATER ATHLETIC INGLES", 72000m, 10, "M, L" },
+                    { 5, "JEAN.jpg", "JEAN ADDRIPS CELESTE", 80000m, 25, "S, M, L, XL" },
+                    { 6, "BUZO.jpg", "BUZO TREKKER BLANCO", 90000m, 18, "M, L, XL" },
+                    { 7, "BAGGY-3.jpg", "BAGGY JAMES", 85000m, 22, "S, M, L, XL" },
+                    { 8, "BUZO-2.jpg", "BUZO POLAR NEGRO", 76000m, 12, "S, M, L" }
                 });
 
             migrationBuilder.CreateIndex(
