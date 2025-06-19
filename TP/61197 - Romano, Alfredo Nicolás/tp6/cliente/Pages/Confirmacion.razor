@@ -69,10 +69,8 @@ else
         var resp = await Http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", compra);
         if (resp.IsSuccessStatusCode)
         {
-            mensaje = "¡Compra confirmada! Gracias por tu compra, " + form.Nombre + "!";
+            mensaje = "¡Compra confirmada! ¡Gracias por tu compra, " + form.Nombre + "!";
             await Http.DeleteAsync($"/carritos/{carritoId}");
-            await Task.Delay(2000);
-            Nav.NavigateTo("/");
         }
         else
         {
@@ -103,7 +101,11 @@ else
         public int Cantidad { get; set; }
         public string ImagenUrl { get; set; }
     }
-    class CarritoIdDto { public string CarritoId { get; set; } }
+    
+    class CarritoIdDto { 
+        public string CarritoId { get; set; } 
+    }
+
     class CompraForm
     {
         public string Nombre { get; set; }

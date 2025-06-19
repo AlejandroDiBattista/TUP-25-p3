@@ -12,6 +12,18 @@ namespace servidor.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Carritos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Carritos", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Compras",
                 columns: table => new
                 {
@@ -46,6 +58,33 @@ namespace servidor.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "itemsCarrito",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ProductoId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Cantidad = table.Column<int>(type: "INTEGER", nullable: false),
+                    CarritoId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_itemsCarrito", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_itemsCarrito_Carritos_CarritoId",
+                        column: x => x.CarritoId,
+                        principalTable: "Carritos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_itemsCarrito_Productos_ProductoId",
+                        column: x => x.ProductoId,
+                        principalTable: "Productos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ItemsCompra",
                 columns: table => new
                 {
@@ -54,7 +93,8 @@ namespace servidor.Migrations
                     ProductoId = table.Column<int>(type: "INTEGER", nullable: false),
                     CompraId = table.Column<int>(type: "INTEGER", nullable: false),
                     Cantidad = table.Column<int>(type: "INTEGER", nullable: false),
-                    PrecioUnitario = table.Column<decimal>(type: "TEXT", nullable: false)
+                    PrecioUnitario = table.Column<decimal>(type: "TEXT", nullable: false),
+                    PrecioTotal = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,6 +114,16 @@ namespace servidor.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_itemsCarrito_CarritoId",
+                table: "itemsCarrito",
+                column: "CarritoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_itemsCarrito_ProductoId",
+                table: "itemsCarrito",
+                column: "ProductoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ItemsCompra_CompraId",
                 table: "ItemsCompra",
                 column: "CompraId");
@@ -88,7 +138,13 @@ namespace servidor.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "itemsCarrito");
+
+            migrationBuilder.DropTable(
                 name: "ItemsCompra");
+
+            migrationBuilder.DropTable(
+                name: "Carritos");
 
             migrationBuilder.DropTable(
                 name: "Compras");
