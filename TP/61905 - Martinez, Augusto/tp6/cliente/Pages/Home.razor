@@ -7,11 +7,12 @@
 
 <PageTitle>Catálogo de productos</PageTitle>
 
-<header class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow p-3">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">🛍️ Tienda Gamer</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow sticky-top">
+    <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 py-2">
+        <a class="navbar-brand text-center text-md-start" href="/">🛍️ <strong>Tienda Gamer</strong></a>
 
-        <input class="form-control me-2 w-50" type="search" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+        <input class="form-control w-100 w-md-50" type="search" placeholder="Buscar productos..."
+               @bind="busqueda" @bind:event="oninput" />
 
         <button class="btn btn-outline-primary position-relative" @onclick="IrAlCarrito">
             🛒 Carrito
@@ -20,7 +21,8 @@
             </span>
         </button>
     </div>
-</header>
+</nav>
+
 
 <div class="container mt-4">
     <h2>Catálogo de productos</h2>

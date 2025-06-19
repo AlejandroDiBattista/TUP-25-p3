@@ -1,12 +1,40 @@
-/* ==== Tipografía y base general ==== */
+/* ==== Base general ==== */
 html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
     font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
     background-color: #f6f9fc;
     color: #333;
     line-height: 1.6;
-    padding-bottom: 2rem;
+    scroll-behavior: smooth;
 }
 
+/* ==== Estructura de layout fija ==== */
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 10;
+    padding: 1rem 2rem;
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: bold;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+
+main {
+    flex: 1;
+    padding: 2rem 1rem;
+}
+
+/* ==== Tipografía y encabezados ==== */
 h1:focus {
     outline: none;
 }
@@ -16,6 +44,7 @@ h1, h2, h3, h4 {
     color: #2c3e50;
 }
 
+/* ==== Enlaces ==== */
 a, .btn-link {
     color: #3498db;
     text-decoration: none;
@@ -26,7 +55,7 @@ a:hover {
     text-decoration: underline;
 }
 
-/* ==== Botones estilizados ==== */
+/* ==== Botones ==== */
 button, .btn {
     transition: background-color 0.3s ease, transform 0.2s ease;
     border-radius: 6px;
@@ -55,7 +84,7 @@ button, .btn {
     transform: scale(1.02);
 }
 
-/* ==== Formularios === */
+/* ==== Formularios ==== */
 input.form-control, select.form-control {
     border-radius: 6px;
     border: 1px solid #ced4da;
@@ -84,12 +113,27 @@ input.form-control:focus {
 .invalid, .validation-message {
     color: red;
 }
+.navbar-brand {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
 
-/* ==== Contenedores y Tarjetas ==== */
+
+
+
+/* ==== Contenedores ==== */
 .container {
     max-width: 960px;
     margin: auto;
     padding: 2rem 1rem;
+    box-sizing: border-box;
+}
+
+.row, .col, .card, .card-body {
+    min-width: 0;
+    box-sizing: border-box;
+    word-wrap: break-word;
 }
 
 .card {
@@ -171,6 +215,7 @@ input.form-control:focus {
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
+/* ==== Código en texto ==== */
 code {
     color: #c02d76;
 }
