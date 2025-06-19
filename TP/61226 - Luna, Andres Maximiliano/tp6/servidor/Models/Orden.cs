@@ -16,4 +16,6 @@ public class ItemOrden
     public string NombreProducto { get; set; }
     public decimal Precio { get; set; }
     public int Cantidad { get; set; }
+    public int OrdenId { get; set; }  
+    public Orden Orden { get; set; }  
 }

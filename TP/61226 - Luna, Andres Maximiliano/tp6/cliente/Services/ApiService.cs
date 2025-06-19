@@ -49,9 +49,20 @@ public class ApiService
 
     public async Task<bool> ConfirmarCompraAsync(Orden orden)
     {
-            var response = await _httpClient.PostAsJsonAsync("ordenes", orden);
-            return response.IsSuccessStatusCode;       
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/ordenes", orden);
+            Console.WriteLine($"POST /api/ordenes => {response.StatusCode}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar compra: {ex.Message}");
+            return false;
+        }
     }
+
+
 
     
 }

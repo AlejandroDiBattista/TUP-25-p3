@@ -35,8 +35,10 @@ else
                     <td>@item.Cantidad</td>
                     <td>$@(item.Cantidad * item.Producto.Precio)</td>
                     <td>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => DisminuirCantidad(item.Producto.Id)">-</button>
-                        <button class="btn btn-sm btn-secondary mx-1" @onclick="() => AumentarCantidad(item.Producto.Id)">+</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => Disminuir(item.Producto.Id)">-</button>
+                        <button class="btn btn-sm btn-success" @onclick="() => Aumentar(item.Producto.Id)"
+                                disabled="@((item.Cantidad >= item.Producto.StockDisponible))">+</button>
+
                         
                     </td>
                 </tr>
@@ -93,13 +95,14 @@ else
         }
     }
 
-    private void AumentarCantidad(int productoId)
+    void Aumentar(int productoId)
     {
-    CarritoService.AumentarCantidad(productoId);
-    StateHasChanged(); 
+        CarritoService.AumentarCantidad(productoId);
+        StateHasChanged();
     }
 
-    private void DisminuirCantidad(int productoId)
+
+    void Disminuir(int productoId)
     {
         CarritoService.DisminuirCantidad(productoId);
         StateHasChanged();

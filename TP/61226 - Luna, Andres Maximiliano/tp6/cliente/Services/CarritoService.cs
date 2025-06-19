@@ -31,8 +31,10 @@ public class CarritoService
     public void AumentarCantidad(int productoId)
     {
         var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null && item.Cantidad < item.Producto.Stock)
+        if (item != null && item.Cantidad < item.Producto.StockDisponible)
+        {
             item.Cantidad++;
+        }
     }
 
     public void DisminuirCantidad(int productoId)
