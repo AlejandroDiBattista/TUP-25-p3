@@ -8,3 +8,5 @@ public class CarritoItem // ¡Este es el nuevo modelo para el cliente!
     public decimal PrecioUnitario { get; set; } // Coincide con backend
 }
 
+
+//correcion para subir a github
