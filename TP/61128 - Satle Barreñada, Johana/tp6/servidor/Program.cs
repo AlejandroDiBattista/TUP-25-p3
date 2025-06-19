@@ -20,8 +20,6 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 
-
-
 using (var scope = app.Services.CreateScope()) // Crea un nuevo ámbito de servicio
 {
     var services = scope.ServiceProvider;
