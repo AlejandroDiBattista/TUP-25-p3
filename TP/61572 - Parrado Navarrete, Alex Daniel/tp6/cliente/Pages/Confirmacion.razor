@@ -2,7 +2,7 @@
 @using Microsoft.JSInterop
 @using cliente.Models
 @using cliente.Services
-
+@using System.Globalization
 @inject HttpClient        Http
 @inject CartState         CartState
 @inject IJSRuntime        JS
@@ -18,7 +18,7 @@ else
 {
     <p>
       Total ítems: <strong>@items.Sum(i => i.Cantidad)</strong><br />
-      Importe: <strong>@items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</strong>
+      Importe: <strong>@items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C",new CultureInfo("es-AR"))</strong>
     </p>
 
     <EditForm Model="cliente">
@@ -60,7 +60,7 @@ else
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        ¿Quieres confirmar la compra por <strong>@items?.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</strong>?
+        ¿Quieres confirmar la compra por <strong>@items?.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C", new CultureInfo("es-AR"))</strong>?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>

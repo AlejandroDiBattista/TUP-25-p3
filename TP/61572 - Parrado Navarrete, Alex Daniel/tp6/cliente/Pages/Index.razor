@@ -1,6 +1,7 @@
 @page "/"
 @using cliente.Models
 @using cliente.Services
+@using System.Globalization
 
 @inject HttpClient        Http
 @inject CartState         CartState
@@ -37,7 +38,7 @@ else
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">@p.Nombre</h5>
                         <p class="card-text text-muted">@p.Descripcion</p>
-                        <p class="card-text fw-bold">@p.Precio.ToString("C")</p>
+                        <p class="card-text fw-bold">@p.Precio.ToString("C",new CultureInfo("es-AR"))</p>
                         <p class="card-text text-secondary">Stock: @p.Stock</p>
                         <button class="btn btn-primary mt-auto"
                                 disabled="@(p.Stock == 0)"

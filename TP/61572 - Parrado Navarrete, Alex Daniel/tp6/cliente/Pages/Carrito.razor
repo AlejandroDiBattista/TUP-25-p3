@@ -1,7 +1,7 @@
 @page "/carrito"
 @using cliente.Models
 @using cliente.Services
-
+@using System.Globalization
 @inject HttpClient        Http
 @inject CartState         CartState
 @inject NavigationManager Nav
@@ -41,8 +41,8 @@ else
              <button class="btn btn-sm btn-secondary"
                      @onclick="() => ChangeQty(it, it.Cantidad + 1)">+</button>
            </td>
-           <td>@it.PrecioUnitario.ToString("C")</td>
-           <td>@((it.Cantidad * it.PrecioUnitario).ToString("C"))</td>
+           <td>@it.PrecioUnitario.ToString("C", new CultureInfo("es-AR"))</td>
+           <td>@((it.Cantidad * it.PrecioUnitario).ToString("C", new CultureInfo("es-AR")))</td>
            <td>
              <button class="btn btn-danger btn-sm"
                      @onclick="() => Remove(it.ProductoId)">X</button>
