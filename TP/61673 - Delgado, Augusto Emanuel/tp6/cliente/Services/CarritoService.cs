@@ -16,8 +16,8 @@ namespace cliente.Services
 
         public List<CarritoItem> Items { get; private set; } = new List<CarritoItem>();
 
-        // Evento para notificar cambios en el carrito a los componentes
         public event Action? OnChange;
+        public event Action? OnStockChange;
 
         public CarritoService(ILocalStorageService localStorage)
         {
@@ -30,61 +30,67 @@ namespace cliente.Services
         public decimal TotalCarrito => Items.Sum(item => item.Producto.Precio * item.Cantidad);
 
 
-        public void AgregarAlCarrito(Producto producto)
+        public void AgregarAlCarrito(Producto producto, List<Producto>? productos = null)
         {
             var itemExistente = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-
             if (itemExistente != null)
             {
-                
                 if (itemExistente.Cantidad < producto.Stock)
                 {
                     itemExistente.Cantidad++;
-                    Console.WriteLine($"--> DEBUG (CS): Cantidad de {producto.Nombre} aumentada en carrito. Nueva cantidad: {itemExistente.Cantidad}");
-                    GuardarCarritoEnLocalStorage(); 
-                    NotifyChange(); 
-                }
-                else
-                {
-                    Console.WriteLine($"--> ADVERTENCIA (CS): No se puede añadir más {producto.Nombre}. Stock máximo alcanzado ({producto.Stock}).");
+                    if (productos != null)
+                    {
+                        var prod = productos.FirstOrDefault(p => p.Id == producto.Id);
+                        if (prod != null) prod.Stock--;
+                    }
+                    GuardarCarritoEnLocalStorage();
+                    NotifyChange();
+                    NotifyStockChange();
                 }
             }
             else
             {
-                
                 if (producto.Stock > 0)
                 {
                     Items.Add(new CarritoItem { Producto = producto, Cantidad = 1 });
-                    Console.WriteLine($"--> DEBUG (CS): Agregado {producto.Nombre} al carrito por primera vez. Cantidad: 1");
-                    GuardarCarritoEnLocalStorage(); 
-                    NotifyChange(); 
-                }
-                else
-                {
-                    Console.WriteLine($"--> ADVERTENCIA (CS): No se puede añadir {producto.Nombre}. Sin stock disponible.");
+                    if (productos != null)
+                    {
+                        var prod = productos.FirstOrDefault(p => p.Id == producto.Id);
+                        if (prod != null) prod.Stock--;
+                    }
+                    GuardarCarritoEnLocalStorage();
+                    NotifyChange();
+                    NotifyStockChange();
                 }
             }
         }
 
-        // Método que remueve un producto del carrito
-        public void RemoverDelCarrito(int productoId)
+        public void RemoverDelCarrito(int productoId, List<Producto>? productos = null)
         {
             var itemExistente = Items.FirstOrDefault(i => i.Producto.Id == productoId);
-
             if (itemExistente != null)
             {
                 if (itemExistente.Cantidad > 1)
                 {
                     itemExistente.Cantidad--;
-                    Console.WriteLine($"--> DEBUG (CS): Cantidad de producto {productoId} reducida. Nueva cantidad: {itemExistente.Cantidad}");
+                    if (productos != null)
+                    {
+                        var prod = productos.FirstOrDefault(p => p.Id == productoId);
+                        if (prod != null) prod.Stock++;
+                    }
                 }
                 else
                 {
                     Items.Remove(itemExistente);
-                    Console.WriteLine($"--> DEBUG (CS): Producto {productoId} removido del carrito.");
+                    if (productos != null)
+                    {
+                        var prod = productos.FirstOrDefault(p => p.Id == productoId);
+                        if (prod != null) prod.Stock++;
+                    }
                 }
                 GuardarCarritoEnLocalStorage();
-                NotifyChange(); 
+                NotifyChange();
+                NotifyStockChange();
             }
         }
 
@@ -125,5 +131,6 @@ namespace cliente.Services
 
        
         private void NotifyChange() => OnChange?.Invoke();
+        private void NotifyStockChange() => OnStockChange?.Invoke();
     }
 }

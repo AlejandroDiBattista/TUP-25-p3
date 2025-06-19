@@ -20,26 +20,29 @@ namespace cliente.Services
 
         public async Task AgregarAlCarrito(Producto producto)
         {
-            var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-            if (item != null)
+            if (producto.Stock > 0)
             {
-                if (item.Cantidad < producto.Stock)
+                var item = Items.FirstOrDefault(i => i.ProductoId == producto.Id);
+                if (item != null)
+                {
                     item.Cantidad++;
+                }
+                else
+                {
+                    Items.Add(new CarritoItem { ProductoId = producto.Id, Cantidad = 1 });
+                }
+                producto.Stock--;
+                await GuardarCarritoAsync();
             }
-            else
-            {
-                if (producto.Stock > 0)
-                    Items.Add(new CarritoItem { Producto = producto, Cantidad = 1 });
-            }
-            await GuardarCarritoAsync();
         }
 
         public async Task QuitarDelCarrito(Producto producto)
         {
-            var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+            var item = Items.FirstOrDefault(i => i.ProductoId == producto.Id);
             if (item != null)
             {
                 item.Cantidad--;
+                producto.Stock++;
                 if (item.Cantidad <= 0)
                     Items.Remove(item);
             }
@@ -64,6 +67,23 @@ namespace cliente.Services
                 Items = JsonSerializer.Deserialize<List<CarritoItem>>(json);
         }
 
-        public decimal Total => Items.Sum(i => i.Producto.Precio * i.Cantidad);
+        public decimal CalcularTotal(List<Producto> productos)
+        {
+            return Items.Sum(i =>
+            {
+                var producto = productos.FirstOrDefault(p => p.Id == i.ProductoId);
+                return producto != null ? producto.Precio * i.Cantidad : 0;
+            });
+        }
+
+        public async Task EliminarProductoDelCarrito(int productoId)
+        {
+            var item = Items.FirstOrDefault(i => i.ProductoId == productoId);
+            if (item != null)
+            {
+                Items.Remove(item);
+                await GuardarCarritoAsync();
+            }
+        }
     }
 }

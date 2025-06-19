@@ -1,56 +1,59 @@
+// cliente/Services/ApiService.cs
+
+using cliente.Modelos; // <--- ESTA ES LA LÍNEA QUE LE FALTABA A TU ARCHIVO
 using System.Net.Http.Json;
-using cliente.Modelos;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace cliente.Services
+namespace cliente.Services;
+
+public class ApiService
 {
-    public class ApiService
+    private readonly HttpClient _httpClient;
+    private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    public ApiService(HttpClient httpClient)
     {
-        private readonly HttpClient _httpClient;
-        private readonly JsonSerializerOptions _jsonOptions;
-
-        public ApiService(HttpClient httpClient) {
-            _httpClient = httpClient;
-            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, ReferenceHandler = ReferenceHandler.Preserve };
-        }
-
-        public async Task<List<Producto>> GetProductosAsync(string? searchQuery = null) {
-            var url = $"http://localhost:5184/api/productos{(string.IsNullOrWhiteSpace(searchQuery) ? "" : $"?q={searchQuery}")}";
-            var response = await _httpClient.GetAsync(url);
-            var content = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode) { throw new ApplicationException($"Error de la API: {response.ReasonPhrase}"); }
-            return JsonSerializer.Deserialize<List<Producto>>(content, _jsonOptions);
-        }
-
-        public async Task<Guid> CreateCartAsync() {
-            var response = await _httpClient.PostAsync("http://localhost:5184/api/carritos", null);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<CartCreationResponse>();
-            return result.CarritoId;
-        }
-
-        public async Task AddProductToCartAsync(Guid cartId, int productId) {
-            var response = await _httpClient.PutAsync($"http://localhost:5184/api/carritos/{cartId}/productos/{productId}", null);
-            response.EnsureSuccessStatusCode();
-        }
-
-        // <<< MÉTODO NUEVO >>>
-        public async Task RemoveProductFromCartAsync(Guid cartId, int productId) {
-            var response = await _httpClient.DeleteAsync($"http://localhost:5184/api/carritos/{cartId}/productos/{productId}");
-            response.EnsureSuccessStatusCode();
-        }
-
-        public async Task EmptyCartAsync(Guid cartId) {
-            var response = await _httpClient.DeleteAsync($"http://localhost:5184/api/carritos/{cartId}");
-            response.EnsureSuccessStatusCode();
-        }
-        
-        public async Task ConfirmPurchaseAsync(Guid cartId, DatosCliente datosCliente) {
-            var response = await _httpClient.PutAsJsonAsync($"http://localhost:5184/api/carritos/{cartId}/confirmar", datosCliente);
-            response.EnsureSuccessStatusCode();
-        }
+        _httpClient = httpClient;
     }
 
-    public class CartCreationResponse { public Guid CarritoId { get; set; } }
+    public async Task<Producto[]?> GetProductosAsync(string? searchTerm = null)
+    {
+        var url = string.IsNullOrWhiteSpace(searchTerm) ? "api/productos" : $"api/productos?q={searchTerm}";
+        return await _httpClient.GetFromJsonAsync<Producto[]>(url, _jsonOptions);
+    }
+
+    public async Task<Guid?> CreateCartAsync()
+    {
+        var response = await _httpClient.PostAsync("api/carritos", null);
+        if (!response.IsSuccessStatusCode) return null;
+        var result = await response.Content.ReadFromJsonAsync<CreateCartResponse>(_jsonOptions);
+        return result?.CarritoId;
+    }
+
+    public async Task<List<CarritoItem>?> AddProductToCartAsync(Guid carritoId, int productoId)
+    {
+        var response = await _httpClient.PutAsync($"api/carritos/{carritoId}/{productoId}", null);
+        return await response.Content.ReadFromJsonAsync<List<CarritoItem>>(_jsonOptions);
+    }
+
+    public async Task<List<CarritoItem>?> RemoveProductFromCartAsync(Guid carritoId, int productoId)
+    {
+        var response = await _httpClient.DeleteAsync($"api/carritos/{carritoId}/{productoId}");
+        return await response.Content.ReadFromJsonAsync<List<CarritoItem>>(_jsonOptions);
+    }
+    
+    public async Task EmptyCartAsync(Guid carritoId)
+    {
+        await _httpClient.DeleteAsync($"api/carritos/{carritoId}");
+    }
+
+    public async Task<Compra?> ConfirmPurchaseAsync(Guid carritoId, DatosClienteDto datosCliente)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"api/carritos/{carritoId}/confirmar", datosCliente);
+        if(response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<Compra>(_jsonOptions);
+        }
+        return null;
+    }
 }

@@ -40,7 +40,7 @@ using (var scope = app.Services.CreateScope())
             new Producto {Nombre = "Microondas Samsung",Descripcion = "20L BLANCO ME731K-KD",Precio = 250000,Stock = 50,ImagenUrl = "http://localhost:5184/img/microondas.jpg" },
             new Producto {Nombre = "Freidora de Aire Aiwa",Descripcion = "Fa35 - 3,6l - 1400w - 360°c",Precio = 130000,Stock = 12,ImagenUrl = "http://localhost:5184/img/freidora.jpg" },
             new Producto {Nombre = "SecaRopa Khoinoor",Descripcion = "Centrífugador 5,5 Kg. Acero Inoxidable A-655/2",Precio = 350000,Stock = 20,ImagenUrl = "http://localhost:5184/img/secaropa.jpg" },
-            new Producto {Nombre = "LavaRopa Whirlpool",Descripcion = "Wnq90as Frontal 9kg Inverter Titanium",Precio = 450000,Stock = 25,ImagenUrl = "http://localhost:5184/img/lavaropa.jpg" }, // <-- corregido el precio
+            new Producto {Nombre = "LavaRopa Whirlpool",Descripcion = "Wnq90as Frontal 9kg Inverter Titanium",Precio = 450000,Stock = 25,ImagenUrl = "http://localhost:5184/img/lavaropa.jpg" },
             new Producto {Nombre = "Plancha para Ropa Sokany",Descripcion = "A vapor ",Precio = 60000,Stock = 30,ImagenUrl = "http://localhost:5184/img/plancharopa.jpg" },
             new Producto {Nombre = "Pava Electrica Liliana",Descripcion = "Tempomate Ap175 Negra 1.7l 2kw",Precio = 20000,Stock = 25,ImagenUrl = "http://localhost:5184/img/pava.jpg" },
         });
@@ -106,6 +106,41 @@ app.MapPut("/api/carritos/{carritoId}/{productoId}", async (
     await db.SaveChangesAsync();
 
     return Results.Ok("Producto agregado al carrito");
+});
+
+// NUEVO ENDPOINT: Cambiar cantidad de un producto en el carrito (para + y -)
+app.MapPut("/api/carritos/{carritoId}/cantidad/{productoId}", async (
+    Guid carritoId,
+    int productoId,
+    int delta,
+    TiendaContext db) =>
+{
+    var item = await db.CarritoItems
+        .Include(ci => ci.Producto)
+        .FirstOrDefaultAsync(ci => ci.CarritoId == carritoId && ci.ProductoId == productoId);
+
+    if (item == null)
+        return Results.NotFound("Producto no encontrado en el carrito");
+
+    if (delta > 0)
+    {
+        if (item.Producto.Stock < delta)
+            return Results.BadRequest("No hay stock suficiente");
+        item.Cantidad += delta;
+        item.Producto.Stock -= delta;
+    }
+    else if (delta < 0)
+    {
+        int resta = Math.Min(item.Cantidad - 1, -delta); // No permitir menos de 1
+        if (resta > 0)
+        {
+            item.Cantidad -= resta;
+            item.Producto.Stock += resta;
+        }
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok("Cantidad actualizada");
 });
 
 app.MapGet("/api/carritos/{carritoId}", async (Guid carritoId, TiendaContext db) =>

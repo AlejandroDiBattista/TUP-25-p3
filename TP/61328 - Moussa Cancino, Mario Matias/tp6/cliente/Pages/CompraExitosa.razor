@@ -1,11 +1,324 @@
-@page "/compra-exitosa"
+@inject NavigationManager Navigation
 
-<div class="container mt-5">
-    <div class="jumbotron bg-success text-white rounded">
-        <h1 class="display-4"><i class="bi bi-check-circle-fill"></i> ¡Compra Realizada con Éxito!</h1>
-        <p class="lead">Gracias por tu compra. Tu pedido ha sido procesado y será enviado pronto.</p>
-        <hr class="my-4">
-        <p>Recibirás un correo electrónico con los detalles de tu pedido.</p>
-        <a class="btn btn-light btn-lg" href="/" role="button">Volver al Catálogo</a>
+@if (Visible)
+{
+    <div class="modal-overlay" @onclick="HandleOverlayClick">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="success-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+            </div>
+            
+            <h2 class="success-title">¡Compra realizada con éxito!</h2>
+            
+            @if (Compra != null)
+            {
+                <div class="purchase-details">
+                    <p class="success-message">
+                        Gracias <strong>@Compra.NombreCliente @Compra.ApellidoCliente</strong> por tu compra.
+                    </p>
+                    
+                    <div class="order-info">
+                        <div class="info-row">
+                            <span class="label">Número de orden:</span>
+                            <span class="value">#@Compra.Id.ToString("D6")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Fecha:</span>
+                            <span class="value">@Compra.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Total:</span>
+                            <span class="value total-amount">@Compra.Total.ToString("C")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Email:</span>
+                            <span class="value">@Compra.EmailCliente</span>
+                        </div>
+                    </div>
+                    
+                    <div class="purchased-items">
+                        <h4>Productos comprados:</h4>
+                        <ul class="items-list">
+                            @foreach (var item in Compra.Items)
+                            {
+                                <li class="item-row">
+                                    <span class="item-quantity">@item.Cantidad x</span>
+                                    <span class="item-name">Producto ID: @item.ProductoId</span>
+                                    <span class="item-price">@item.PrecioUnitario.ToString("C")</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+            
+            <div class="modal-actions">
+                <button class="continue-shopping-btn" @onclick="ContinueShopping">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                    </svg>
+                    Seguir comprando
+                </button>
+                <button class="close-btn" @onclick="CloseModal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
     </div>
-</div>
+}
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        position: relative;
+        animation: slideUp 0.3s ease;
+    }
+
+    .success-icon {
+        margin: 0 auto 24px;
+        color: #2c2c2c;
+        animation: checkmark 0.6s ease;
+    }
+
+    .success-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin: 0 0 20px 0;
+    }
+
+    .success-message {
+        font-size: 16px;
+        color: #666;
+        margin: 0 0 30px 0;
+        line-height: 1.5;
+    }
+
+    .purchase-details {
+        text-align: left;
+        margin-bottom: 30px;
+    }
+
+    .order-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .info-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .value {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .total-amount {
+        color: #2c2c2c;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .purchased-items h4 {
+        margin: 0 0 12px 0;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .items-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        border: 1px solid #e9ecef;
+    }
+
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .item-row:last-child {
+        border-bottom: none;
+    }
+
+    .item-quantity {
+        color: #666;
+        font-weight: 500;
+        min-width: 40px;
+    }
+
+    .item-name {
+        flex: 1;
+        margin: 0 16px;
+        color: #333;
+    }
+
+    .item-price {
+        color: #2c2c2c;
+        font-weight: 600;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .continue-shopping-btn {
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .continue-shopping-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(44, 44, 44, 0.3);
+    }
+
+    .close-btn {
+        background: #f8f9fa;
+        color: #666;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+        background: #e9ecef;
+        color: #333;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideUp {
+        from { 
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes checkmark {
+        0% { 
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% { 
+            transform: scale(1.2);
+            opacity: 1;
+        }
+        100% { 
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .modal-content {
+            padding: 30px 20px;
+            margin: 20px;
+        }
+
+        .modal-actions {
+            flex-direction: column;
+        }
+
+        .continue-shopping-btn,
+        .close-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public Compra? Compra { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task CloseModal()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task ContinueShopping()
+    {
+        Navigation.NavigateTo("/");
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        await CloseModal();
+    }
+}

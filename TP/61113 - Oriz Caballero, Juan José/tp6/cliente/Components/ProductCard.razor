@@ -1,0 +1,33 @@
+@namespace Cliente.Components
+@using Cliente.Modelo
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<div class="border rounded-xl p-4 shadow-md flex flex-col justify-between">
+    <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" class="h-32 object-cover mb-2 rounded" />
+    <h3 class="text-lg font-semibold">@Producto.Nombre</h3>
+    <p class="text-sm text-gray-600">@Producto.Descripcion</p>
+    <p class="text-md font-bold mt-2">$@Producto.Precio</p>
+    <p class="text-sm text-gray-500">Stock: @Producto.Stock</p>
+
+    <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            @onclick="AgregarAlCarrito"
+            disabled="@(!PuedeAgregar)">
+        Agregar al carrito
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public Producto Producto { get; set; } = default!;
+
+    private bool PuedeAgregar => Producto.Stock > 0;
+
+    private async Task AgregarAlCarrito()
+    {
+        if (Producto.Stock <= 0) return;
+
+        await CarritoService.AgregarProducto(Producto.Id, 1);
+        NavigationManager.NavigateTo("/carrito");
+    }
+}

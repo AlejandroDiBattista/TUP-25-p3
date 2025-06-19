@@ -138,7 +138,13 @@
     {
         if (nuevaCantidad < 1 || nuevaCantidad > producto.Stock)
             return;
-        bool success = await ApiService.AgregarProductoAlCarrito(CarritoService.CarritoId, producto.Id, nuevaCantidad);
+        var item = itemsCarrito.FirstOrDefault(i => i.Producto.Id == producto.Id);
+        if (item == null)
+            return;
+        if (nuevaCantidad == item.Cantidad)
+            return;
+        // Usar el nuevo método para setear la cantidad absoluta
+        bool success = await ApiService.SetearCantidadProductoEnCarrito(CarritoService.CarritoId, producto.Id, nuevaCantidad);
         if (success)
         {
             await ObtenerCarrito();

@@ -31,10 +31,12 @@ else
             {
                 <div class="col">
                     <div class="card h-100 shadow-sm border-0">
-                        <img src="@producto.ImagenUrl"
-                             alt="@producto.Nombre"
-                             class="card-img-top img-fluid"
-                             style="height: 200px; object-fit: cover;" />
+                        <!-- Contenedor de imagen ajustado -->
+                        <div style="height: 200px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                            <img src="@producto.ImagenUrl"
+                                 alt="@producto.Nombre"
+                                 style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                        </div>
 
                         <div class="card-body text-center">
                             <h5 class="card-title">@producto.Nombre</h5>
@@ -87,6 +89,7 @@ else
 
     private void AgregarAlCarrito(Producto producto)
     {
+        producto.Stock--;
         CartService.AgregarProducto(producto);
     }
 }

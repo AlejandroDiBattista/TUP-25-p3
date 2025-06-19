@@ -1,45 +1,53 @@
-@page "/carrito"
-@using Cliente.Models
-@inject HttpClient Http
-@inject IJSRuntime JS
-@inject CarritoService CarritoSrv
-@inject NavigationManager Nav
+@page "/carrito"                       
+@using Cliente.Models                 
+@inject HttpClient Http               
+@inject IJSRuntime JS                 
+@inject CarritoService CarritoSrv     
+@inject NavigationManager Nav         
+
 
 <h3>🛒 Carrito de Compras</h3>
 
-@if (items is null)
+@if (items is null)                   // Si la lista de items aún no está cargada
 {
-    <p>Cargando...</p>
+    <p>Cargando...</p>                // Mostrar mensaje de carga
 }
-else if (!items.Any())
+else if (!items.Any())                // Si la lista está vacía
 {
-    <p>Tu carrito está vacío.</p>
+    <p>Tu carrito está vacío.</p>    // Indicar que no hay productos agregados
 }
-else
+else                                // Si hay productos en el carrito
 {
-    <table class="table">
+    <table class="table">           
+
         <thead>
             <tr>
                 <th>Producto</th>
                 <th>Precio</th>
                 <th>Cantidad</th>
                 <th>Total</th>
-                <th></th>
+                <th></th>           <!-- Columna para botón eliminar -->
             </tr>
         </thead>
+
         <tbody>
-            @foreach (var item in items)
+            @foreach (var item in items)   // Por cada item en el carrito
             {
                 <tr>
-                    <td>@item.Producto?.Nombre</td>
-                    <td>@item.PrecioUnitario.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</td>
+                    <td>@item.Producto?.Nombre</td>  <!-- Nombre del producto -->
+                    <td>@item.PrecioUnitario.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</td> <!-- Precio unitario con formato moneda argentina -->
                     <td>
+                        <!-- Botón para reducir cantidad -->
                         <button class="btn btn-sm btn-secondary" @onclick="@(() => ActualizarCantidad(item.ProductoId, -1))">-</button>
-                        @item.Cantidad
+
+                        @item.Cantidad  <!-- Cantidad actual -->
+
+                        <!-- Botón para aumentar cantidad -->
                         <button class="btn btn-sm btn-secondary" @onclick="@(() => ActualizarCantidad(item.ProductoId, 1))">+</button>
                     </td>
-                    <td>@((item.Cantidad * item.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR")))</td>
+                    <td>@((item.Cantidad * item.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR")))</td> <!-- Total (precio x cantidad) -->
                     <td>
+                        <!-- Botón para eliminar producto -->
                         <button class="btn btn-sm btn-danger" @onclick="@(() => Quitar(item.ProductoId))">🗑</button>
                     </td>
                 </tr>
@@ -47,45 +55,55 @@ else
         </tbody>
     </table>
 
+    <!-- Total general del carrito -->
     <h5>Total: @items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</h5>
 
+    <!-- Botones para vaciar carrito o confirmar compra -->
     <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
     <button class="btn btn-success" @onclick="@(() => Nav.NavigateTo("/confirmacion"))">Confirmar compra</button>
 }
 
 @code {
-    private List<ItemCarrito>? items;
+    private List<ItemCarrito>? items; // Lista de productos cargados en el carrito
 
+    // Método que se ejecuta al iniciar la página/component
     protected override async Task OnInitializedAsync()
     {
-        CarritoSrv.OnChange += CarritoActualizado;
-        await CargarCarrito();
+        CarritoSrv.OnChange += CarritoActualizado;  // Se suscribe al evento OnChange para actualizar la UI cuando cambia el carrito
+        await CargarCarrito();                       // Carga los items desde el backend/localStorage
     }
 
+    // Método que responde al evento OnChange del carrito (cuando se modifica)
     private async void CarritoActualizado()
     {
-        await CargarCarrito();
-        StateHasChanged(); // Refresca la UI
+        await CargarCarrito();  // Recarga la lista
+        StateHasChanged();      // Actualiza la interfaz visual (UI)
     }
 
+    // Método que carga los items del carrito consultando el backend según el id guardado en localStorage
     private async Task CargarCarrito()
     {
-        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");  // Recupera el id del carrito en localStorage
+
         if (!string.IsNullOrEmpty(id))
         {
+            // Si existe id, consulta los items asociados a ese carrito
             items = await Http.GetFromJsonAsync<List<ItemCarrito>>($"api/carritos/{id}");
         }
         else
         {
+            // Si no hay carrito creado, la lista queda vacía
             items = new();
         }
     }
 
+    // Se ejecuta cuando se destruye el componente para limpiar la suscripción
     public void Dispose()
     {
         CarritoSrv.OnChange -= CarritoActualizado;
     }
 
+    // Cambia la cantidad de un producto (delta puede ser +1 o -1)
     private async Task ActualizarCantidad(int productoId, int delta)
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
@@ -93,16 +111,22 @@ else
         if (item is null) return;
 
         int nuevaCantidad = item.Cantidad + delta;
+
+        // Si la nueva cantidad es 0 o menos, quita el producto del carrito
         if (nuevaCantidad <= 0)
         {
             await Quitar(productoId);
             return;
         }
 
+        // Llama al backend para actualizar cantidad del producto en carrito
         await Http.PutAsync($"api/carritos/{id}/{productoId}?cantidad={delta}", null);
-        await CarritoSrv.ActualizarCantidadAsync(); // Esto llama OnChange
+
+        // Actualiza la cantidad total (y lanza evento OnChange)
+        await CarritoSrv.ActualizarCantidadAsync();
     }
 
+    // Quita un producto del carrito
     private async Task Quitar(int productoId)
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
@@ -110,6 +134,7 @@ else
         await CarritoSrv.ActualizarCantidadAsync();
     }
 
+    // Vacía todo el carrito
     private async Task Vaciar()
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");

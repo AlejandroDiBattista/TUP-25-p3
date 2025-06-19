@@ -4,11 +4,29 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Servidor</RootNamespace>
+    <!-- Desactivamos inclusión automática de .cs -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
+  <!-- Incluimos manualmente cada archivo .cs -->
   <ItemGroup>
-    <PackageReference Include="microsoft.entityframeworkcore" Version="9.0.5" />
-    <PackageReference Include="microsoft.entityframeworkcore.sqlite" Version="9.0.5" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Data\AppDbContext.cs" />
+    <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Compra.cs" />
+    <Compile Include="Models\ItemCompra.cs" />
+    <Compile Include="DTOs\ApiDtos.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

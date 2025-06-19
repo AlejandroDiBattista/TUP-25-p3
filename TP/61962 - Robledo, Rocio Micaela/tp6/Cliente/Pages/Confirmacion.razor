@@ -1,15 +1,18 @@
-@page "/confirmacion"
-@using Cliente.Models
-@inject HttpClient Http
-@inject NavigationManager Nav
-@inject IJSRuntime JS
-@inject CarritoService CarritoSrv
+@page "/confirmacion"                         
+
+@using Cliente.Models                         
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject HttpClient Http                   
+@inject NavigationManager Nav             
+@inject IJSRuntime JS                       
+@inject CarritoService CarritoSrv           
 
 <h3>🧾 Confirmación de Compra</h3>
 
 @if (carrito == null || carrito.Count == 0)
 {
-    <p>Tu carrito está vacío.</p>
+    <p>Tu carrito está vacío.</p>             // Mensaje si no hay productos en el carrito
 }
 else
 {
@@ -18,28 +21,30 @@ else
         <ul>
             @foreach (var item in carrito)
             {
-                <li>@item.Producto?.Nombre x @item.Cantidad - 
-                    @((item.Cantidad * item.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR")))</li>
+                <li>
+                  @item.Producto?.Nombre x @item.Cantidad - 
+                  @((item.Cantidad * item.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR")))
+                </li>
             }
         </ul>
         <p><strong>Total:</strong> @carrito.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("es-AR"))</p>
     </div>
 
-    <EditForm Model="formulario" OnValidSubmit="ConfirmarCompra">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <EditForm Model="formulario" OnValidSubmit="ConfirmarCompra">  <!-- Formulario validado -->
+        <DataAnnotationsValidator />      <!-- Valida anotaciones [Required], [EmailAddress], etc. -->
+        <ValidationSummary />             <!-- Muestra resumen de errores -->
 
         <div class="mb-3">
             <label class="form-label">Nombre:</label>
-            <InputText @bind-Value="formulario.NombreCliente" class="form-control" />
+            <InputText @bind="formulario.NombreCliente" class="form-control" />
         </div>
         <div class="mb-3">
             <label class="form-label">Apellido:</label>
-            <InputText @bind-Value="formulario.ApellidoCliente" class="form-control" />
+            <InputText @bind="formulario.ApellidoCliente" class="form-control" />
         </div>
         <div class="mb-3">
             <label class="form-label">Email:</label>
-            <InputText @bind-Value="formulario.EmailCliente" class="form-control" />
+            <InputText @bind="formulario.EmailCliente" class="form-control" />
         </div>
 
         <button type="submit" class="btn btn-success">Confirmar compra</button>
@@ -47,42 +52,50 @@ else
 }
 
 @code {
-    private List<ItemCarrito> carrito = new();
-    private Compra formulario = new();
+    private List<ItemCarrito> carrito = new();    // Items del carrito para mostrar resumen
+    private Compra formulario = new();            // Modelo para los datos del formulario
 
     protected override async Task OnInitializedAsync()
     {
+        // Obtiene el id del carrito guardado en localStorage
         var carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+
         if (!string.IsNullOrEmpty(carritoId))
         {
+            // Consulta al backend para obtener el detalle del carrito
             var resultado = await Http.GetFromJsonAsync<List<ItemCarrito>>($"api/carritos/{carritoId}");
             if (resultado is not null)
                 carrito = resultado;
         }
     }
 
-protected override void OnInitialized()
-{
-    CarritoSrv.OnChange += StateHasChanged;
-}
+    // Para actualizar la UI si el carrito cambia en el servicio
+    protected override void OnInitialized()
+    {
+        CarritoSrv.OnChange += StateHasChanged;
+    }
 
-public void Dispose()
-{
-    CarritoSrv.OnChange -= StateHasChanged;
-}
+    public void Dispose()
+    {
+        CarritoSrv.OnChange -= StateHasChanged;
+    }
 
+    // Método que se ejecuta cuando se envía el formulario y pasa la validación
     private async Task ConfirmarCompra()
     {
         var carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
         if (string.IsNullOrEmpty(carritoId))
             return;
 
+        // Envía los datos del formulario y confirma la compra en el backend
         var respuesta = await Http.PutAsJsonAsync($"api/carritos/{carritoId}/confirmar", formulario);
+
         if (respuesta.IsSuccessStatusCode)
         {
+            // Si fue exitosa, elimina el carrito de localStorage, actualiza el servicio y navega a página de éxito
             await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
             await CarritoSrv.ActualizarCantidadAsync();
-            Nav.NavigateTo("/exito"); // Cambiar por "/" si preferís volver al catálogo directamente
+            Nav.NavigateTo("/exito");  // Redirige a página de éxito
         }
     }
 }

@@ -1,0 +1,136 @@
+@page "/"
+@using cliente.Models
+@using cliente.Services
+@using System.Globalization
+
+@inject HttpClient        Http
+@inject CartState         CartState
+
+<h1>Catálogo de Productos</h1>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="mb-3 input-group">
+    <input @bind="q" @bind:event="oninput"
+           class="form-control" placeholder="Buscar..." />
+    <button class="btn btn-primary" @onclick="Load">Buscar</button>
+</div>
+
+@if (productos is null && string.IsNullOrEmpty(error))
+{
+    <p><em>Cargando…</em></p>
+}
+else if (productos != null && !productos.Any())
+{
+    <p>No se encontraron productos.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var p in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="@p.ImagenUrl" class="card-img-top" alt="@p.Nombre" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@p.Nombre</h5>
+                        <p class="card-text text-muted">@p.Descripcion</p>
+                        <p class="card-text fw-bold">@p.Precio.ToString("C",new CultureInfo("es-AR"))</p>
+                        <p class="card-text text-secondary">Stock: @p.Stock</p>
+                        <button class="btn btn-primary mt-auto"
+                                disabled="@(p.Stock == 0)"
+                                @onclick='() => AddToCart(p.Id)'>
+                            @(p.Stock > 0 ? "Agregar" : "Sin stock")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private string? q;
+    private List<Producto>? productos;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Refrescar carrito al arrancar
+        await CartState.RefreshCountAsync(Http);
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        error = null;
+        try
+        {
+            // Uso correcto de "q" en el query-string
+            var uri = string.IsNullOrWhiteSpace(q)
+                ? "/productos"
+                : $"/productos?q={Uri.EscapeDataString(q)}";
+
+            productos = await Http.GetFromJsonAsync<List<Producto>>(uri)
+                       ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            error = "Error al cargar productos: " + ex.Message;
+            productos = new List<Producto>();
+        }
+    }
+
+    private async Task AddToCart(int prodId)
+    {
+        error = null;
+
+        if (productos == null)
+        {
+            error = "Catálogo no está disponible.";
+            return;
+        }
+
+        try
+        {
+            // 1) Crear carrito si no existe
+            if (CartState.CartId == 0)
+            {
+                var postResp = await Http.PostAsync("/carritos", null);
+                postResp.EnsureSuccessStatusCode();
+
+                // Leemos el ID del carrito directamente del body
+                var newId = await postResp.Content.ReadFromJsonAsync<int>();
+                if (newId == 0)
+                    throw new InvalidOperationException("Id de carrito inválido");
+
+                CartState.SetCartId(newId);
+            }
+
+            // 2) Agregar 1 unidad al carrito
+            var putResp = await Http.PutAsJsonAsync(
+                $"/carritos/{CartState.CartId}/{prodId}",
+                new { Cantidad = 1 });
+            putResp.EnsureSuccessStatusCode();
+
+            // 3) Reducir stock local para feedback inmediato
+            var prod = productos.FirstOrDefault(p => p.Id == prodId);
+            if (prod != null)
+                prod.Stock--;
+
+            // 4) Refrescar contador global
+            await CartState.RefreshCountAsync(Http);
+        }
+        catch (HttpRequestException httpEx)
+        {
+            error = "Error de red: " + httpEx.Message;
+        }
+        catch (Exception ex)
+        {
+            error = "Error al agregar al carrito: " + ex.Message;
+        }
+    }
+}

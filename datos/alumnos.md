@@ -61,7 +61,7 @@
 04.  61189  Buzza, Juliana                       (381) 524-7391   24  +++++~      22  59  10.0  julianabuzza
 05.  62612  Campos, Julieta Antonella            (381) 605-0864    3  +·····       0   0   0.0  julicamposs
 06.  61345  Caro, Tobias                         (297) 500-3076   22  +++++~      23  51  10.0  Ultraliv3
-07.  61072  Casavalle Castillo, Bruno            (381) 353-4422   23  ++++·~      24  55  10.0  BrunoLCC
+07.  61072  Casavalle Castillo, Bruno            (381) 353-4422   23  +++++~      24  55  10.0  BrunoLCC
 08.  61611  Coronel, Julieta Antonella           (381) 477-0368   26  +++++~      20  60  10.0  julieta2815a
 09.  61908  Costilla, Ignacio                    (381) 207-4525   25  +++++~      23  51  10.0  Ignacio-32
 10.  61673  Delgado, Augusto Emanuel             (383) 860-2063   21  ++++·~      20  58  10.0  EmanuelDel

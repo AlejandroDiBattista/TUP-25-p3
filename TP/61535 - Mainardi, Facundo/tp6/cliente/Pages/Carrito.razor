@@ -73,7 +73,7 @@ else
     private void VaciarCarrito()
     {
         CarritoFinal.Vaciar();
-        Navigation.NavigateTo("/carrito", forceLoad: true);
+        Navigation.NavigateTo("/carrito", forceLoad: false);
     }
 
     private async Task CambiarCantidad(int productoId, int delta)

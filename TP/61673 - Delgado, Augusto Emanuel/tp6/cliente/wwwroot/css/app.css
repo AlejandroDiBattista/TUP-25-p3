@@ -1,19 +1,20 @@
-/* Importa la fuente Inter de Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
 html, body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f0f2f5; /* Un gris muy suave para el fondo del body */
-    color: #333; /* Color de texto general */
-    height: 100%; /* Asegura que el cuerpo ocupe toda la altura */
+    font-family: 'Montserrat', 'Inter', Arial, sans-serif;
+    background-color: #181a1b;
+    color: #ffffff;
+    height: 100%;
     margin: 0;
     padding: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600; /* Semi-bold para los títulos */
-    color: #212529; /* Un negro más oscuro para los títulos */
+    font-family: 'Montserrat', 'Inter', Arial, sans-serif;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
 }
 
 /* Estilos para el layout principal */
@@ -23,13 +24,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar {
-    /* El estilo de .sidebar-wrapper está en navmenu.css */
-    /* Este div .sidebar actúa como un espacio reservado para el fixed sidebar-wrapper */
-    width: 250px; /* Ancho fijo para el área del sidebar */
-    flex-shrink: 0; /* Evita que el sidebar se encoja */
+    
+  
+    width: 250px; 
+    flex-shrink: 0; 
 }
 
-.main { /* Esta clase podría no estar en uso directo en MainLayout.razor, pero se mantiene por si acaso */
+.main { 
     flex-grow: 1;
     padding: 20px;
     background-color: #fff;
@@ -38,16 +39,18 @@ h1, h2, h3, h4, h5, h6 {
     margin: 20px;
 }
 
-.main-content { /* Clase definida en MainLayout.razor para el contenido principal */
+.main-content { 
     flex-grow: 1;
-    margin-left: 250px; /* Ajuste para el ancho del sidebar fijo */
-    background-color: #f0f2f5;
+    margin-left: 250px; 
+    background-color: #23272b !important;
+    color: #f1f1f1;
     padding: 0;
 }
 
 .top-row {
-    background-color: #e9ecef; /* Fondo claro para la fila superior */
-    border-bottom: 1px solid #dee2e6;
+    background-color: #23272b;
+    color: #fff;
+    border-bottom: 1px solid #23272b;
     height: 56px;
     display: flex;
     align-items: center;
@@ -62,7 +65,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #fff !important;
 }
 
-/* Estilos para las tarjetas de producto */
+
 .card {
     border: none;
     border-radius: 10px;
@@ -75,8 +78,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-img-top {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #f8f9fa;
+    padding: 12px;
+    display: block;
 }
 
 .btn {
@@ -88,21 +97,23 @@ h1, h2, h3, h4, h5, h6 {
     transform: scale(0.98);
 }
 
-/* Spinner de carga */
+
 .spinner-border {
     width: 3rem;
     height: 3rem;
     margin-top: 50px;
 }
 
-/* Checkout */
+
 .checkout-container {
-    background-color: #fff;
+    background: linear-gradient(135deg, #23272b 60%, #181a1b 100%);
+    color: #f1f1f1;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.12);
     margin: 20px auto;
     max-width: 900px;
+    border: 1px solid #31363b;
 }
 
 .checkout-form legend {
@@ -122,15 +133,98 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 5px;
 }
 
-/* Sticky top para el resumen del pedido en checkout */
+
 .sticky-top {
     position: sticky;
     top: 20px;
 }
 
-/* Media queries para el main-content en app.css para asegurar el margen izquierdo en desktop */
 @media (max-width: 991.98px) {
     .main-content {
-        margin-left: 0; /* En móvil, el main-content no tiene margen a la izquierda */
+        margin-left: 0; 
     }
+}
+
+.card.h-100.shadow-sm {
+    background: #23272b;
+    border: 1.5px solid #23272b !important;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.18);
+}
+.card.h-100.shadow-sm:hover {
+    border-color: #444a50 !important;
+    box-shadow: 0 12px 32px 0 rgba(0,0,0,0.28);
+}
+.card-title, .card-text {
+    color: #f1f1f1 !important;
+}
+
+.badge.bg-info.text-dark {
+    background-color: #3a3f44 !important;
+    color: #f1f1f1 !important;
+}
+.badge.bg-danger {
+    background-color: #b00020 !important;
+    color: #fff !important;
+}
+.btn-primary {
+    background-color: #1976d2;
+    border-color: #1976d2;
+}
+.btn-primary:hover {
+    background-color: #1565c0;
+    border-color: #1565c0;
+}
+.app-header {
+    background-color: #23272b;
+    color: #fff;
+}
+.content.px-4 {
+    padding: 20px 40px;
+    background: linear-gradient(90deg, #181a1b 0%, #23272b 50%, #22243a 100%) !important;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    margin: 20px;
+    min-height: calc(100vh - 40px - 56px - 100px);
+    color: #f1f1f1;
+}
+.card.mb-4, .card.p-3.sticky-top {
+    background: linear-gradient(90deg, #181a1b 0%, #23272b 50%, #22243a 100%) !important;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+    color: #f1f1f1;
+    border: 1.5px solid #23272b !important;
+}
+.card-header.bg-primary.text-white {
+    background: linear-gradient(90deg, #23272b 0%, #22243a 100%) !important;
+    color: #fff !important;
+    border-radius: 18px 18px 0 0;
+    border-bottom: 1px solid #23272b;
+}
+.list-group-item {
+    background: transparent !important;
+    color: #f1f1f1 !important;
+    border-color: #23272b !important;
+}
+.btn-success.btn-lg {
+    background: #1976d2;
+    border-color: #1976d2;
+}
+.btn-success.btn-lg:hover {
+    background: #1565c0;
+    border-color: #1565c0;
+}
+
+
+.carrito-cantidad-precio {
+    color: #fff !important;
+    font-size: 0.98rem;
+    font-weight: 500;
+    margin-top: 2px;
+    margin-bottom: 0;
+    letter-spacing: 0.2px;
+}
+
+.carrito-vacio-icon {
+    color: #fff !important;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.18));
 }

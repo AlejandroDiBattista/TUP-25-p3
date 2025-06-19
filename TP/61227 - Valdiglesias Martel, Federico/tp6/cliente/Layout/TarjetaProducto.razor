@@ -8,30 +8,29 @@
             <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" class="mb-3 img-fluid product-image">
         </div>
         <div class="text-small mb-1">
-            <a href="#" class="text-decoration-none text-muted"><small>Ropa Deportiva</small></a>
+            <a href="#" class="text-decoration-none text-muted"><small>Stock: @Producto.Stock</small></a>
         </div>
         <h2 class="fs-6">
             <a href="#" class="text-inherit text-decoration-none">@Producto.Nombre</a>
         </h2>
-        <div>
-            <small class="text-warning">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-            </small>
-            <span class="text-muted small">4.5</span>
-        </div>
-        <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="d-flex flex-column justify-content-between align-items-center mt-3">
             <div>
                 <span class="text-dark">$ @Producto.Precio.ToString()</span>
             </div>
             <div>
-                <button class="btn btn-primary btn-sm" @onclick="() => ManejarAgregarAlCarrito(Producto.Id)" disabled="@agregando">
+                     @* El botón ahora se deshabilita si el stock es 0 *@
+                <button class="btn btn-primary btn-sm" @onclick="() => ManejarAgregarAlCarrito(Producto.Id)" disabled="@(Producto.Stock == 0 || agregando)">
                     @if(agregando)
                     {
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     }
+                    else if (Producto.Stock == 0)
+                    {
+                        <span>Sin Stock</span>
+                    }
                     else
                     {
-                        <i class="bi bi-plus-lg"></i><span> Agregar</span>
+                         <i class="bi bi-cart3"></i>
                     }
                 </button>
             </div>
@@ -45,11 +44,10 @@
 
     private bool agregando = false;
 
-
     private async Task ManejarAgregarAlCarrito(int productoId)
     {
-       agregando = true;
-    await Api.AgregarAlCarrito(productoId); // <-- NOMBRE CORRECTO CON ASYNC
-    agregando = false;
+        agregando = true;
+        await Api.AgregarAlCarrito(productoId);
+        agregando = false;
     }
 }

@@ -70,6 +70,24 @@ public class ProductoService
             return new List<Producto>();
         }
     }
+
+    //obtener productos con búsqueda
+    public async Task<List<Producto>> ObtenerProductosAsync(string buscar)
+    {
+        try
+        {
+            string url = string.IsNullOrWhiteSpace(buscar)
+                ? "/api/producto"
+                : $"/api/producto?buscar={Uri.EscapeDataString(buscar)}";
+            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+            return productos ?? new List<Producto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener productos: {ex.Message}");
+            return new List<Producto>();
+        }
+    }
 }
 
 public class Producto

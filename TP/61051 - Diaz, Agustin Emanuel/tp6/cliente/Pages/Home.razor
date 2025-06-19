@@ -110,7 +110,7 @@
 
         try
         {
-            productos = await ApiService.ObtenerProductosAsync(Query);
+            productos = await ApiService.ObtenerProductosConStockDisponibleAsync(Query);
         }
         catch (Exception ex)
         {

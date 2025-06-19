@@ -1,4 +1,48 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    @Body
+﻿@namespace Cliente.Layout
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject CarritoService CarritoService
+
+<div class="header">
+    <div class="contenedor-header">
+        <!-- Logo + Marca -->
+        <div class="marca" @onclick="@(() => Navigation.NavigateTo("/"))">
+            <img src="icon-192.png" alt="Logo" class="logo" />
+            <span class="titulo">
+                Productos Regionales NOA <em>"Sabores Propios"</em>
+            </span>
+        </div>
+
+        <!-- Carrito -->
+        <div class="carrito" @onclick="@(() => Navigation.NavigateTo("/carrito"))">
+            <span class="material-icons">shopping_cart</span>
+            @if (CarritoService.TotalItems > 0)
+            {
+                <span class="carrito-cantidad">@CarritoService.TotalItems</span>
+            }
+        </div>
+    </div>
 </div>
+
+<div class="contenido-principal" style="background-color: #6ba770;">
+    <main class="p-4">
+        @Body
+    </main>
+</div>
+
+@code {
+    private string searchTerm = "";
+
+    private void HandleSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            Navigation.NavigateTo($"/?search={Uri.EscapeDataString(searchTerm)}");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarritoService.CargarCarrito();
+    }
+}

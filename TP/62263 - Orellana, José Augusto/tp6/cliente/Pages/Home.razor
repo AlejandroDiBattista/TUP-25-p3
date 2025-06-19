@@ -1,65 +1,134 @@
 ﻿@page "/"
 @using cliente.Services
-@inject ApiService ApiService
-@inject NavigationManager Nav
+@inject HttpClient Http
+@inject CarritoService Carrito
+@inject ApiService Api
 
-<PageTitle>Inicio</PageTitle>
-
-<div class="contenedor-home">
-    <h1 class="titulo-home">Bienvenido a la Tienda Online</h1>
-
-    <p class="descripcion-home">
-        Aquí podés explorar productos, agregarlos a tu carrito y confirmar la compra.
-    </p>
-
-    <div class="botones-home">
-        <button class="boton-home" @onclick="IrAlCatalogo">🛍️ Ir al Catálogo</button>
-        <button class="boton-home" @onclick="IrAlCarrito">🛒 Ir al Carrito</button>
-        <button class="boton-home secundario" @onclick="ObtenerDatosDelServidor">🔄 Ver estado del servidor</button>
+<div class="contenedor">
+    <h3>Catálogo de productos</h3>
+    <div class="buscador">
+        <label for="busqueda">Buscar producto:</label>
+        <input id="busqueda" @bind="textoBusqueda" placeholder="Ej: celular, cargador..." @onkeydown="ManejarTecla" />
+        <button @onclick="Buscar" class="buscar">Buscar</button>
+        <button @onclick="Limpiar" class="limpiar">Limpiar</button>
     </div>
-
-    @if (cargando)
-    {
-        <div class="mensaje-info">Cargando datos...</div>
-    }
-    else if (datos != null)
-    {
-        <div class="card-servidor">
-            <h4>📡 Estado del servidor</h4>
-            <p><strong>@datos.Mensaje</strong></p>
-            <p>Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-        </div>
-    }
-    else if (!string.IsNullOrEmpty(error))
-    {
-        <div class="mensaje-error">❌ Error: @error</div>
-    }
 </div>
 
-@code {
-    private DatosRespuesta? datos;
-    private string? error;
-    private bool cargando = false;
+@if (productos == null)
+{
+    <p class="mensaje-centrado">Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <p class="mensaje-centrado mensaje-vacio">No se encontraron productos.</p>
+}
+else
+{
+    <div class="productos">
+        @foreach (var p in productos)
+        {
+            <div class="producto">
+                <img src="@($"{Api.GetApiBaseUrl()}{p.imagenUrl}")" alt="@p.nombre" width="150" />
+                <h4>@p.nombre</h4>
+                <p>@p.descripcion</p>
+                <p><strong>Precio:</strong> $@p.precio</p>
+                <p><strong>Stock:</strong> @p.stock</p>
+                <button @onclick="() => Agregar(p.id)" disabled="@(!PuedeAgregar(p))">Agregar al carrito</button>
+            </div>
+        }
+    </div>
+}
 
-    private async Task ObtenerDatosDelServidor()
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="mensaje-exito">@mensaje</div>
+}
+
+@code {
+    List<ProductoDTO>? productos;
+    string mensaje = "";
+    CancellationTokenSource? cts; // Para controlar los mensajes al cargar productos al carrito
+
+    protected override async Task OnInitializedAsync()
     {
+        await Carrito.InicializarCarritoAsync();
+        await CargarProductos(textoBusqueda);
+    }
+
+    async Task Agregar(int id)
+    {
+        // Cancelar y borrar cualquier mensaje anterior
+        cts?.Cancel();
+        mensaje = "";
+        StateHasChanged(); // Se fuerza el borrado del mensaje en pantalla
+        await Task.Delay(50); // Pausa breve para que se haga visible el cambio
+
+        // Se crea una nueva fuente de cancelación para el mensaje
+        cts = new CancellationTokenSource();
+
+        // Agregar producto
+        var (ok, msg) = await Carrito.AgregarProducto(id, 1);
+
+        mensaje = msg;
+        
+        if (ok)
+        {
+            //mensaje = "Producto agregado al carrito.";
+            await CargarProductos(textoBusqueda); // Para actualizar el stock visible
+        }
+
+        StateHasChanged(); // Para mostrar el mensaje
+
         try
         {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
+            // Esperar 2 segundos antes de borrar mensaje, a menos que se cancele antes
+            await Task.Delay(2000, cts.Token);
+            mensaje = "";
+            StateHasChanged();
         }
-        catch (Exception ex)
+        catch (TaskCanceledException)
         {
-            error = ex.Message;
-            datos = null;
-        }
-        finally
-        {
-            cargando = false;
+            // No hace nada si fue cancelado por otro click
         }
     }
 
-    void IrAlCatalogo() => Nav.NavigateTo("/catalogo");
-    void IrAlCarrito() => Nav.NavigateTo("/carrito");
+    bool PuedeAgregar(ProductoDTO p) => p.stock > 0;
+
+    async Task CargarProductos(string valorBuscado)
+    {
+        string url = "http://localhost:5184/productos";
+
+        if (!string.IsNullOrWhiteSpace(valorBuscado))
+            url += $"?buscar={Uri.EscapeDataString(valorBuscado)}";
+
+        productos = await Http.GetFromJsonAsync<List<ProductoDTO>>(url);
+    }
+
+    string textoBusqueda = "";
+
+    async Task Buscar() => await CargarProductos(textoBusqueda);
+
+    async Task Limpiar()
+    {
+        textoBusqueda = "";
+        await CargarProductos("");
+    }
+
+    async Task ManejarTecla(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Buscar();
+        }
+    }
+
+    public class ProductoDTO
+    {
+        public int id { get; set; }
+        public string nombre { get; set; } = "";
+        public string descripcion { get; set; } = "";
+        public decimal precio { get; set; }
+        public int stock { get; set; }
+        public string imagenUrl { get; set; } = "";
+    }
 }

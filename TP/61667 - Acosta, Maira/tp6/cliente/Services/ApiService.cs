@@ -55,22 +55,22 @@ public class ApiService
 
     // Obtener los artículos del carrito (GET /api/carritos/{carritoId})
     public async Task<List<CarritoItemDto>> ObtenerCarritoAsync(string carritoId)
-{
-    try
     {
-        var response = await _httpClient.GetAsync($"/api/carritos/{carritoId}");
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            return new List<CarritoItemDto>();
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/carritos/{carritoId}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return new List<CarritoItemDto>();
 
-        response.EnsureSuccessStatusCode();
-        var items = await response.Content.ReadFromJsonAsync<List<CarritoItemDto>>();
-        return items ?? new List<CarritoItemDto>();
+            response.EnsureSuccessStatusCode();
+            var items = await response.Content.ReadFromJsonAsync<List<CarritoItemDto>>();
+            return items ?? new List<CarritoItemDto>();
+        }
+        catch
+        {
+            return new List<CarritoItemDto>();
+        }
     }
-    catch
-    {
-        return new List<CarritoItemDto>();
-    }
-}
 
     // Agregar producto al carrito (PUT /api/carritos/{carritoId}/{productoId})
     public async Task AgregarAlCarritoAsync(string carritoId, int productoId)
@@ -97,9 +97,18 @@ public class ApiService
         await ObtenerProductosAsync(); // Esto recarga los productos y actualiza el stock en la UI
         return response.IsSuccessStatusCode;
     }
+
+    // Cambiar cantidad de un producto en el carrito (PUT /api/carritos/{carritoId}/cantidad/{productoId}?delta=1)
+    public async Task CambiarCantidadCarritoAsync(string carritoId, int productoId, int delta)
+    {
+        var response = await _httpClient.PutAsync(
+            $"/api/carritos/{carritoId}/cantidad/{productoId}?delta={delta}", null);
+        response.EnsureSuccessStatusCode();
+    }
 }
 
-public class DatosRespuesta {
+public class DatosRespuesta
+{
     public string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
 }

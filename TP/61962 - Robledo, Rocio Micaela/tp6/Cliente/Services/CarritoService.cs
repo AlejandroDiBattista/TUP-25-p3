@@ -22,6 +22,7 @@ namespace Cliente.Services
         public async Task ActualizarCantidadAsync()
         {
             var carritoId = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
+
             if (string.IsNullOrEmpty(carritoId))
             {
                 CantidadTotal = 0;
@@ -33,6 +34,22 @@ namespace Cliente.Services
             }
 
             OnChange?.Invoke();
+        }
+
+        public async Task AgregarProductoAsync(int productoId, int cantidad)
+        {
+            var carritoId = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
+
+            if (string.IsNullOrWhiteSpace(carritoId))
+            {
+                var response = await _http.PostAsync("api/carritos", null);
+                carritoId = await response.Content.ReadAsStringAsync();
+                await _js.InvokeVoidAsync("localStorage.setItem", "carritoId", carritoId);
+            }
+
+            await _http.PutAsync($"api/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+
+            await ActualizarCantidadAsync();
         }
     }
 }

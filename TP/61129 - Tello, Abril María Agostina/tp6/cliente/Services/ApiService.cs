@@ -60,16 +60,30 @@ public class ApiService
         }
     }
 
-}
+    public async Task RestarStockAsync(int productoId, int cantidad)
+    {
+        try
+        {
+            var dto = new StockDTO { Cantidad = cantidad };
+            var response = await _httpClient.PostAsJsonAsync($"/api/productos/{productoId}/restarstock", dto);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al restar stock: {ex.Message} | productoId={productoId} cantidad={cantidad}");
+            throw;
+        }
+    }
 
-public class CarritoItemDTO
-{
-    public int ProductoId { get; set; }
-    public int Cantidad { get; set; }
-}
+    public async Task SumarStockAsync(int productoId, int cantidad)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"/api/productos/{productoId}/sumarstock", new StockDTO { Cantidad = cantidad });
+        response.EnsureSuccessStatusCode();
+    }
 
-public class DatosRespuesta
-{
-    public string Mensaje { get; set; }
-    public DateTime Fecha { get; set; }
+    public class DatosRespuesta
+    {
+        public string Mensaje { get; set; }
+        public DateTime Fecha { get; set; }
+    }
 }

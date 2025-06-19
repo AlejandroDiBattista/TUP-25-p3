@@ -91,13 +91,16 @@ namespace cliente.Services
         {
             try
             {
+
                 var response = await _httpClient.PutAsync(
                     $"carritos/{cartId}/anadir/{articuloId}?cantidadSolicitada={cantidad}", null
                 );
 
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+
                     if (errorResponse != null && errorResponse.TryGetValue("error", out var errorMsg))
                     {
                         throw new Exception(errorMsg);
@@ -107,6 +110,7 @@ namespace cliente.Services
                 }
 
                 var nuevosItems = await response.Content.ReadFromJsonAsync<List<DetalleCarritoMemoria>>();
+
                 if (nuevosItems != null)
                 {
                     _cartStateService.SetCartItems(nuevosItems);
@@ -116,10 +120,12 @@ namespace cliente.Services
             }
             catch (Exception ex)
             {
+
                 Console.WriteLine($"[API] Error al añadir al carrito: {ex.Message}");
                 throw;
             }
         }
+
 
 
 

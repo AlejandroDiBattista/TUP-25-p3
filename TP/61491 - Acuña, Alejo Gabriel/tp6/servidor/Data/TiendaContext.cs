@@ -11,6 +11,6 @@ public class TiendaContext : DbContext
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<Compra> Compras => Set<Compra>();
     public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
-public DbSet<Carrito> Carritos => Set<Carrito>();
-public DbSet<ItemCarrito> ItemsCarrito => Set<ItemCarrito>();
+    public DbSet<Carrito> Carritos => Set<Carrito>();
+    public DbSet<ItemCarrito> ItemsCarrito => Set<ItemCarrito>();
 }

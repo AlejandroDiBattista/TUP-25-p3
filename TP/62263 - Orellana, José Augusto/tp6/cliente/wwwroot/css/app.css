@@ -115,12 +115,24 @@ code {
 
 /* Estilos del nav */
 .header {
-    background-color: #f0f0f0;
-    padding: 1rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f0f0f0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    box-sizing: border-box;
     margin-bottom: 0.7rem;
+}
+
+.page {
+    margin-top: 90px;
+    padding: 1rem;
 }
 
 .nav-link {

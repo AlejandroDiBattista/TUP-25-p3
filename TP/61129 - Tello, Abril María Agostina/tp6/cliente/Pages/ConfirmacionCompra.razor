@@ -3,8 +3,8 @@
 @using cliente.Services
 @using cliente.Modelos
 @inject NavigationManager NavigationManager
-@inject ApiService ApiService
-@inject CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
+@inject cliente.Services.CarritoService CarritoService
 
 <PageTitle>Confirmar compra</PageTitle>
 
@@ -16,18 +16,18 @@
             <ul class="mb-3 ps-3">
                 @foreach (var item in CarritoService.Items)
                 {
+                    var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
                     <li>
-                        <span style="font-weight:600">@item.Producto.Nombre</span>
-                        x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)
+                        <span style="font-weight:600">@producto?.Nombre</span>
+                        x @item.Cantidad - $@(producto != null ? producto.Precio * item.Cantidad : 0)
                     </li>
                 }
             </ul>
             <p class="mb-1"><strong>Total de ítems:</strong> @CarritoService.Items.Sum(i => i.Cantidad)</p>
-            <p class="mb-3"><strong>Importe total:</strong> $@CarritoService.Total</p>
+            <p class="mb-3"><strong>Importe total:</strong> $@CarritoService.CalcularTotal(productos)</p>
             <hr />
             <EditForm Model="@formData" OnValidSubmit="ConfirmarCompra">
                 <DataAnnotationsValidator />
-                
                 <div class="mb-3">
                     <label class="form-label"><strong>Nombre</strong></label>
                     <InputText class="form-control" @bind-Value="formData.Nombre" />
@@ -59,29 +59,37 @@
                 <ul class="list-unstyled">
                     @foreach (var item in compraFinal)
                     {
-                        <li>@item.Producto.Nombre x @item.Cantidad - $@(item.Producto.Precio * item.Cantidad)</li>
+                        var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                        <li>@producto?.Nombre x @item.Cantidad - $@(producto != null ? producto.Precio * item.Cantidad : 0)</li>
                     }
                 </ul>
                 <p><strong>Total de ítems:</strong> @compraFinal.Sum(i => i.Cantidad)</p>
-                <p><strong>Importe total:</strong> $@compraFinal.Sum(i => i.Producto.Precio * i.Cantidad)</p>
+                <p><strong>Importe total:</strong> $@compraFinal.Sum(i => {
+                    var producto = productos.FirstOrDefault(p => p.Id == i.ProductoId);
+                    return producto != null ? producto.Precio * i.Cantidad : 0;
+                })</p>
                 <button class="btn btn-volver-catalogo mt-3" @onclick="VolverAProductos">Volver al catálogo</button>
             </div>
         }
     </div>
 </div>
 
-
-
 @code {
+    private List<cliente.Modelos.Producto> productos = new();
     private FormData formData = new();
     private bool compraFinalizada = false;
     private List<CarritoItem> compraFinal = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.GetProductosAsync();
+    }
 
     private async Task ConfirmarCompra()
     {
         var itemsDto = CarritoService.Items.Select(i => new CarritoItemDTO
         {
-            ProductoId = i.Producto.Id,
+            ProductoId = i.ProductoId,
             Cantidad = i.Cantidad
         }).ToList();
 
@@ -90,18 +98,18 @@
         if (exito)
         {
             compraFinal = CarritoService.Items.Select(i => new CarritoItem
-        {
-            Producto = i.Producto,
-            Cantidad = i.Cantidad
-        }).ToList();
-        await CarritoService.VaciarCarrito();
-        compraFinalizada = true;
+            {
+                ProductoId = i.ProductoId,
+                Cantidad = i.Cantidad
+            }).ToList();
+            await CarritoService.VaciarCarrito();
+            compraFinalizada = true;
         }
     }
 
     private void VolverAProductos()
     {
-        NavigationManager.NavigateTo("/productos", true);
+        NavigationManager.NavigateTo("/", true);
     }
 
     public class FormData

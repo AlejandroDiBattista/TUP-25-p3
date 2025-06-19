@@ -37,6 +37,8 @@
     [Parameter]
     public ProductoDTO Producto { get; set; } = default!;
 
+
+   int contador = 0;
     /// <summary>
     /// Servicio para gestionar el carrito de compras
     /// </summary>
@@ -57,10 +59,11 @@
     /// </summary>
     private void AgregarAlCarrito()
     {
-        if (Producto.Stock > 0)
+        if (Producto.Stock > 0 && contador < 10)
         {
+              contador++;
             Carrito.AgregarItem(Producto);
-            JSRuntime.InvokeVoidAsync("alert", $"{Producto.Nombre} agregado al carrito");
+           // JSRuntime.InvokeVoidAsync("alert", $"{Producto.Nombre} agregado al carrito");
         }
     }
 

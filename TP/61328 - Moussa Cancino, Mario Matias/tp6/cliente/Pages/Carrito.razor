@@ -1,78 +1,797 @@
 @page "/carrito"
-@using cliente.Modelos
-@using cliente.Services
 @inject CartService CartService
-@inject NavigationManager NavigationManager
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@implements IDisposable
 
-<PageTitle>Carrito de Compras</PageTitle>
+<PageTitle>Carrito de Compras - ImportadosYa</PageTitle>
 
-<h3>Carrito de Compras</h3>
-
-@if (!CartService.Items.Any())
-{
-    <p>Tu carrito está vacío.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio Unitario</th>
-                <th>Unidades</th>
-                <th>Importe</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in CartService.Items)
-            {
-                var producto = CartService.GetProductDetails(item.Key);
-                var cantidad = item.Value;
-                var importe = producto.Precio * cantidad;
-
-                <tr>
-                    <td>@producto.Nombre</td>
-                    <td>@producto.Precio.ToString("C")</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => Decrementar(producto.Id)">-</button>
-                        <span class="mx-2">@cantidad</span>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => Incrementar(producto)">+</button>
-                    </td>
-                    <td>@importe.ToString("C")</td>
-                </tr>
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                <td><strong>@CalcularTotal().ToString("C")</strong></td>
-            </tr>
-        </tfoot>
-    </table>
-
-    <div class="mt-4">
-        <button class="btn btn-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
-        <button class="btn btn-success ms-2" @onclick="IrAConfirmacion">Confirmar Compra</button>
+<div class="cart-container">
+    <div class="cart-header">
+        <h1 class="cart-title">Mi Carrito</h1>
+        <button class="back-btn" @onclick="@(() => Navigation.NavigateTo("/"))">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m12 19-7-7 7-7"></path>
+                <path d="m19 12H5"></path>
+            </svg>
+            Seguir comprando
+        </button>
     </div>
-}
+
+    @if (!CartService.Items.Any())
+    {
+        <div class="empty-cart">
+            <div class="empty-cart-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="m1 1 4 4 16 3 -4 8H7L5 6H2"></path>
+                </svg>
+            </div>
+            <h2 class="empty-cart-title">Tu carrito está vacío</h2>
+            <p class="empty-cart-subtitle">Agrega algunos productos para comenzar tu compra</p>
+            <button class="browse-products-btn" @onclick="@(() => Navigation.NavigateTo("/"))">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                </svg>
+                Ver productos
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="cart-content">
+            <div class="cart-items">
+                <div class="items-header">
+                    <h3>Productos en tu carrito (@CartService.ItemCount @(CartService.ItemCount == 1 ? "item" : "items"))</h3>
+                    <button class="clear-cart-btn" @onclick="ClearCart">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3,6 5,6 21,6"></polyline>
+                            <path d="m19,6v14a2,2 0 0 1-2,2H7a2,2 0 0 1-2-2V6m3,0V4a2,2 0 0 1,2-2h4a2,2 0 0 1,2,2v2"></path>
+                        </svg>
+                        Vaciar carrito
+                    </button>
+                </div>
+
+                <div class="items-list">
+                    @foreach (var item in CartService.Items)
+                    {
+                        <div class="cart-item">
+                            <div class="item-info">
+                                <h4 class="item-name">Producto ID: @item.ProductoId</h4>
+                                <p class="item-price">@item.PrecioUnitario.ToString("C") c/u</p>
+                            </div>
+                            
+                            <div class="item-controls">
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn" @onclick="@(() => RemoveFromCart(item.ProductoId))">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                    </button>
+                                    <span class="quantity">@item.Cantidad</span>
+                                    <button class="quantity-btn" @onclick="@(() => AddToCart(item.ProductoId))">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="item-total">
+                                    @((item.Cantidad * item.PrecioUnitario).ToString("C"))
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="cart-summary">
+                <div class="summary-content">
+                    <h3 class="summary-title">Resumen de compra</h3>
+                    
+                    <div class="summary-line">
+                        <span>Subtotal (@CartService.ItemCount @(CartService.ItemCount == 1 ? "item" : "items"))</span>
+                        <span class="amount">@CalculateTotal().ToString("C")</span>
+                    </div>
+                    
+                    <div class="summary-line">
+                        <span>Envío</span>
+                        <span class="amount">Gratis</span>
+                    </div>
+                    
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span class="total-amount">@CalculateTotal().ToString("C")</span>
+                    </div>
+
+                    @if (!showCheckoutForm)
+                    {
+                        <button class="checkout-btn" @onclick="ShowCheckoutForm">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <path d="m16 8 2 2-4 4-2-2"></path>
+                                <path d="m9 11 2 2 4-4"></path>
+                            </svg>
+                            Proceder al pago
+                        </button>
+                    }
+                </div>
+
+                @if (showCheckoutForm)
+                {
+                    <div class="checkout-form">
+                        <h4 class="form-title">Datos para la compra</h4>
+                        
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="error-message">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                </svg>
+                                @errorMessage
+                            </div>
+                        }
+
+                        <EditForm Model="datosCliente" OnValidSubmit="ProcesarCompra">
+                            <DataAnnotationsValidator />
+                            
+                            <div class="form-group">
+                                <label for="nombre">Nombre *</label>
+                                <InputText id="nombre" @bind-Value="datosCliente.NombreCliente" class="form-input" placeholder="Tu nombre" />
+                                <ValidationMessage For="@(() => datosCliente.NombreCliente)" class="validation-error" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="apellido">Apellido *</label>
+                                <InputText id="apellido" @bind-Value="datosCliente.ApellidoCliente" class="form-input" placeholder="Tu apellido" />
+                                <ValidationMessage For="@(() => datosCliente.ApellidoCliente)" class="validation-error" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <InputText id="email" @bind-Value="datosCliente.EmailCliente" class="form-input" placeholder="tu@email.com" type="email" />
+                                <ValidationMessage For="@(() => datosCliente.EmailCliente)" class="validation-error" />
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="cancel-btn" @onclick="HideCheckoutForm">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="confirm-btn" disabled="@isProcessing">
+                                    @if (isProcessing)
+                                    {
+                                        <div class="loading-spinner"></div>
+                                        <span>Procesando...</span>
+                                    }
+                                    else
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20,6 9,17 4,12"></polyline>
+                                        </svg>
+                                        <span>Confirmar compra</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal de compra exitosa -->
+<CompraExitosa Visible="showSuccessModal" 
+              Compra="compraRealizada" 
+              OnClose="CloseSuccessModal" />
+
+<style>
+    .cart-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        background-color: #f5f5f5;
+        min-height: calc(100vh - 140px);
+    }
+
+    .cart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .cart-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin: 0;
+    }
+
+    .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(44, 44, 44, 0.1);
+        border: 2px solid rgba(44, 44, 44, 0.2);
+        color: #2c2c2c;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        background: rgba(44, 44, 44, 0.15);
+        border-color: rgba(44, 44, 44, 0.3);
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
+    }
+
+    .empty-cart-icon {
+        color: #ccc;
+        margin-bottom: 30px;
+    }
+
+    .empty-cart-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 12px 0;
+    }
+
+    .empty-cart-subtitle {
+        color: #666;
+        margin: 0 0 30px 0;
+        font-size: 16px;
+    }
+
+    .browse-products-btn {
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 14px 28px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .browse-products-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(44, 44, 44, 0.3);
+    }
+
+    .cart-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 40px;
+    }
+
+    .cart-items {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
+    }
+
+    .items-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+
+    .items-header h3 {
+        margin: 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .clear-cart-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: 2px solid #e0e0e0;
+        color: #666;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .clear-cart-btn:hover {
+        border-color: #bbb;
+        color: #333;
+    }
+
+    .items-list {
+        padding: 0;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.3s ease;
+    }
+
+    .cart-item:hover {
+        background: #fafafa;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 4px 0;
+    }
+
+    .item-price {
+        color: #666;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .item-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid #e9ecef;
+    }
+
+    .quantity-btn {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #666;
+    }
+
+    .quantity-btn:hover {
+        background: #2c2c2c;
+        color: white;
+        border-color: #2c2c2c;
+    }
+
+    .quantity {
+        min-width: 30px;
+        text-align: center;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .item-total {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2c2c2c;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    .cart-summary {
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+    }
+
+    .summary-content {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
+    }
+
+    .summary-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .summary-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        color: #666;
+    }
+
+    .summary-line .amount {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        margin: 16px 0;
+        border-top: 2px solid #f0f0f0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c2c2c;
+    }
+
+    .total-amount {
+        color: #2c2c2c;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .checkout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(44, 44, 44, 0.3);
+    }
+
+    .checkout-form {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
+    }
+
+    .form-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 20px 0;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #2c2c2c;
+    }
+
+    .validation-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        border: 1px solid #f5c6cb;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .cancel-btn {
+        flex: 1;
+        background: #f8f9fa;
+        color: #666;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .cancel-btn:hover {
+        background: #e9ecef;
+        color: #333;
+    }
+
+    .confirm-btn {
+        flex: 2;
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .confirm-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(44, 44, 44, 0.3);
+    }
+
+    .confirm-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .loading-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .cart-container {
+            padding: 20px 16px;
+        }
+
+        .cart-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .cart-content {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .cart-summary {
+            position: static;
+            order: -1;
+        }
+
+        .cart-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+
+        .item-controls {
+            justify-content: space-between;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
 
 @code {
-    private async Task VaciarCarrito() => await CartService.EmptyCartAsync();
-    private void IrAConfirmacion() => NavigationManager.NavigateTo("/confirmacion");
-    private async Task Incrementar(Producto p) => await CartService.AddToCartAsync(p);
-    private async Task Decrementar(int id) => await CartService.RemoveFromCartAsync(id);
+    private DatosCliente datosCliente = new();
+    private bool showCheckoutForm = false;
+    private bool showSuccessModal = false;
+    private bool isProcessing = false;
+    private string? errorMessage;
+    private Compra? compraRealizada;
 
-    private decimal CalcularTotal()
+    protected override void OnInitialized()
     {
-        decimal total = 0;
-        foreach(var item in CartService.Items)
+        CartService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+
+    private decimal CalculateTotal()
+    {
+        return CartService.Items.Sum(item => item.Cantidad * item.PrecioUnitario);
+    }
+
+    private async Task AddToCart(int productoId)
+    {
+        // Necesitamos el producto completo para agregarlo
+        // Por simplicidad, creamos un producto temporal con el ID
+        var producto = new Producto 
+        { 
+            Id = productoId, 
+            Stock = 100, // Valor temporal, el servidor controlará el stock real
+            Nombre = "",
+            Descripcion = "",
+            Precio = 0,
+            ImagenUrl = ""
+        };
+        await CartService.AddToCart(producto);
+    }
+
+    private async Task RemoveFromCart(int productoId)
+    {
+        await CartService.RemoveFromCart(productoId);
+    }
+
+    private async Task ClearCart()
+    {
+        await CartService.EmptyCartAsync();
+    }
+
+    private void ShowCheckoutForm()
+    {
+        showCheckoutForm = true;
+        errorMessage = null;
+    }
+
+    private void HideCheckoutForm()
+    {
+        showCheckoutForm = false;
+        errorMessage = null;
+    }
+
+    private async Task ProcesarCompra()
+    {
+        if (!CartService.CartId.HasValue || !CartService.Items.Any())
         {
-            var producto = CartService.GetProductDetails(item.Key);
-            if (producto != null)
+            errorMessage = "El carrito está vacío.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            // DEBUG: Verificar datos antes de enviar
+            Console.WriteLine($"DEBUG: CartId = {CartService.CartId}");
+            Console.WriteLine($"DEBUG: Items en carrito = {CartService.Items.Count}");
+            Console.WriteLine($"DEBUG: Nombre = '{datosCliente.NombreCliente}'");
+            Console.WriteLine($"DEBUG: Apellido = '{datosCliente.ApellidoCliente}'");
+            Console.WriteLine($"DEBUG: Email = '{datosCliente.EmailCliente}'");
+
+            var datosDto = new DatosClienteDto
             {
-                total += producto.Precio * item.Value;
+                Nombre = datosCliente.NombreCliente,
+                Apellido = datosCliente.ApellidoCliente,
+                Email = datosCliente.EmailCliente
+            };
+
+            Console.WriteLine($"DEBUG: Enviando datos al servidor...");
+
+            compraRealizada = await ApiService.ConfirmPurchaseAsync(CartService.CartId.Value, datosDto);
+            
+            Console.WriteLine($"DEBUG: Respuesta del servidor = {compraRealizada?.Id ?? 0}");
+            
+            if (compraRealizada != null)
+            {
+                Console.WriteLine($"DEBUG: Compra exitosa con ID {compraRealizada.Id}");
+                
+                // Compra exitosa
+                showCheckoutForm = false;
+                showSuccessModal = true;
+                
+                // El carrito se vaciará automáticamente desde el servidor
+                // pero también lo limpiamos localmente para estar seguros
+                await CartService.EmptyCartAsync();
+                
+                // Limpiar el formulario
+                datosCliente = new DatosCliente();
+            }
+            else
+            {
+                Console.WriteLine("DEBUG: La respuesta del servidor fue null");
+                errorMessage = "Hubo un error al procesar la compra. Por favor, intenta nuevamente.";
             }
         }
-        return total;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"DEBUG: Exception capturada: {ex.Message}");
+            Console.WriteLine($"DEBUG: StackTrace: {ex.StackTrace}");
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void CloseSuccessModal()
+    {
+        showSuccessModal = false;
+        compraRealizada = null;
     }
 }

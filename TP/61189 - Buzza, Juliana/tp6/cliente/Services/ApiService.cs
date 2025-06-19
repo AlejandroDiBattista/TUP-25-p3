@@ -35,7 +35,7 @@ namespace cliente.Services
             if (newCart != null)
             {
                 _currentCartId = newCart.Id;
-                _cartStateService.SetCartId(newCart.Id);
+                // No establecer CartId aquí, se hará desde el componente
                 return newCart.Id;
             }
             throw new Exception("No se pudo inicializar el carrito.");
@@ -117,7 +117,7 @@ namespace cliente.Services
                 }
 
                 var confirmedCompra = await response.Content.ReadFromJsonAsync<Compra>();
-                _cartStateService.SetCartId(null); 
+                // No limpiar el CartId aquí, se hará desde el componente
                 return Tuple.Create<Compra?, string?>(confirmedCompra, null);
             }
             catch (HttpRequestException ex)

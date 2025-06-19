@@ -28,26 +28,34 @@
     else
     {
         <div class="confirmacion-header">
-            <h1 class="confirmacion-titulo">Confirmar Compra</h1>
-            <p class="confirmacion-subtitulo">Revisa tu pedido y completa tus datos</p>
+            <h1 class="confirmacion-titulo">✨ Confirmar Compra</h1>
+            <p class="confirmacion-subtitulo">Último paso para completar tu pedido</p>
         </div>
 
         <div class="confirmacion-content">
             <div class="resumen-pedido">
                 <div class="resumen-card">
-                    <h3>📋 Resumen del Pedido</h3>
+                    <div class="card-header">
+                        <div class="card-icon">📋</div>
+                        <h3>Resumen del Pedido</h3>
+                    </div>
                     
                     <div class="productos-resumen">
                         @foreach (var item in carritoData.Items)
                         {
                             <div class="producto-resumen">
                                 <div class="producto-info-mini">
-                                    <img src="@(item.Producto?.ImagenUrl ?? "https://via.placeholder.com/60x40?text=Sin+Imagen")" 
-                                         alt="@(item.Producto?.Nombre ?? "Producto")" 
-                                         class="producto-imagen-mini" />
+                                    <div class="imagen-wrapper">
+                                        <img src="@(item.Producto?.ImagenUrl ?? "https://via.placeholder.com/60x40?text=Sin+Imagen")" 
+                                             alt="@(item.Producto?.Nombre ?? "Producto")" 
+                                             class="producto-imagen-mini" />
+                                    </div>
                                     <div class="producto-detalles-mini">
                                         <span class="producto-nombre-mini">@(item.Producto?.Nombre ?? "Producto")</span>
-                                        <span class="producto-cantidad-mini">Cantidad: @item.Cantidad</span>
+                                        <div class="cantidad-badge">
+                                            <span class="cantidad-icon">×</span>
+                                            <span>@item.Cantidad</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="producto-precio-mini">
@@ -60,16 +68,16 @@
                     
                     <div class="totales-resumen">
                         <div class="total-linea">
-                            <span>Total de items:</span>
-                            <span>@carritoData.TotalItems</span>
+                            <span>🛍️ Total de items:</span>
+                            <span class="valor-destacado">@carritoData.TotalItems</span>
                         </div>
                         <div class="total-linea">
-                            <span>Envío:</span>
+                            <span>🚚 Envío:</span>
                             <span class="envio-gratis">Gratis</span>
                         </div>
                         <div class="total-final">
-                            <span>Total a pagar:</span>
-                            <span>$@carritoData.Total.ToString("N0")</span>
+                            <span>💰 Total a pagar:</span>
+                            <span class="precio-final">$@carritoData.Total.ToString("N0")</span>
                         </div>
                     </div>
                 </div>
@@ -77,46 +85,78 @@
 
             <div class="formulario-cliente">
                 <div class="formulario-card">
-                    <h3>👤 Datos del Cliente</h3>
+                    <div class="card-header">
+                        <div class="card-icon">👤</div>
+                        <h3>Datos del Cliente</h3>
+                    </div>
                     
                     <EditForm Model="@datosCompra" OnValidSubmit="@ConfirmarCompra" class="cliente-form">
                         <DataAnnotationsValidator />
                         
-                        <div class="form-group">
-                          <label for="nombre" class="form-label">Nombre *</label>
-                          <InputText id="nombre" 
-                                  @bind-Value="datosCompra.NombreCliente" 
-                                  class="@(GetFieldCssClass(nameof(datosCompra.NombreCliente)))" 
-                                  placeholder="Ingresa tu nombre" />
-                          <ValidationMessage For="@(() => datosCompra.NombreCliente)" class="validation-message" />
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="input-wrapper">
+                                    <span class="input-icon">👤</span>
+                                    <div class="input-content">
+                                        <label for="nombre" class="form-label">Nombre</label>
+                                        <InputText id="nombre" 
+                                                  @bind-Value="datosCompra.NombreCliente" 
+                                                  class="@(GetFieldCssClass(nameof(datosCompra.NombreCliente)))" 
+                                                  placeholder="Ingresa tu nombre" />
+                                    </div>
+                                </div>
+                                <ValidationMessage For="@(() => datosCompra.NombreCliente)" class="validation-message" />
+                            </div>
+
+                            <div class="form-group">
+                                <div class="input-wrapper">
+                                    <span class="input-icon">👤</span>
+                                    <div class="input-content">
+                                        <label for="apellido" class="form-label">Apellido</label>
+                                        <InputText id="apellido" 
+                                                  @bind-Value="datosCompra.ApellidoCliente" 
+                                                  class="@(GetFieldCssClass(nameof(datosCompra.ApellidoCliente)))" 
+                                                  placeholder="Ingresa tu apellido" />
+                                    </div>
+                                </div>
+                                <ValidationMessage For="@(() => datosCompra.ApellidoCliente)" class="validation-message" />
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="apellido" class="form-label">Apellido *</label>
-                            <InputText id="apellido" 
-                                      @bind-Value="datosCompra.ApellidoCliente" 
-                                      class="@(GetFieldCssClass(nameof(datosCompra.ApellidoCliente)))" 
-                                      placeholder="Ingresa tu apellido" />
-                            <ValidationMessage For="@(() => datosCompra.ApellidoCliente)" class="validation-message" />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email" class="form-label">Email *</label>
-                            <InputText id="email" 
-                                      @bind-Value="datosCompra.EmailCliente" 
-                                      class="@(GetFieldCssClass(nameof(datosCompra.EmailCliente)))" 
-                                      placeholder="tu@email.com" 
-                                      type="email" />
+                            <div class="input-wrapper">
+                                <span class="input-icon">📧</span>
+                                <div class="input-content">
+                                    <label for="email" class="form-label">Email</label>
+                                    <InputText id="email" 
+                                              @bind-Value="datosCompra.EmailCliente" 
+                                              class="@(GetFieldCssClass(nameof(datosCompra.EmailCliente)))" 
+                                              placeholder="tu@email.com" 
+                                              type="email" />
+                                </div>
+                            </div>
                             <ValidationMessage For="@(() => datosCompra.EmailCliente)" class="validation-message" />
                         </div>
 
+                        <div class="form-info">
+                            <div class="info-item">
+                                <span class="info-icon">🔒</span>
+                                <span>Tus datos están protegidos</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">📱</span>
+                                <span>Te enviaremos la confirmación por email</span>
+                            </div>
+                        </div>
+
                         <div class="form-actions">
-                            <button type="button" class="btn-cancelar" @onclick="VolverAlCarrito">
-                                ← Volver al Carrito
+                            <button type="button" class="btn-secundario" @onclick="VolverAlCarrito">
+                                <span class="btn-icon">←</span>
+                                <span>Volver al Carrito</span>
                             </button>
                             
                             <button type="submit" 
-                                    class="btn-confirmar @(procesandoCompra ? "processing" : "")" 
+                                    class="btn-principal @(procesandoCompra ? "processing" : "")" 
                                     disabled="@procesandoCompra">
                                 @if (procesandoCompra)
                                 {
@@ -125,7 +165,7 @@
                                 }
                                 else
                                 {
-                                    <span>✅</span>
+                                    <span class="btn-icon">✅</span>
                                     <span>Confirmar Compra</span>
                                 }
                             </button>
@@ -187,12 +227,12 @@
             if (exito)
             {
                 await JSRuntime.InvokeVoidAsync("alert", 
-                    $"¡Compra confirmada exitosamente!\n\n" +
+                    $"🎉 ¡Compra confirmada exitosamente!\n\n" +
                     $"Cliente: {datosCompra.NombreCliente} {datosCompra.ApellidoCliente}\n" +
                     $"Email: {datosCompra.EmailCliente}\n" +
                     $"Total: ${carritoData.Total:N0}\n" +
                     $"Items: {carritoData.TotalItems}\n\n" +
-                    $"Recibirás un email de confirmación pronto.");
+                    $"📧 Recibirás un email de confirmación pronto.");
                 
                 datosCompra = new Compra();
                 
@@ -201,14 +241,14 @@
             else
             {
                 await JSRuntime.InvokeVoidAsync("alert", 
-                    "Error al procesar la compra. Por favor, inténtalo nuevamente.");
+                    "❌ Error al procesar la compra. Por favor, inténtalo nuevamente.");
             }
         }
         catch (Exception ex)
         {
             await JSRuntime.InvokeVoidAsync("console.error", $"Error al confirmar compra: {ex.Message}");
             await JSRuntime.InvokeVoidAsync("alert", 
-                "Error al procesar la compra. Verifica tu conexión e inténtalo nuevamente.");
+                "❌ Error al procesar la compra. Verifica tu conexión e inténtalo nuevamente.");
         }
         finally
         {

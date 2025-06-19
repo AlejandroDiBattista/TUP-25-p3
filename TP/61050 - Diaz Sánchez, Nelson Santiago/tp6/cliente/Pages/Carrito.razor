@@ -5,80 +5,115 @@
 @using cliente.Models
 @inject HttpClient Http
 @using cliente.DTOs
+@using System.ComponentModel.DataAnnotations
 
-<div class="container mt-5 bg-dark text-white p-4 rounded">
-    <h1 class="text-center mb-4 text-primary">🛒 Carrito de compras</h1>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">🛍️ MiTienda</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    @if (carrito.Count == 0) 
-    {
-        <p class="text-center text-danger">El carrito está vacío.</p>
-    }
-    else 
-    {
-        <table class="table table-dark table-striped">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var producto in carrito)
-                {
-                    <tr>
-                        <td>@producto.Nombre</td>
-                        <td>$@producto.Precio</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-light me-1" @onclick="() => DisminuirCantidad(producto.Id)">−</button>
-                            @producto.Cantidad
-                            <button class="btn btn-sm btn-outline-light ms-1" @onclick="() => IncrementarCantidad(producto.Id)">+</button>
-                        </td>
-                        <td>$@(producto.Precio * producto.Cantidad)</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/catalogo">Catálogo</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/carrito">Carrito</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
-        <p class="fs-5 mt-3"><strong>Total general:</strong> $@TotalGeneral</p>
+<div class="container bg-dark text-white rounded">
+  <h1 class="text-center mb-4 text-primary">🛒 Carrito de compras</h1>
 
-        <div class="d-flex gap-2 mb-4">
-            <button class="btn btn-outline-danger" @onclick="VaciarCarrito">🗑️ Vaciar carrito</button>
-            <button class="btn btn-outline-success" @onclick="ConfirmarCompra">✅ Confirmar compra</button>
-        </div>
+  @if (carrito.Count == 0)
+  {
+      <p class="text-center text-danger">El carrito está vacío.</p>
+  }
+  else
+  {
+      <table class="table table-dark table-striped">
+          <thead>
+              <tr>
+                  <th>Producto</th>
+                  <th>Precio</th>
+                  <th>Cantidad</th>
+                  <th>Total</th>
+              </tr>
+          </thead>
+          <tbody>
+              @foreach (var producto in carrito)
+              {
+                  <tr>
+                      <td>@producto.Nombre</td>
+                      <td>$@producto.Precio</td>
+                      <td>
+                          <button class="btn btn-sm btn-outline-light me-1" @onclick="() => DisminuirCantidad(producto.Id)">−</button>
+                          @producto.Cantidad
+                          <button class="btn btn-sm btn-outline-light ms-1"
+                                  @onclick="() => IncrementarCantidad(producto.Id)"
+                                  disabled="@(CarritoService.ProductosConStock.FirstOrDefault(p => p.Id == producto.Id)?.Cantidad == 0)">
+                              +
+                          </button>
+                      </td>
+                      <td>$@(producto.Precio * producto.Cantidad)</td>
+                  </tr>
+              }
+          </tbody>
+      </table>
 
-        @if (mostrarFormulario)
-        {
-            <div class="mt-4 border border-light p-4 rounded bg-secondary text-white">
-                <h4 class="text-warning">🧾 Datos del cliente</h4>
-                <div class="mb-3">
-                    <label>Nombre:</label>
-                    <input type="text" class="form-control bg-dark text-white" @bind="nombreCliente" />
-                </div>
-                <div class="mb-3">
-                    <label>Apellido:</label>
-                    <input type="text" class="form-control bg-dark text-white" @bind="apellidoCliente" />
-                </div>
-                <div class="mb-3">
-                    <label>Email:</label>
-                    <input type="email" class="form-control bg-dark text-white" @bind="emailCliente" />
-                </div>
-                <button class="btn btn-primary" @onclick="async () => await EnviarCompra()">
-                    📨 Enviar compra
-                </button>
-            </div>
-        }
-    }
+      <p class="fs-5 mt-3"><strong>Total general:</strong> $@TotalGeneral</p>
+
+      <div class="d-flex gap-2 mb-4">
+          <button class="btn btn-outline-danger" @onclick="VaciarCarrito">🗑️ Vaciar carrito</button>
+          <button class="btn btn-outline-success" @onclick="ConfirmarCompra">✅ Confirmar compra</button>
+      </div>
+
+      @if (mostrarFormulario)
+      {
+          <EditForm Model="compraDto" OnValidSubmit="EnviarCompra">
+              <DataAnnotationsValidator />
+              <ValidationSummary />
+
+              <div class="mt-4 border border-light p-4 rounded bg-secondary text-white">
+                  <h4 class="text-warning">🧾 Datos del cliente</h4>
+
+                  <div class="mb-3">
+                      <label>Nombre:</label>
+                      <InputText class="form-control bg-dark text-white" @bind-Value="compraDto.NombreCliente" />
+                      <ValidationMessage For="@(() => compraDto.NombreCliente)" />
+                  </div>
+
+                  <div class="mb-3">
+                      <label>Apellido:</label>
+                      <InputText class="form-control bg-dark text-white" @bind-Value="compraDto.ApellidoCliente" />
+                      <ValidationMessage For="@(() => compraDto.ApellidoCliente)" />
+                  </div>
+
+                  <div class="mb-3">
+                      <label>Email:</label>
+                      <InputText type="email" class="form-control bg-dark text-white" @bind-Value="compraDto.EmailCliente" />
+                      <ValidationMessage For="@(() => compraDto.EmailCliente)" />
+                  </div>
+
+                  <button type="submit" class="btn btn-primary">
+                      📨 Enviar compra
+                  </button>
+              </div>
+          </EditForm>
+      }
+  }
 </div>
 
 @code {
+    private CompraDTO compraDto = new CompraDTO();
     private List<Producto> carrito = new();
-
     private bool mostrarFormulario = false;
-    private string nombreCliente = "";
-    private string apellidoCliente = "";
-    private string emailCliente = "";
 
     protected override void OnInitialized()
     {
@@ -87,8 +122,18 @@
 
     private void VaciarCarrito()
     {
+        foreach (var producto in carrito)
+        {
+            var original = CarritoService.ProductosConStock.FirstOrDefault(p => p.Id == producto.Id);
+            if (original != null)
+            {
+                original.Cantidad += producto.Cantidad;
+            }
+        }
+
         carrito.Clear();
         CarritoService.ObtenerCarrito().Clear();
+        CarritoService.NotificarCambio();
     }
 
     private void ConfirmarCompra()
@@ -98,18 +143,12 @@
 
     private async Task EnviarCompra()
     {
-        var compraDto = new CompraDTO
+        compraDto.Items = carrito.Select(p => new ItemCompraDTO
         {
-            NombreCliente = nombreCliente,
-            ApellidoCliente = apellidoCliente,
-            EmailCliente = emailCliente,
-            Items = carrito.Select(p => new ItemCompraDTO
-            {
-                ProductoId = p.Id,
-                Cantidad = p.Cantidad,
-                PrecioUnitario = p.Precio
-            }).ToList()
-        };
+            ProductoId = p.Id,
+            Cantidad = p.Cantidad,
+            PrecioUnitario = p.Precio
+        }).ToList();
 
         var exito = await ApiService.ConfirmarCompraAsync(compraDto);
 
@@ -132,12 +171,13 @@
         var producto = carrito.FirstOrDefault(p => p.Id == productoId);
         if (producto != null)
         {
-            var productosDesdeApi = await ApiService.ObtenerProductosAsync();
-            var productoApi = productosDesdeApi.FirstOrDefault(p => p.Id == productoId);
+            var original = CarritoService.ProductosConStock.FirstOrDefault(p => p.Id == productoId);
 
-            if (productoApi != null && producto.Cantidad < productoApi.Cantidad)
+            if (original != null && original.Cantidad > 0)
             {
                 producto.Cantidad++;
+                original.Cantidad--;
+                CarritoService.NotificarCambio();
             }
             else
             {
@@ -152,10 +192,19 @@
         if (producto != null)
         {
             producto.Cantidad--;
+
+            var original = CarritoService.ProductosConStock.FirstOrDefault(p => p.Id == productoId);
+            if (original != null)
+            {
+                original.Cantidad++;
+            }
+
             if (producto.Cantidad <= 0)
             {
                 carrito.Remove(producto);
             }
+
+            CarritoService.NotificarCambio();
         }
     }
 }

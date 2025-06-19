@@ -1,11 +1,10 @@
 @page "/checkout"
-@using modelos_compartidos // Asegúrate de que tus modelos de Producto y StockUpdateDto estén aquí
+@using modelos_compartidos
+@using Microsoft.AspNetCore.Components.Forms
 @inject cliente.Services.CarritoService CarritoService
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
-
-<PageTitle>Finalizar Compra</PageTitle>
 
 <div class="checkout-container">
     <h3>Finalizar Compra</h3>

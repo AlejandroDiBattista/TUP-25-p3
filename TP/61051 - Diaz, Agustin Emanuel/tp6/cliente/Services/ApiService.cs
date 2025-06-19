@@ -206,7 +206,7 @@ namespace cliente.Services
 
         if (response.IsSuccessStatusCode)
         {
-          _carritoId = null; 
+          _carritoId = null;
           OnCarritoActualizado?.Invoke();
           return true;
         }
@@ -275,6 +275,23 @@ namespace cliente.Services
         return null;
       }
     }
+    
+    public async Task<List<Producto>> ObtenerProductosConStockDisponibleAsync(string? query = null)
+{
+    try
+    {
+        var url = "/productos/actuales";
+        if (!string.IsNullOrWhiteSpace(query))
+            url += $"?query={Uri.EscapeDataString(query)}";
+
+        var productos = await _httpClient.GetFromJsonAsync<List<Producto>>(url);
+        return productos ?? new List<Producto>();
+    }
+    catch
+    {
+        return new List<Producto>();
+    }
+}
 
     #endregion
   }

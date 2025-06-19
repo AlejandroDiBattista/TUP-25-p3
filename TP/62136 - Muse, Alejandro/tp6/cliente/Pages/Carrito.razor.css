@@ -1,0 +1,73 @@
+h3 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.table {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 1rem;
+}
+
+.table th {
+  background: #f8f9fa;
+  color: #34495e;
+  font-weight: 600;
+}
+
+.table td button {
+  margin: 0 0.3rem;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: #e1e1e1;
+  color: #34495e;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+}
+
+.table td button:disabled {
+  background: #f2f2f2;
+  color: #bbb;
+}
+
+.table td .btn-danger {
+  border-radius: 6px;
+  padding: 0.3rem 0.8rem;
+}
+
+p b {
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.btn-warning, .btn-success {
+  font-size: 1.1rem;
+  padding: 0.6rem 1.5rem;
+  margin-top: 1rem;
+}
+
+.btn-success {
+  margin-left: 1rem;
+}
+
+@media (max-width: 600px) {
+  .table th, .table td {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+  }
+  .btn-warning, .btn-success {
+    width: 100%;
+    margin: 0.5rem 0 0 0;
+  }
+}

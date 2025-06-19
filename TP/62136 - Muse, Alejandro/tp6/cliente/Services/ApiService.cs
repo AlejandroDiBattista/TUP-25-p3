@@ -5,7 +5,7 @@ using cliente.Models; // Asegurate de tener el modelo Producto en cliente
 namespace cliente.Services;
 
 public class ApiService {
-    public HttpClient Http { get; }
+    private readonly HttpClient Http;
 
     public ApiService(HttpClient http) {
         Http = http;
@@ -22,6 +22,11 @@ public class ApiService {
         return productos ?? new List<Producto>();
     }
 
+    public async Task<List<Producto>> GetProductos()
+    {
+        return await Http.GetFromJsonAsync<List<Producto>>("/productos");
+    }
+
     public async Task<DatosRespuesta> ObtenerDatosAsync() {
         try {
             var response = await Http.GetFromJsonAsync<DatosRespuesta>("/api/datos");
@@ -30,6 +35,11 @@ public class ApiService {
             Console.WriteLine($"Error al obtener datos: {ex.Message}");
             return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
         }
+    }
+
+    public async Task<HttpResponseMessage> ConfirmarCompraAsync(object compra)
+    {
+        return await Http.PutAsJsonAsync("/carritos/confirmar", compra);
     }
 }
 

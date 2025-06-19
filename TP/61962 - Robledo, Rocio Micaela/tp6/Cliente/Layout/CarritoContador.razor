@@ -1,18 +1,32 @@
-
 @using Cliente.Services
 @inject CarritoService CarritoSrv
 
-<span>Carrito (@CarritoSrv.CantidadTotal)</span>
+<a class="nav-link" href="/carrito">
+    🛒 Carrito (@cantidad)
+</a>
 
 @code {
+    private int cantidad;
+
     protected override async Task OnInitializedAsync()
     {
-        CarritoSrv.OnChange += StateHasChanged;
-        await CarritoSrv.ActualizarCantidadAsync();
+        CarritoSrv.OnChange += Actualizar;
+        cantidad = CarritoSrv.CantidadTotal;
+
+        if (cantidad == 0)
+        {
+            await CarritoSrv.ActualizarCantidadAsync();
+        }
+    }
+
+    private void Actualizar()
+    {
+        cantidad = CarritoSrv.CantidadTotal;
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        CarritoSrv.OnChange -= StateHasChanged;
+        CarritoSrv.OnChange -= Actualizar;
     }
 }

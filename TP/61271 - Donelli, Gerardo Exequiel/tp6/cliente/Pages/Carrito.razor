@@ -185,12 +185,12 @@
     /// <param name="productoId">ID del producto a eliminar</param>
     private async Task EliminarItem(int productoId)
     {
-        bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este producto del carrito?");
-        if (confirmar)
-        {
+       // bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este producto del carrito?");
+        //if (confirmar)
+       // {
             CarritoService.EliminarItem(productoId);
             CargarCarrito();
-        }
+        //}
     }
 
     /// <summary>
@@ -207,11 +207,11 @@
     /// </summary>
     private async Task ConfirmarVaciarCarrito()
     {
-        bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea vaciar el carrito?");
-        if (confirmar)
-        {
+        //bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Está seguro que desea vaciar el carrito?");
+       // if (confirmar)
+       // {
             VaciarCarrito();
-        }
+        //}
     }
 
     /// <summary>

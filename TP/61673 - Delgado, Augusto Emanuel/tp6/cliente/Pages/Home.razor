@@ -3,14 +3,17 @@
 @inject cliente.Services.CarritoService CarritoService
 @inject cliente.Services.ApiService ApiService
 
-<PageTitle>Nuestros Productos</PageTitle>
+
+<h2 class="mb-4">Nuestros Productos</h2>
 
 <div class="container mt-4">
     <div class="row mb-4 align-items-center">
         <div class="col-md-6">
-            <h3>Productos Disponibles</h3>
+            <h3></h3>
         </div>
-    
+        <div class="col-md-6 text-end">
+            <input class="form-control form-control-lg w-75 d-inline-block" type="text" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" />
+        </div>
     </div>
 
     @if (productos == null)
@@ -22,7 +25,7 @@
             <p>Cargando productos...</p>
         </div>
     }
-    else if (!productos.Any()) 
+    else if (!productosFiltrados.Any()) 
     {
         <div class="text-center py-5">
             <i class="bi bi-box-seam display-1 text-muted"></i>
@@ -32,19 +35,21 @@
     else
     {
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            @foreach (var producto in productos)
+            @foreach (var producto in productosFiltrados)
             {
+                var cantidadEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id)?.Cantidad ?? 0;
+                var stockDisponible = producto.Stock - cantidadEnCarrito;
                 <div class="col">
                     <div class="card h-100 shadow-sm">
-                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-dark">@producto.Nombre</h5>
                             <p class="card-text text-muted flex-grow-1">@producto.Descripcion</p>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="fs-4 fw-bold text-success">$@producto.Precio</span>
-                                @if (producto.Stock > 0)
+                                @if (stockDisponible > 0)
                                 {
-                                    <span class="badge bg-info text-dark">Stock: @producto.Stock</span>
+                                    <span class="badge bg-info text-dark">Stock: @stockDisponible</span>
                                 }
                                 else
                                 {
@@ -53,8 +58,8 @@
                             </div>
                             <button class="btn btn-primary mt-auto"
                                     @onclick="() => AgregarAlCarrito(producto)"
-                                    disabled="@(producto.Stock == 0)">
-                                @if (producto.Stock == 0)
+                                    disabled="@(stockDisponible == 0)" id="btn-agregar-@producto.Id">
+                                @if (stockDisponible == 0)
                                 {
                                     <span>Producto Agotado</span>
                                 }
@@ -75,19 +80,23 @@
     #nullable enable
 
     private List<Producto>? productos;
- 
-    @inject cliente.Services.ApiService ApiService
-    @inject cliente.Services.CarritoService CarritoService
+    private string busqueda = string.Empty;
+    private IEnumerable<Producto> productosFiltrados => string.IsNullOrWhiteSpace(busqueda)
+        ? productos ?? new List<Producto>()
+        : productos?.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                                p.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) ?? new List<Producto>();
 
     protected override async Task OnInitializedAsync()
     {
         await CargarProductosAsync();
         CarritoService.OnChange += StateHasChanged;
+        CarritoService.OnStockChange += StateHasChanged;
     }
 
     public void Dispose()
     {
         CarritoService.OnChange -= StateHasChanged;
+        CarritoService.OnStockChange -= StateHasChanged;
     }
 
     private async Task CargarProductosAsync()
@@ -107,24 +116,14 @@
         }
     }
 
-
     private void AgregarAlCarrito(Producto producto)
     {
-        Console.WriteLine($"--> DEBUG: Intentando añadir {producto.Nombre} al carrito.");
-        var itemEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id);
-        int cantidadActualEnCarrito = itemEnCarrito?.Cantidad ?? 0;
-
-        if (producto.Stock > cantidadActualEnCarrito) 
+        var cantidadEnCarrito = CarritoService.Items.FirstOrDefault(item => item.Producto.Id == producto.Id)?.Cantidad ?? 0;
+        var stockDisponible = producto.Stock - cantidadEnCarrito;
+        if (stockDisponible > 0)
         {
             CarritoService.AgregarAlCarrito(producto);
-            Console.WriteLine($"--> DEBUG: {producto.Nombre} añadido al carrito. Cantidad en carrito: {cantidadActualEnCarrito + 1}. Stock restante: {producto.Stock - (cantidadActualEnCarrito + 1)}");
         }
-        else
-        {
-            Console.WriteLine($"--> ADVERTENCIA: No hay suficiente stock para añadir {producto.Nombre}. Stock disponible: {producto.Stock}. En carrito: {cantidadActualEnCarrito}");
-        }
-
         StateHasChanged();
     }
-
 }

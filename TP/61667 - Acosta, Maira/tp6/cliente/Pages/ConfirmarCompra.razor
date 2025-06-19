@@ -1,0 +1,80 @@
+@page "/confirmar-compra"
+@using cliente.Services
+@using cliente.Models
+@inject ApiService ApiService
+@inject CarritoService CarritoSrv
+@inject NavigationManager Nav
+
+<div class="container mt-4">
+    <h2>Confirmar compra</h2>
+
+    @if (carritoItems.Count == 0)
+    {
+        <div class="alert alert-warning mt-3">
+            El carrito está vacío. 
+            <NavLink class="btn btn-outline-primary btn-sm ms-2" href="/carrito">Volver al carrito</NavLink>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(mensajeCompra))
+    {
+        <div class="alert alert-success mt-3">
+            @mensajeCompra
+        </div>
+        <div class="mt-3">
+            <NavLink class="btn btn-primary" href="/">Volver al catálogo</NavLink>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="this" OnValidSubmit="ConfirmarCompraAsync">
+            <div class="mb-3">
+                <input class="form-control mb-2" placeholder="Nombre" @bind="nombreCliente" required />
+                <input class="form-control mb-2" placeholder="Apellido" @bind="apellidoCliente" required />
+                <input class="form-control mb-2" placeholder="Email" @bind="emailCliente" type="email" required />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" type="submit"> Confirmar compra</button>
+                <NavLink class="btn btn-secondary" href="/carrito">Cancelar</NavLink>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private List<CarritoItemDto> carritoItems = new();
+    private string nombreCliente = "";
+    private string apellidoCliente = "";
+    private string emailCliente = "";
+    private string mensajeCompra = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        carritoItems = await ApiService.ObtenerCarritoAsync(CarritoSrv.CarritoId) ?? new();
+    }
+
+    private async Task ConfirmarCompraAsync()
+    {
+        if (string.IsNullOrWhiteSpace(nombreCliente) || string.IsNullOrWhiteSpace(apellidoCliente) || string.IsNullOrWhiteSpace(emailCliente))
+            return;
+
+        var compra = new
+        {
+            NombreCliente = nombreCliente,
+            ApellidoCliente = apellidoCliente,
+            EmailCliente = emailCliente
+        };
+
+        var exito = await ApiService.ConfirmarCompraAsync(CarritoSrv.CarritoId, compra);
+
+        if (exito)
+        {
+            mensajeCompra = "¡Compra confirmada!";
+            nombreCliente = apellidoCliente = emailCliente = "";
+        }
+        else
+        {
+            mensajeCompra = "Error al confirmar la compra.";
+        }
+    }
+}

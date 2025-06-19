@@ -1,0 +1,171 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@using cliente.Services
+@using cliente.Models
+@using Microsoft.AspNetCore.Components
+@inject ApiService ApiService
+@inject CarritoService CarritoSrv
+
+<style>
+.card.producto-hover {
+    transition: box-shadow 0.3s, border-color 0.3s;
+    border: 2px solid transparent;
+}
+.card.producto-hover:hover {
+    border-color: #05467a;
+    box-shadow: 0 0 24px 4px #2196f3aa;
+    cursor: pointer;
+}
+
+/* ✅ Fijar el botón del carrito arriba a la derecha */
+.carrito-sticky {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    z-index: 1000;
+}
+</style>
+
+<div class="container" style="padding-top: 70px;">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1>Bienvenido a ElectroHogar</h1>
+            <div class="d-flex justify-content-end align-items-center mt-3 gap-3">
+                <NavLink class="carrito-sticky btn btn-outline-primary position-relative ms-2" href="/carrito">
+                    🛒 Carrito
+                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">@cantidadCarrito</span>
+                </NavLink>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- Título y buscador alineados -->
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0 me-3">Catálogo Productos</h2>
+        <div class="input-group w-auto" style="min-width:250px;">
+            <input class="form-control"
+                   placeholder="Buscar producto..."
+                   @bind="textoBusqueda"
+                   @bind:event="oninput" />
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12">
+            <h3>¡Elegí lo mejor para tu hogar!</h3>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (cargandoProductos)
+        {
+            <div class="col-12">
+                <div class="alert alert-info">Cargando productos...</div>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(errorProductos))
+        {
+            <div class="col-12">
+                <div class="alert alert-danger">Error al obtener productos: @errorProductos</div>
+            </div>
+        }
+        else
+        {
+            @foreach (var producto in ProductosFiltrados)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm producto-hover">
+                        <img src="@producto.ImagenUrl" class="card-img-top" style="width: 100%; height: 220px; object-fit: contain; background: #fff; padding: 10px;" />
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p class="card-text">@producto.Descripcion</p>
+                            <p><strong>Precio:</strong> $@producto.Precio.ToString("N0")</p>
+                            <p><strong>Stock:</strong> @producto.Stock</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-primary w-100" disabled="@(!PuedeAgregar(producto))"
+                                    @onclick="() => AgregarAlCarrito(producto.Id)">
+                                Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private DatosRespuesta datos;
+    private string error;
+    private bool cargando = false;
+
+    private List<Producto> productos = new();
+    private bool cargandoProductos = false;
+    private string errorProductos;
+
+    private int cantidadCarrito = 0;
+    private List<CarritoItemDto> carritoItems = new();
+
+    // Buscador
+    private string textoBusqueda = "";
+
+    private IEnumerable<Producto> ProductosFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? productos
+            : productos.Where(p =>
+                (p.Nombre != null && p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) ||
+                (p.Descripcion != null && p.Descripcion.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
+            );
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerOCrearCarritoIdAsync();
+        await ObtenerProductos();
+        await CargarCarritoAsync();
+    }
+
+    private async Task ObtenerProductos()
+    {
+        try
+        {
+            cargandoProductos = true;
+            errorProductos = null;
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            errorProductos = ex.Message;
+            productos = new List<Producto>();
+        }
+        finally
+        {
+            cargandoProductos = false;
+        }
+    }
+
+    private async Task ObtenerOCrearCarritoIdAsync()
+    {
+        if (string.IsNullOrEmpty(CarritoSrv.CarritoId))
+        {
+            CarritoSrv.CarritoId = await ApiService.CrearCarritoAsync();
+        }
+    }
+
+    private async Task CargarCarritoAsync()
+    {
+        carritoItems = await ApiService.ObtenerCarritoAsync(CarritoSrv.CarritoId) ?? new();
+        cantidadCarrito = carritoItems.Sum(i => i.Cantidad);
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        await ApiService.AgregarAlCarritoAsync(CarritoSrv.CarritoId, productoId);
+        await CargarCarritoAsync();
+        await ObtenerProductos(); // Para actualizar el stock en tiempo real
+    }
+
+    private bool PuedeAgregar(Producto p) => p.Stock > 0;
+}

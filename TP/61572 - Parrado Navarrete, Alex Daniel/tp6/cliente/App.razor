@@ -1,12 +1,15 @@
-@using TiendaOnline.Cliente.Shared
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using cliente.Layout
 
 <Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Página no encontrada.</p>
-        </LayoutView>
-    </NotFound>
+  <Found Context="routeData">
+    <!-- Usa RouteView en lugar de LayoutView para enrutar -->
+    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+  </Found>
+  <NotFound>
+    <!-- Para la página no encontrada sí usamos LayoutView -->
+    <LayoutView Layout="@typeof(MainLayout)">
+      <p>Lo siento, no hay nada en esta ruta.</p>
+    </LayoutView>
+  </NotFound>
 </Router>

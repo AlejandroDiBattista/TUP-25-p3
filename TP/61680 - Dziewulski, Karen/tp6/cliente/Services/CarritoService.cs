@@ -7,16 +7,17 @@ namespace cliente.Services;
     {
         public List<ItemCarrito> Items { get; private set; } = new();
 
-        public string CarritoId { get; private set; } = Guid.NewGuid().ToString();
+        public string? CarritoId { get; private set; }
+
 
         public decimal Total => Items.Sum(i => i.Importe);
         public int TotalItems => Items.Sum(i => i.Cantidad);
         private readonly HttpClient _http;
 
-    public CarritoService(HttpClient http)
-    {
-        _http = http;
-    }
+        public CarritoService(HttpClient http)
+        {
+            _http = http;
+        }
 
     public async Task Vaciar()
     {
@@ -27,15 +28,17 @@ namespace cliente.Services;
         
     public event Action? OnChange;
 
-      public async Task AgregarProductoAsync(Producto producto)
+   public async Task AgregarProductoAsync(Producto producto)
 {
-    if (string.IsNullOrEmpty(CarritoId))
-        await Inicializar();
+    var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+    int enCarrito = item?.Cantidad ?? 0;
+
+    if (enCarrito >= producto.Stock)
+        return; // O throw new InvalidOperationException("Stock insuficiente");
 
     var response = await _http.PutAsync($"/carritos/{CarritoId}/{producto.Id}", null);
     if (response.IsSuccessStatusCode)
     {
-        var item = Items.FirstOrDefault(i => i.Producto.Id == producto.Id);
         if (item != null)
         {
             item.Cantidad++;
@@ -53,7 +56,9 @@ namespace cliente.Services;
     }
 }
 
-        public void QuitarProducto(int productoId)
+
+
+    public void QuitarProducto(int productoId)
         {
             var item = Items.FirstOrDefault(i => i.Producto.Id == productoId);
             if (item != null)
@@ -76,21 +81,23 @@ namespace cliente.Services;
         OnChange?.Invoke();
     }
     public async Task Inicializar()
-{
-    if (string.IsNullOrEmpty(CarritoId))
     {
-        var response = await _http.PostAsync("/carritos", null);
-        if (response.IsSuccessStatusCode)
+        if (string.IsNullOrEmpty(CarritoId))
         {
-            CarritoId = await response.Content.ReadAsStringAsync();
-            CarritoId = CarritoId.Trim('"');
-        }
-        else
-        {
-            throw new Exception("No se pudo crear el carrito en el servidor.");
+            var response = await _http.PostAsync("/carritos", null);
+            if (response.IsSuccessStatusCode)
+            {
+                CarritoId = await response.Content.ReadAsStringAsync();
+                CarritoId = CarritoId.Trim('"');
+                Console.WriteLine($"Nuevo CarritoId recibido: {CarritoId}");
+            }
+            else
+            {
+                throw new Exception("No se pudo crear el carrito en el servidor.");
+            }
         }
     }
-}
+
 
           private void NotifyStateChanged() => OnChange?.Invoke();
     }
