@@ -9,49 +9,59 @@ public class CarritoService
     public List<ItemCarrito> ObtenerCarrito() => _items;
 
     public void AgregarAlCarrito(Producto producto)
+{
+    var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+    
+    if (item != null)
     {
-        var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-
-        if (producto.StockDisponible <= 0)
-            return;
-
-        if (item != null)
+        
+        if (producto.StockDisponible > 0)
         {
             item.Cantidad++;
+            producto.StockDisponible--;
         }
-        else
-        {
-            _items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
-        }
-
-        producto.StockDisponible--;
     }
+    else
+    {
+        if (producto.StockDisponible > 0)
+        {
+            _items.Add(new ItemCarrito
+            {
+                Producto = producto,
+                Cantidad = 1
+            });
+            producto.StockDisponible--;
+        }
+    }
+}
+
 
 
     public void AumentarCantidad(int productoId)
+{
+    var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+    if (item != null && item.Producto.StockDisponible > 0)
     {
-        var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null && item.Cantidad < item.Producto.StockDisponible)
-        {
-            item.Cantidad++;
-        }
+        item.Cantidad++;
+        item.Producto.StockDisponible--;
     }
+}
+
 
     public void DisminuirCantidad(int productoId)
     {
-        var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null)
+    var item = _items.FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null && item.Cantidad > 0)
         {
             item.Cantidad--;
+            item.Producto.StockDisponible++;
 
-            item.Producto.Stock++;
-
-            if (item.Cantidad <= 0)
+            if (item.Cantidad == 0)
             {
                 _items.Remove(item);
             }
         }
-    }
+}   
 
 
     public void EliminarDelCarrito(int productoId)
