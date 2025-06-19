@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.SignalR.Client
 @using cliente.Services
 
 <div class="fondo-productos">
@@ -57,10 +58,38 @@
 {
     cliente.Services.Carrito? carrito;
     ClienteDto datosCliente = new();
+    private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         carrito = await CarritoService.GetCarritoAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5184/stockhub")
+            .Build();
+
+        hubConnection.On<int, int>("StockActualizado", (productoId, nuevoStock) =>
+        {
+            if (carrito is not null)
+            {
+                var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+                if (item is not null)
+                {
+                    item.Producto.Stock = nuevoStock;
+                    StateHasChanged();
+                }
+            }
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
     async Task ConfirmarCompra()
