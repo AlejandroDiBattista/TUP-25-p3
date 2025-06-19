@@ -36,8 +36,8 @@ else
                     <td>$@(item.Cantidad * item.Producto.Precio)</td>
                     <td>
                         <button class="btn btn-sm btn-secondary" @onclick="() => Disminuir(item.Producto.Id)">-</button>
-                        <button class="btn btn-sm btn-success" @onclick="() => Aumentar(item.Producto.Id)"
-                                disabled="@((item.Cantidad >= item.Producto.StockDisponible))">+</button>
+                        <button class="btn btn-sm btn-success"@onclick="() => Aumentar(item.Producto.Id)" 
+                                    disabled="@(item.Producto.StockDisponible == 0)">+</button>
 
                         
                     </td>
@@ -97,7 +97,12 @@ else
 
     void Aumentar(int productoId)
     {
-        CarritoService.AumentarCantidadCarrito(productoId);
+        var item = CarritoService.ObtenerCarrito().FirstOrDefault(i => i.Producto.Id == productoId);
+        if (item != null && item.Cantidad < item.Producto.StockDisponible)
+        {
+            item.Cantidad++;
+            item.Producto.StockDisponible--;
+        }
     }
 
 

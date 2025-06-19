@@ -62,8 +62,14 @@
 
         foreach (var producto in productos)
         {
-            producto.StockDisponible = producto.Stock;
+            if (CarritoService.ObtenerStock(producto.Id) == 0)
+            {
+                CarritoService.EstablecerStock(producto.Id, producto.Stock);
+            }
+
+            producto.StockDisponible = CarritoService.ObtenerStock(producto.Id);
         }
+
 
         productosFiltrados = productos;
     }
@@ -100,10 +106,11 @@
 
     void AgregarAlCarrito(Producto producto)
     {
-        if (producto.StockDisponible > 0)
+        if (CarritoService.ObtenerStock(producto.Id) > 0)
         {
             CarritoService.AgregarAlCarrito(producto);
-            producto.StockDisponible--;
+            CarritoService.RestarStock(producto.Id, 1);
+            producto.StockDisponible = CarritoService.ObtenerStock(producto.Id);
         }
     }
 
