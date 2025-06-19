@@ -6,24 +6,21 @@
 
 <div class="container-fluid d-flex flex-column p-0 min-vh-100">
 
-    <header>
-        <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
+    <header >
+        <nav class="navbar  navbar-expand-lg bg-body-tertiary" data-bs-theme="light">
             <div class="container">
                 <a class="navbar-brand" href="/">
-                    <img src="https://i.imgur.com/83BCc2k.png" alt="FreshCart Logo" style="height: 30px;">
+                    DEPORT-TUC
                 </a>
 
                 @* --- Formulario de Búsqueda --- *@
                 <form class="d-flex w-50" @onsubmit="ManejarBusqueda">
-                    <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="terminoBusqueda" @bind:event="oninput">
+                    <input class="form-control me-2" type="search" placeholder="Buscar productos..."
+                        @bind="terminoBusqueda" @bind:event="oninput">
                     <button class="btn btn-outline-success" type="submit">Buscar</button>
                 </form>
 
                 <div class="d-flex align-items-center">
-                    <a href="#" class="text-reset me-3"><i class="bi bi-bell"></i></a>
-                    <a href="#" class="text-reset me-3"><i class="bi bi-person-circle"></i></a>
-                    <a href="#" class="text-reset me-3"><i class="bi bi-box-seam"></i></a>
-                    
                     @* --- Contador del Carrito --- *@
                     <a href="/carrito" class="btn btn-light position-relative">
                         <i class="bi bi-cart3"></i>
@@ -42,7 +39,7 @@
             <div class="container">
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav">
-                        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="#">INICIO</a></li>
                     </ul>
                 </div>
             </div>
@@ -50,6 +47,27 @@
     </header>
 
     <main class="flex-grow-1">
+        <div id="carouselExample" class="carousel slide">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="https://pacogarcia.vtexassets.com/assets/vtex.file-manager-graphql/images/85145e20-8ef1-429c-972e-20487b92e36e___5c478fa85695aa0ae7a7c0b6b34bf1a8.png" class="d-block w-100" alt="...">
+                </div>
+                <div class="carousel-item">
+                    <img src="https://pacogarcia.vtexassets.com/assets/vtex.file-manager-graphql/images/301433e2-d833-44c0-a5d7-30790f362a5f___22ac40200b82ae2c1d8ec74be4d8e533.png" class="d-block w-100" alt="...">
+                </div>
+                <div class="carousel-item">
+                    <img src="https://pacogarcia.vtexassets.com/assets/vtex.file-manager-graphql/images/1ce49388-4acf-4de7-bb36-e276f3275f55___84fa99cf57158dee44aafe54c1bb2bc5.png" class="d-block w-100" alt="...">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
         @Body
     </main>
 
