@@ -79,16 +79,13 @@ app.MapPut("/api/carritos/{carritoId}/{productoId}", async (
         return Results.NotFound("Producto no encontrado");
 
     if (producto.Stock <= 0)
-        return Results.BadRequest("Producto sin stock");
+        return Results.BadRequest("No hay más stock disponible");
 
     var itemExistente = await db.CarritoItems
         .FirstOrDefaultAsync(ci => ci.CarritoId == carritoId && ci.ProductoId == productoId);
 
     if (itemExistente != null)
     {
-        if (producto.Stock < itemExistente.Cantidad + 1)
-            return Results.BadRequest("No hay stock suficiente para aumentar la cantidad");
-
         itemExistente.Cantidad += 1;
     }
     else
@@ -108,7 +105,6 @@ app.MapPut("/api/carritos/{carritoId}/{productoId}", async (
     return Results.Ok("Producto agregado al carrito");
 });
 
-// NUEVO ENDPOINT: Cambiar cantidad de un producto en el carrito (para + y -)
 app.MapPut("/api/carritos/{carritoId}/cantidad/{productoId}", async (
     Guid carritoId,
     int productoId,
@@ -131,7 +127,7 @@ app.MapPut("/api/carritos/{carritoId}/cantidad/{productoId}", async (
     }
     else if (delta < 0)
     {
-        int resta = Math.Min(item.Cantidad - 1, -delta); // No permitir menos de 1
+        int resta = Math.Min(item.Cantidad - 1, -delta);
         if (resta > 0)
         {
             item.Cantidad -= resta;
@@ -205,20 +201,13 @@ app.MapDelete("/api/carritos/{carritoId}/{productoId}", async (
     if (item == null)
         return Results.NotFound("Producto no encontrado en el carrito");
 
-    if (item.Cantidad > 1)
-    {
-        item.Cantidad -= 1;
-        item.Producto.Stock += 1;
-    }
-    else
-    {
-        db.CarritoItems.Remove(item);
-        item.Producto.Stock += 1;
-    }
+    // Acá eliminamos el item entero y devolvemos todo el stock
+    item.Producto.Stock += item.Cantidad;
+    db.CarritoItems.Remove(item);
 
     await db.SaveChangesAsync();
 
-    return Results.Ok("Producto eliminado/reducido del carrito");
+    return Results.Ok("Producto eliminado del carrito completamente");
 });
 
 app.MapPut("/api/carritos/{carritoId}/confirmar", async (
@@ -252,7 +241,6 @@ app.MapPut("/api/carritos/{carritoId}/confirmar", async (
             Cantidad = item.Cantidad,
             PrecioUnitario = item.Producto.Precio
         });
-        // No descontar stock aquí, ya se descontó al agregar al carrito
     }
 
     db.CarritoItems.RemoveRange(itemsCarrito);

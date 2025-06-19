@@ -41,19 +41,17 @@ public class ApiService
         }
     }
 
-    // Crear un nuevo carrito (POST /api/carritos)
     public async Task<string> CrearCarritoAsync()
     {
         var response = await _httpClient.PostAsync("/api/carritos", null);
         if (response.IsSuccessStatusCode)
         {
             var id = await response.Content.ReadAsStringAsync();
-            return id.Trim('"'); // El backend devuelve el GUID entre comillas
+            return id.Trim('"');
         }
         return "";
     }
 
-    // Obtener los artículos del carrito (GET /api/carritos/{carritoId})
     public async Task<List<CarritoItemDto>> ObtenerCarritoAsync(string carritoId)
     {
         try
@@ -72,38 +70,39 @@ public class ApiService
         }
     }
 
-    // Agregar producto al carrito (PUT /api/carritos/{carritoId}/{productoId})
     public async Task AgregarAlCarritoAsync(string carritoId, int productoId)
     {
         await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}", null);
     }
 
-    // Quitar producto del carrito (DELETE /api/carritos/{carritoId}/{productoId})
     public async Task QuitarDelCarritoAsync(string carritoId, int productoId)
     {
         await _httpClient.DeleteAsync($"/api/carritos/{carritoId}/{productoId}");
     }
 
-    // Vaciar carrito (DELETE /api/carritos/{carritoId})
     public async Task VaciarCarritoAsync(string carritoId)
     {
         await _httpClient.DeleteAsync($"/api/carritos/{carritoId}");
     }
 
-    // Confirmar compra (PUT /api/carritos/{carritoId}/confirmar)
     public async Task<bool> ConfirmarCompraAsync(string carritoId, object compra)
     {
         var response = await _httpClient.PutAsJsonAsync($"/api/carritos/{carritoId}/confirmar", compra);
-        await ObtenerProductosAsync(); // Esto recarga los productos y actualiza el stock en la UI
+        await ObtenerProductosAsync();
         return response.IsSuccessStatusCode;
     }
 
-    // Cambiar cantidad de un producto en el carrito (PUT /api/carritos/{carritoId}/cantidad/{productoId}?delta=1)
+    // ⚠️ CORREGIDO: Maneja errores de stock insuficiente
     public async Task CambiarCantidadCarritoAsync(string carritoId, int productoId, int delta)
     {
         var response = await _httpClient.PutAsync(
             $"/api/carritos/{carritoId}/cantidad/{productoId}?delta={delta}", null);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            throw new Exception($"No se pudo cambiar la cantidad: {errorMsg}");
+        }
     }
 }
 
@@ -113,7 +112,6 @@ public class DatosRespuesta
     public DateTime Fecha { get; set; }
 }
 
-// DTO para los ítems del carrito (debe coincidir con lo que devuelve el backend)
 public class CarritoItemDto
 {
     public int ProductoId { get; set; }

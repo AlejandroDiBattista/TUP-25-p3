@@ -9,7 +9,10 @@
 
     @if (carritoItems.Count == 0)
     {
-        <p>El carrito está vacío.</p>
+        <div class="text-center mt-4">
+            <p>🛒 El carrito está vacío.</p>
+            <NavLink class="btn btn-outline-primary" href="/">Volver al catálogo</NavLink>
+        </div>
     }
     else
     {
@@ -28,7 +31,10 @@
                         <button class="btn btn-sm btn-secondary me-2"
                                 @onclick="() => CambiarCantidad(item.ProductoId, 1)">+</button>
                         $@( (item.ProductoPrecio * item.Cantidad).ToString("N0") )
-                        <button class="btn btn-sm btn-danger ms-2" @onclick="() => QuitarDelCarrito(item.ProductoId)">Quitar</button>
+                        <button class="btn btn-sm btn-danger ms-2" 
+                                @onclick="() => QuitarDelCarrito(item.ProductoId)">
+                            Eliminar del carrito
+                        </button>
                     </span>
                 </li>
             }
@@ -38,7 +44,6 @@
             <b>Total: $@carritoItems.Sum(i => i.ProductoPrecio * i.Cantidad).ToString("N0")</b>
         </div>
 
-        <!-- ✅ Botones alineados -->
         <div class="d-flex flex-wrap gap-2 mb-3">
             <NavLink class="btn btn-primary" href="/confirmar-compra">Confirmar compra</NavLink>
             <button class="btn btn-secondary" @onclick="VaciarCarrito">Vaciar carrito</button>
