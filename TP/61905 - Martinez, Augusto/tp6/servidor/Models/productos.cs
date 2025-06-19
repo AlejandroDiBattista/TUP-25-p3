@@ -7,7 +7,7 @@ namespace servidor.Models
     public class Producto
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // ✅ Genera automáticamente `Id`
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Genera automáticamente `Id`
         public int Id { get; set; }
 
         [Required]
@@ -23,7 +23,7 @@ namespace servidor.Models
         public decimal Precio { get; set; }
 
         [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")] // ✅ Validación para evitar valores incorrectos
+        [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")] // Validación para evitar valores incorrectos
         public int Stock { get; set; }
 
         [MaxLength(300)]

@@ -69,14 +69,14 @@ namespace servidor.Services
                 {
                     new Producto { Nombre = "Laptop Dell XPS 13", Descripcion = "Ultrabook con Intel i7.", Precio = 1299.99m, Stock = 15, ImagenUrl = "/images/laptop.jpg" },
                     new Producto { Nombre = "iPhone 14 Pro", Descripcion = "Smartphone con pantalla OLED.", Precio = 999.00m, Stock = 10, ImagenUrl = "/images/iphone.jpg" },
-                    new Producto { Nombre = "Audífonos Sony WH-1000XM5", Descripcion = "Cancelación de ruido.", Precio = 349.99m, Stock = 25, ImagenUrl = "/images/audifonos.jpg" },
-                    new Producto { Nombre = "Smartwatch Samsung Galaxy Watch 6", Descripcion = "GPS integrado.", Precio = 279.00m, Stock = 18, ImagenUrl = "/images/smartwatch.jpg" },
-                    new Producto { Nombre = "Mouse Logitech MX Master 3", Descripcion = "Ergonómico e inalámbrico.", Precio = 99.99m, Stock = 30, ImagenUrl = "/images/mouse.jpg" },
-                    new Producto { Nombre = "Monitor LG UltraWide 34”", Descripcion = "Resolución QHD, ideal para diseño.", Precio = 449.00m, Stock = 12, ImagenUrl = "/images/monitor.jpg" },
-                    new Producto { Nombre = "Teclado Mecánico Keychron K8", Descripcion = "Bluetooth y cable USB-C.", Precio = 89.00m, Stock = 20, ImagenUrl = "/images/teclado.jpg" },
-                    new Producto { Nombre = "Cámara Canon EOS R10", Descripcion = "Mirrorless de 24MP.", Precio = 1099.00m, Stock = 8, ImagenUrl = "/images/camara.jpg" },
-                    new Producto { Nombre = "Impresora HP Smart Tank 7301", Descripcion = "Multifuncional con Wi-Fi.", Precio = 249.00m, Stock = 10, ImagenUrl = "/images/impresora.jpg" },
-                    new Producto { Nombre = "Bocina JBL Charge 5", Descripcion = "Portátil y resistente al agua.", Precio = 149.00m, Stock = 22, ImagenUrl = "/images/bocina.jpg" }
+                    new Producto { Nombre = "Audífonos Sony WH-1000XM5", Descripcion = "Cancelación de ruido.", Precio = 349.99m, Stock = 25, ImagenUrl = "/images/sony-headphones.jpg" },
+                    new Producto { Nombre = "Smartwatch Samsung Galaxy Watch 6", Descripcion = "GPS integrado.", Precio = 279.00m, Stock = 18, ImagenUrl = "/images/samsung-watch.jpg" },
+                    new Producto { Nombre = "Mouse Logitech MX Master 3", Descripcion = "Ergonómico e inalámbrico.", Precio = 99.99m, Stock = 30, ImagenUrl = "/images/logitech-mouse.jpg" },
+                    new Producto { Nombre = "Monitor LG UltraWide 34”", Descripcion = "Resolución QHD, ideal para diseño.", Precio = 449.00m, Stock = 12, ImagenUrl = "/images/lg-monitor.jpg" },
+                    new Producto { Nombre = "Teclado Mecánico Keychron K8", Descripcion = "Bluetooth y cable USB-C.", Precio = 89.00m, Stock = 20, ImagenUrl = "/images/keychron.jpg" },
+                    new Producto { Nombre = "Cámara Canon EOS R10", Descripcion = "Mirrorless de 24MP.", Precio = 1099.00m, Stock = 8, ImagenUrl = "/images/canon-r10.jpg" },
+                    new Producto { Nombre = "Impresora HP Smart Tank 7301", Descripcion = "Multifuncional con Wi-Fi.", Precio = 249.00m, Stock = 10, ImagenUrl = "/images/hp-printer.jpg" },
+                    new Producto { Nombre = "Bocina JBL Charge 5", Descripcion = "Portátil y resistente al agua.", Precio = 149.00m, Stock = 22, ImagenUrl = "/images/jbl.jpg" }
                 };
 
                 await _context.Productos.AddRangeAsync(productos);

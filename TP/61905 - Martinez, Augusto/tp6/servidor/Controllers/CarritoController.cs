@@ -37,11 +37,12 @@ public class CarritoController : ControllerBase
             return BadRequest("El usuario no existe, no se puede crear el carrito.");
 
         var carrito = await _context.Carritos
-                                    .Include(c => c.CarritoItems)
-                                    .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId);
+                                .Include(c => c.CarritoItems)
+                                    .ThenInclude(ci => ci.Producto)
+                                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId);
 
         if (carrito == null)
-        {
+        {   
             carrito = new Carrito
             {
                 Id = Guid.NewGuid(),
@@ -54,10 +55,20 @@ public class CarritoController : ControllerBase
 
             _context.Carritos.Add(carrito);
             await _context.SaveChangesAsync();
-        }
-
-        return Ok(carrito);
     }
+    else
+    {
+        //  Aquí completo los campos que el frontend espera
+        foreach (var item in carrito.CarritoItems)
+        {
+            item.Nombre = item.Producto?.Nombre;
+            item.ImagenUrl = item.Producto?.ImagenUrl;
+        }
+    }
+
+    return Ok(carrito);
+}
+
 
     [HttpPost("{carritoId}/{productoId}")]
     public async Task<ActionResult<CarritoItem>> AgregarAlCarrito(Guid carritoId, int productoId)

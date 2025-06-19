@@ -9,7 +9,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow sticky-top">
     <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 py-2">
-        <a class="navbar-brand text-center text-md-start" href="/">🛍️ <strong>Tienda Gamer</strong></a>
+        <a class="navbar-brand text-center text-md-start" href="/">🛍️ <strong>Tiendas Tukophite</strong></a>
 
         <input class="form-control w-100 w-md-50" type="search" placeholder="Buscar productos..."
                @bind="busqueda" @bind:event="oninput" />
@@ -41,13 +41,19 @@
             @foreach (var producto in productosFiltrados)
             {
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@producto.ImagenUrl"
+                            class="img-fluid rounded-top"
+                            alt="@producto.Nombre"
+                            style="width: 100%; height: 200px; object-fit: cover;" />
+
                         <div class="card-body">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text">@producto.Descripcion</p>
                             <p><strong>Precio:</strong> $@producto.Precio</p>
                             <p><strong>Stock:</strong> @producto.Stock</p>
                         </div>
+                        
                         <div class="card-footer text-end">
                             <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">
                                 ➕ Añadir al carrito
@@ -63,6 +69,11 @@
         <div class="alert alert-warning">No se encontraron productos.</div>
     }
 </div>
+
+<footer class="bg-dark text-white text-center py-3 mt-5">
+    <small>&copy;  2025 Augusto Martinez. Todos los derechos reservados.</small>
+</footer>
+
 
 @code {
     private List<Producto> productos = new();

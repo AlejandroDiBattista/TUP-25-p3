@@ -19,7 +19,12 @@
     <h2>Carrito de compras</h2>
 
     <p><strong>Cantidad total de productos:</strong> @cantidadProductos</p>
-    <button class="btn btn-outline-info" @onclick="ActualizarCantidad">🔄 Actualizar cantidad</button>
+    <div class="mt-4 mb-5">
+    <button class="btn btn-outline-info w-100" @onclick="ActualizarCantidad">
+        🔄 Actualizar cantidad
+    </button>
+</div>
+
 
     @if (cargando)
     {
