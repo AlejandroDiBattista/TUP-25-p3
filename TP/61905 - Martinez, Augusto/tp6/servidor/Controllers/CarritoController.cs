@@ -8,6 +8,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
+public class ActualizarCantidadDto
+{
+    public Guid CarritoId { get; set; }
+    public int ProductoId { get; set; }
+    public int Cantidad { get; set; }
+}
+
+
 [Route("api/[controller]")]
 [ApiController]
 public class CarritoController : ControllerBase
@@ -51,44 +59,44 @@ public class CarritoController : ControllerBase
         return Ok(carrito);
     }
 
-[HttpPost("{carritoId}/{productoId}")]
-public async Task<ActionResult<CarritoItem>> AgregarAlCarrito(Guid carritoId, int productoId)
-{
-    _logger.LogInformation($"Intentando agregar producto ID {productoId} al carrito ID {carritoId}");
-
-    var carrito = await _context.Carritos.FindAsync(carritoId);
-    if (carrito == null)
-        return NotFound("Carrito no encontrado.");
-
-    var producto = await _context.Productos.FindAsync(productoId);
-    if (producto == null)
-        return NotFound("Producto no encontrado.");
-
-    if (producto.Stock <= 0)
-        return BadRequest($"No hay stock disponible para '{producto.Nombre}'.");
-
-    var itemExistente = await _context.CarritoItems
-                                      .FirstOrDefaultAsync(ci => ci.CarritoId == carritoId && ci.ProductoId == productoId);
-
-    if (itemExistente != null)
+    [HttpPost("{carritoId}/{productoId}")]
+    public async Task<ActionResult<CarritoItem>> AgregarAlCarrito(Guid carritoId, int productoId)
     {
-        itemExistente.Cantidad++;
-    }
-    else
-    {
-        _context.CarritoItems.Add(new CarritoItem
+        _logger.LogInformation($"Intentando agregar producto ID {productoId} al carrito ID {carritoId}");
+
+        var carrito = await _context.Carritos.FindAsync(carritoId);
+        if (carrito == null)
+            return NotFound("Carrito no encontrado.");
+
+        var producto = await _context.Productos.FindAsync(productoId);
+        if (producto == null)
+            return NotFound("Producto no encontrado.");
+
+        if (producto.Stock <= 0)
+            return BadRequest($"No hay stock disponible para '{producto.Nombre}'.");
+
+        var itemExistente = await _context.CarritoItems
+                                          .FirstOrDefaultAsync(ci => ci.CarritoId == carritoId && ci.ProductoId == productoId);
+
+        if (itemExistente != null)
         {
-            CarritoId = carritoId,
-            ProductoId = productoId,
-            Cantidad = 1,
-            PrecioUnitario = producto.Precio,
-            Nombre = producto.Nombre,
-            ImagenUrl = producto.ImagenUrl
-        });
+            itemExistente.Cantidad++;
+        }
+        else
+        {
+            _context.CarritoItems.Add(new CarritoItem
+            {
+                CarritoId = carritoId,
+                ProductoId = productoId,
+                Cantidad = 1,
+                PrecioUnitario = producto.Precio,
+                Nombre = producto.Nombre,
+                ImagenUrl = producto.ImagenUrl
+            });
+        }
+        await _context.SaveChangesAsync();
+        return Ok("Producto agregado al carrito.");
     }
-    await _context.SaveChangesAsync();
-    return Ok("Producto agregado al carrito.");
-}
 
     [HttpGet("contador/{carritoId}")]
     public async Task<ActionResult<int>> ObtenerContadorProductos(Guid carritoId)
@@ -133,4 +141,28 @@ public async Task<ActionResult<CarritoItem>> AgregarAlCarrito(Guid carritoId, in
         await _context.SaveChangesAsync();
         return NoContent();
     }
+    
+    [HttpPut("actualizar")]
+public async Task<IActionResult> ActualizarCantidadProducto([FromBody] ActualizarCantidadDto dto)
+{
+    var carrito = await _context.Carritos
+                                .Include(c => c.CarritoItems)
+                                .FirstOrDefaultAsync(c => c.Id == dto.CarritoId);
+
+    if (carrito == null)
+        return NotFound("Carrito no encontrado.");
+
+    var item = carrito.CarritoItems.FirstOrDefault(ci => ci.ProductoId == dto.ProductoId);
+    if (item == null)
+        return NotFound("Producto no encontrado en el carrito.");
+
+    if (dto.Cantidad < 1)
+        return BadRequest("La cantidad debe ser mayor a cero.");
+
+    item.Cantidad = dto.Cantidad;
+    await _context.SaveChangesAsync();
+
+    return Ok("Cantidad actualizada correctamente.");
+}
+
 }

@@ -31,23 +31,42 @@
     }
     else if (CarritoService.Items.Any())
     {
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            @foreach (var item in CarritoService.Items)
-            {
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">@item.Nombre</h5>
-                            <p><strong>Precio:</strong> $@item.PrecioUnitario</p>
-                            <p><strong>Cantidad:</strong> @item.Cantidad</p>
-                            <p><strong>Total:</strong> $@item.Importe</p>
-                        </div>
-                        <div class="card-footer text-end">
-                            <button class="btn btn-danger" @onclick="() => EliminarDelCarrito(item.ProductoId)">Eliminar</button>
-                        </div>
-                    </div>
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    @foreach (var item in CarritoService.Items)
+                {
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Nombre</h5>
+                    <p><strong>Precio:</strong> $@item.PrecioUnitario</p>
+
+                    <div class="d-flex align-items-center mb-2">
+                    <button class="btn btn-outline-secondary btn-sm me-2"
+                            @onclick="() => ActualizarCantidad(item.ProductoId, -1)">
+                        −
+                    </button>
+
+                    <strong>@item.Cantidad</strong>
+
+                    <button class="btn btn-outline-secondary btn-sm ms-2"
+                            @onclick="() => ActualizarCantidad(item.ProductoId, 1)">
+                        +
+                    </button>
                 </div>
-            }
+
+                <p><strong>Total:</strong> $@item.Importe</p>
+            </div>
+
+            <div class="card-footer text-end">
+                <button class="btn btn-danger"
+                        @onclick="() => EliminarDelCarrito(item.ProductoId)">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
         </div>
 
         <div class="mt-4">
@@ -161,6 +180,20 @@
             error = $"Error al obtener cantidad de productos: {ex.Message}";
         }
     }
+    
+    private async Task ActualizarCantidad(int productoId, int cambio)
+    {
+        var item = CarritoService.Items.FirstOrDefault(p => p.ProductoId == productoId);
+        if (item is null) return;
+
+        int nuevaCantidad = item.Cantidad + cambio;
+        if (nuevaCantidad < 1) return;
+
+        await CarritoService.ActualizarCantidadAsync(productoId, nuevaCantidad);
+        await CarritoService.CargarDesdeApiAsync(usuarioId); // o carritoId si usás eso
+        await ActualizarCantidad(); // 👉 refresca el total visual también, usando tu método original
+    }
+
 
     private async Task AgregarProductoAlCarrito()
     {

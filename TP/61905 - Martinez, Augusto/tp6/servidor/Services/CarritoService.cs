@@ -45,6 +45,39 @@ namespace servidor.Services
 }
 
 
+    public async Task<bool> ActualizarCantidadProductoAsync(Guid carritoId, int productoId, int nuevaCantidad)
+{
+    try
+    {
+        var carrito = await _context.Carritos
+                                    .Include(c => c.CarritoItems)
+                                    .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+        if (carrito == null)
+        {
+            _logger.LogWarning($"No se encontró carrito con ID {carritoId}.");
+            return false;
+        }
+
+        var item = carrito.CarritoItems.FirstOrDefault(ci => ci.ProductoId == productoId);
+        if (item == null)
+        {
+            _logger.LogWarning($"Producto ID {productoId} no encontrado en el carrito {carritoId}.");
+            return false;
+        }
+
+        item.Cantidad = nuevaCantidad;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError($"Error al actualizar cantidad del producto en el carrito {carritoId}: {ex.Message}");
+        return false;
+    }
+}
+
+
         // ✅ Obtener carrito por CarritoId (NO por UsuarioId)
         public async Task<Carrito> ObtenerCarritoPorIdAsync(Guid carritoId)
         {

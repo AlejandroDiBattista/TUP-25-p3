@@ -18,6 +18,9 @@ namespace Cliente.Services
 
         public List<CarritoItem> Items { get; private set; } = new();
 
+        public Guid CarritoIdActual { get; private set; }
+
+
         public decimal Total => Items.Sum(i => i.Importe);
 
         // ✅ Cargar manualmente items desde otro componente
@@ -35,7 +38,10 @@ namespace Cliente.Services
                 if (!response.IsSuccessStatusCode)
                     throw new HttpRequestException($"Error {response.StatusCode}");
 
-                return await response.Content.ReadFromJsonAsync<Carrito>();
+                var carrito = await response.Content.ReadFromJsonAsync<Carrito>();
+                if (carrito != null)
+                CarritoIdActual = carrito.Id;
+                return carrito;
             }
             catch (HttpRequestException ex)
             {
@@ -137,39 +143,39 @@ namespace Cliente.Services
         }
 
         // ✅ Confirmar compra y enviar datos al backend
-public async Task ConfirmarCompraAsync(int usuarioId, string nombre, string email)
-{
-    try
-    {
-        var venta = new Venta
+        public async Task ConfirmarCompraAsync(int usuarioId, string nombre, string email)
         {
-            UsuarioId = usuarioId,
-            Fecha = DateTime.UtcNow,
-            Total = Items.Sum(i => i.Importe),
-
-            NombreCliente = nombre,
-            ApellidoCliente = "-", // o agregá campo en el formulario
-            EmailCliente = email,
-
-            VentaItems = Items.Select(item => new VentaItem
+            try
             {
-                ProductoId = item.ProductoId,
-                Cantidad = item.Cantidad,
-                PrecioUnitario = item.PrecioUnitario
-            }).ToList()
-        };
+                var venta = new Venta
+                {
+                    UsuarioId = usuarioId,
+                    Fecha = DateTime.UtcNow,
+                    Total = Items.Sum(i => i.Importe),
 
-        var response = await _httpClient.PostAsJsonAsync("api/ventas/confirmar", venta);
-        if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"Error {response.StatusCode}");
+                    NombreCliente = nombre,
+                    ApellidoCliente = "-", // o agregá campo en el formulario
+                    EmailCliente = email,
 
-        await VaciarCarritoAsync(usuarioId);
-    }
-    catch (HttpRequestException ex)
-    {
-        Console.WriteLine($"Error al confirmar la compra: {ex.Message}");
-    }
-}
+                    VentaItems = Items.Select(item => new VentaItem
+                    {
+                        ProductoId = item.ProductoId,
+                        Cantidad = item.Cantidad,
+                        PrecioUnitario = item.PrecioUnitario
+                    }).ToList()
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("api/ventas/confirmar", venta);
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Error {response.StatusCode}");
+
+                await VaciarCarritoAsync(usuarioId);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error al confirmar la compra: {ex.Message}");
+            }
+        }
 
 
         // ✅ Actualizar precios o stock en UI luego de una compra
@@ -184,5 +190,18 @@ public async Task ConfirmarCompraAsync(int usuarioId, string nombre, string emai
                 }
             }
         }
+        public async Task ActualizarCantidadAsync(int productoId, int cantidad)
+        {
+                var payload = new
+                {
+                CarritoId = CarritoIdActual, // 👈 asegurate de tener esta variable definida
+                ProductoId = productoId,
+                Cantidad = cantidad
+            };
+
+                var response = await _httpClient.PutAsJsonAsync("api/carrito/actualizar", payload);
+                response.EnsureSuccessStatusCode();
+        }
+
     }
 }
