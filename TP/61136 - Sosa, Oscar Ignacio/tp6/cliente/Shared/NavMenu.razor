@@ -1,41 +1,37 @@
 @inject Cliente.Services.CartService Cart
+@implements IDisposable
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-fluid">
-        <!-- Logo que lleva a Home -->
-        <a class="navbar-brand" href="">
+        <a class="navbar-brand" href="/">
             <img src="logo.png" alt="Logo" style="height: 40px; margin-right: 10px;" />
             Mi Tienda
         </a>
-        <!-- Buscador -->
+
         <form class="d-flex mx-auto" style="width: 300px;">
             <input class="form-control me-2" type="search" placeholder="Buscar productos..." aria-label="Buscar" />
             <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
-        <!-- Ícono de carrito con contador -->
-        <NavLink href="carrito" class="nav-link position-relative">
+
+        <NavLink href="/carrito" class="nav-link position-relative">
             <span class="bi bi-cart" style="font-size: 1.5rem;"></span>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                 @CarritoCantidad
             </span>
         </NavLink>
-        <!-- Botón hamburguesa para móvil -->
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <!-- Menú de navegación -->
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <NavLink href="" class="nav-link" Match="NavLinkMatch.All">
-                        Inicio
-                    </NavLink>
+                    <NavLink href="/" class="nav-link" Match="NavLinkMatch.All">Inicio</NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink href="productos" class="nav-link">
-                        Catálogo
-                    </NavLink>
+                    <NavLink href="/productos" class="nav-link">Catálogo</NavLink>
                 </li>
             </ul>
         </div>
@@ -47,10 +43,7 @@
 
     protected override void OnInitialized()
     {
-        // Inicializar la cantidad
         CarritoCantidad = Cart.GetCantidadTotal();
-
-        // Suscribirse a los cambios del carrito para actualizar la cantidad
         Cart.OnChange += ActualizarCantidad;
     }
 
@@ -62,7 +55,6 @@
 
     public void Dispose()
     {
-        // Desuscribirse para evitar fugas de memoria
         Cart.OnChange -= ActualizarCantidad;
     }
 }

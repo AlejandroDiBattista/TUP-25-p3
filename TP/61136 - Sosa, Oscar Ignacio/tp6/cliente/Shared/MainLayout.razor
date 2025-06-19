@@ -1,9 +1,17 @@
 ﻿@inherits LayoutComponentBase
 @namespace Cliente.Shared
+@using Cliente.Models2
+@inject NavigationManager NavigationManager
 
-<div class="main">
-    <div class="content px-4">
-        @Body
+<LayoutView>
+    <!-- Navbar global -->
+    <NavMenu />
+
+    <!-- Espacio principal del contenido -->
+    <div class="main" style="margin-top: 70px;"> @* Ajuste por navbar fixed-top *@
+        <div class="content px-4">
+            @Body
+        </div>
     </div>
-</div>
+</LayoutView>
 

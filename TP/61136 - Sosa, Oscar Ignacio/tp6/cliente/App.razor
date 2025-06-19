@@ -1,8 +1,15 @@
 ﻿@using Cliente.Shared
 
-<Router AppAssembly="@typeof(App).Assembly">
+<Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="HandleNavigationAsync">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        @if (isLoading)
+        {
+            <Loading />
+        }
+        else
+        {
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        }
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(MainLayout)">
@@ -10,3 +17,20 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    private bool isLoading;
+
+    private async Task HandleNavigationAsync(NavigationContext args)
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        // Simular espera, aquí puedes poner lógica real si necesitas cargar datos
+        await Task.Delay(500);
+
+        isLoading = false;
+        StateHasChanged();
+    }
+}
+

@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" PrivateAssets="all" />
   </ItemGroup>
-</Project>
+
 <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\TP\61136 - Sosa, Oscar Ignacio\tp6\shared\shared.csproj" />
   </ItemGroup>
@@ -28,3 +28,4 @@
   <ItemGroup>
     <RazorComponent Include="**\*.razor" />
   </ItemGroup>
+  </Project>
