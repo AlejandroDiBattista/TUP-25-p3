@@ -6,4 +6,5 @@ public class Productos
     public int Precio { get; set; }
     public int Stock { get; set; }
     public string? ImagenUrl { get; set; }
+    
 }

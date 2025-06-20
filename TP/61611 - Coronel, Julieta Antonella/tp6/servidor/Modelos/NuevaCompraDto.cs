@@ -9,4 +9,5 @@ namespace servidor.Modelos
         public string Email { get; set; }
         public string CarritoId { get; set; }
     }
+    
 }
