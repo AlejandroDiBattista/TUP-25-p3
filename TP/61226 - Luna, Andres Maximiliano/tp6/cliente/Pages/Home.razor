@@ -28,7 +28,7 @@
     @foreach (var producto in productosFiltrados)
     {
         <div class="producto-card">
-            <img src="@producto.ImagenUrl" alt="imagen de @producto.Nombre" style="max-width: 100%; height: auto;" />
+            <img src="@producto.ImagenUrl" class= "imagen-producto" alt="imagen de @producto.Nombre"/>
             <strong>@producto.Nombre</strong>
             <p>Precio: $@producto.Precio</p>
             <p>Descripción: @producto.Descripcion</p>

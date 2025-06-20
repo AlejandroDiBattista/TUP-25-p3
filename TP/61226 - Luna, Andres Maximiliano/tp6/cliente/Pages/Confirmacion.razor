@@ -102,8 +102,9 @@ else
                     item.Producto.StockDisponible = 0;
             }
 
-            CarritoService.VaciarCarrito();
             Navigation.NavigateTo("/", true);
+            CarritoService.VaciarCarrito();
+            
         }
         else
         {
