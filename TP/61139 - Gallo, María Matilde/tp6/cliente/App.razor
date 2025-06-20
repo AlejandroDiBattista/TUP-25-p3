@@ -1,10 +1,14 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
+        @* Cuando se encuentra una ruta válida, se muestra la página con el layout por defecto *@
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        
+        @*  enfoca el encabezado <h1> al navegar para accesibilidad *@
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
+
     <NotFound>
-        <PageTitle>Not found</PageTitle>
+        @* Cuando no se encuentra la ruta, muestra mensaje con el mismo layout *@
         <LayoutView Layout="@typeof(MainLayout)">
             <p role="alert">Sorry, there's nothing at this address.</p>
         </LayoutView>

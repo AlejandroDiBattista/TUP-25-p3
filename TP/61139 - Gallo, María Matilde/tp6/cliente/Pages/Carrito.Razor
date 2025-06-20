@@ -1,0 +1,62 @@
+@page "/carrito"
+@using cliente.Modelos
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h2 class="titulo-carrito">Carrito de Compras</h2>
+
+@if (!CarritoService.Items.Any())
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="tabla-carrito">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.Items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@(item.Producto.Precio.ToString("C0", new System.Globalization.CultureInfo("es-AR")))</td>
+                    <td>
+                        <button @onclick="@(() => CarritoService.RestarCantidad(item.Producto.Id))">-</button>
+                        @item.Cantidad
+                        <button @onclick="@(() => CarritoService.SumarCantidad(item.Producto.Id))">+</button>
+                    </td>
+                    <td>@((item.Producto.Precio * item.Cantidad).ToString("C0", new System.Globalization.CultureInfo("es-AR")))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p class="total-carrito">
+        <strong>Total:</strong> @CarritoService.TotalPrecio.ToString("C0", new System.Globalization.CultureInfo("es-AR"))
+    </p>
+
+    <div class="botones-centrados">
+    <button class="boton-vaciar" @onclick="VaciarCarrito">Vaciar carrito</button>
+    <button class="boton-confirmar" @onclick="ConfirmarCompra">Confirmar compra</button>
+</div>
+
+}
+
+@code {
+    private void VaciarCarrito()
+    {
+        CarritoService.Vaciar();
+    }
+
+    private void ConfirmarCompra()
+    {
+        NavigationManager.NavigateTo("/confirmacion");
+    }
+}
