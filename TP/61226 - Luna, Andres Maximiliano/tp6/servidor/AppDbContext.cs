@@ -27,11 +27,18 @@ namespace servidor
                 .HasOne(ic => ic.Producto)
                 .WithMany(p => p.ItemsCompra)
                 .HasForeignKey(ic => ic.ProductoId);
+
+            modelBuilder.Entity<ItemOrden>()
+            .HasOne(io => io.Orden)
+            .WithMany(o => o.Items)
+            .HasForeignKey(io => io.OrdenId);
         }
 
 
         public DbSet<Orden> Ordenes { get; set; }
         public DbSet<ItemOrden> ItemsOrden { get; set; }
+
+        
 
     }
 }
