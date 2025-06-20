@@ -10,27 +10,27 @@ public class CarritoService
 
     public void AgregarAlCarrito(Producto producto)
     {
-        var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
-
-        if (item != null)
+    var item = _items.FirstOrDefault(i => i.Producto.Id == producto.Id);
+    if (item != null)
+    {
+        if (ObtenerStock(producto.Id) > 0)
         {
-
-            if (producto.StockDisponible > 0)
-            {
-                item.Cantidad++;
-            }
+            item.Cantidad++;
+            RestarStock(producto.Id, 1);
         }
-        else
+    }
+    else
+    {
+        if (ObtenerStock(producto.Id) > 0)
         {
-            if (producto.StockDisponible > 0)
+            _items.Add(new ItemCarrito
             {
-                _items.Add(new ItemCarrito
-                {
-                    Producto = producto,
-                    Cantidad = 1
-                });
-            }
+                Producto = producto,
+                Cantidad = 1
+            });
+            RestarStock(producto.Id, 1);
         }
+    }   
     }
 
     public void AumentarCantidadCarrito(int productoId)
@@ -40,6 +40,7 @@ public class CarritoService
         {
             item.Cantidad++;
             item.Producto.StockDisponible--;
+            RestarStock(productoId, 1);
         }
     }
 
@@ -80,7 +81,7 @@ public class CarritoService
     public int ObtenerCantidadTotalEnCarrito()
     {
         return _items.Sum(p => p.Cantidad);
-    } 
+    }
 
     private Dictionary<int, int> stockActual = new();
 
@@ -104,6 +105,11 @@ public class CarritoService
     {
         if (stockActual.ContainsKey(productoId))
             stockActual[productoId] += cantidad;
+    }
+
+    public bool StockInicializado(int productoId)
+    {
+        return stockActual.ContainsKey(productoId);
     }
 
 }

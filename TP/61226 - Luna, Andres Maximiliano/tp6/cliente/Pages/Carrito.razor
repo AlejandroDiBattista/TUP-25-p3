@@ -36,8 +36,7 @@ else
                     <td>$@(item.Cantidad * item.Producto.Precio)</td>
                     <td>
                         <button class="btn btn-sm btn-secondary" @onclick="() => Disminuir(item.Producto.Id)">-</button>
-                        <button class="btn btn-sm btn-success"@onclick="() => Aumentar(item.Producto.Id)" 
-                                    disabled="@(item.Producto.StockDisponible == 0)">+</button>
+                        <button class="btn btn-sm btn-success" @onclick="() => Aumentar(item.Producto.Id)" disabled="@(!PuedeAgregar(item.Producto))">+</button>
 
                         
                     </td>
@@ -61,6 +60,12 @@ else
 
 
 @code {    
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    void VolverAlCatalogo()
+    {
+        NavigationManager.NavigateTo("/", true);
+    }
     private void VaciarCarrito()   
     {
         CarritoService.VaciarCarrito();
@@ -97,12 +102,8 @@ else
 
     void Aumentar(int productoId)
     {
-        var item = CarritoService.ObtenerCarrito().FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null && item.Cantidad < item.Producto.StockDisponible)
-        {
-            item.Cantidad++;
-            item.Producto.StockDisponible--;
-        }
+        CarritoService.AumentarCantidadCarrito(productoId);
+        StateHasChanged();
     }
 
 
@@ -113,7 +114,7 @@ else
 
     bool PuedeAgregar(Producto producto)
     {
-        return producto.StockDisponible > 0;
+        return CarritoService.ObtenerStock(producto.Id) > 0;
     }
     
 }

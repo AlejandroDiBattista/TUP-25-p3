@@ -32,7 +32,7 @@
             <strong>@producto.Nombre</strong>
             <p>Precio: $@producto.Precio</p>
             <p>Descripción: @producto.Descripcion</p>
-            <p>Stock: @producto.StockDisponible</p>
+            <p>Stock: @CarritoService.ObtenerStock(producto.Id)</p>
           
             
 
@@ -62,11 +62,10 @@
 
         foreach (var producto in productos)
         {
-            if (CarritoService.ObtenerStock(producto.Id) == 0)
+            if (!CarritoService.StockInicializado(producto.Id))
             {
                 CarritoService.EstablecerStock(producto.Id, producto.Stock);
             }
-
             producto.StockDisponible = CarritoService.ObtenerStock(producto.Id);
         }
 
@@ -109,7 +108,6 @@
         if (CarritoService.ObtenerStock(producto.Id) > 0)
         {
             CarritoService.AgregarAlCarrito(producto);
-            CarritoService.RestarStock(producto.Id, 1);
             producto.StockDisponible = CarritoService.ObtenerStock(producto.Id);
         }
     }
@@ -129,7 +127,7 @@
 
     bool PuedeAgregar(Producto producto)
     {
-        return producto.StockDisponible > 0;
+        return CarritoService.ObtenerStock(producto.Id) > 0;
     }
     
 }
