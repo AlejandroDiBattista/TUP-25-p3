@@ -5,20 +5,14 @@
 
 <h1>Catálogo de productos</h1>
 
-@if (productos is null)
+@if (productos == null)
 {
     <p>Cargando productos...</p>
-}
-else if (!productos.Any())
-{
-    <p>No hay productos disponibles.</p>
 }
 else
 {
     <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var producto in productos.Where(p =>
-            !string.IsNullOrWhiteSpace(p.Nombre) &&
-            !string.IsNullOrWhiteSpace(p.ImagenUrl)))
+        @foreach (var producto in productos)
         {
             <div class="col">
                 <div class="card h-100">
@@ -44,31 +38,34 @@ else
                               producto.Id == 2 ? "Balanza digital" :
                               producto.Id == 3 ? "Manta calefactora triple" :
                               producto.Id == 4 ? "Pipeta graduada" :
-                              producto.Id == 5 ? "Balanza" :
+                              producto.Id == 5 ? "Vaso medidor" :
                               producto.Id == 6 ? "Termómetro analógico" :
                               producto.Id == 7 ? "Tubos de ensayo" :
                               producto.Id == 8 ? "Probeta de vidrio" :
-                              producto.Id == 9 ? "Cronómetro de laboratorio" :
-                              producto.Id == 10 ? "Termómetro Digital" :
+                              producto.Id == 9 ? "Cronómetro digital" :
+                              producto.Id == 10 ? "Termómetro digital" :
                               producto.Nombre)
                         </h5>
 
                         <p class="card-text">
-                            @(producto.Id == 1 ? "Vidrio resistente al calor para mezclas" :
-                              producto.Id == 2 ? "Precisión de ±0.01 g, ideal para laboratorio" :
-                              producto.Id == 3 ? "Dispositivo para calentar soluciones" :
-                              producto.Id == 4 ? "Instrumento de vidrio para dosificación precisa" :
-                              producto.Id == 5 ? "Pesar alimentos, productos y reactivos" :
-                              producto.Id == 6 ? "Mide temperatura en líquidos y gases" :
-                              producto.Id == 7 ? "Utilizado para medir el volumen de líquidos con alta precisión" :
-                              producto.Id == 8 ? "Para reacciones químicas en el laboratorio" :
-                              producto.Id == 9 ? "Temporizador para ensayos precisos" :
-                              producto.Id == 10 ? "Mide temperatura con precisión digital" :
+                            @(producto.Id == 1 ? "Frasco cónico de vidrio resistente al calor para mezclas" :
+                              producto.Id == 2 ? "Precisión de ±0.01 g, ideal para mediciones exactas" :
+                              producto.Id == 3 ? "Dispositivo para calentar soluciones de forma uniforme" :
+                              producto.Id == 4 ? "Instrumento graduado para dosificación controlada" :
+                              producto.Id == 5 ? "Recipiente cilíndrico con marcas de volumen" :
+                              producto.Id == 6 ? "Mide temperatura mediante escala analógica" :
+                              producto.Id == 7 ? "Para realizar pequeñas reacciones químicas" :
+                              producto.Id == 8 ? "Cilindro de vidrio con escala para medir líquidos" :
+                              producto.Id == 9 ? "Reloj digital para registrar tiempos de reacción" :
+                              producto.Id == 10 ? "Medición rápida y precisa de temperatura ambiente o de sustancias" :
                               producto.Descripcion)
                         </p>
 
+                        <p class="fw-bold">Stock: @(producto.Stock < 0 ? 0 : producto.Stock)</p>
                         <p class="fw-bold">$@producto.Precio</p>
-                        <button class="btn btn-primary w-100" @onclick="() => AñadirAlCarrito(producto)">
+                        <button class="btn btn-primary w-100"
+                                @onclick="() => AñadirAlCarrito(producto)"
+                                disabled="@(producto.Stock <= 0)">
                             🛒 Agregar al carrito
                         </button>
                     </div>
@@ -82,17 +79,48 @@ else
     private List<Producto>? productos;
     private List<Producto> carrito = new();
 
+    // Mapeo: Producto visible → Producto real que se debe agregar
+    private Dictionary<int, int> Reemplazos = new()
+    {
+        { 10, 11 }, // Termómetro digital ➜ Balón de destilación
+        { 9, 12 },  // Cronómetro ➜ Bureta graduada
+        { 8, 13 },  // Probeta ➜ Pipeta volumétrica
+        { 6, 14 },  // Termómetro analógico ➜ Agitador magnético
+        { 4, 1 },   // Pipeta graduada ➜ Matraz Erlenmeyer
+        { 3, 15 },  // Manta calefactora triple ➜ Manta calefactora
+        { 2, 15 },  // Balanza digital ➜ Manta calefactora
+        { 1, 5 }    // Matraz Erlenmeyer ➜ Vaso medidor
+    };
+
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("📍 OnInitializedAsync ejecutado");
         productos = await ProductoService.ObtenerProductosAsync();
         carrito = await LocalStorage.GetItemAsync<List<Producto>>("carrito") ?? new();
-        Console.WriteLine($"Productos cargados correctamente: {productos?.Count}");
+
+        foreach (var item in carrito)
+        {
+            var original = productos.FirstOrDefault(p => p.Id == item.Id);
+            if (original != null)
+            {
+                original.Stock -= item.Cantidad;
+                if (original.Stock < 0)
+                    original.Stock = 0;
+            }
+        }
     }
 
-    private async Task AñadirAlCarrito(Producto producto)
+    private async Task AñadirAlCarrito(Producto productoVisible)
     {
-        var existente = carrito.FirstOrDefault(p => p.Id == producto.Id);
+        // Buscar si este producto tiene un reemplazo definido
+        int productoFinalId = Reemplazos.ContainsKey(productoVisible.Id) 
+            ? Reemplazos[productoVisible.Id] 
+            : productoVisible.Id;
+
+        var productoReal = productos.FirstOrDefault(p => p.Id == productoFinalId);
+        if (productoReal == null || productoReal.Stock <= 0)
+            return;
+
+        var existente = carrito.FirstOrDefault(p => p.Id == productoReal.Id);
         if (existente != null)
         {
             existente.Cantidad++;
@@ -101,15 +129,16 @@ else
         {
             carrito.Add(new Producto
             {
-                Id = producto.Id,
-                Nombre = producto.Nombre,
-                Descripcion = producto.Descripcion,
-                Precio = producto.Precio,
-                ImagenUrl = producto.ImagenUrl,
+                Id = productoReal.Id,
+                Nombre = productoReal.Nombre,
+                Descripcion = productoReal.Descripcion,
+                Precio = productoReal.Precio,
+                ImagenUrl = productoReal.ImagenUrl,
                 Cantidad = 1
             });
         }
 
+        productoReal.Stock--;
         await LocalStorage.SetItemAsync("carrito", carrito);
     }
 }
