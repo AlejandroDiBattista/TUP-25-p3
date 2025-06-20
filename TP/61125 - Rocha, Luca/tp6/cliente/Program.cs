@@ -1,24 +1,20 @@
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
 using cliente.Services;
-using System;
+using Blazored.LocalStorage;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 🔹 Configuración de servicios
-builder.Services.AddScoped<ProductoService>();
-builder.Services.AddScoped<CarritoService>();
+// Configurar el HttpClient para apuntar al servidor API
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
+
+// Registrar el servicio API
+builder.Services.AddScoped<ApiService>();
+//el blazor local storage paa!
 builder.Services.AddBlazoredLocalStorage();
 
-// 🔹 Configuración de `HttpClient` con URL base correcta
-builder.Services.AddScoped(sp => new HttpClient
-{
-    BaseAddress = new Uri("http://localhost:5184") // Cambiar si la API usa otro puerto
-});
-
 await builder.Build().RunAsync();
+

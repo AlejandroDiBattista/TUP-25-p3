@@ -1,0 +1,136 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #b9f6ca; /* Verde manzana pastel para todo el sitio */
+    color: #1a237e;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Fondo especial para la página del carrito */
+.carrito-bg {
+    background: #e3f2fd !important; /* Celeste pastel */
+}
+
+/* Contenedor principal */
+.container, .main-content {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 32px 24px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px #1976d210;
+}
+
+/* Texto principal */
+.home-animated-text {
+    font-size: 2.5em;
+    color: #1976d2;
+    text-align: center;
+    margin: 44px 0 30px 0;
+    letter-spacing: 2px;
+    font-weight: 700;
+    opacity: 1;
+    animation: none;
+}
+
+/* Subtexto */
+.home-animated-subtext {
+    font-size: 1.15em;
+    color: #1565c0;
+    text-align: center;
+    margin-bottom: 36px;
+    letter-spacing: 1.1px;
+    opacity: 1;
+    animation: none;
+}
+
+/* Galería de imágenes */
+.home-gallery {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+    margin: 24px auto 32px auto;
+    max-width: 1100px;
+    flex-wrap: wrap;
+    opacity: 1;
+    animation: none;
+}
+
+/* Imágenes destacadas */
+.home-image {
+    width: 220px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px #1976d220;
+    background: #e3f2fd;
+    border: 2px solid #1976d2;
+    opacity: 1;
+    transform: none;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    animation: none;
+}
+
+.home-image:hover {
+    box-shadow: 0 6px 24px #1976d240;
+    border-color: #1565c0;
+}
+
+/* Responsive para móvil */
+@media (max-width: 1000px) {
+    .home-image {
+        width: 90vw;
+        max-width: 220px;
+    }
+    .home-gallery {
+        gap: 12px;
+    }
+}
+@media (max-width: 700px) {
+    .home-gallery {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .home-image {
+        width: 98vw;
+        max-width: 320px;
+        height: 120px;
+    }
+}
+
+/* Botón principal */
+.btn-primary {
+    background: #1976d2;
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 12px 32px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #1565c0;
+}
+
+/* --- Estilo para la tabla del carrito --- */
+.carrito-table {
+    background: #fff;
+    color: #1a237e;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px #1976d220;
+}
+.carrito-table th {
+    background: #e3f2fd;
+    color: #1976d2;
+    font-weight: 700;
+    border-bottom: 2px solid #1976d2;
+}
+.carrito-table td {
+    background: #fff;
+    color: #1a237e;
+    vertical-align: middle;
+}

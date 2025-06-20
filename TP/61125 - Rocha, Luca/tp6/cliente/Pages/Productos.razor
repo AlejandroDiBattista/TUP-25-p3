@@ -1,144 +1,183 @@
 @page "/productos"
-@using cliente.Modelos
-@inject cliente.Services.ProductoService ProductoService
+@inject cliente.Services.ApiService ApiService
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Nav
 
-<h1>Catálogo de productos</h1>
+@using cliente.Models
+@using Microsoft.AspNetCore.Components.Web
 
-@if (productos == null)
-{
-    <p>Cargando productos...</p>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var producto in productos)
-        {
-            <div class="col">
-                <div class="card h-100">
-                    <img src="@(producto.Id == 1
-                                ? "/images/matraz2.jpg"
-                                : producto.Id == 2
-                                    ? "/images/balanza2.jpg"
-                                    : producto.Id == 3
-                                        ? "/images/manta2.jpg"
-                                        : producto.Id == 4
-                                            ? "/images/pipeta_graduada.jpg"
-                                            : producto.Id == 6
-                                                ? "/images/termometroanalogico.jpg"
-                                                : producto.ImagenUrl?.StartsWith("http") == true
-                                                    ? producto.ImagenUrl
-                                                    : $"/images/{producto.ImagenUrl ?? "placeholder.png"}")"
-                         class="card-img-top"
-                         alt="@producto.Nombre"
-                         style="height: 180px; object-fit: contain;" />
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            @(producto.Id == 1 ? "Matraz Erlenmeyer" :
-                              producto.Id == 2 ? "Balanza digital" :
-                              producto.Id == 3 ? "Manta calefactora triple" :
-                              producto.Id == 4 ? "Pipeta graduada" :
-                              producto.Id == 5 ? "Vaso medidor" :
-                              producto.Id == 6 ? "Termómetro analógico" :
-                              producto.Id == 7 ? "Tubos de ensayo" :
-                              producto.Id == 8 ? "Probeta de vidrio" :
-                              producto.Id == 9 ? "Cronómetro digital" :
-                              producto.Id == 10 ? "Termómetro digital" :
-                              producto.Nombre)
-                        </h5>
+<PageTitle>Productos</PageTitle>
 
-                        <p class="card-text">
-                            @(producto.Id == 1 ? "Frasco cónico de vidrio resistente al calor para mezclas" :
-                              producto.Id == 2 ? "Precisión de ±0.01 g, ideal para mediciones exactas" :
-                              producto.Id == 3 ? "Dispositivo para calentar soluciones de forma uniforme" :
-                              producto.Id == 4 ? "Instrumento graduado para dosificación controlada" :
-                              producto.Id == 5 ? "Recipiente cilíndrico con marcas de volumen" :
-                              producto.Id == 6 ? "Mide temperatura mediante escala analógica" :
-                              producto.Id == 7 ? "Para realizar pequeñas reacciones químicas" :
-                              producto.Id == 8 ? "Cilindro de vidrio con escala para medir líquidos" :
-                              producto.Id == 9 ? "Reloj digital para registrar tiempos de reacción" :
-                              producto.Id == 10 ? "Medición rápida y precisa de temperatura ambiente o de sustancias" :
-                              producto.Descripcion)
-                        </p>
+<div class="container mt-4">
+    <h2 class="text-center mb-4" style="color:#1976d2;font-weight:700;">Catálogo de Productos</h2>
+    
+    <div class="input-group mb-4 mx-auto" style="max-width:400px;">
+        <input class="form-control" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" @onkeypress="BuscarSiEnter" />
+        <button class="btn btn-primary" @onclick="Buscar">Buscar</button>
+    </div>
 
-                        <p class="fw-bold">Stock: @(producto.Stock < 0 ? 0 : producto.Stock)</p>
-                        <p class="fw-bold">$@producto.Precio</p>
-                        <button class="btn btn-primary w-100"
-                                @onclick="() => AñadirAlCarrito(producto)"
-                                disabled="@(producto.Stock <= 0)">
-                            🛒 Agregar al carrito
-                        </button>
+    @if (productos != null)
+    {
+        <p class="text-end" style="color:#1976d2;font-weight:500;">Cantidad de productos: @productos.Count</p>
+    }
+
+    @if (productos is null)
+    {
+        <p class="text-center">Cargando productos...</p>
+    }
+    else if (!productos.Any())
+    {
+        <div class="alert alert-warning text-center">Producto no encontrado</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var producto in productos)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+                    <div class="product-card w-100 d-flex flex-column">
+                        <img src="@producto.ImagenUrl" class="product-img" alt="@producto.Nombre">
+                        <div class="product-body d-flex flex-column flex-grow-1">
+                            <h5 class="product-title">@producto.Nombre</h5>
+                            <p class="product-desc flex-grow-1">@producto.Descripcion</p>
+                            <div class="product-info mb-2">
+                                <span class="product-price">$@producto.Precio</span>
+                                <span class="product-stock">Stock: @producto.Stock</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm w-100 mb-2" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@((producto.Stock < 1))">
+                                Agregar al carrito
+                            </button>
+                            
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (mostrarDialogoStock)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar stock</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarDialogoStock"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label>Palabra clave:</label>
+                            <input type="password" class="form-control" @bind="claveStock" />
+                        </div>
+                        <div class="mb-2">
+                            <label>Cantidad a agregar:</label>
+                            <input type="number" class="form-control" @bind="cantidadStock" min="1" />
+                        </div>
+                        @if (!string.IsNullOrEmpty(errorStock))
+                        {
+                            <div class="alert alert-danger">@errorStock</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarDialogoStock">Cancelar</button>
+                        <button class="btn btn-success" @onclick="ConfirmarAgregarStock">Agregar</button>
                     </div>
                 </div>
             </div>
-        }
-    </div>
-}
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+</div>
 
 @code {
-    private List<Producto>? productos;
-    private List<Producto> carrito = new();
+    List<Producto>? productos;
+    string busqueda = "";
+    string mensaje = "";
+    string errorStock = "";
+    bool mostrarDialogoStock = false;
+    int productoIdStock = 0;
+    int cantidadStock = 1;
+    string claveStock = "";
 
-    // Mapeo: Producto visible → Producto real que se debe agregar
-    private Dictionary<int, int> Reemplazos = new()
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? q { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
-        { 10, 11 }, // Termómetro digital ➜ Balón de destilación
-        { 9, 12 },  // Cronómetro ➜ Bureta graduada
-        { 8, 13 },  // Probeta ➜ Pipeta volumétrica
-        { 6, 14 },  // Termómetro analógico ➜ Agitador magnético
-        { 4, 1 },   // Pipeta graduada ➜ Matraz Erlenmeyer
-        { 3, 15 },  // Manta calefactora triple ➜ Manta calefactora
-        { 2, 15 },  // Balanza digital ➜ Manta calefactora
-        { 1, 5 }    // Matraz Erlenmeyer ➜ Vaso medidor
-    };
+        busqueda = q ?? "";
+        productos = await ApiService.GetProductosAsync(busqueda);
+    }
 
-    protected override async Task OnInitializedAsync()
+    private async Task Buscar()
     {
-        productos = await ProductoService.ObtenerProductosAsync();
-        carrito = await LocalStorage.GetItemAsync<List<Producto>>("carrito") ?? new();
+        Nav.NavigateTo($"/productos?q={busqueda}", forceLoad: false);
+    }
 
-        foreach (var item in carrito)
+    private async Task BuscarSiEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
         {
-            var original = productos.FirstOrDefault(p => p.Id == item.Id);
-            if (original != null)
-            {
-                original.Stock -= item.Cantidad;
-                if (original.Stock < 0)
-                    original.Stock = 0;
-            }
+            await Buscar();
         }
     }
 
-    private async Task AñadirAlCarrito(Producto productoVisible)
+    private async Task<Guid> ObtenerOCrearCarritoIdAsync()
     {
-        // Buscar si este producto tiene un reemplazo definido
-        int productoFinalId = Reemplazos.ContainsKey(productoVisible.Id) 
-            ? Reemplazos[productoVisible.Id] 
-            : productoVisible.Id;
+        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        if (carritoId == null || carritoId == Guid.Empty)
+        {
+            var nuevoId = await ApiService.CrearCarritoAsync();
+            await LocalStorage.SetItemAsync("carritoId", nuevoId);
+            return nuevoId;
+        }
+        return carritoId.Value;
+    }
 
-        var productoReal = productos.FirstOrDefault(p => p.Id == productoFinalId);
-        if (productoReal == null || productoReal.Stock <= 0)
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
+        await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
+        mensaje = "Producto agregado al carrito";
+        StateHasChanged();
+        await Task.Delay(1500);
+        mensaje = "";
+        StateHasChanged();
+
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
+    }
+
+    private void MostrarDialogoStock(int productoId)
+    {
+        productoIdStock = productoId;
+        cantidadStock = 1;
+        claveStock = "";
+        errorStock = "";
+        mostrarDialogoStock = true;
+    }
+
+    private void CerrarDialogoStock()
+    {
+        mostrarDialogoStock = false;
+        errorStock = "";
+    }
+
+    private async Task ConfirmarAgregarStock()
+    {
+        if (claveStock != "jefedelprograma")
+        {
+            errorStock = "Palabra clave incorrecta.";
             return;
-
-        var existente = carrito.FirstOrDefault(p => p.Id == productoReal.Id);
-        if (existente != null)
-        {
-            existente.Cantidad++;
         }
-        else
+        if (cantidadStock < 1)
         {
-            carrito.Add(new Producto
-            {
-                Id = productoReal.Id,
-                Nombre = productoReal.Nombre,
-                Descripcion = productoReal.Descripcion,
-                Precio = productoReal.Precio,
-                ImagenUrl = productoReal.ImagenUrl,
-                Cantidad = 1
-            });
+            errorStock = "La cantidad debe ser mayor a 0.";
+            return;
         }
-
-        productoReal.Stock--;
-        await LocalStorage.SetItemAsync("carrito", carrito);
+        await ApiService.AgregarStockAsync(productoIdStock, cantidadStock);
+        mostrarDialogoStock = false;
+        errorStock = "";
+        productos = await ApiService.GetProductosAsync(busqueda);
+        StateHasChanged();
     }
 }
