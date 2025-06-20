@@ -76,16 +76,35 @@ namespace cliente.Services
 
         public async Task AgregarAlCarrito(int productoId)
         {
-             string carritoId = await _localStorageService.GetItemAsync<string>("carrito");
-
-                if (string.IsNullOrEmpty(carritoId))
+            // Obtener productos para validar stock
+            var productos = await ObtenerProductos("");
+            var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+            if (producto == null || producto.Stock == 0)
             {
-                 carritoId = await ObtenerIdCarrito();
-                 await _localStorageService.SetItemAsync("carrito", carritoId);
-             }
-
+                // No permitir agregar si no hay stock
+                return;
+            }
+            string carritoId = await _localStorageService.GetItemAsync<string>("carrito");
+            if (string.IsNullOrEmpty(carritoId))
+            {
+                carritoId = await ObtenerIdCarrito();
+                await _localStorageService.SetItemAsync("carrito", carritoId);
+            }
             await _httpClient.GetAsync($"api/carritos/{carritoId}/{productoId}");
-         }
+        }
+
+        public async Task AgregarAlCarrito(int productoId, int stock)
+        {
+            if (stock <= 0)
+                return;
+            string carritoId = await _localStorageService.GetItemAsync<string>("carrito");
+            if (string.IsNullOrEmpty(carritoId))
+            {
+                carritoId = await ObtenerIdCarrito();
+                await _localStorageService.SetItemAsync("carrito", carritoId);
+            }
+            await _httpClient.GetAsync($"api/carritos/{carritoId}/{productoId}");
+        }
 
         public async Task<string> ObtenerIdCarrito()
         {
@@ -116,26 +135,26 @@ namespace cliente.Services
         }
 
 
-                    public async Task<List<CarritoDto>> ObtenerCarritoDetalle()
+        public async Task<List<CarritoDto>> ObtenerCarritoDetalle()
+        {
+            var carritoId = await _localStorageService.GetItemAsync<string>("carrito");
+
+            if (string.IsNullOrEmpty(carritoId))
             {
-                var carritoId = await _localStorageService.GetItemAsync<string>("carrito");
-
-                if (string.IsNullOrEmpty(carritoId))
-                {
-                    carritoId = await ObtenerIdCarrito();
-                    await _localStorageService.SetItemAsync("carrito", carritoId);
-                }
-
-                try
-                {
-                    return await _httpClient.GetFromJsonAsync<List<CarritoDto>>($"api/carritos/{carritoId}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error al obtener carrito con detalle: {ex.Message}");
-                    return new List<CarritoDto>();
-                }
+                carritoId = await ObtenerIdCarrito();
+                await _localStorageService.SetItemAsync("carrito", carritoId);
             }
+
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<List<CarritoDto>>($"api/carritos/{carritoId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al obtener carrito con detalle: {ex.Message}");
+                return new List<CarritoDto>();
+            }
+        }
 
         public async Task<string> NuevaCompra(NuevaCompraDto nuevaCompraDto)
         {
@@ -156,7 +175,7 @@ namespace cliente.Services
                 return $"Error: {response.StatusCode}";
             }
         }
-                
+
 
 
         public async Task DisminuirCantidadProducto(int productoId)
@@ -176,6 +195,9 @@ namespace cliente.Services
             var carritoId = await _localStorageService.GetItemAsync<string>("carrito");
             await _httpClient.DeleteAsync($"api/carritos/{carritoId}/vaciar");
         }
+        
+        
+
     }
 
     public class DatosRespuesta

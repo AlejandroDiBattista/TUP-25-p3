@@ -1,0 +1,113 @@
+﻿@page "/"
+@using Blazored.Toast.Services
+@using cliente.Services
+@using cliente.Models
+@using Microsoft.AspNetCore.Components.Web
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IToastService toastService;
+@inject ApiService ApiService
+
+<div class="inicio-bg-gradient py-5">
+    <h1 class="text-center mb-5 display-4 fw-bold" style="letter-spacing:1px;">Catálogo de Productos</h1>
+    <div class="row justify-content-center">
+        @foreach (Producto producto in Productos)
+        {
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4 d-flex align-items-stretch">
+                <div class="product-block card w-100 p-4 text-center">
+                    <div class="d-flex justify-content-center pt-3">
+                        <img src="@producto.ImagenUrl" class="card-img-top mb-3" style="width: 120px; height: 120px; object-fit: contain; border-radius: 16px; box-shadow: 0 2px 12px rgba(255,182,234,0.10);" />
+                    </div>
+                    <div class="card-body text-center p-0">
+                        <h5 class="card-title fw-semibold mb-2" style="font-size:1.2rem;">@producto.Nombre</h5>
+                        <p class="text-muted small mb-2">@producto.Descripcion</p>
+                        <p class="mb-1"><strong>Stock:</strong> @producto.Stock</p>
+                        <p class="mb-3"><strong>Precio:</strong> $@producto.Precio</p>
+                        @if (producto.Stock == 0)
+                        {
+                            <button class="btn btn-secondary w-100" disabled style="cursor: not-allowed; opacity: 0.7;">Sin stock</button>
+                        }
+                        else
+                        {
+                            <button @onclick="() => AddTodo(producto)" class="btn btn-primary w-100">
+                                <i class="bi bi-cart-check me-1"></i>
+                                Agregar al carrito
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string busqueda;
+    public IList<Carrito> CarritoCompra = new List<Carrito>();
+    private IList<Producto> Productos = new List<Producto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Productos = await ApiService.ObtenerProductos() ?? new List<Producto>();
+    }
+
+    public async Task EnterEvent(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            Productos = await ApiService.ObtenerProductos(busqueda);
+        }
+    }
+    private void ActualizarContenido()
+    {
+
+    }
+    private async Task AgregarProducto()
+    {
+        await ApiService.NuevoProducto(new Producto
+        {
+            Nombre = "desde Blazor",
+            Descripcion = "Blazor",
+            Precio = 400,
+            @* Stock = 120, *@
+            @* ImagenUrl = "Sin path" *@
+        });
+    }
+
+    private async Task AddTodo(Producto producto)
+{
+    if (producto.Stock == 0)
+    {
+        toastService.ShowWarning("El producto no tiene stock disponible.");
+        return;
+    }
+    string carrito = await localStorage.GetItemAsStringAsync("carrito");
+    if (string.IsNullOrEmpty(carrito))
+        await localStorage.SetItemAsStringAsync("carrito", await ApiService.ObtenerIdCarrito());
+
+    await ApiService.AgregarAlCarrito(producto.Id); // ✅ Agrega al carrito en backend
+
+    Productos = await ApiService.ObtenerProductos(busqueda); // 🔁 Actualiza productos con stock actualizado
+
+    // toastService.ShowSuccess("El producto fue agregado al carrito!");
+}
+
+    private void VerValor(MouseEventArgs e)
+    {
+        @* Console.WriteLine(nuevo); *@
+    }
+
+    private void OnChangeBusqueda(ChangeEventArgs e)
+    {
+        busqueda = e.Value.ToString();
+    }
+
+    private void OnChange(ChangeEventArgs e)
+    {
+        Console.Write(e.Value.ToString());
+    }
+
+    private async Task BuscarDesdeIcono()
+    {
+        Productos = await ApiService.ObtenerProductos(busqueda);
+    }
+}
