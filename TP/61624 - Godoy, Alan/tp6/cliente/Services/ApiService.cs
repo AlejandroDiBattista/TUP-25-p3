@@ -9,6 +9,7 @@ public class ApiService {
         _httpClient = httpClient;
     }
 
+
     public async Task<DatosRespuesta> ObtenerDatosAsync() {
         try {
             var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
@@ -21,6 +22,6 @@ public class ApiService {
 }
 
 public class DatosRespuesta {
-    public string Mensaje { get; set; }
+    public required string Mensaje { get; set; }
     public DateTime Fecha { get; set; }
 }

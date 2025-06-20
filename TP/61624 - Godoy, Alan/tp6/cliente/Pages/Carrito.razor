@@ -1,0 +1,64 @@
+@using cliente.Services
+@inject CarritoService CarritoService
+
+@page "/carrito"
+
+<h3>Carrito de Compras</h3>
+
+@if (!CarritoService.Items.Any())
+{
+    <p>Tu carrito está vacío.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CarritoService.Items)
+            {
+                if (item?.Producto is not null)
+                {
+                    <tr>
+                        <td>@item.Producto.Nombre</td>
+                        <td>
+                            <input type="number"
+                                   value="@item.Cantidad"
+                                   min="1"
+                                   @onchange="e => CambiarCantidad(item.Producto!.Id, e)" />
+                        </td>
+                        <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => Eliminar(item.Producto!.Id)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <p><strong>Total: $@CarritoService.ObtenerTotal()</strong></p>
+
+    <a href="/finalizar" class="btn btn-success">Finalizar compra</a>
+}
+
+@code {
+    void CambiarCantidad(int id, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int cantidad))
+        {
+            CarritoService.CambiarCantidad(id, cantidad);
+        }
+    }
+
+    void Eliminar(int id)
+    {
+        CarritoService.EliminarProducto(id);
+    }
+}

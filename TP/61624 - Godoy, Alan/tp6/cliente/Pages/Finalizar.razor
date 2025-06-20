@@ -1,0 +1,82 @@
+@page "/finalizar"
+@using cliente.Services
+@inject CarritoService CarritoService
+@inject NavigationManager NavigationManager
+
+<h3>Finalizar Compra</h3>
+
+@if (!compraConfirmada)
+{
+    @if (!CarritoService.Items.Any())
+    {
+        <p>No hay productos en el carrito.</p>
+    }
+    else
+    {
+        <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label>Nombre:</label>
+                <InputText class="form-control" @bind-Value="cliente.Nombre" />
+            </div>
+            <div class="mb-3">
+                <label>Apellido:</label>
+                <InputText class="form-control" @bind-Value="cliente.Apellido" />
+            </div>
+            <div class="mb-3">
+                <label>Email:</label>
+                <InputText type="email" class="form-control" @bind-Value="cliente.Email" />
+            </div>
+
+            <button class="btn btn-primary">Confirmar Compra</button>
+        </EditForm>
+    }
+}
+else
+{
+    <div class="alert alert-success mt-4">
+        <h4>Factura</h4>
+        <p><strong>Nombre:</strong> @cliente.Nombre</p>
+        <p><strong>Apellido:</strong> @cliente.Apellido</p>
+        <p><strong>Email:</strong> @cliente.Email</p>
+
+        <h5 class="mt-3">Productos:</h5>
+        <ul>
+            @foreach (var item in CarritoService.ItemsFactura)
+            {
+                <li>@item.Producto.Nombre x @item.Cantidad = $@(item.Producto.Precio * item.Cantidad)</li>
+            }
+        </ul>
+
+        <p><strong>Total:</strong> $@CarritoService.ObtenerTotalFactura()</p>
+
+        <button class="btn btn-secondary mt-3" @onclick="VolverAlInicio">Volver al inicio</button>
+    </div>
+}
+
+@code {
+    Cliente cliente = new();
+    bool compraConfirmada = false;
+
+    void ConfirmarCompra()
+    {
+        // Copiamos los ítems del carrito para mostrar la factura luego de vaciar
+        CarritoService.GuardarFactura();
+        CarritoService.VaciarCarrito();
+
+        compraConfirmada = true;
+    }
+
+    void VolverAlInicio()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    public class Cliente
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+    }
+}

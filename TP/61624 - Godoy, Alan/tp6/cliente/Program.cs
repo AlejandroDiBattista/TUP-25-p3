@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
-using cliente.Services;
+using  cliente.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -12,8 +12,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 
 builder.Services.AddScoped<ProductoService>();
 
-builder.Services.AddScoped<CompraService>();
-
+builder.Services.AddScoped<CarritoService>();
 
 // Registrar el servicio API
 builder.Services.AddScoped<ApiService>();

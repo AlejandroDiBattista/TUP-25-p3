@@ -1,26 +1,5 @@
-<!-- wwwroot/index.html -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Tienda Online</title>
-</head>
 <body>
-    <h1>Lista de Productos</h1>
-    <ul id="productos"></ul>
+    <div id="app">Cargando...</div>
 
-    <script>
-        fetch('/productos')
-            .then(res => res.json())
-            .then(productos => {
-                const lista = document.getElementById('productos');
-                productos.forEach(p => {
-                    const item = document.createElement('li');
-                    item.textContent = `${p.nombre} - $${p.precio}`;
-                    lista.appendChild(item);
-                });
-            })
-            .catch(error => console.error('Error al cargar productos:', error));
-    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
 </body>
-</html>

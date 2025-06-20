@@ -1,29 +1,78 @@
-@page "/productos"
-@using TiendaOnline.Client.Models
+@page "/"
 
+@using cliente.Models
+@using cliente.Services
 @inject ProductoService ProductoService
+@inject CarritoService CarritoService
 
 <h3>Lista de Productos</h3>
 
-@if (productos is null)
+<input @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." class="form-control mb-3" />
+
+@if (productos == null)
 {
-    <p>Cargando...</p>
+    <p>Cargando productos...</p>
+}
+else if (!productosFiltrados.Any())
+{
+    <p>No se encontraron productos.</p>
 }
 else
 {
-    <ul>
-        @foreach (var p in productos)
+    <div class="row">
+        @foreach (var producto in productosFiltrados)
         {
-            <li>@p.Nombre - $@p.Precio</li>
+            if (producto != null)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="Imagen de @producto.Nombre" />
+                        <div class="card-body">
+                            <h5 class="card-title">@producto.Nombre</h5>
+                            <p>@producto.Descripcion</p>
+                            <p><strong>$@producto.Precio</strong></p>
+                            <p>Stock disponible: @producto.Stock</p>
+                            <button class="btn btn-primary"
+                                    @onclick="() => Agregar(producto)"
+                                    disabled="@(!PuedeAgregar(producto))">
+                                Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
         }
-    </ul>
+    </div>
 }
 
+<a href="/carrito" class="btn btn-outline-secondary" style="position:fixed; top:20px; right:20px">
+    🛒 Ver Carrito (@CarritoService.ObtenerCantidadTotal())
+</a>
+
 @code {
-    List<Producto>? productos;
+    private List<Producto>? productos;
+    private string busqueda = string.Empty;
+
+    private IEnumerable<Producto> productosFiltrados =>
+        productos?.Where(p => p.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)) ?? Enumerable.Empty<Producto>();
 
     protected override async Task OnInitializedAsync()
     {
         productos = await ProductoService.ObtenerProductos();
+    }
+
+    private void Agregar(Producto producto)
+    {
+        if (producto.Stock > 0)
+        {
+            CarritoService.AgregarProducto(producto);
+            producto.Stock--; // Descuenta el stock visualmente
+            StateHasChanged(); // Refresca la UI
+        }
+    }
+
+    private bool PuedeAgregar(Producto producto)
+    {
+        return producto.Stock > 0;
     }
 }

@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
-using TiendaOnline.Client.Models;
+using cliente.Models;
+
+namespace cliente.Services;
 
 public class ProductoService
 {
@@ -12,6 +14,8 @@ public class ProductoService
 
     public async Task<List<Producto>> ObtenerProductos()
     {
-        return await _http.GetFromJsonAsync<List<Producto>>("productos");
+        var productos = await _http.GetFromJsonAsync<List<Producto>>("productos");
+        return productos ?? new List<Producto>();
     }
+
 }

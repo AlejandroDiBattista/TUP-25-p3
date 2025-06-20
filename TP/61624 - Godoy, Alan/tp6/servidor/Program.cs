@@ -14,18 +14,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowClient", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5177") 
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
 
+
+
 var app = builder.Build();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowClient");
 
 // Endpoints para ItemsCompra
 app.MapGet("/itemscompra", async (AppDbContext db) =>
@@ -133,6 +135,8 @@ app.MapDelete("/productos/{id}", async (int id, AppDbContext db) =>
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
+
+
 
 // Endpoints para Usuarios
 

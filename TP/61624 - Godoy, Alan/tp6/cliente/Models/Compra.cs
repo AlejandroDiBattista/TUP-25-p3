@@ -1,5 +1,7 @@
 
-namespace TiendaOnline.Client.Models;
+using cliente.Models;
+
+namespace Client.Models;
 
 public class Compra
 {
