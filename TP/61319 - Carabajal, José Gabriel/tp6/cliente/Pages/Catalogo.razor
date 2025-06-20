@@ -1,6 +1,44 @@
 @page "/"
+@inject cliente.Services.TiendaService Tienda
 
-<PageTitle>Catalogo</PageTitle>
 <h3>Catalogo de Productos</h3>
 
-<!-- Mostramos el catalogo  -->
+<input @bind="busqueda" placeholder="Buscar…" />
+<button @onclick="Buscar">Buscar</button>
+
+<div class="productos-grid">
+    @foreach (var p in productos)
+    {
+        <div class="tarjeta-producto">
+            <img src="@p.ImagenUrl" alt="@p.Nombre" />
+            <h4>@p.Nombre</h4>
+            <p>@p.Descripcion</p>
+            <p>Stock: @p.Stock</p>
+            <p>Precio: @p.Precio</p>
+            <button @onclick="() => Añadir(p.Id)" disabled="@(p.Stock == 0)">
+                Agregar al carrito
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Producto> productos = new();
+    private string busqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Tienda.GetProductosAsync();
+    }
+
+    private async Task Buscar()
+    {
+        productos = await Tienda.GetProductosAsync(busqueda);
+    }
+
+    private async Task Añadir(int prodId)
+    {
+        await Tienda.AgregarItemAsync(prodId, 1);
+        // opcional: mostrar toast o actualización de ícono de carrito
+    }
+}

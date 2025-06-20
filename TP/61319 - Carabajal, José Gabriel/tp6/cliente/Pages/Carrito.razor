@@ -1,6 +1,88 @@
 @page "/carrito"
+@inject cliente.Services.TiendaService Tienda
 
-<PageTitle>Carrito</PageTitle>
 <h3>Carrito de Compras</h3>
 
-<!-- Items del carrito  -->
+@if (items == null)
+{
+    <p>Cargando…</p>
+}
+else if (!items.Any())
+{
+    <p>El carrito está vacío.</p>
+    <button @onclick="Vaciar">Vaciar</button>
+}
+else
+{
+    <table class="tabla-carrito">
+        <thead>
+            <tr>
+                <th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in items)
+            {
+                <tr>
+                    <td>@i.Producto.Nombre</td>
+                    <td>
+                        <input type="number" min="1" 
+                            value="@i.Cantidad" 
+                            @onchange="async e => await Cambiar(i.ProductoId, int.Parse(e.Value.ToString()))" />
+                    </td>
+                    <td>@i.PrecioUnitario</td>
+                    <td>@(i.Cantidad * i.PrecioUnitario)</td>
+                    <td>
+                        <button @onclick="() => Eliminar(i.ProductoId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Total: </strong>@items.Sum(i => i.Cantidad * i.PrecioUnitario)
+    </p>
+
+    <button @onclick="Vaciar">Vaciar carrito</button>
+    <button @onclick="Confirmar">Confirmar compra</button>
+}
+
+@code {
+    private List<ItemCompra>? items;
+    private string nombre = "";
+    private string apellido = "";
+    private string email = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await Tienda.GetCarritoAsync();
+    }
+
+    private async Task Cambiar(int prodId, int cantidad)
+    {
+        await Tienda.AgregarItemAsync(prodId, cantidad);
+        items = await Tienda.GetCarritoAsync();
+    }
+
+    private async Task Eliminar(int prodId)
+    {
+        await Tienda.EliminarItemAsync(prodId);
+        items = await Tienda.GetCarritoAsync();
+    }
+
+    private async Task Vaciar()
+    {
+        await Tienda.VaciarCarritoAsync();
+        items = new();
+    }
+
+    private async Task Confirmar()
+    {
+        // aquí podrías mostrar un formulario con inputs, 
+        // pero si ya lo tenés en otra página, redirige a ella
+        await Tienda.ConfirmarCompraAsync(nombre, apellido, email);
+        items = new();
+        // opcional: navegación a “/confirmacion”
+    }
+}
