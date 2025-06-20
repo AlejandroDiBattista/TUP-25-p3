@@ -59,6 +59,11 @@ public class CarritoService
         OnChange?.Invoke();
     }
 
+public int ObtenerCantidadProducto(int idProducto)
+{
+    return Items.FirstOrDefault(i => i.Producto.Id == idProducto)?.Cantidad ?? 0;
+}
+
     public decimal ObtenerTotal()
     {
         return Items.Sum(i => (i.Producto?.Precio ?? 0) * i.Cantidad);

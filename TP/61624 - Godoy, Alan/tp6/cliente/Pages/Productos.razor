@@ -5,7 +5,7 @@
 @inject ProductoService ProductoService
 @inject CarritoService CarritoService
 
-<h3>Lista de Productos</h3>
+<h3>El Rincon del Producto</h3>
 
 <input @bind="busqueda" @bind:event="oninput" placeholder="Buscar productos..." class="form-control mb-3" />
 
@@ -31,7 +31,7 @@ else
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p>@producto.Descripcion</p>
                             <p><strong>$@producto.Precio</strong></p>
-                            <p>Stock disponible: @producto.Stock</p>
+<p><strong>Stock:</strong> @(producto.Stock - CarritoService.ObtenerCantidadProducto(producto.Id))</p>
                             <button class="btn btn-primary"
                                     @onclick="() => Agregar(producto)"
                                     disabled="@(!PuedeAgregar(producto))">
@@ -61,18 +61,23 @@ else
         productos = await ProductoService.ObtenerProductos();
     }
 
-    private void Agregar(Producto producto)
-    {
-        if (producto.Stock > 0)
-        {
-            CarritoService.AgregarProducto(producto);
-            producto.Stock--; // Descuenta el stock visualmente
-            StateHasChanged(); // Refresca la UI
-        }
-    }
+   private async Task Agregar(Producto producto)
+{
+    int cantidadEnCarrito = CarritoService.ObtenerCantidadProducto(producto.Id);
+    int stockDisponible = producto.Stock - cantidadEnCarrito;
 
-    private bool PuedeAgregar(Producto producto)
+    if (stockDisponible > 0)
     {
-        return producto.Stock > 0;
+        CarritoService.AgregarProducto(producto);
+        await InvokeAsync(StateHasChanged); // Refresca la UI
     }
+}
+
+
+private bool PuedeAgregar(Producto producto)
+{
+    int cantidadEnCarrito = CarritoService.ObtenerCantidadProducto(producto.Id);
+    return producto.Stock - cantidadEnCarrito > 0;
+}
+
 }

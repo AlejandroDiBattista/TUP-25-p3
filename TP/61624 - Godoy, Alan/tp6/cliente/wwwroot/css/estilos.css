@@ -1,0 +1,122 @@
+/* Contenedor de productos */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Tarjeta producto */
+.card {
+    width: 220px;
+    height: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #fff;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Imagen del producto */
+.card-img-top {
+    height: 130px;
+    object-fit: contain;
+    padding: 0.6rem;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Cuerpo de la tarjeta */
+.card-body {
+    padding: 1rem;
+    text-align: center;
+}
+
+/* Título producto */
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-weight: 600;
+}
+
+/* Párrafos generales */
+p {
+    margin: 0.3rem 0;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+p strong {
+    font-weight: 700;
+}
+
+/* Botones */
+.btn {
+    font-size: 0.9rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    background-color: #2980b9;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+    margin-top: 0.5rem;
+}
+
+.btn:hover:not(:disabled) {
+    background-color: #1c5980;
+}
+
+.btn:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+/* Input búsqueda */
+input.form-control {
+    max-width: 420px;
+    margin: 0 auto 1.5rem auto;
+    display: block;
+    border-radius: 12px;
+    border: 1.8px solid #3498db;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input.form-control:focus {
+    outline: none;
+    border-color: #2980b9;
+    box-shadow: 0 0 8px rgba(41, 128, 185, 0.5);
+}
+
+/* Botón fijo carrito */
+a.btn.btn-outline-secondary {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #f39c12 !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    text-decoration: none;
+}
+
+/* Título principal alineado a la izquierda */
+h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    text-align: left;
+    font-weight: 700;
+}
