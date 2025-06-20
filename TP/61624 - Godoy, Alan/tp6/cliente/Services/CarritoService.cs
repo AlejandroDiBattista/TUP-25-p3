@@ -82,6 +82,11 @@ public int ObtenerCantidadProducto(int idProducto)
             EliminarItem(item);
         }
     }
+public bool PuedeAgregarMas(int idProducto, int stockTotal)
+{
+    return ObtenerCantidadProducto(idProducto) < stockTotal;
+}
+
 
     public void CambiarCantidad(int idProducto, int cantidad)
     {

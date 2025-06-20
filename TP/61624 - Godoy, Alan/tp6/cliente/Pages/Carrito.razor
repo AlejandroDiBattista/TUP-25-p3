@@ -29,9 +29,11 @@ else
                         <td>@item.Producto.Nombre</td>
                         <td>
                             <input type="number"
-                                   value="@item.Cantidad"
-                                   min="1"
-                                   @onchange="e => CambiarCantidad(item.Producto!.Id, e)" />
+       value="@item.Cantidad"
+       min="1"
+       max="@item.Producto.Stock"
+       @onchange="e => CambiarCantidad(item.Producto!.Id, e)" />
+
                         </td>
                         <td>$@(item.Producto.Precio * item.Cantidad)</td>
                         <td>
@@ -49,13 +51,23 @@ else
 }
 
 @code {
-    void CambiarCantidad(int id, ChangeEventArgs e)
+void CambiarCantidad(int id, ChangeEventArgs e)
+{
+    if (int.TryParse(e.Value?.ToString(), out int cantidad))
     {
-        if (int.TryParse(e.Value?.ToString(), out int cantidad))
+        var item = CarritoService.Items.FirstOrDefault(i => i.Producto.Id == id);
+        if (item != null && cantidad <= item.Producto.Stock)
         {
             CarritoService.CambiarCantidad(id, cantidad);
         }
+        else
+        {
+            // Opcional: mostrar alerta o limitar al stock máximo
+            CarritoService.CambiarCantidad(id, item!.Producto.Stock);
+        }
     }
+}
+
 
     void Eliminar(int id)
     {
