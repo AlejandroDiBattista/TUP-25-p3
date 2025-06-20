@@ -24,6 +24,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors();
+app.UseStaticFiles();
 
 // Inicialización de la base de datos con productos
 async Task InitializeDatabase()
@@ -85,13 +86,21 @@ app.MapGet("/carritos/{carritoId}", async (AppDbContext db, int carritoId) =>
 app.MapPut("/carritos/{carritoId:int}/{productoId:int}/{cantidad:int}", async (AppDbContext db, int carritoId, int productoId, int cantidad) =>
 {
     var producto = await db.Productos.FindAsync(productoId);
-    if (producto == null || producto.Stock < cantidad)
-        return Results.BadRequest("Stock insuficiente");
+    if (producto == null) return Results.NotFound("Producto no encontrado");
 
     var carrito = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
-    if (carrito == null) return Results.NotFound();
+    if (carrito == null) return Results.NotFound("Carrito no encontrado");
 
     var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+    int cantidadActualEnCarrito = item?.Cantidad ?? 0;
+    int cantidadTotalNueva = cantidadActualEnCarrito + cantidad;
+
+    // Stock disponible = stock actual + lo que ya estaba en el carrito
+    int stockDisponible = producto.Stock + cantidadActualEnCarrito;
+
+    if (cantidadTotalNueva > stockDisponible)
+        return Results.BadRequest("Stock insuficiente");
+
     if (item == null)
     {
         carrito.Items.Add(new ItemCompra
@@ -108,7 +117,9 @@ app.MapPut("/carritos/{carritoId:int}/{productoId:int}/{cantidad:int}", async (A
             carrito.Items.Remove(item);
     }
 
-    // ACTUALIZAR EL TOTAL DEL CARRITO
+    // DESCONTAR STOCK EN TIEMPO REAL
+    producto.Stock = stockDisponible - cantidadTotalNueva;
+
     carrito.Total = carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
 
     await db.SaveChangesAsync();
@@ -143,23 +154,12 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (AppDbContext db, int carrit
     carrito.ApellidoCliente = compra.ApellidoCliente;
     carrito.EmailCliente = compra.EmailCliente;
 
-    // DESCONTAR STOCK
-    foreach (var item in carrito.Items)
-    {
-        var producto = await db.Productos.FindAsync(item.ProductoId);
-        if (producto != null)
-        {
-            producto.Stock -= item.Cantidad;
-            if (producto.Stock < 0) producto.Stock = 0;
-        }
-    }
+    // NO descontar stock aquí
 
     await db.SaveChangesAsync();
     return Results.Ok();
 });
 
-
 app.MapGet("/", () => "¡Servidor funcionando correctamente! Accede a:\n- /productos para ver los productos\n- /carritos para gestionar compras");
 
-app.UseStaticFiles();
 app.Run();

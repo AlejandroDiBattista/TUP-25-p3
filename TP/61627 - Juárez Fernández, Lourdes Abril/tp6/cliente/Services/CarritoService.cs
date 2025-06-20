@@ -11,6 +11,7 @@ namespace cliente.Services
         public int CarritoId { get; private set; }
 
         private int carritoCantidad = 0;
+        public int CantidadEnCarrito => carritoCantidad; // Propiedad pública para mostrar
 
         public CarritoService(HttpClient http, IJSRuntime js)
         {
@@ -20,7 +21,6 @@ namespace cliente.Services
 
         public async Task InitializeCarrito()
         {
-            // Intentar recuperar el CarritoId del localStorage
             var idString = await _js.InvokeAsync<string>("localStorage.getItem", "carritoId");
             int id = 0;
             int.TryParse(idString, out id);
@@ -28,6 +28,7 @@ namespace cliente.Services
             if (id != 0)
             {
                 CarritoId = id;
+                await ActualizarCantidad();
                 return;
             }
 
@@ -37,23 +38,28 @@ namespace cliente.Services
                 var carrito = await response.Content.ReadFromJsonAsync<Compra>();
                 CarritoId = carrito?.Id ?? 0;
                 await _js.InvokeVoidAsync("localStorage.setItem", "carritoId", CarritoId.ToString());
+                carritoCantidad = 0;
             }
         }
 
         public async Task<Compra> GetCarritoAsync()
         {
-            return await _http.GetFromJsonAsync<Compra>($"/carritos/{CarritoId}") ?? new();
+            var carrito = await _http.GetFromJsonAsync<Compra>($"/carritos/{CarritoId}");
+            carritoCantidad = carrito?.Items.Sum(i => i.Cantidad) ?? 0;
+            return carrito ?? new();
         }
 
         public async Task AgregarProducto(int productoId, int cantidad)
         {
-            await _http.PutAsync($"/carritos/{CarritoId}/{productoId}/{cantidad}", null);
+            var url = $"/carritos/{CarritoId}/{productoId}/{cantidad}";
+            await _http.PutAsJsonAsync(url, (object)null);
         }
 
         public async Task VaciarCarrito()
         {
             await _http.DeleteAsync($"/carritos/{CarritoId}");
             CarritoId = 0;
+            carritoCantidad = 0;
             await _js.InvokeVoidAsync("localStorage.removeItem", "carritoId");
         }
 
@@ -61,7 +67,14 @@ namespace cliente.Services
         {
             await _http.PutAsJsonAsync($"/carritos/{CarritoId}/confirmar", compra);
             CarritoId = 0;
+            carritoCantidad = 0;
             await _js.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+        }
+
+        public async Task ActualizarCantidad()
+        {
+            var carrito = await GetCarritoAsync();
+            carritoCantidad = carrito.Items.Sum(i => i.Cantidad);
         }
     }
 }

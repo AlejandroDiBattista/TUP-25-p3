@@ -10,17 +10,19 @@ public class ProductoService
         _http = http;
     }
 
-    public async Task<List<Producto>> GetProductosAsync(string search = "")
+    public async Task<List<Producto>> GetProductosAsync(string? search = null)
     {
-        try
+        var url = string.IsNullOrWhiteSpace(search) ? "/productos" : $"/productos?search={search}";
+        return await _http.GetFromJsonAsync<List<Producto>>(url);
+    }
+
+    public async Task ActualizarStock(int productoId, int cantidadDescontada)
+    {
+        var productos = await GetProductosAsync();
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
         {
-            var productos = await _http.GetFromJsonAsync<List<Producto>>($"/productos?search={search}");
-            return productos ?? new List<Producto>();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al obtener productos: {ex.Message}");
-            return new List<Producto>();
+            producto.Stock -= cantidadDescontada;
         }
     }
 }

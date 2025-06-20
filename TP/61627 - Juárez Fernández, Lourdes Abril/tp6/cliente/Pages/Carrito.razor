@@ -5,6 +5,14 @@
 @using cliente.Models
 
 <div class="container mt-4">
+
+    <!-- Botón Volver al Catálogo arriba -->
+    <div class="mb-4">
+        <a href="/" class="btn btn-outline-primary btn-lg">
+            <i class="bi bi-arrow-left-circle"></i> Volver al Catálogo
+        </a>
+    </div>
+
     <div class="text-center mb-4">
         <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:48px; height:48px;">
             <i class="bi bi-cart3" style="font-size:2rem;"></i>
@@ -26,7 +34,7 @@
     {
         <div class="alert alert-info text-center">
             Tu carrito está vacío
-            <button @onclick="VolverAlCatalogo" class="btn btn-link">Volver al catálogo</button>
+            <a href="/" class="btn btn-link">Volver al catálogo</a>
         </div>
     }
     else
@@ -55,7 +63,18 @@
                                 <div class="fw-bold">@item.Producto.Nombre</div>
                                 <div class="text-muted small">@item.Producto.Descripcion</div>
                             </td>
-                            <td class="text-center align-middle">@item.Cantidad</td>
+                            <td class="text-center align-middle">
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        @onclick="() => CambiarCantidad(item.ProductoId, -1)"
+                                        disabled="@(item.Cantidad <= 1)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <span class="mx-2">@item.Cantidad</span>
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        @onclick="() => CambiarCantidad(item.ProductoId, 1)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </td>
                             <td class="text-end align-middle">$@item.PrecioUnitario.ToString("N2", new System.Globalization.CultureInfo("es-AR"))</td>
                             <td class="text-end align-middle fw-bold">
                                 @((item.Cantidad * item.PrecioUnitario).ToString("N2", new System.Globalization.CultureInfo("es-AR")))
@@ -118,9 +137,10 @@
         Navigation.NavigateTo("/confirmacion");
     }
 
-    private void VolverAlCatalogo()
+    private async Task CambiarCantidad(int productoId, int delta)
     {
-        Navigation.NavigateTo("/");
+        await CarritoService.AgregarProducto(productoId, delta);
+        carrito = await CarritoService.GetCarritoAsync(); // <-- Recarga el carrito actualizado
+        StateHasChanged(); // <-- Fuerza el refresco de la UI
     }
 }
-
