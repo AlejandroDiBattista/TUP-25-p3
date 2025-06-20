@@ -1,4 +1,17 @@
-﻿@inherits LayoutComponentBase
+﻿
+@inherits LayoutComponentBase
 <div class="page">
+    @Body
+</div>
+
+<div class="header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+    <h2 class="m-0">🛒 Tienda de Celulares</h2>
+    <nav>
+        <a class="btn btn-outline-light me-2" href="/catalogo">Catálogo</a>
+        <a class="btn btn-outline-light" href="/carrito">Carrito (0)</a>
+    </nav>
+</div>
+
+<div class="container mt-4">
     @Body
 </div>
