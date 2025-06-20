@@ -1,0 +1,39 @@
+using Microsoft.EntityFrameworkCore;
+using servidor.Modelo;
+
+
+namespace servidor.Data
+{
+
+public static class DbInitializer
+
+{
+    public static void Inicializar(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+        db.Database.Migrate();
+
+        if (!db.Productos.Any())
+        {
+db.Productos.AddRange(new List<Producto>
+{
+    new() { Nombre = "iPhone 14", Descripcion = "Apple 128GB", Precio = 1200, Stock = 10, ImagenUrl = "/img/iphone14.png" },
+    new() { Nombre = "Samsung S23", Descripcion = "Samsung 256GB", Precio = 1100, Stock = 8, ImagenUrl = "/img/samsungS23.png" },
+    new() { Nombre = "Moto G23", Descripcion = "Motorola 128GB", Precio = 700, Stock = 12, ImagenUrl = "/img/motoG23.png" },
+    new() { Nombre = "Redmi Note 12", Descripcion = "Xiaomi 128GB", Precio = 850, Stock = 9, ImagenUrl = "/img/redmiNote12.png" },
+    new() { Nombre = "Galaxy A54", Descripcion = "Samsung gama media", Precio = 950, Stock = 11, ImagenUrl = "/img/galaxyA54.png" },
+    new() { Nombre = "Auriculares Bluetooth", Descripcion = "Inalámbricos con micrófono", Precio = 150, Stock = 20, ImagenUrl = "/img/auriculares.png" },
+    new() { Nombre = "Cargador Rápido", Descripcion = "USB-C 25W", Precio = 100, Stock = 15, ImagenUrl = "/img/cargador.jpg" },
+    new() { Nombre = "Cable USB-C", Descripcion = "1 metro trenzado", Precio = 50, Stock = 25, ImagenUrl = "/img/cableusb.jpg" },
+    new() { Nombre = "Funda de silicona", Descripcion = "Para iPhone 14", Precio = 80, Stock = 10, ImagenUrl = "/img/funda.png" },
+    new() { Nombre = "Power Bank 10.000mAh", Descripcion = "Carga rápida portátil", Precio = 200, Stock = 7, ImagenUrl = "/img/powerbank.png" },
+});
+
+        }
+    }
+
+}
+}
+
+
