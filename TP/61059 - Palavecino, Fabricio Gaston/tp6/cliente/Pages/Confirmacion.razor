@@ -31,20 +31,40 @@
         NavigationManager.NavigateTo("/carrito");
     }
 
-    async Task ConfirmarCompra()
+    @inject HttpClient Http
+
+async Task ConfirmarCompra()
+{
+    if (CarritoService.Carrito.Any())
     {
-        if (CarritoService.Carrito.Any())
+        var dto = new
         {
-            // Simular lógica de confirmación
-            await Task.Delay(500); // Simular tiempo de espera
+            Nombre = form.Nombre,
+            Apellido = form.Apellido,
+            Email = form.Email
+        };
+
+        var resp = await Http.PutAsJsonAsync($"/carritos/{CarritoService.CarritoId}/confirmar", dto);
+
+        if (resp.IsSuccessStatusCode)
+        {
             mensaje = "¡Compra confirmada! Gracias por tu compra.";
-            CarritoService.Carrito.Clear(); // Vaciar el carrito después de confirmar
+            CarritoService.Carrito.Clear();
+
+            // Redirige al catálogo y recarga productos (el stock se verá actualizado)
+            NavigationManager.NavigateTo("/catalogo", forceLoad: true);
         }
         else
         {
-            mensaje = "El carrito está vacío. No se puede confirmar la compra.";
+            var error = await resp.Content.ReadAsStringAsync();
+            mensaje = $"Error al confirmar la compra: {error}";
         }
     }
+    else
+    {
+        mensaje = "El carrito está vacío. No se puede confirmar la compra.";
+    }
+}
 
     public class ConfirmacionForm
     {

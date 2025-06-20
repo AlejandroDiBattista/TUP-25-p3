@@ -42,12 +42,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Carga productos solo si aún no se han cargado en el servicio
         if (!CarritoService.Productos.Any())
         {
             await CargarProductos();
         }
     }
+
+    protected override async Task OnParametersSetAsync()
+{
+    await CargarProductos();
+}
 
     async Task CargarProductos()
     {
@@ -62,33 +66,21 @@
         await CargarProductos();
     }
 
-    void AgregarAlCarrito(ProductoDto p)
-    {
-        // Evitar agregar si no hay stock
-        if (p.Stock <= 0)
-            return;
+    async Task AgregarAlCarrito(ProductoDto p)
+{
+    if (p.Stock <= 0 || string.IsNullOrEmpty(CarritoService.CarritoId))
+        return;
 
-        var item = CarritoService.Carrito.FirstOrDefault(i => i.Id == p.Id);
-        if (item != null)
-        {
-            // Incrementar solo si hay stock suficiente
-            if (item.Cantidad < p.Stock)
-                item.Cantidad++;
-        }
-        else
-        {
-            CarritoService.Carrito.Add(new ItemCarrito
-            {
-                Id = p.Id,
-                Nombre = p.Nombre,
-                Precio = p.Precio,
-                Stock = p.Stock,
-                Cantidad = 1
-            });
-        }
-        // Disminuye el stock del producto de forma permanente en el catálogo
-        p.Stock--;
-    }
+    var item = CarritoService.Carrito.FirstOrDefault(i => i.ProductoId == p.Id);
+    int nuevaCantidad = (item?.Cantidad ?? 0) + 1;
+
+    await Http.PutAsJsonAsync($"/carritos/{CarritoService.CarritoId}/{p.Id}", nuevaCantidad);
+
+    var items = await Http.GetFromJsonAsync<List<ItemCarrito>>($"/carritos/{CarritoService.CarritoId}");
+    CarritoService.Carrito = items ?? new List<ItemCarrito>();
+
+    await CargarProductos();
+}
 
     void IrAlCarrito()
     {
@@ -97,6 +89,5 @@
 
     void MostrarCatalogo()
     {
-        // Lógica extra si es necesaria
     }
 }

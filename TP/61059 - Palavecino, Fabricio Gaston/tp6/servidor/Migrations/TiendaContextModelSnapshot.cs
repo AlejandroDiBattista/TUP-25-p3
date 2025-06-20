@@ -95,6 +95,43 @@ namespace servidor.Migrations
                     b.ToTable("Productos");
                 });
 
+            modelBuilder.Entity("servidor.Modelos.Carrito", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carritos");
+                });
+
+            modelBuilder.Entity("servidor.Modelos.ItemCarrito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CarritoId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarritoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("ItemCarritos");
+                });
+
             modelBuilder.Entity("Item", b =>
                 {
                     b.HasOne("Compra", "Compra")
@@ -114,7 +151,29 @@ namespace servidor.Migrations
                     b.Navigation("Producto");
                 });
 
+            modelBuilder.Entity("servidor.Modelos.ItemCarrito", b =>
+                {
+                    b.HasOne("servidor.Modelos.Carrito", "Carrito")
+                        .WithMany("Items")
+                        .HasForeignKey("CarritoId");
+
+                    b.HasOne("Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Carrito");
+
+                    b.Navigation("Producto");
+                });
+
             modelBuilder.Entity("Compra", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("servidor.Modelos.Carrito", b =>
                 {
                     b.Navigation("Items");
                 });

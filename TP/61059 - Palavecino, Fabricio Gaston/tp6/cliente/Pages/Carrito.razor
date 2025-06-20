@@ -1,6 +1,8 @@
+@using tp6.cliente.Models
 @page "/carrito"
 @inject NavigationManager NavigationManager
 @inject CarritoService CarritoService
+@inject HttpClient Http
 
 <div class="carrito">
     @if (!CarritoService.Carrito.Any())
@@ -46,56 +48,71 @@
 @code {
     decimal TotalCarritoImporte => CarritoService.Carrito.Sum(i => i.Precio * i.Cantidad);
 
-    void IrAlCatalogo() {
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        if (string.IsNullOrEmpty(CarritoService.CarritoId))
+        {
+            var resp = await Http.PostAsync("/carritos", null);
+            if (resp.IsSuccessStatusCode)
+            {
+                var json = await resp.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                CarritoService.CarritoId = json.GetProperty("id").GetString();
+            }
+        }
+        if (!string.IsNullOrEmpty(CarritoService.CarritoId))
+        {
+            var items = await Http.GetFromJsonAsync<List<ItemCarrito>>($"/carritos/{CarritoService.CarritoId}");
+            CarritoService.Carrito = items ?? new List<ItemCarrito>();
+        }
+    }
+
+    async Task CambiarCantidad(ItemCarrito item, int cambio)
+    {
+        if (string.IsNullOrEmpty(CarritoService.CarritoId))
+            return;
+
+        int nuevaCantidad = item.Cantidad + cambio;
+        if (nuevaCantidad <= 0)
+        {
+            await Http.DeleteAsync($"/carritos/{CarritoService.CarritoId}/{item.ProductoId}");
+        }
+        else
+        {
+            await Http.PutAsJsonAsync($"/carritos/{CarritoService.CarritoId}/{item.ProductoId}", nuevaCantidad);
+        }
+        await CargarCarrito();
+    }
+
+    async Task EliminarDelCarrito(ItemCarrito item)
+    {
+        if (string.IsNullOrEmpty(CarritoService.CarritoId))
+            return;
+
+        await Http.DeleteAsync($"/carritos/{CarritoService.CarritoId}/{item.ProductoId}");
+        await CargarCarrito();
+    }
+
+    async Task VaciarCarrito()
+    {
+        if (string.IsNullOrEmpty(CarritoService.CarritoId))
+            return;
+
+        await Http.DeleteAsync($"/carritos/{CarritoService.CarritoId}");
+        CarritoService.Carrito.Clear();
+    }
+
+    void IrAlCatalogo()
+    {
         NavigationManager.NavigateTo("/catalogo");
     }
 
-    void IrAConfirmacion() {
+    void IrAConfirmacion()
+    {
         NavigationManager.NavigateTo("/confirmacion");
-    }
-
-    void CambiarCantidad(ItemCarrito item, int cantidad) {
-        // Buscar el producto en la lista de catálogo
-        var producto = CarritoService.Productos.FirstOrDefault(p => p.Id == item.Id);
-        if (producto == null) return;
-
-        if (cantidad > 0) {
-            // Aumentar cantidad en el carrito: solo si queda stock en catálogo
-            if (producto.Stock > 0) {
-                item.Cantidad++;
-                producto.Stock--;  // se reserva una unidad más
-            }
-        } else if (cantidad < 0) {
-            // Disminuir cantidad: se devuelve una unidad al catálogo
-            item.Cantidad--;
-            producto.Stock++;  
-            if (item.Cantidad <= 0)
-            {
-                CarritoService.Carrito.Remove(item);
-            }
-        }
-    }
-
-    void EliminarDelCarrito(ItemCarrito item) {
-        // Buscar el producto en el catálogo y devolver la cantidad reservada
-        var producto = CarritoService.Productos.FirstOrDefault(p => p.Id == item.Id);
-        if (producto != null)
-        {
-            producto.Stock += item.Cantidad;
-        }
-        CarritoService.Carrito.Remove(item);
-    }
-
-    void VaciarCarrito() {
-        // Para cada ítem se devuelve su cantidad al stock correspondiente
-        foreach (var item in CarritoService.Carrito)
-        {
-            var producto = CarritoService.Productos.FirstOrDefault(p => p.Id == item.Id);
-            if (producto != null)
-            {
-                producto.Stock += item.Cantidad;
-            }
-        }
-        CarritoService.Carrito.Clear();
     }
 }
