@@ -4,19 +4,44 @@ using servidor.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar DbContext con SQLite
+
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowClientApp", policy => {
+        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
+
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
 
-// Seed data
+if (app.Environment.IsDevelopment()) {
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseStaticFiles(); 
+app.UseCors("AllowClientApp");
+app.UseRouting();
+
+app.UseAuthorization();
+
+
+app.MapGet("/", () => "Servidor API está en funcionamiento");
+app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
+
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -25,24 +50,34 @@ using (var scope = app.Services.CreateScope())
     if (!db.Productos.Any())
     {
         db.Productos.AddRange(
-            new Producto { Nombre = "Auriculares Bluetooth", Descripcion = "Auriculares inalámbricos con cancelación de ruido", Imagen = "auriculares.jpg", Precio = 12000, Stock = 15 },
-            new Producto { Nombre = "Mouse Gamer", Descripcion = "Mouse con luces RGB y alta precisión", Imagen = "mouse.jpg", Precio = 8500, Stock = 25 },
-            new Producto { Nombre = "Teclado Mecánico", Descripcion = "Teclado mecánico retroiluminado", Imagen = "teclado.jpg", Precio = 18000, Stock = 10 }
+            new Producto { Nombre = "Auriculares Bluetooth", Descripcion = "Inalámbricos con cancelación de ruido", Imagen = "auriculares.jpg", Precio = 12000, Stock = 15 },
+            new Producto { Nombre = "Mouse Gamer", Descripcion = "RGB y alta precisión", Imagen = "mouse.jpg", Precio = 8500, Stock = 25 },
+            new Producto { Nombre = "Teclado Mecánico", Descripcion = "Retroiluminado y duradero", Imagen = "teclado.jpg", Precio = 18000, Stock = 10 }
         );
         db.SaveChanges();
     }
 }
+
+
+
 
 app.MapGet("/productos", async (AppDbContext db) =>
 {
     return await db.Productos.ToListAsync();
 });
 
-app.Run();
+
+app.MapGet("/compras", async (AppDbContext db) =>
+{
+    return await db.Compras
+        .Include(c => c.Items)
+        .ThenInclude(i => i.Producto)
+        .ToListAsync();
+});
+
 
 app.MapPost("/compras", async (AppDbContext db, Compra compra) =>
 {
-    // Calcular total y asociar producto real
     decimal total = 0;
 
     foreach (var item in compra.Items)
@@ -67,3 +102,5 @@ app.MapPost("/compras", async (AppDbContext db, Compra compra) =>
 
     return Results.Created($"/compras/{compra.Id}", compra);
 });
+
+app.Run();

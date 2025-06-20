@@ -1,4 +1,4 @@
-namespace servidor.Models
+namespace cliente.Models
 {
     public class Producto
     {
