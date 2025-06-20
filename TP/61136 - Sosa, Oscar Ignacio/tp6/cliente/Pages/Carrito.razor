@@ -4,18 +4,18 @@
 @inject CartService Cart
 @implements IDisposable
 
-<h3>🛒 Carrito de Compras</h3>
+<h3 class="my-3">🛒 Carrito de Compras</h3>
 
 @if (Cart.Items.Count == 0)
 {
-    <p>Tu carrito está vacío.</p>
+    <div class="alert alert-info">Tu carrito está vacío.</div>
 }
 else
 {
     <ul class="list-group">
         @foreach (var item in Cart.Items)
         {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                 <div class="d-flex align-items-center">
                     <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre"
                          style="width: 60px; height: 60px; object-fit: cover; margin-right: 1rem;" />
@@ -23,25 +23,28 @@ else
                         <strong>@item.Producto.Nombre</strong><br />
                         <span>Precio unitario: $@item.Producto.Precio</span><br />
                         <span>Subtotal: $@(item.Producto.Precio * item.Cantidad)</span><br />
-
-                        <div class="btn-group mt-2">
-                            <button class="btn btn-sm btn-secondary" @onclick="() => DisminuirCantidad(item.Producto.Id)">-</button>
+                        <div class="btn-group mt-2" role="group" aria-label="Cantidad">
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => DisminuirCantidad(item.Producto.Id)">-</button>
                             <span class="mx-2">@item.Cantidad</span>
-                            <button class="btn btn-sm btn-secondary" @onclick="() => AumentarCantidad(item.Producto.Id)">+</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => AumentarCantidad(item.Producto.Id)">+</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-sm btn-danger ms-2" @onclick="() => EliminarProducto(item.Producto.Id)">Eliminar</button>
+                <button class="btn btn-sm btn-outline-danger ms-2 mt-2 mt-md-0" @onclick="() => EliminarProducto(item.Producto.Id)">
+                    Eliminar
+                </button>
             </li>
         }
     </ul>
 
-    <div class="mt-3">
+    <div class="mt-4">
         <p><strong>Total de productos:</strong> @Cart.GetCantidadTotal()</p>
         <p><strong>Total a pagar:</strong> $@Cart.GetTotal().ToString("0.00")</p>
 
-        <button class="btn btn-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
-        <a class="btn btn-success" href="/checkout">Proceder al Pago</a>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-danger" @onclick="VaciarCarrito">Vaciar Carrito</button>
+            <a class="btn btn-success" href="/checkout">Proceder al Pago</a>
+        </div>
     </div>
 }
 
@@ -51,16 +54,8 @@ else
         Cart.OnChange += StateHasChanged;
     }
 
-    private void VaciarCarrito()
-    {
-        Cart.ClearCart();
-    }
-
-    private void EliminarProducto(int id)
-    {
-        Cart.RemoveFromCart(id);
-    }
-
+    private void VaciarCarrito() => Cart.ClearCart();
+    private void EliminarProducto(int id) => Cart.RemoveFromCart(id);
     private void AumentarCantidad(int id) => Cart.IncrementarCantidad(id);
     private void DisminuirCantidad(int id) => Cart.DecrementarCantidad(id);
 

@@ -15,9 +15,9 @@ namespace Cliente.Services
         }
 
         /// <summary>
-        /// Llama a la API REST para obtener datos.
+        /// Llama al endpoint "api/datos" del backend y devuelve una respuesta tipada.
         /// </summary>
-        /// <returns>Objeto DatosRespuesta o null si falla.</returns>
+        /// <returns>Una instancia de <see cref="DatosRespuesta"/> o null si ocurre un error.</returns>
         public async Task<DatosRespuesta?> ObtenerDatosAsync()
         {
             try
@@ -27,19 +27,23 @@ namespace Cliente.Services
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"[ApiService] Error HTTP: {ex.Message}");
-                return null;
             }
             catch (NotSupportedException ex)
             {
                 Console.WriteLine($"[ApiService] Tipo de contenido no soportado: {ex.Message}");
-                return null;
             }
             catch (System.Text.Json.JsonException ex)
             {
                 Console.WriteLine($"[ApiService] Error al deserializar JSON: {ex.Message}");
-                return null;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiService] Error inesperado: {ex.Message}");
+            }
+
+            return null;
         }
     }
 }
-
+// Este código define un servicio que se encarga de realizar peticiones HTTP al backend
+// y manejar las respuestas. Utiliza HttpClient para enviar solicitudes y recibir respuestas.

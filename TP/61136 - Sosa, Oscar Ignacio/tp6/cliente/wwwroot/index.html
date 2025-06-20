@@ -1,17 +1,123 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Dulces Online</title>
-    <base href="/" />
-    <link href="css/app.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BIENVENIDO A TIENDA ONLINE</title>
+    <!-- <base href="/" /> Eliminado para evitar conflictos con rutas -->
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-</head>
-<body>
-    <div id="app">Cargando...</div>
+    <link href="cliente.styles.css" rel="stylesheet" />
+    <style>
+        body {
+            background: #085caf;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            
+            padding: 20px;
+            color: #f3efef;
+            text-align: center;
+        }
 
-    <script src="_framework/blazor.webassembly.js"></script>
+        h1 {
+            color: #db1616;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+        }
+
+        a.btn-success {
+            background-color: #0f4b1d;
+            color: #68b6e4;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        a.btn-success:hover {
+            background-color: #1e7e34;
+            color: #200dcc;
+        }
+
+        /* Contador de carrito */
+        .contador-carrito {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+            padding: 2px 7px;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* Centrar contenido y limitar ancho */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>BIENVENIDO A TIENDA ONLINE</h1>
+        <p>Las mejores ofertas de dulces</p>
+
+        <a href="catalogo.html" class="btn btn-success" id="btnCatalogo">
+            IR AL CATALOGO
+            <span class="contador-carrito" id="contadorCarrito">0</span>
+        </a>
+    </div>
+
+    <div id="blazor-error-ui" style="text-align:center; margin-top:3rem; color:#f3efef;">
+        An unhandled error has occurred.
+        <a href="." class="reload" style="color:#68b6e4;">Reload</a>
+        <span class="dismiss" style="cursor:pointer;">🗙</span>
+    </div>
+
+    <script>
+        // Función para obtener carrito del localStorage
+        function obtenerCarrito() {
+            return JSON.parse(localStorage.getItem('carrito')) || [];
+        }
+
+        // Función para actualizar contador en esta página
+        function actualizarContador() {
+            const carrito = obtenerCarrito();
+            const total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            const contador = document.getElementById('contadorCarrito');
+            contador.textContent = total;
+            // Ocultar contador si no hay productos
+            contador.style.display = total > 0 ? 'inline-block' : 'none';
+        }
+
+        // Actualizar contador al cargar la página
+        actualizarContador();
+
+        // Escuchar cambios en localStorage (si modifican carrito en otra pestaña)
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'carrito') {
+                actualizarContador();
+            }
+        });
+    </script>
 </body>
+
 </html>

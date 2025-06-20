@@ -1,29 +1,48 @@
 @page "/productos"
 @using Cliente.Models2
 
-<h3>Catálogo de Productos</h3>
+<h3 class="my-3">📦 Catálogo de Productos</h3>
 
-<input @bind="busqueda" placeholder="Buscar producto..." />
+<input class="form-control mb-3" @bind="busqueda" placeholder="Buscar producto..." />
 
-<ul>
+<div class="row">
     @foreach (var producto in ProductosFiltrados)
     {
-        <li>
-            <strong>@producto.Nombre</strong> - @producto.Descripcion - $@producto.Precio
-            <br />
-            <img src="@producto.ImagenUrl" alt="@producto.Nombre" width="100" />
-        </li>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@producto.ImagenUrl" alt="@producto.Nombre"
+                     class="card-img-top" style="height: 200px; object-fit: cover;" />
+                <div class="card-body">
+                    <h5 class="card-title">@producto.Nombre</h5>
+                    <p class="card-text">@producto.Descripcion</p>
+                    <p><strong>Precio:</strong> $@producto.Precio</p>
+                    <p><small>Stock: @producto.Stock</small></p>
+                </div>
+            </div>
+        </div>
     }
-</ul>
+</div>
 
 @code {
     private string busqueda = string.Empty;
 
-    // Ejemplo de productos (puedes cargarlos desde la API)
     private List<Producto> productos = new()
     {
-        new Producto { Nombre = "Chocolate", Descripcion = "Chocolate dulce", Precio = 100, Stock = 10, ImagenUrl = "https://images.example.com/chocolate.jpg" },
-        new Producto { Nombre = "Caramelos", Descripcion = "Caramelos surtidos", Precio = 50, Stock = 20, ImagenUrl = "https://images.example.com/caramelos.jpg" }
+        new Producto { Id = 1, Nombre = "Chocolate Milka", Descripcion = "Chocolate suave con leche", Precio = 950, Stock = 30, ImagenUrl = "Imagenes/milka.jpg" },
+        new Producto { Id = 2, Nombre = "Bon o Bon", Descripcion = "Bombón de maní", Precio = 120, Stock = 30, ImagenUrl = "Imagenes/bonobon.jpg" },
+        new Producto { Id = 3, Nombre = "Sugus", Descripcion = "Caramelos masticables", Precio = 80, Stock = 30, ImagenUrl = "Imagenes/sugus.jpg" },
+        new Producto { Id = 4, Nombre = "Rocklets", Descripcion = "Grageas de chocolate", Precio = 250, Stock = 30, ImagenUrl = "Imagenes/rocklets_01.jpg" },
+        new Producto { Id = 5, Nombre = "Mogul", Descripcion = "Gomitas frutales", Precio = 180, Stock = 30, ImagenUrl = "Imagenes/mogul_01.jpg" },
+        new Producto { Id = 6, Nombre = "Tita", Descripcion = "Galletita rellena con chocolate", Precio = 90, Stock = 30, ImagenUrl = "Imagenes/tita_01.jpg" },
+        new Producto { Id = 7, Nombre = "Rhodesia", Descripcion = "Galletita con dulce de leche y chocolate", Precio = 90, Stock = 30, ImagenUrl = "Imagenes/rhodesia_01.jpg" },
+        new Producto { Id = 8, Nombre = "Menta Cristal", Descripcion = "Caramelo de menta", Precio = 70, Stock = 30, ImagenUrl = "Imagenes/menta_01.jpg" },
+        new Producto { Id = 9, Nombre = "Caramelos Arcor", Descripcion = "Surtido de caramelo duro", Precio = 60, Stock = 30, ImagenUrl = "Imagenes/arcor_01.jpg" },
+        new Producto { Id = 10, Nombre = "Chocolinas", Descripcion = "Galletitas de chocolate", Precio = 350, Stock = 30, ImagenUrl = "Imagenes/chocolinas_01.jpg" },
+        new Producto { Id = 11, Nombre = "Alfajor Jorgito", Descripcion = "Alfajor clásico de dulce de leche", Precio = 180, Stock = 30, ImagenUrl = "Imagenes/jorgito_01.jpg" },
+        new Producto { Id = 12, Nombre = "Bananita Dolca", Descripcion = "Banana bañada en chocolate", Precio = 100, Stock = 30, ImagenUrl = "Imagenes/bananita_01.jpg" },
+        new Producto { Id = 13, Nombre = "Kinder Bueno", Descripcion = "Chocolate con crema de avellanas", Precio = 400, Stock = 30, ImagenUrl = "Imagenes/kinder_01.jpg" },
+        new Producto { Id = 14, Nombre = "KitKat", Descripcion = "Barra de chocolate con galleta", Precio = 350, Stock = 30, ImagenUrl = "Imagenes/kitkat_01.jpg" },
+        new Producto { Id = 15, Nombre = "M&M's", Descripcion = "Confites de chocolate", Precio = 300, Stock = 30, ImagenUrl = "Imagenes/mms_01.jpg" }
     };
 
     private IEnumerable<Producto> ProductosFiltrados =>

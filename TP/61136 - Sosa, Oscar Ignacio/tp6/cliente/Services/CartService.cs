@@ -9,36 +9,47 @@ namespace Cliente.Services
     {
         private readonly List<CartItem> _items = new();
 
+        /// <summary>
+        /// Lista pública de productos en el carrito (solo lectura).
+        /// </summary>
         public IReadOnlyList<CartItem> Items => _items.AsReadOnly();
 
+        /// <summary>
+        /// Evento que notifica cambios al carrito.
+        /// </summary>
         public event Action? OnChange;
 
         public void AddToCart(Producto producto)
         {
             if (producto == null) return;
 
-            var existingItem = _items.FirstOrDefault(ci => ci.Producto.Id == producto.Id);
-            if (existingItem != null)
+            var item = _items.FirstOrDefault(ci => ci.Producto.Id == producto.Id);
+
+            if (item != null)
             {
-                if (existingItem.Cantidad < producto.Stock)
-                    existingItem.Cantidad++;
+                if (item.Cantidad < producto.Stock)
+                {
+                    item.Cantidad++;
+                    OnChange?.Invoke();
+                }
             }
             else
             {
                 _items.Add(new CartItem { Producto = producto, Cantidad = 1 });
+                OnChange?.Invoke();
             }
-
-            OnChange?.Invoke();
         }
 
         public void RemoveFromCart(int productoId)
         {
-            var existingItem = _items.FirstOrDefault(ci => ci.Producto.Id == productoId);
-            if (existingItem != null)
+            var item = _items.FirstOrDefault(ci => ci.Producto.Id == productoId);
+            if (item != null)
             {
-                existingItem.Cantidad--;
-                if (existingItem.Cantidad <= 0)
-                    _items.Remove(existingItem);
+                item.Cantidad--;
+                if (item.Cantidad <= 0)
+                {
+                    _items.Remove(item);
+                }
 
                 OnChange?.Invoke();
             }
@@ -69,8 +80,11 @@ namespace Cliente.Services
 
         public void ClearCart()
         {
-            _items.Clear();
-            OnChange?.Invoke();
+            if (_items.Any())
+            {
+                _items.Clear();
+                OnChange?.Invoke();
+            }
         }
 
         public decimal GetTotal() =>
@@ -80,6 +94,9 @@ namespace Cliente.Services
             _items.Sum(ci => ci.Cantidad);
     }
 
+    /// <summary>
+    /// Representa un ítem dentro del carrito.
+    /// </summary>
     public class CartItem
     {
         public Producto Producto { get; set; } = new();

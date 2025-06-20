@@ -1,0 +1,105 @@
+@page "/checkout"
+@using Cliente.Models2
+@using Cliente.Services
+@using System.ComponentModel.DataAnnotations
+@inject CartService Cart
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>🧾 Confirmación de Compra</h3>
+
+@if (Cart.Items.Count == 0)
+{
+    <p>Tu carrito está vacío. <a href="/catalogo">Volver al catálogo</a>.</p>
+}
+else
+{
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="nombre">Nombre:</label>
+            <InputText id="nombre" class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="apellido">Apellido:</label>
+            <InputText id="apellido" class="form-control" @bind-Value="cliente.Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email">Email:</label>
+            <InputText id="email" class="form-control" @bind-Value="cliente.Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+        </div>
+
+        <hr />
+
+        <p><strong>Total de ítems:</strong> @Cart.GetCantidadTotal()</p>
+        <p><strong>Total a pagar:</strong> $@Cart.GetTotal().ToString("0.00")</p>
+
+        <button type="submit" class="btn btn-success">Confirmar compra</button>
+    </EditForm>
+}
+
+@code {
+    private ClienteInfo cliente = new();
+
+    private async Task ConfirmarCompra()
+    {
+        var compra = new CompraConfirmada
+        {
+            Nombre = cliente.Nombre,
+            Apellido = cliente.Apellido,
+            Email = cliente.Email,
+            Items = Cart.Items.Select(item => new ItemCompra
+            {
+                ProductoId = item.Producto.Id,
+                Cantidad = item.Cantidad,
+                PrecioUnitario = item.Producto.Precio
+            }).ToList()
+        };
+
+        var response = await Http.PutAsJsonAsync($"api/carritos/1/confirmar", compra);
+        if (response.IsSuccessStatusCode)
+        {
+            Cart.ClearCart();
+            Nav.NavigateTo("/catalogo", forceLoad: true);
+        }
+        else
+        {
+            Console.WriteLine("Error al confirmar la compra.");
+        }
+    }
+
+    public class ClienteInfo
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        public string Apellido { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El email es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Debe ingresar un email válido.")]
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class CompraConfirmada
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Apellido { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public List<ItemCompra> Items { get; set; } = new();
+    }
+
+    public class ItemCompra
+    {
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+    }
+}
