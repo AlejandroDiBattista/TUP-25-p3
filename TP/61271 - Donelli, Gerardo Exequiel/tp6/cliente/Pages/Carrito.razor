@@ -2,6 +2,8 @@
 @using cliente.Models
 @using cliente.Services
 @using Microsoft.AspNetCore.Components
+@inject ProductosService ProductosService
+
 
 @*
     Componente que muestra el carrito de compras.
@@ -149,17 +151,32 @@
     /// Incrementa la cantidad de un item en el carrito
     /// </summary>
     /// <param name="productoId">ID del producto a incrementar</param>
-    private async Task IncrementarCantidad(int productoId)
+  private async Task IncrementarCantidad(int productoId)
+{
+    var item = items.First(x => x.ProductoId == productoId);
+
+    // Evitar pasar de 10 o del stock
+    if (item.Cantidad >= 10)
     {
-        var item = items.First(x => x.ProductoId == productoId);
-        if (item.Cantidad >= 10)
-        {
-            await JS.InvokeVoidAsync("alert", "No se pueden agregar más de 10 unidades del mismo producto.");
-            return;
-        }
-        CarritoService.ActualizarCantidad(productoId, item.Cantidad + 1);
-        CargarCarrito();
+        await JS.InvokeVoidAsync("alert", "No se pueden agregar más de 10 unidades del mismo producto.");
+        return;
     }
+
+    // Validar que haya stock suficiente antes de incrementar
+    var productos = await ProductosService.ObtenerProductosAsync();
+    var productoActual = productos.FirstOrDefault(p => p.Id == productoId);
+
+    if (productoActual == null || productoActual.Stock <= item.Cantidad)// Verificar si el producto existe y tiene stock
+
+    {
+        await JS.InvokeVoidAsync("alert", "No hay más stock disponible para este producto.");
+        return;
+    }
+
+    CarritoService.ActualizarCantidad(productoId, item.Cantidad + 1);
+    CargarCarrito();
+}
+
 
     /// <summary>
     /// Decrementa la cantidad de un item en el carrito

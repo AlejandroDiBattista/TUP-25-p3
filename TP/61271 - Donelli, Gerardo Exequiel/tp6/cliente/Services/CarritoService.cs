@@ -36,6 +36,11 @@ public class CarritoService
     /// </summary>
     public int ObtenerCantidadTotal() => _items.Sum(x => x.Cantidad);
 
+/// <summary>
+/// Evento que se dispara cuando se debe actualizar el stock
+/// </summary>
+public Action<int, int>? OnStockActualizar; // productoId, cambio (positivo o negativo)
+
     /// <summary>
     /// Obtiene el monto total del carrito
     /// </summary>
@@ -46,75 +51,101 @@ public class CarritoService
     /// </summary>
     /// <param name="producto">Información del producto a agregar</param>
     /// <param name="cantidad">Cantidad a agregar (por defecto 1)</param>
-    public void AgregarItem(ProductoDTO producto, int cantidad = 1)
+   public void AgregarItem(ProductoDTO producto, int cantidad = 1)
+{
+    if (cantidad <= 0) return;
+
+    var item = _items.FirstOrDefault(x => x.ProductoId == producto.Id);// buscamos si ya existe un item con ese producto
+    // si no existe, creamos uno nuevo
+
+    if (item == null)// si no existe el item en el carrito
+    // verificamos que la cantidad no supere el stock del producto
+    // si supera el stock, agregamos la cantidad máxima posible
     {
-        if (cantidad <= 0) return;
-
-        var item = _items.FirstOrDefault(x => x.ProductoId == producto.Id);
-        
-        if (item == null)
+        int cantidadFinal = Math.Min(cantidad, producto.Stock);
+        item = new ItemCarrito
         {
-            item = new ItemCarrito
-            {
-                ProductoId = producto.Id,
-                Nombre = producto.Nombre,
-                Precio = producto.Precio,
-                Cantidad = Math.Min(cantidad, producto.Stock)
-            };
-            _items.Add(item);
-        }
-        else
-        {
-            ActualizarCantidad(producto.Id, Math.Min(item.Cantidad + cantidad, producto.Stock));
-        }
-
-        NotificarCambios();
+            ProductoId = producto.Id,
+            Nombre = producto.Nombre,
+            Precio = producto.Precio,
+            Cantidad = cantidadFinal
+        };
+        _items.Add(item);// agregamos el nuevo item al carrito
+        // Disparamos el evento de actualización de stock
+        OnStockActualizar?.Invoke(producto.Id, -cantidadFinal); // restamos stock
     }
+    else
+    {
+        int nuevaCantidad = Math.Min(item.Cantidad + cantidad, producto.Stock);
+        int diferencia = nuevaCantidad - item.Cantidad;
+        item.Cantidad = nuevaCantidad;
+        OnStockActualizar?.Invoke(producto.Id, -diferencia); // restamos lo agregado
+    }
+
+    NotificarCambios();
+}
 
     /// <summary>
     /// Actualiza la cantidad de un item en el carrito
     /// </summary>
     /// <param name="productoId">ID del producto a actualizar</param>
     /// <param name="cantidad">Nueva cantidad</param>
-    public void ActualizarCantidad(int productoId, int cantidad)
+   public void ActualizarCantidad(int productoId, int cantidad)
+{
+    var item = _items.FirstOrDefault(x => x.ProductoId == productoId);// buscamos el item por su ID
+    // si no existe, no hacemos nada
+    if (item != null)// si existe el item en el carrito
+    // verificamos que la cantidad no supere el stock del producto
     {
-        var item = _items.FirstOrDefault(x => x.ProductoId == productoId);
-        if (item != null)
+        if (cantidad <= 0)
         {
-            if (cantidad <= 0)
-            {
-                _items.Remove(item);
-            }
-            else
-            {
-                item.Cantidad = cantidad;
-            }
-            NotificarCambios();
+            OnStockActualizar?.Invoke(productoId, item.Cantidad); // devolver stock
+            _items.Remove(item);
         }
+        else
+        {
+            int diferencia = cantidad - item.Cantidad;
+            item.Cantidad = cantidad;
+            OnStockActualizar?.Invoke(productoId, -diferencia); // positivo o negativo
+        }
+        NotificarCambios();
     }
+}
+
 
     /// <summary>
     /// Elimina un item del carrito
     /// </summary>
     /// <param name="productoId">ID del producto a eliminar</param>
     public void EliminarItem(int productoId)
+{
+    var item = _items.FirstOrDefault(x => x.ProductoId == productoId);// buscamos el item por su ID
+    // si no existe, no hacemos nada
+    if (item != null)// si existe el item en el carrito
+    // devolvemos el stock del producto
     {
-        var item = _items.FirstOrDefault(x => x.ProductoId == productoId);
-        if (item != null)
-        {
-            _items.Remove(item);
-            NotificarCambios();
-        }
+        OnStockActualizar?.Invoke(productoId, item.Cantidad); // devolver stock
+        _items.Remove(item);
+        NotificarCambios();
     }
+}
+
 
     /// <summary>
     /// Vacía el carrito de compras
     /// </summary>
     public void LimpiarCarrito()
+{
+    foreach (var item in _items)// recorremos todos los items del carrito
+    // y devolvemos el stock de cada producto
     {
-        _items.Clear();
-        NotificarCambios();
+        OnStockActualizar?.Invoke(item.ProductoId, item.Cantidad);// devolver stock
+        // Devolvemos el stock del producto al inventario
     }
+    _items.Clear();
+    NotificarCambios();
+}
+
 
     /// <summary>
     /// Procesa la compra de los items en el carrito

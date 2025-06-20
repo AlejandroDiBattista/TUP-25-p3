@@ -57,13 +57,17 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Endpoint para obtener productos con filtro opcional por nombre
 app.MapGet("/api/productos", async (string? busqueda, TiendaContext db) =>
 {
-    var query = db.Productos.AsQueryable();
+    var query = db.Productos.AsQueryable();// Crear una consulta base
 
-    if (!string.IsNullOrWhiteSpace(busqueda))
+    // Si se proporciona un término de búsqueda, filtrar por nombre
+
+    if (!string.IsNullOrWhiteSpace(busqueda))// Verificar si la búsqueda no es nula o vacía
     {
-        busqueda = busqueda.ToLower();
-        query = query.Where(p => 
-            p.Nombre.ToLower().Contains(busqueda));
+        busqueda = busqueda.ToLower();// Convertir a minúsculas para comparación
+        // Aplicar filtro de búsqueda
+        query = query.Where(p => p.Nombre.ToLower().StartsWith(busqueda));
+        // Filtrar por nombre que comience con el término de búsqueda
+
     }
 
     var productos = await query.ToListAsync();
@@ -94,7 +98,7 @@ app.MapPost("/api/compras", async (CompraDTO compraDTO, TiendaContext db) =>
         // Obtener y validar productos
         var productIds = compraDTO.Items.Select(i => i.ProductoId).ToList();
         var productos = await db.Productos
-            .Where(p => productIds.Contains(p.Id))
+            .Where(p => productIds.Contains(p.Id))// Filtrar solo los productos que están en el carrito
             .ToDictionaryAsync(p => p.Id);
 
         // Validar que existan todos los productos

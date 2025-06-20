@@ -97,7 +97,7 @@ public static class ProductosSeed
                 Nombre = "Pan Lactal",
                 Descripcion = "Pan lactal blanco sin corteza, 500g",
                 Precio = 252.50M,
-                Stock = 250,
+                Stock = 200,
                 ImagenUrl = "images/Pan-lactal.webp"
             }
         };
