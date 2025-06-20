@@ -1,6 +1,4 @@
-#r "sdk:Microsoft.NET.Sdk.Web"
-#r "nuget: Microsoft.EntityFrameworkCore, 9.0.4"
-#r "nuget: Microsoft.EntityFrameworkCore.Sqlite, 9.0.4"
+// Ensure the required dependencies are included in your project file (.csproj).
 
 using System.Text.Json;                     
 using Microsoft.AspNetCore.Http;
@@ -17,15 +15,58 @@ builder.Services.Configure<JsonOptions>(opt => opt.SerializerOptions.PropertyNam
 
 var app = builder.Build();
 
+// ENDPOINTS EXISTENTES
 app.MapGet("/productos", async (AppDb db) => await db.Productos.ToListAsync());
 
+// NUEVOS ENDPOINTS
+
+// Listar productos con stock bajo (<3)
+app.MapGet("/productos/bajo-stock", async (AppDb db) =>
+    await db.Productos.Where(p => p.Stock < 3).ToListAsync());
+
+// Sumar stock
+app.MapPut("/productos/{id}/sumar", async (AppDb db, int id, int cantidad) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto is null) return Results.NotFound();
+    producto.Stock += cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
+});
+
+// Restar stock (no dejar en negativo)
+app.MapPut("/productos/{id}/restar", async (AppDb db, int id, int cantidad) =>
+{
+    var producto = await db.Productos.FindAsync(id);
+    if (producto is null) return Results.NotFound();
+    if (producto.Stock < cantidad)
+        return Results.BadRequest("No se puede restar más stock del disponible.");
+    producto.Stock -= cantidad;
+    await db.SaveChangesAsync();
+    return Results.Ok(producto);
+});
+
+// CREAR BD Y AGREGAR PRODUCTOS
 var db = app.Services.GetRequiredService<AppDb>();
-db.Database.EnsureCreated(); // crear BD si no existe
-// Agregar productos de ejemplo al crear la base de datos
+db.Database.EnsureCreated();
 
-app.Run("http://localhost:5000"); 
+// Agregar productos de ejemplo solo si no existen
+if (!db.Productos.Any())
+{
+    for (int i = 1; i <= 10; i++)
+    {
+        db.Productos.Add(new Producto
+        {
+            Nombre = $"Producto {i}",
+            Precio = 100 + i * 10,
+            Stock = 10
+        });
+    }
+    db.SaveChanges();
+}
+
+app.Run("http://localhost:5000");
 // NOTA: Si falla la primera vez, corralo nuevamente.
-
 
 
 // Modelo de datos
@@ -34,8 +75,9 @@ class AppDb : DbContext {
     public DbSet<Producto> Productos => Set<Producto>();
 }
 
-class Producto{
+class Producto {
     public int Id { get; set; }
     public string Nombre { get; set; } = null!;
     public decimal Precio { get; set; }
+    public int Stock { get; set; } // Agregado para manejar el stock
 }
