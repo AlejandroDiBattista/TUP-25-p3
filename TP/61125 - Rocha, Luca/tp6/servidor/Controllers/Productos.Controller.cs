@@ -82,4 +82,82 @@ public class ProductosController : ControllerBase
 
         return NoContent();
     }
+
+    // 🖼️ Asignar imágenes automáticamente según el nombre del producto
+    [HttpPost("asignar-imagenes")]
+    public async Task<IActionResult> AsignarImagenes()
+    {
+        var productos = await _context.Productos.ToListAsync();
+
+        foreach (var producto in productos)
+        {
+            if (string.IsNullOrEmpty(producto.ImagenUrl))
+            {
+                if (producto.Nombre.Contains("Matraz", StringComparison.OrdinalIgnoreCase))
+                    producto.ImagenUrl = "matraz_erlenmeyer.jpg";
+                else if (producto.Nombre.Contains("Piseta", StringComparison.OrdinalIgnoreCase))
+                    producto.ImagenUrl = "piseta.jpg";
+                else if (producto.Nombre.Contains("Termómetro", StringComparison.OrdinalIgnoreCase))
+                    producto.ImagenUrl = "termometro.jpg";
+                else if (producto.Nombre.Contains("Vaso", StringComparison.OrdinalIgnoreCase))
+                    producto.ImagenUrl = "vaso_medidor.jpg";
+                else
+                    producto.ImagenUrl = "placeholder.png";
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { mensaje = "✅ Imágenes asignadas correctamente." });
+    }
+
+    // 🔧 Normalizar nombres de imagen según los archivos reales
+    [HttpPost("normalizar-imagenes")]
+    public async Task<IActionResult> NormalizarImagenes()
+    {
+        var productos = await _context.Productos.ToListAsync();
+
+        foreach (var producto in productos)
+        {
+            if (producto.Nombre.Contains("Matraz", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "matraz_erlenmeyer.jpg";
+            else if (producto.Nombre.Contains("Vaso", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "xvas1.jpg";
+            else if (producto.Nombre.Contains("Piseta", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "piseta.jpg";
+            else if (producto.Nombre.Contains("Balanza", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "balanza_digital.jpg";
+            else if (producto.Nombre.Contains("Manta", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "manta_calefactora.jpg";
+            else if (producto.Nombre.Contains("Pipeta", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "pipeta_graduada.jpg";
+            else if (producto.Nombre.Contains("Tubo", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "tubos_de_ensayo.jpg";
+            else if (producto.Nombre.Contains("Agitador", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "agitador_magnetico.jpg";
+            else if (producto.Nombre.Contains("Barra", StringComparison.OrdinalIgnoreCase))
+                producto.ImagenUrl = "barra_agitacion_magnetica.jpg";
+            else
+                producto.ImagenUrl = "placeholder.png";
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { mensaje = "✅ Imágenes normalizadas con éxito." });
+    }
+
+    // 🧹 Eliminar productos que no tienen nombre o imagen
+    [HttpDelete("limpiar-vacios")]
+    public async Task<IActionResult> EliminarProductosVacios()
+    {
+        var productosInvalidos = await _context.Productos
+            .Where(p => string.IsNullOrWhiteSpace(p.Nombre) || string.IsNullOrWhiteSpace(p.ImagenUrl))
+            .ToListAsync();
+
+        if (!productosInvalidos.Any())
+            return Ok("No hay productos vacíos para eliminar.");
+
+        _context.Productos.RemoveRange(productosInvalidos);
+        await _context.SaveChangesAsync();
+
+        return Ok($"✅ Se eliminaron {productosInvalidos.Count} productos vacíos.");
+    }
 }
