@@ -23,6 +23,7 @@
                     <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" width="100" />
                     <h4>@item.Producto?.Nombre</h4>
                     <p>@item.Producto?.Descripcion</p>
+                    <p>Stock disponible: @item.Producto.Stock</p>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button @onclick="() => CambiarCantidad(item, item.Cantidad - 1)" class="boton-rojo">-</button>
                         <span style="font-size: 1.2rem;">@item.Cantidad</span>

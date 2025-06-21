@@ -8,17 +8,20 @@ builder.Services.AddDbContext<TiendaContext>(options =>
     options.UseSqlite("Data Source=tienda.db"));
 
 // Agregar CORS
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp", policy =>
+    {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
+//cambios importantes
+
 builder.Services.AddControllers();
 var app = builder.Build();
-
 
 
 

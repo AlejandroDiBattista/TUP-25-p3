@@ -1,0 +1,356 @@
+@page "/"
+@using shared.Models
+@using cliente.Services
+@inject TiendaService TiendaService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Aroma real</PageTitle>
+
+
+<header class="header">
+    <div class="nav">
+        <div class="logo" @onclick="MostrarCatalogo">
+            <i class="fas fa-store"></i>
+            <span>Aroma real</span>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" @bind="terminoBusqueda" @onkeypress="OnBusquedaKeyPress" placeholder="Buscar productos..." class="search-input">
+            <button @onclick="BuscarProductos" class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        
+        <div class="cart-icon" @onclick="MostrarCarrito">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-counter">@cantidadItemsCarrito</span>
+        </div>
+    </div>
+</header>
+
+
+<main class="main">
+    @if (vistaActual == Vista.Catalogo)
+    {
+        <!-- Catálogo Section -->
+        <section class="section">
+            <h1 class="section-title">Catálogo de Productos</h1>
+            
+            @if (cargandoProductos)
+            {
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div>Cargando productos...</div>
+                </div>
+            }
+            else
+            {
+                <div class="productos-grid">
+                    @foreach (var producto in productos)
+                    {
+                        <div class="producto-card">
+                            <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="producto-imagen">
+                            <div class="producto-info">
+                                <h3 class="producto-nombre">@producto.Nombre</h3>
+                                <p class="producto-descripcion">@producto.Descripcion</p>
+                                <div class="producto-footer">
+                                    <div>
+                                        <div class="producto-precio">$@producto.Precio.ToString("F2")</div>
+                                        <div class="producto-stock">Stock: @producto.Stock</div>
+                                    </div>
+                                    <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@(producto.Stock == 0)">
+                                        <i class="fas fa-cart-plus"></i>
+                                        @(producto.Stock == 0 ? "Sin Stock" : "Agregar")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    }
+    else if (vistaActual == Vista.Carrito)
+    {
+        <!-- Carrito Section -->
+        <section class="section">
+            <div class="section-header">
+                <h1 class="section-title">Carrito de Compras</h1>
+                <button class="btn btn-secondary" @onclick="MostrarCatalogo">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al catálogo
+                </button>
+            </div>
+            
+            @if (itemsCarrito.Any())
+            {
+                <div class="carrito-items">
+                    @foreach (var item in itemsCarrito)
+                    {
+                        <div class="carrito-item">
+                            <img src="@item.ImagenUrl" alt="@item.Nombre" class="item-imagen">
+                            <div class="item-info">
+                                <div class="item-nombre">@item.Nombre</div>
+                                <div class="item-precio">$@item.Precio.ToString("F2")</div>
+                            </div>
+                            <div class="cantidad-controls">
+                                <button class="cantidad-btn" @onclick="() => ReducirCantidad(item.ProductoId)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="cantidad-display">@item.Cantidad</span>
+                                <button class="cantidad-btn" @onclick="() => AumentarCantidad(item.ProductoId)" disabled="@(item.Cantidad >= item.Stock)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="item-importe">$@item.Importe.ToString("F2")</div>
+                        </div>
+                    }
+                </div>
+                
+                <div class="carrito-total">
+                    <div class="total-amount">Total: $@TiendaService.GetTotalCarrito(itemsCarrito).ToString("F2")</div>
+                    <div class="carrito-actions">
+                        <button class="btn btn-danger" @onclick="VaciarCarrito">
+                            <i class="fas fa-trash"></i>
+                            Vaciar carrito
+                        </button>
+                        <button class="btn btn-success" @onclick="MostrarConfirmacion">
+                            <i class="fas fa-check"></i>
+                            Confirmar compra
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Tu carrito está vacío</h3>
+                    <p>Agrega algunos productos para comenzar</p>
+                    <button class="btn btn-primary" @onclick="MostrarCatalogo">
+                        <i class="fas fa-store"></i>
+                        Ir al catálogo
+                    </button>
+                </div>
+            }
+        </section>
+    }
+    else if (vistaActual == Vista.Confirmacion)
+    {
+        <!-- Confirmación Section -->
+        <section class="section">
+            <div class="section-header">
+                <h1 class="section-title">Confirmación de Compra</h1>
+                <button class="btn btn-secondary" @onclick="MostrarCarrito">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al carrito
+                </button>
+            </div>
+            
+            <div class="form-container">
+                <div class="carrito-total" style="margin-bottom: 2rem;">
+                    <h3>Resumen de compra</h3>
+                    <p>Total de ítems: @TiendaService.GetCantidadItemsCarrito(itemsCarrito)</p>
+                    <div class="total-amount">Total: $@TiendaService.GetTotalCarrito(itemsCarrito).ToString("F2")</div>
+                </div>
+                
+                <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nombre *</label>
+                        <InputText @bind-Value="datosCliente.NombreCliente" class="form-input" placeholder="Ingresa tu nombre" />
+                        <ValidationMessage For="() => datosCliente.NombreCliente" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Apellido *</label>
+                        <InputText @bind-Value="datosCliente.ApellidoCliente" class="form-input" placeholder="Ingresa tu apellido" />
+                        <ValidationMessage For="() => datosCliente.ApellidoCliente" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <InputText @bind-Value="datosCliente.EmailCliente" class="form-input" placeholder="Ingresa tu email" type="email" />
+                        <ValidationMessage For="() => datosCliente.EmailCliente" />
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button type="submit" class="btn btn-success" disabled="@procesandoCompra">
+                            @if (procesandoCompra)
+                            {
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Procesando...</span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-credit-card"></i>
+                                <span>Confirmar compra</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </section>
+        <footer class="footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>Aroma real</h4>
+            <p>Fragancias únicas que acompañan cada momento. Inspirate con nuestros aromas exclusivos.</p>
+        </div>
+
+        <div class="footer-section">
+            <h5>Contacto</h5>
+            <p><i class="fas fa-envelope"></i> contacto@aromareal.com</p>
+            <p><i class="fas fa-phone"></i> +54 11 1234 5678</p>
+        </div>
+
+        <div class="footer-section">
+            <h5>Redes Sociales</h5>
+            <p>
+                <a href="#"><i class="fab fa-instagram"></i> Instagram</a><br />
+                <a href="#"><i class="fab fa-facebook"></i> Facebook</a><br />
+                <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+            </p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; @DateTime.Now.Year Aroma real. Todos los derechos reservados.
+    </div>
+</footer>
+
+    }
+</main>
+
+@code {
+    private enum Vista { Catalogo, Carrito, Confirmacion }
+    
+    private Vista vistaActual = Vista.Catalogo;
+    private List<Producto> productos = new();
+    private List<ItemCarrito> itemsCarrito = new();
+    private string terminoBusqueda = string.Empty;
+    private bool cargandoProductos = true;
+    private bool procesandoCompra = false;
+    private int cantidadItemsCarrito = 0;
+    
+    private shared.DTOs.DatosCliente datosCliente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+        await ActualizarCarrito();
+    }
+
+    private async Task CargarProductos()
+    {
+        cargandoProductos = true;
+        productos = await TiendaService.GetProductosAsync(terminoBusqueda);
+        cargandoProductos = false;
+    }
+
+    private async Task BuscarProductos()
+    {
+        await CargarProductos();
+    }
+
+    private async Task OnBusquedaKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await BuscarProductos();
+        }
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        var exito = await TiendaService.AgregarAlCarritoAsync(productoId);
+        if (exito)
+        {
+            await ActualizarCarrito();
+            vistaActual = Vista.Carrito;
+        }
+    }
+
+    private async Task AumentarCantidad(int productoId)
+    {
+        var exito = await TiendaService.AgregarAlCarritoAsync(productoId);
+        if (exito)
+        {
+            await ActualizarCarrito();
+        }
+    }
+
+    private async Task ReducirCantidad(int productoId)
+    {
+        var exito = await TiendaService.EliminarDelCarritoAsync(productoId);
+        if (exito)
+        {
+            await ActualizarCarrito();
+        }
+    }
+
+    private async Task VaciarCarrito()
+    {
+        var confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Estás seguro de que quieres vaciar el carrito?");
+        if (confirmado)
+        {
+            var exito = await TiendaService.VaciarCarritoAsync();
+            if (exito)
+            {
+                await ActualizarCarrito();
+            }
+        }
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(datosCliente.NombreCliente) ||
+            string.IsNullOrWhiteSpace(datosCliente.ApellidoCliente) ||
+            string.IsNullOrWhiteSpace(datosCliente.EmailCliente))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Todos los campos son obligatorios");
+            return;
+        }
+
+        procesandoCompra = true;
+        
+        var compraResponse = await TiendaService.ConfirmarCompraAsync(datosCliente);
+        
+        if (compraResponse != null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"¡Compra confirmada! ID: {compraResponse.CompraId}\nTotal: ${compraResponse.Total:F2}");
+            datosCliente = new();
+            await ActualizarCarrito();
+            await CargarProductos(); // Refresh products to update stock
+            vistaActual = Vista.Catalogo;
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error al procesar la compra. Inténtalo de nuevo.");
+        }
+        
+        procesandoCompra = false;
+    }
+
+    private async Task ActualizarCarrito()
+    {
+        itemsCarrito = await TiendaService.GetItemsCarritoAsync();
+        cantidadItemsCarrito = TiendaService.GetCantidadItemsCarrito(itemsCarrito);
+    }
+
+    private void MostrarCatalogo()
+    {
+        vistaActual = Vista.Catalogo;
+    }
+
+    private void MostrarCarrito()
+    {
+        vistaActual = Vista.Carrito;
+    }
+
+    private void MostrarConfirmacion()
+    {
+        vistaActual = Vista.Confirmacion;
+    }
+}

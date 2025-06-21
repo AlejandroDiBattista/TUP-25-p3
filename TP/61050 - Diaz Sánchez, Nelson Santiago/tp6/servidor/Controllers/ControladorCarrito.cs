@@ -54,4 +54,28 @@ public class ControladorCarrito : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(new { mensaje = "Compra registrada correctamente." });
     }
+    [HttpPost("reservas")]
+public async Task<IActionResult> CrearReserva([FromBody] ReservacionDTO reserva)
+{
+    foreach (var item in reserva.Items)
+    {
+        var producto = await _context.Productos.FindAsync(item.ProductoId);
+        if (producto == null)
+        {
+            return NotFound(new { mensaje = $"Producto con ID {item.ProductoId} no encontrado." });
+        }
+
+        if (producto.Cantidad < item.Cantidad)
+        {
+            return BadRequest(new { mensaje = $"Stock insuficiente para el producto '{producto.Nombre}'." });
+        }
+
+        // Reservar stock
+        producto.Cantidad -= item.Cantidad;
+    }
+
+    await _context.SaveChangesAsync();
+    return Ok(new { mensaje = "Reserva realizada correctamente." });
+}
+
 }

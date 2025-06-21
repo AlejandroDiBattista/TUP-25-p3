@@ -1,0 +1,90 @@
+﻿@page "/CarritoCompra1"
+@using global::cliente.Services
+@using global::cliente.Models
+@using Microsoft.AspNetCore.Components.Web
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<div class="container py-5">
+    <h1 class="text-center mb-5 display-4 fw-bold" style="letter-spacing:1px;">Resumen de Tu Carrito Compras 🛒</h1>
+
+    @if (carrito.Count == 0)
+    {
+        <div class="alert alert-info text-center">
+            No hay productos en el carrito.
+        </div>
+    }
+    else
+    {
+        @foreach (var item in carrito)
+        {
+            <div class="cart-card p-4 mb-4 d-flex align-items-center justify-content-between flex-wrap">
+                <div>
+                    <h4 class="fw-semibold mb-1">@item.Nombre</h4>
+                    <p class="mb-0">Cantidad: <b>@item.Cantidad</b></p>
+                    <p class="mb-0">Precio: $@item.Precio</p>
+                </div>
+                <div class="mt-3 mt-md-0">
+                    <button class="btn btn-danger mx-1" @onclick="() => DisminuirCantidad(item.ProductoId)">-</button>
+                    <button class="btn btn-success mx-1" @onclick="() => AumentarCantidad(item.ProductoId)">+</button>
+                    <button class="btn btn-secondary mx-1" @onclick="() => EliminarProducto(item.ProductoId)">🗑</button>
+                </div>
+            </div>
+        }
+
+        <div class="text-end mt-4">
+            <h5 class="fw-bold">Total: <span class="text-success">$@carrito.Sum(x => x.Precio * x.Cantidad)</span></h5>
+            <button type="button" class="btn btn-primary px-5 py-3 fs-5 rounded-4 mt-3" @onclick="IrAFinalConfirmacion">
+                <i class="bi bi-check-circle me-2"></i> Finalizar Compra
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    IList<Producto> productos = new List<Producto>();
+    List<CarritoDto> carrito = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecargarCarritos();
+    }
+
+    private async Task AumentarCantidad(int productoId)
+    {
+        await ApiService.AgregarAlCarrito(productoId);
+        await RecargarCarritos();
+    }
+
+    private async Task DisminuirCantidad(int productoId)
+    {
+        await ApiService.DisminuirCantidadProducto(productoId);
+        await RecargarCarritos();
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        await ApiService.EliminarProductoDelCarrito(productoId);
+        await RecargarCarritos();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarrito();
+        carrito.Clear();
+        productos.Clear();
+        StateHasChanged();
+    }
+
+    private async Task RecargarCarritos()
+    {
+        carrito = await ApiService.ObtenerCarritoDetalle();
+        productos = await ApiService.ObtenerCarrito();
+        StateHasChanged();
+    }
+
+    private void IrAFinalConfirmacion()
+    {
+        NavigationManager.NavigateTo("/FinalConfirmacion");
+    }
+}

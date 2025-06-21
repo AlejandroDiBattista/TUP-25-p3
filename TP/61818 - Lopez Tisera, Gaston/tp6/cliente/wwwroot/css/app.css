@@ -1,7 +1,10 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-
+#app {
+    margin: 0;
+    padding: 0;
+}
 h1:focus {
     outline: none;
 }

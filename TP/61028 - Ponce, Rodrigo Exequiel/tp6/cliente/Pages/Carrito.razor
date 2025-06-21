@@ -4,80 +4,122 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using global::cliente.Services
 @using global::cliente.Modelos
-
-@inject ServicioCarrito carritoo
+@using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
+@inject ServicioProductos productoService
+@inject ServicioCarrito carritoo
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<h3>Resumen del carrito</h3>
+<div class="carrito-container">
+    <div class="carrito-titulo">Resumen del carrito</div>
 
-@if (carritoo.Items.Count == 0)
-{
-    <p>El carritoo está vacío.</p>
-}
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in carritoo.Items)
-            {
+    @if (carritoo.Items.Count == 0)
+    {
+        <p>El carritoo está vacío.</p>
+    }
+    else
+    {
+        <table class="carrito-tabla">
+            <thead>
                 <tr>
-                    <td>@item.Producto.Nombre</td>
-                    <td>
-                        <button @onclick="() => RestarCantidad(item.Producto)">-</button>
-                        @item.Cantidad
-                        <button @onclick="() => SumarCantidad(item.Producto)">+</button>
-                    </td>
-                    <td>$@item.Producto.Precio</td>
-                    <td>$@(item.Producto.Precio * item.Cantidad)</td>
-                    <td>
-                        <button @onclick="() => RemoverItemDelCarrito(item.Producto)">Quitar producto</button>
-                    </td>
+                    <th>Producto</th>
+                    <th>Talle</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <p><b>Total: $@carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</b></p>
-    <button @onclick="Vaciarcarritoo">Vaciar carrito</button> 
-}
+            </thead>
+            <tbody>
+                @foreach (var item in carritoo.Items)
+                {
+                    <tr>
+                        <td>
+                            <img src="ROPA/@item.Producto.ImagenUrl"
+                                 alt="@item.Producto.Nombre"
+                                 class="carrito-img" />
+                        </td>
+                        <td class="carrito-nombre">@item.Producto.Nombre</td>
+                        <td>
+                            <select @bind="item.TalleSeleccionado"
+                                    class="carrito-talle-select @(string.IsNullOrWhiteSpace(item.TalleSeleccionado) ? "carrito-talle-error" : "")">
+                                <option value="">Seleccionar talla</option>
+                                @foreach (var talle in item.Producto.Talle.Split(','))
+                                {
+                                    <option value="@talle.Trim()">@talle.Trim()</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <div class="carrito-cantidad-group">
+                                <button class="carrito-cantidad-btn" @onclick="() => RestarCantidad(item.Producto)">-</button>
+                                <span class="carrito-cantidad-num">@item.Cantidad</span>
+                                <button class="carrito-cantidad-btn" @onclick="() => SumarCantidad(item.Producto)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                            </div>
+                        </td>
+                        <td>$@item.Producto.Precio</td>
+                        <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                        <td>
+                            <button class="carrito-quitar-btn" @onclick="() => RemoverItemDelCarrito(item)">Quitar producto</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="carrito-total">Total: $@carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</div>
+        <button class="carrito-vaciar-btn" @onclick="Vaciarcarritoo">Vaciar carrito</button>
+    }
 
-@if (mensajeCompra != null)
-{
-    <p>@mensajeCompra</p>
-    <button @onclick="PreguntarRedireccion">Volver a productos</button>
-}
+    @if (mensajeCompra != null)
+    {
+        <p>@mensajeCompra</p>
+        <button @onclick="PreguntarRedireccion">Volver a productos</button>
+    }
 
-@if (mensajeVaciado != null)
-{
-    <p>@mensajeVaciado</p>
-    <button @onclick="RedireccionarAProductos">Volver a productos</button>
-}
+    @if (mensajeVaciado != null)
+    {
+        <p>@mensajeVaciado</p>
+        <button @onclick="RedireccionarAProductos">Volver a productos</button>
+    }
 
-@if (carritoo.Items.Any())
-{
-    <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra">
-        <InputText @bind-Value="datosCliente.Nombre" placeholder="Nombre" required />
-        <InputText @bind-Value="datosCliente.Apellido" placeholder="Apellido" required />
-        <InputText @bind-Value="datosCliente.Email" placeholder="Email" required />
-        <button type="submit">Confirmar compra</button>
-    </EditForm>
-}
+    @if (carritoo.Items.Any())
+    {
+        <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra" class="carrito-form">
+            <DataAnnotationsValidator />
+            <div>
+                <InputText @bind-Value="datosCliente.Nombre" placeholder="Nombre" />
+                <ValidationMessage For="@(() => datosCliente.Nombre)" />
+            </div>
+            <div>
+                <InputText @bind-Value="datosCliente.Apellido" placeholder="Apellido" />
+                <ValidationMessage For="@(() => datosCliente.Apellido)" />
+            </div>
+            <div>
+                <InputText @bind-Value="datosCliente.Email" placeholder="Email" />
+                <ValidationMessage For="@(() => datosCliente.Email)" />
+            </div>
+            <button type="submit">Confirmar compra</button>
+        </EditForm>
+    }
+
+    @if (!string.IsNullOrEmpty(mensajeStock))
+    {
+        <p style="color:red">@mensajeStock</p>
+    }
+</div>
 
 @code {
     class DatosCliente
     {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
         public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
         public string Apellido { get; set; }
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
         public string Email { get; set; }
     }
 
@@ -85,6 +127,7 @@ else
 
     string mensajeCompra = null;
     string mensajeVaciado = null;
+    string mensajeStock = null;
 
     protected override void OnInitialized()
     {
@@ -101,14 +144,21 @@ else
         carritoo.QuitarDelCarrito(producto);
     }
 
-    void Vaciarcarritoo()
+    async Task Vaciarcarritoo()
     {
-        carritoo.VaciarCarrito();
-        mensajeVaciado = "El carritoo fue vaciado correctamente.";
+        await carritoo.VaciarCarritoAsync(Http);
+        mensajeVaciado = "El carrito fue vaciado correctamente.";
     }
 
     async Task ConfirmarCompra()
     {
+        // Validar que todos los productos tengan un talle seleccionado
+        if (carritoo.Items.Any(i => string.IsNullOrWhiteSpace(i.TalleSeleccionado)))
+        {
+            mensajeStock = "Debes seleccionar un talle para cada producto antes de confirmar la compra.";
+            return;
+        }
+
         var compra = new
         {
             Items = carritoo.Items.Select(i => new {
@@ -125,7 +175,9 @@ else
         if (respuesta.IsSuccessStatusCode)
         {
             mensajeCompra = "¡Compra realizada con éxito!";
+            var total = carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad);
             carritoo.VaciarCarrito();
+            Nav.NavigateTo($"/comprobante?Nombre={datosCliente.Nombre}&Apellido={datosCliente.Apellido}&Email={datosCliente.Email}&Total={total.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         }
         else
         {
@@ -147,18 +199,38 @@ else
         Nav.NavigateTo("/productos");
     }
 
-    void SumarCantidad(Producto producto)
+    async Task SumarCantidad(Producto producto)
     {
-        carritoo.AgregarAlCarrito(producto);
+        var ok = await carritoo.SumarCantidadAsync(producto, Http);
+        if (ok)
+        {
+            StateHasChanged();
+        }
     }
 
-    void RestarCantidad(Producto producto)
+    async Task RestarCantidad(Producto producto)
     {
-        carritoo.QuitarDelCarrito(producto);
+        var ok = await carritoo.RestarCantidadAsync(producto, Http);
+        if (ok)
+        {
+            StateHasChanged();
+        }
     }
 
-    void RemoverItemDelCarrito(Producto producto)
+    async Task RemoverItemDelCarrito(ItemCarrito item)
     {
-        carritoo.RemoverItemDelCarrito(producto);
+        var ok = await carritoo.RemoverItemDelCarritoAsync(item.Producto, Http);
+        if (ok)
+        {
+            await ActualizarProductos();
+        }
+    }
+
+    async Task ActualizarProductos()
+    {
+        // Aquí puedes actualizar el estado del carrito o recargar productos si tienes otro método disponible.
+        // Por ejemplo, si tienes un método llamado ObtenerProductosAsync:
+        await productoService.ObtenerProductosAsync();
+        StateHasChanged();
     }
 }

@@ -20,6 +20,8 @@ public interface IPruductServices
     Task ElimnarCarrito(int id);
     Task ElimnarPorudctoCarrito(int idCompra, int Id_iten);
 
+    Task EditarSotckProductos(int id, int cantidad);
+
 }
 
 public class ProductService : IPruductServices
@@ -133,15 +135,25 @@ public class ProductService : IPruductServices
         compra.EmailCliente = dto.EmailCliente;
         compra.Entregado = true;
 
-        foreach (var detalle in compra.Items)
-        {
-            var producto = await _context.Productos.FindAsync(detalle.ProductoId);
-            if (producto != null)
-            {
-                producto.Stock -= detalle.Cantidad;
-            }
-        }
+        // foreach (var detalle in compra.Items)
+        // {
+        //     var producto = await _context.Productos.FindAsync(detalle.ProductoId);
+        //     if (producto != null)
+        //     {
+        //         producto.Stock -= detalle.Cantidad;
+        //     }
+        // }
 
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task EditarSotckProductos(int id, int cantidad)
+    {
+        var producto = await _context.Productos.FindAsync(id);
+        if (producto != null)
+        {
+            producto.Stock += cantidad;
+        }
         await _context.SaveChangesAsync();
     }
     public async Task ActualizarCarrito(int id, ItemCompraDto dto)
@@ -187,7 +199,7 @@ public class ProductService : IPruductServices
     public async Task ElimnarPorudctoCarrito(int idCompra, int Id_iten)
     {
         var res = await _context.ItemsCompras
-        .Where(x => x.CompraId == idCompra && x.Id_iten == Id_iten)
+        .Where(x => x.CompraId == idCompra && x.ProductoId == Id_iten)
         .FirstOrDefaultAsync();
         if (res != null)
         {

@@ -1,87 +1,251 @@
 @page "/carrito"
-@using cliente.Dtos
-@using cliente.Services
-@inject CarritoService CarritoService
-@inject NavigationManager nav
+@inject ApiService ApiService
+@inject NavigationManager NavManager
+@inject CartStateService CartStateService
 
-#nullable enable
+@implements IDisposable
 
-<h1>Carrito</h1>
+<PageTitle>Tu Carrito de Compras</PageTitle>
 
-@if (items is null)
-{
-    <p>Cargando...</p>
-}
-else if (!items.Any())
-{
-    <p>No hay productos en el carrito.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var i in items)
-            {
-                <tr>
-                    <td>@i.Producto?.Nombre</td>
-                    <td>$@i.PrecioUnitario</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(i.ProductoId)">-</button>
-                        @i.Cantidad
-                        <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(i.ProductoId)">+</button>
-                    </td>
-                    <td>$@i.Importe</td>
-                    <td><button class="btn btn-sm btn-danger" @onclick="() => QuitarTodo(i.ProductoId)">🗑</button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">Tu Carrito de Compras</h1>
 
-    <h5>Total: $@items.Sum(x => x.Importe)</h5>
-    <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar carrito</button>
-    <button class="btn btn-success" @onclick="IrAConfirmacion">Confirmar compra</button>
-}
+    @if (isLoading)
+    {
+        <div class="text-center py-10">
+            <p class="text-lg text-gray-600">Cargando carrito...</p>
+        </div>
+    }
+    else if (CartStateService.CartId == null || !cartItemsDisplay.Any())
+    {
+        <div class="text-center py-10 bg-white rounded-xl shadow-lg p-6">
+            <p class="text-xl text-gray-700 mb-4">Tu carrito está vacío.</p>
+            <p class="text-gray-600 mb-6">¡Explora nuestro <a href="/" class="text-blue-600 hover:underline">catálogo de ropa</a> para empezar a comprar!</p>
+            <button @onclick="GoToHome" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                Ir al Catálogo
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Artículos en tu carrito</h2>
+            <div class="space-y-4">
+                @foreach (var item in cartItemsDisplay)
+                {
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0">
+                        <div class="flex items-center space-x-4">
+                            <img src="@item.Articulo?.UrlImagenArticulo" alt="@item.Articulo?.Denominacion" 
+                                 class="w-20 h-20 object-cover rounded-md"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/100x100/CCCCCC/666666?text=No+Imagen';"/>
+                            <div>
+                                <p class="text-lg font-semibold text-gray-900">@item.Articulo?.Denominacion</p>
+                                <p class="text-gray-600 text-sm">Valor unitario: @item.PrecioUnitario.ToString("N2")</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center border border-gray-300 rounded-md">
+                                <button @onclick="() => UpdateQuantity(item, -1)" 
+                                        class="p-2 bg-gray-100 rounded-l-md hover:bg-gray-200 transition-colors text-gray-700"
+                                        disabled="@(item.Cantidad <= 1)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="px-4 py-2 text-lg font-semibold text-gray-800">@item.Cantidad</span>
+                                <button @onclick="() => UpdateQuantity(item, 1)" 
+                                        class="p-2 bg-gray-100 rounded-r-md hover:bg-gray-200 transition-colors text-gray-700">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <span class="text-lg font-bold text-blue-700">@item.Subtotal.ToString("N2")</span>
+                            <button @onclick="() => RemoveItem(item.Articulo!.Id)" class="p-2 text-red-600 hover:text-red-800 transition-colors">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="flex justify-end items-center mt-6 p-4 border-t border-gray-200">
+                <span class="text-2xl font-bold text-gray-900 mr-4">Total: @TotalCarrito.ToString("N2")</span>
+                <button @onclick="ClearCart" class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-md mr-4">
+                    Vaciar Carrito
+                </button>
+                <button @onclick="GoToConfirm" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md">
+                    Confirmar Compra
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-md">
+                <p class="text-xl font-semibold mb-4 @(isError ? "text-red-600" : "text-green-600")">@statusMessage</p>
+                <button @onclick="ClearStatusMessage" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
-    private List<ItemCompraDto>? items;
+    private List<ItemCarritoDisplay> cartItemsDisplay = new();
+    private bool isLoading = true;
+    private string? statusMessage;
+    private bool isError = false;
 
-    protected override async Task OnInitializedAsync() => await Cargar();
+    private double TotalCarrito => cartItemsDisplay.Sum(item => item.Subtotal);
 
-    private async Task Cargar() =>
-        items = await CarritoService.ObtenerCarrito();
-
-    private async Task Agregar(int id)
+    protected override async Task OnInitializedAsync()
     {
-        await CarritoService.AgregarProducto(id);
-        await Cargar();
+        CartStateService.OnChange += StateHasChanged;
+        await LoadCartItems();
     }
 
-    private async Task Quitar(int id)
+    private async Task LoadCartItems()
     {
-        await CarritoService.QuitarProducto(id);
-        await Cargar();
+        isLoading = true;
+        ClearStatusMessage();
+
+        if (CartStateService.CartId == null)
+        {
+            cartItemsDisplay = new();
+            isLoading = false;
+            return;
+        }
+
+        var backendCartItems = await ApiService.GetCarritoItemsAsync(CartStateService.CartId);
+
+        if (backendCartItems != null && backendCartItems.Any())
+        {
+            var productos = await ApiService.GetProductosAsync() ?? new();
+            cartItemsDisplay = backendCartItems.Select(item =>
+            {
+                var art = productos.FirstOrDefault(p => p.Id == item.ArticuloId);
+                return new ItemCarritoDisplay
+                {
+                    Articulo = art,
+                    Cantidad = item.Unidades,
+                    PrecioUnitario = item.ValorPorUnidad
+                };
+            }).Where(x => x.Articulo != null).ToList();
+        }
+        else
+        {
+            cartItemsDisplay = new();
+        }
+
+        isLoading = false;
+        StateHasChanged();
     }
 
-    private async Task QuitarTodo(int id)
+    private async Task UpdateQuantity(ItemCarritoDisplay item, int change)
     {
-        while (items!.Any(i => i.ProductoId == id))
-            await Quitar(id);
+        ClearStatusMessage();
+        isError = false;
+
+        if (CartStateService.CartId == null || item.Articulo == null)
+            return;
+
+        int nuevaCantidad = item.Cantidad + change;
+
+        if (nuevaCantidad <= 0)
+        {
+            await RemoveItem(item.Articulo.Id);
+            return;
+        }
+
+        try
+        {
+            bool ok = await ApiService.AddItemToCarritoAsync(CartStateService.CartId, item.Articulo.Id, nuevaCantidad);
+            if (ok)
+            {
+                item.Cantidad = nuevaCantidad;
+                SetStatusMessage($"Cantidad de '{item.Articulo.Denominacion}' actualizada a {nuevaCantidad}.", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message, true);
+        }
     }
 
-    private async Task Vaciar()
+    private async Task RemoveItem(int articuloId)
     {
-        await CarritoService.VaciarCarrito();
-        await Cargar();
+        ClearStatusMessage();
+        isError = false;
+
+        if (CartStateService.CartId == null) return;
+
+        try
+        {
+            bool success = await ApiService.RemoveItemFromCarritoAsync(CartStateService.CartId, articuloId);
+            if (success)
+            {
+                cartItemsDisplay.RemoveAll(item => item.Articulo?.Id == articuloId);
+                SetStatusMessage("Artículo removido del carrito.", false);
+            }
+            else
+            {
+                SetStatusMessage("Error al remover el artículo.", true);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message, true);
+        }
     }
 
-    private void IrAConfirmacion() => nav.NavigateTo("/confirmacion");
+    private async Task ClearCart()
+    {
+        ClearStatusMessage();
+        isError = false;
+
+        if (CartStateService.CartId == null) return;
+
+        try
+        {
+            bool ok = await ApiService.ClearCarritoAsync(CartStateService.CartId);
+            if (ok)
+            {
+                cartItemsDisplay.Clear();
+                SetStatusMessage("Carrito vaciado correctamente.", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage(ex.Message, true);
+        }
+    }
+
+    private void GoToConfirm()
+    {
+        if (CartStateService.CartId == null || !cartItemsDisplay.Any())
+        {
+            SetStatusMessage("Tu carrito está vacío. Agrega productos antes de confirmar.", true);
+            return;
+        }
+
+        NavManager.NavigateTo($"/confirmar-compra/{CartStateService.CartId}");
+    }
+
+    private void GoToHome() => NavManager.NavigateTo("/");
+
+    private void SetStatusMessage(string msg, bool error)
+    {
+        statusMessage = msg;
+        isError = error;
+        StateHasChanged();
+    }
+
+    private void ClearStatusMessage()
+    {
+        statusMessage = null;
+        isError = false;
+        StateHasChanged();
+    }
+
+    public void Dispose() => CartStateService.OnChange -= StateHasChanged;
 }

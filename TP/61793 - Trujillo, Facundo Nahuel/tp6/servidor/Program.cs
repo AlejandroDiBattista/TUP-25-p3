@@ -147,6 +147,11 @@ app.MapPut("/carritos/{carritoId}/{productoId}", async (TiendaContext db, string
         item.Cantidad = cantidad;
         db.ItemsCarrito.Update(item);
     }
+
+    // Descontar stock
+    producto.Stock -= cantidad;
+    if (producto.Stock < 0) producto.Stock = 0;
+
     await db.SaveChangesAsync();
     return Results.Ok();
 });
@@ -199,11 +204,7 @@ app.MapPut("/carritos/{carritoId}/confirmar", async (TiendaContext db, string ca
         }).ToList()
     };
 
-    foreach (var item in carrito.Items)
-    {
-        item.Producto.Stock -= item.Cantidad;
-    }
-
+    
     db.Compras.Add(nuevaCompra);
     db.ItemsCarrito.RemoveRange(carrito.Items);
     await db.SaveChangesAsync();

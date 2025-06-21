@@ -39,7 +39,7 @@ else
                         <button @onclick="() => CambiarCantidadLocal(item, 1)" 
                                 disabled="@(item.Cantidad >= item.Stock)">+</button>
                     </td>
-                    <td>@item.Stock</td>
+                    <td>@(item.Stock - item.Cantidad)</td>
                     <td>@((item.Cantidad * item.PrecioUnitario).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR")))</td>
                 </tr>
             }
@@ -113,20 +113,29 @@ else
 
     private async Task CambiarCantidadLocal(ItemCarritoDto item, int delta)
     {
-        // Actualiza la cantidad localmente para feedback inmediato
         var nuevaCantidad = item.Cantidad + delta;
         if (nuevaCantidad < 0 || nuevaCantidad > item.Stock) return;
-        item.Cantidad = nuevaCantidad;
+        // Actualiza la cantidad y el stock localmente para feedback inmediato
+        if (delta > 0 && item.Stock > 0)
+        {
+            item.Cantidad++;
+            item.Stock--;
+        }
+        else if (delta < 0 && item.Cantidad > 0)
+        {
+            item.Cantidad--;
+            item.Stock++;
+        }
         StateHasChanged(); // Refresca la UI inmediatamente
         try
         {
-            if (nuevaCantidad == 0)
+            if (item.Cantidad == 0)
             {
                 await CarritoService.ModificarCantidadAsync(item.ProductoId, 0);
             }
             else
             {
-                await CarritoService.ModificarCantidadAsync(item.ProductoId, nuevaCantidad);
+                await CarritoService.ModificarCantidadAsync(item.ProductoId, item.Cantidad);
             }
             mensaje = string.Empty;
             await CargarItems(); // Sincroniza con backend

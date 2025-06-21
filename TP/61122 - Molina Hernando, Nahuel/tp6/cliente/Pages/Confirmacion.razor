@@ -3,6 +3,8 @@
 @inject cliente.Services.ApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject AppState AppState
+@inject IToastService ToastService
 
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -125,25 +127,34 @@
     {
         cargando = true;
         mensaje = error = null;
-        carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
-        if (!string.IsNullOrEmpty(carritoId))
-        {
+        try{
+            carritoId = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+            if (string.IsNullOrEmpty(carritoId))
+            {
+                items = null;
+                return;
+            }
+
             try
             {
                 items = await ApiService.ObtenerCarritoAsync(carritoId);
             }
-            catch
+            catch(Exception ex)
             {
+                ToastService.ShowError($"Ocurrió un error {ex.Message}");
                 error = "No se pudo cargar el carrito.";
                 items = null;
             }
         }
-        else
+        catch (Exception ex)
         {
-            items = null;
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
         }
-        cargando = false;
-        StateHasChanged();
+        finally
+        {
+            cargando = false;
+            StateHasChanged();
+        }
     }
 
     async Task ConfirmarCompra()
@@ -152,12 +163,14 @@
         try
         {
             var respuesta = await ApiService.ConfirmarCompraAsync(carritoId, cliente);
+            AppState.ContadorCarrito = 0;
             mensaje = $"¡Compra confirmada! Número de compra: {respuesta.Id}. Total: ${respuesta.Total}";
             await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
             items = null;
         }
-        catch
+        catch(Exception ex)
         {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
             error = "No se pudo confirmar la compra. Intenta nuevamente.";
         }
     }
@@ -167,6 +180,3 @@
         Navigation.NavigateTo("/");
     }
 }
-
-
-

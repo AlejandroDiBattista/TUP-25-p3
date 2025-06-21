@@ -3,16 +3,11 @@
 @implements IDisposable
 
 <div class="page">
-    <div class="sidebar"> 
-        <NavMenu />
-    </div>
-
-    <main class="main-content"> 
-        <div class="top-row px-4 d-flex justify-content-between align-items-center">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-
-            <a href="/carrito" class="btn btn-outline-primary position-relative">
-                🛒 Carrito
+    <main class="main-content w-100"> 
+        <!-- Header con título centrado y botón carrito solo icono -->
+        <header class="custom-header-gradient mb-4 d-flex flex-column align-items-center justify-content-center px-4 py-3 position-relative">
+            <a href="/carrito" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-4" style="font-size: 1.7rem;">
+                <span class="bi bi-cart-fill"></span>
                 @if (CarritoService.TotalItemsEnCarrito > 0)
                 {
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -21,11 +16,10 @@
                     </span>
                 }
             </a>
-        </div>
-
-        <header class="app-header">
-            <h1>Mi Tienda Online</h1>
-            <p>Tu destino para productos electrónicos de calidad.</p>
+            <div class="text-center w-100">
+                <h1 class="fw-bold mb-1" style="color:#fff; letter-spacing:1px;">Bienvenido a TecnoTuc</h1>
+                <p class="lead mb-0" style="color:#e0e0e0;">Explora y compra productos de tecnología </p>
+            </div>
         </header>
 
         <article class="content px-4">
@@ -33,6 +27,14 @@
         </article>
     </main>
 </div>
+
+<style>
+.custom-header-gradient {
+    background: linear-gradient(90deg, #181a1b 0%, #23272b 50%, #22243a 100%);
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.18);
+}
+</style>
 
 @code {
     protected override void OnInitialized()

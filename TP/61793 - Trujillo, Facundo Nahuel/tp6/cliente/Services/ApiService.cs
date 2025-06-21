@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
-using Cliente.Services;
-using Cliente.Modelo;
-namespace Cliente.Services;
+using cliente.Services;
+using cliente.Modelo;
+namespace cliente.Services;
 
 public class ApiService {
     private readonly HttpClient _httpClient;

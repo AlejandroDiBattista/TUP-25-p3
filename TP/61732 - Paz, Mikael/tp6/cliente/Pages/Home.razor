@@ -34,6 +34,8 @@
         {
             @foreach (var p in productos)
             {
+                // Mostrar el stock real del producto, sin restar lo que hay en el carrito
+                var stockDisponible = p.Stock;
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <img src="@p.ImagenUrl" class="img-catalogo card-img-top" alt="@p.Nombre" />
@@ -41,8 +43,8 @@
                             <h5 class="card-title">@p.Nombre</h5>
                             <p class="card-text">@p.Descripcion</p>
                             <p class="card-text"><b>Precio:</b> $@p.Precio</p>
-                            <p class="card-text"><b>Stock:</b> @p.Stock</p>
-                            <button class="btn btn-success w-100" @onclick="() => AgregarAlCarrito(p)" disabled="@(p.Stock == 0)">Agregar al carrito</button>
+                            <p class="card-text"><b>Stock:</b> @stockDisponible</p>
+                            <button class="btn btn-success w-100" @onclick="() => AgregarAlCarrito(p)" disabled="@(stockDisponible == 0 || bloqueandoAgregar)">Agregar al carrito</button>
                         </div>
                     </div>
                 </div>
@@ -57,12 +59,17 @@
 
 @code {
     private List<ProductoDto> productos;
+    private CarritoDto carrito;
     private string busqueda = string.Empty;
     private bool cargando = false;
     private int cantidadCarrito = 0;
     private Guid carritoId;
-    private string? errorMsg;    protected override async Task OnInitializedAsync()
+    private string? errorMsg;
+    private bool bloqueandoAgregar = false;
+
+    protected override async Task OnInitializedAsync()
     {
+        CarritoState.OnChange += StateHasChanged;
         await InicializarCarrito();
         await CargarProductos();
     }
@@ -74,6 +81,7 @@
         try
         {
             productos = await ApiService.ObtenerProductosAsync(busqueda);
+            carrito = await ApiService.ObtenerCarritoAsync(carritoId);
         }
         catch (Exception ex)
         {
@@ -128,11 +136,22 @@
 
     private async Task AgregarAlCarrito(ProductoDto producto)
     {
-        if (carritoId == Guid.Empty)
-            await InicializarCarrito();
-        var carrito = await ApiService.AgregarProductoAsync(carritoId, producto.Id, 1);
-        cantidadCarrito = carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
-        CarritoState.Cantidad = cantidadCarrito;
+        if (bloqueandoAgregar) return;
+        bloqueandoAgregar = true;
+        try
+        {
+            if (carritoId == Guid.Empty)
+                await InicializarCarrito();
+            var carritoActualizado = await ApiService.AgregarProductoAsync(carritoId, producto.Id, 1);
+            carrito = carritoActualizado;
+            cantidadCarrito = carrito?.Items?.Sum(i => i.Cantidad) ?? 0;
+            CarritoState.Cantidad = cantidadCarrito;
+            await CargarProductos(); // Refrescar productos y stock
+        }
+        finally
+        {
+            bloqueandoAgregar = false;
+        }
     }
 
     private void IrAlCarrito()

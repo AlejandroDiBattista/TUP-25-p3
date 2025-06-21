@@ -5,66 +5,98 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h3>Carrito de Compras</h3>
-
-@if (carrito == null)
-{
-    <p>Cargando carrito...</p>
-}
-else if (carrito.Count == 0)
-{
-    <p style="color:#c00; font-size:2rem; font-weight:bold; text-align:center;">El carrito está vacío.</p>
-    <button class="btn btn-primary" @onclick="VolverAlCatalogo">Volver al catálogo</button>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <!-- Columna de imagen eliminada -->
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in carrito)
-            {
-                <tr>
-                    <!-- Celda de imagen eliminada -->
-                    <td>@item.Nombre</td>
-                    <td>@item.Precio.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</td>
-                    <td>
-                        <input type="number" min="1" value="@item.Cantidad" @onchange="e => CambiarCantidad(item, e)" style="width:60px" />
-                    </td>
-                    <td>@string.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", item.Precio * item.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item)">Eliminar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <div class="row justify-content-end">
-        <div class="col-md-4">
-            <div class="alert alert-success text-center p-4 mb-3" style="font-size:2rem; font-weight:bold;">
-                TOTAL: <span class="ms-2">@TotalCarrito.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</span>
+<div class="carrito-main-center carrito-card-separada">
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col-12 col-md-8">
+                <h2 class="carrito-titulo mb-0">Carrito de Compras</h2>
             </div>
-            <button class="btn btn-success w-100 mb-2" @onclick="ConfirmarCompra">Confirmar compra</button>
-            <button class="btn btn-primary w-100" @onclick="VolverAlCatalogo">Volver al catálogo</button>
         </div>
+        @if (carrito == null)
+        {
+            <div class="text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando carrito...</span>
+                </div>
+            </div>
+        }
+        else if (carrito.Count == 0)
+        {
+            <div class="carrito-vacio text-center p-5 rounded-4 shadow-lg bg-white border border-2 border-primary-subtle mx-auto" style="max-width: 480px;">
+                <i class="bi bi-cart-x display-2 text-primary mb-3"></i>
+                <div class="fw-bold fs-2 mb-2" style="color:#1b6ec2;">¡Tu carrito está vacío!</div>
+                <div class="text-secondary mb-4 carrito-vacio-mensaje">Agrega productos para comenzar tu compra.</div>
+                <button class="btn btn-volver-catalogo mt-2" @onclick="VolverAlCatalogo">
+                    <i class="bi bi-arrow-left"></i> Volver al catálogo
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle table-bordered shadow-sm bg-white">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in carrito)
+                        {
+                            <tr>
+                                <td class="carrito-producto-nombre">@item.Nombre</td>
+                                <td class="carrito-precio">@item.Precio.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</td>
+                                <td style="width:120px;">
+                                    <div class="input-group input-group-sm justify-content-center gap-2">
+                                        <button class="btn btn-outline-danger fw-bold rounded-circle shadow-sm" style="min-width:2.5rem; font-size:1.3rem;" @onclick="async () => await CambiarCantidad(item, -1)" disabled="@(item.Cantidad <= 1)">
+                                            -
+                                        </button>
+                                        <span class="input-group-text bg-white border-0 fw-bold" style="min-width:2.5rem; font-size:1.2rem;">@item.Cantidad</span>
+                                        <button class="btn btn-outline-success fw-bold rounded-circle shadow-sm" style="min-width:2.5rem; font-size:1.3rem;" @onclick="async () => await CambiarCantidad(item, 1)" disabled="@(item.Cantidad >= ObtenerStockDisponible(item))">
+                                            +
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="carrito-subtotal fw-bold">@string.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", item.Precio * item.Cantidad)</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarItem(item)">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="row justify-content-end">
+                <div class="col-md-4">
+                    <div class="carrito-total-box text-center mb-3">
+                        <span class="carrito-total-label">TOTAL:</span>
+                        <span class="carrito-total-valor ms-2">@TotalCarrito.ToString("C", CultureInfo.GetCultureInfo("es-AR"))</span>
+                    </div>
+                    <button class="btn btn-volver-catalogo w-100 mb-2" @onclick="VolverAlCatalogo">
+                        <i class="bi bi-arrow-left"></i> Volver al catálogo
+                    </button>
+                    <button class="btn btn-confirmar-compra w-100 mt-3 fs-5 py-3 shadow-sm" @onclick="ConfirmarCompra">
+                        <i class="bi bi-bag-check"></i> Confirmar compra
+                    </button>
+                </div>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger mt-4">@error</div>
+        }
     </div>
-}
-
-@if (!string.IsNullOrEmpty(error))
-{
-    <div class="alert alert-danger">@error</div>
-}
+</div>
 
 @code {
     private List<CarritoItemDto> carrito;
+    private List<Producto> productos;
     private Guid carritoId;
     private string error = null;
 
@@ -73,6 +105,7 @@ else
         try {
             await CargarCarritoId();
             await CargarCarrito();
+            productos = await ApiService.ObtenerProductosAsync();
         } catch (Exception ex) {
             error = ex.Message;
         }
@@ -99,7 +132,6 @@ else
             carrito = await ApiService.ObtenerCarritoAsync(carritoId);
             error = null;
         } catch (HttpRequestException ex) {
-            
             if (ex.StatusCode == System.Net.HttpStatusCode.NotFound) {
                 await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
                 carritoId = await ApiService.CrearCarritoAsync();
@@ -117,30 +149,28 @@ else
 
     private decimal TotalCarrito => carrito?.Sum(i => i.Precio * i.Cantidad) ?? 0;
 
-    private async Task CambiarCantidad(CarritoItemDto item, ChangeEventArgs e)
+    private async Task CambiarCantidad(CarritoItemDto item, int delta)
     {
-        if (int.TryParse(e.Value?.ToString(), out int nuevaCantidad) && nuevaCantidad > 0)
+        if (delta == 1 && item.Cantidad < ObtenerStockDisponible(item))
         {
-            try {
-                // Cambia la cantidad al valor seleccionado (no suma, sino setea)
-                await ApiService.ActualizarCantidadProductoAsync(carritoId, item.ProductoId, nuevaCantidad);
-                await CargarCarrito();
-                error = null;
-            } catch (Exception ex) {
-                error = "Error al cambiar cantidad: " + ex.Message;
-            }
+            await ApiService.AgregarProductoAsync(carritoId, item.ProductoId, 1);
         }
+        else if (delta == -1 && item.Cantidad > 1)
+        {
+            await ApiService.DisminuirCantidadAsync(carritoId, item.ProductoId, 1);
+        }
+        await CargarCarrito();
     }
 
     private async Task EliminarItem(CarritoItemDto item)
     {
-        try {
-            await ApiService.QuitarProductoAsync(carritoId, item.ProductoId);
-            await CargarCarrito();
-            error = null;
-        } catch (Exception ex) {
-            error = "Error al eliminar item: " + ex.Message;
-        }
+        await ApiService.QuitarProductoAsync(carritoId, item.ProductoId);
+        await CargarCarrito();
+    }
+
+    private void ConfirmarCompra()
+    {
+        Navigation.NavigateTo($"/confirmar-compra/{carritoId}");
     }
 
     private void VolverAlCatalogo()
@@ -148,8 +178,9 @@ else
         Navigation.NavigateTo("/");
     }
 
-    private void ConfirmarCompra()
+    private int ObtenerStockDisponible(CarritoItemDto item)
     {
-        Navigation.NavigateTo("/confirmar");
+        var prod = productos?.FirstOrDefault(p => p.Id == item.ProductoId);
+        return prod?.Stock ?? 1;
     }
 }

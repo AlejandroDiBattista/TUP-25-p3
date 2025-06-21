@@ -1,14 +1,93 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Drinksr</title>
-    <base href="/" />
-    <link href="css/app.css" rel="stylesheet" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cliente</title>
+  <base href="/" />
+
+  <!-- Bootstrap v5.3 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- Tu CSS personalizado -->
+  <link href="css/app.css" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="favicon.png" />
 </head>
 <body>
-    <div id="app">Cargando...</div>
-    <script src="_framework/blazor.webassembly.js"></script>
+  <div id="app">
+    <svg class="loading-progress">
+      <circle r="40%" cx="50%" cy="50%" />
+      <circle r="40%" cx="50%" cy="50%" />
+    </svg>
+    <div class="loading-progress-text"></div>
+  </div>
+
+  <div id="blazor-error-ui">
+    <a href="" class="reload"></a>
+    <span class="dismiss">🗙</span>
+  </div>
+
+  <script src="_framework/blazor.webassembly.js"></script>
+  <!-- Bootstrap JS (bundle incluye Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!--================ Modal “Gracias” ================-->
+  <div class="modal fade" id="graciasModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-success shadow-lg">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">¡Gracias!</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">¡Gracias por su compra!</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-success"
+                  data-bs-dismiss="modal"
+                  onclick="location.href='/'">
+            Volver al catálogo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--================ Toast “Gracias” ================-->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="graciasToast"
+         class="toast align-items-center text-white bg-primary border-0"
+         role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          ¡Gracias por su compra!
+        </div>
+        <button type="button"
+                class="btn-close btn-close-white me-2 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="Cerrar">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mostrar modal de gracias
+    window.showGraciasModal = () => {
+      const el = document.getElementById('graciasModal');
+      const modal = bootstrap.Modal.getOrCreateInstance(el);
+      modal.show();
+    };
+
+    // Mostrar toast de gracias
+    window.showGraciasToast = () => {
+      const el = document.getElementById('graciasToast');
+      const toast = new bootstrap.Toast(el, { delay: 3000 });
+      toast.show();
+    };
+  </script>
 </body>
 </html>

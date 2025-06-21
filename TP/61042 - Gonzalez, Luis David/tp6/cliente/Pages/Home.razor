@@ -3,24 +3,17 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-10">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
+<div class="home-main-container">
+    <h1 class="home-title">Comunicación Cliente-Servidor</h1>
+    <div class="text-center mb-4">
+        <button class="btn btn-primary home-btn-principal" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
     </div>
-    
-    <div class="row mb-4">
+    <div class="row justify-content-center">
         <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">            
             @if (cargando) {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 500px;">
+            } else if (datos != null) {
+                <div class="card home-card-respuesta">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>

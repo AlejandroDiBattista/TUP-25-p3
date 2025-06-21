@@ -14,50 +14,48 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ">
+        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+            <!-- Menú izquierdo -->
+            <ul class="navbar-nav">
                 <li class="nav-item">
                     <NavLink href="/" class="nav-link text-white" activeClass="active">
-                        <img src="/ico/home.png" class="nav-icono" alt="" srcset="">
+                        <img src="/ico/home.png" class="nav-icono" alt="">
                         Home
                     </NavLink>
                 </li>
-                @if (ApiService.Count < 1)
-                {
-                    <li>
-                        <NavLink href="/carrito" class="nav-link text-white" activeClass="active">
-                            <img src="/ico/carrito.png" class="nav-icono" alt="" srcset="">
-                            Carrito
-                        </NavLink>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <NavLink href="/carrito" class="nav-link text-white position-relative" activeClass="active">
-                            <span class="nav-icono2">@ApiService.Count</span>
-                            <img src="/ico/carrito.png" class="nav-icono" alt="" srcset="">
-                            Carrito
-                        </NavLink>
-                    </li>
-                }
 
                 <li class="nav-item">
                     <NavLink href="/historial" class="nav-link text-white" activeClass="active">
-                        <img src="/ico/historial.png" class="nav-icono" alt="" srcset="">
+                        <img src="/ico/historial.png" class="nav-icono" alt="">
                         Historial
                     </NavLink>
                 </li>
             </ul>
 
-            <form class="d-flex mx-4" role="search" @onsubmit="OnSubmitBuscar" @onsubmit:preventDefault>
+            <!-- Formulario de búsqueda centrado -->
+            <form class="d-flex mx-auto" role="search" @onsubmit="OnSubmitBuscar" @onsubmit:preventDefault>
                 <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar"
                     @bind="textoBusqueda" />
                 <button class="btn btn-outline-light" type="submit">Buscar</button>
             </form>
+
+            <!-- Carrito a la derecha -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <NavLink href="/carrito" class="nav-link text-white position-relative" activeClass="active">
+                        @if (ApiService.Count > 0)
+                        {
+                            <span class="nav-icono2">@ApiService.Count</span>
+                        }
+                        <img src="/ico/carrito.png" class="nav-icono" alt="">
+                        Carrito
+                    </NavLink>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
+
 
 @code {
 

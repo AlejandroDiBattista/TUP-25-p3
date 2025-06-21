@@ -7,33 +7,15 @@ namespace servidor.Models;
 public class Carrito
 {
     /// <summary>
-    /// Identificador único del carrito. Se genera como GUID para sesiones temporales.
+    /// Identificador único del carrito. Se genera automáticamente en la base de datos.
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
-    /// Fecha de creación del carrito.
-    /// Se usa para limpiar carritos abandonados.
-    /// </summary>
-    public DateTime FechaCreacion { get; set; } = DateTime.Now;
+    public int Id { get; set; }
 
     /// <summary>
     /// Lista de items en el carrito.
     /// Cada item representa un producto con su cantidad deseada.
     /// </summary>
     public List<ItemCarrito> Items { get; set; } = new List<ItemCarrito>();
-
-    /// <summary>
-    /// Calcula el total del carrito (suma de todos los subtotales).
-    /// Propiedad calculada que no se almacena en la base de datos.
-    /// </summary>
-    public decimal Total => Items.Sum(item => item.Subtotal);
-
-    /// <summary>
-    /// Calcula la cantidad total de items en el carrito.
-    /// Útil para mostrar el contador en el ícono del carrito.
-    /// </summary>
-    public int TotalItems => Items.Sum(item => item.Cantidad);
 }
 
 /// <summary>
@@ -43,11 +25,20 @@ public class Carrito
 public class ItemCarrito
 {
     /// <summary>
-    /// Identificador del producto en el carrito.
+    /// Identificador único del item de carrito.
     /// </summary>
-    public int ProductoId { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
+    /// Identificador del carrito al que pertenece este item.
+    /// </summary>
+    public int CarritoId { get; set; }
+    public Carrito Carrito { get; set; } = null!;
+
+    /// <summary>
+    /// Identificador del producto en el carrito.
+    /// </summary>
+    public int ProductoId { get; set; }    /// <summary>
     /// Navegación hacia el producto asociado.
     /// </summary>
     public Producto Producto { get; set; } = null!;
@@ -57,15 +48,4 @@ public class ItemCarrito
     /// Debe ser > 0 y <= stock disponible.
     /// </summary>
     public int Cantidad { get; set; }
-
-    /// <summary>
-    /// Precio unitario actual del producto.
-    /// Se toma del producto al agregarlo al carrito.
-    /// </summary>
-    public decimal PrecioUnitario { get; set; }
-
-    /// <summary>
-    /// Calcula el subtotal del item (Cantidad × PrecioUnitario).
-    /// </summary>
-    public decimal Subtotal => Cantidad * PrecioUnitario;
 }

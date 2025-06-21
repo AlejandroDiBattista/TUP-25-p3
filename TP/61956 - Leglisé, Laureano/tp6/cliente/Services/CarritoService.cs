@@ -1,214 +1,68 @@
 using System.Net.Http.Json;
-using cliente.Models;
-
-namespace cliente.Services;
 
 public class CarritoService
 {
     private readonly HttpClient _http;
-    private readonly Dictionary<int, (Producto Producto, int Cantidad)> carrito = new();
-    public string CarritoId { get; private set; } = string.Empty;
-    public event Action? OnChange;
 
     public CarritoService(HttpClient http)
     {
         _http = http;
-        if (_http.BaseAddress == null)
-        {
-            _http.BaseAddress = new Uri("http://localhost:5184/");
-        }
     }
 
-    public List<(Producto Producto, int Cantidad)> Items => carrito.Values.ToList();
-
-    public async Task AgregarAlCarrito(Producto producto)
+    public async Task<Guid> CrearCarrito()
     {
-        await AgregarProductoAsync(producto, 1); // Agrega 1 unidad por defecto
+        var response = await _http.PostAsync("/carritos", null);
+        return await response.Content.ReadFromJsonAsync<Guid>();
     }
 
-    public async Task AgregarProductoAsync(Producto producto, int cantidad)
+    public async Task<List<ItemCarrito>> ObtenerItems(Guid carritoId)
     {
         try
         {
-            if (string.IsNullOrEmpty(CarritoId))
-                await InitCarritoAsync();
-
-            if (carrito.ContainsKey(producto.Id))
-                carrito[producto.Id] = (producto, carrito[producto.Id].Cantidad + cantidad);
-            else
-                carrito[producto.Id] = (producto, cantidad);
-
-            var url = $"carritos/{CarritoId}/{producto.Id}?cantidad={cantidad}";
-            var response = await _http.PutAsync(url, null);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Error del servidor: {response.StatusCode} - {errorContent}");
-            }
-
-            OnChange?.Invoke();
+            return await _http.GetFromJsonAsync<List<ItemCarrito>>($"/carritos/{carritoId}");
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            Console.WriteLine($"Error agregando producto: {ex.Message}");
-            throw;
+            // Si el carrito no existe, devuelve una lista vacía
+            return new List<ItemCarrito>();
         }
     }
 
-    public async Task InitCarritoAsync()
+    public async Task<bool> AgregarOActualizarItem(Guid carritoId, int productoId, int cantidad)
     {
-        try
-        {
-            var resp = await _http.PostAsJsonAsync("carritos", new { });
-            resp.EnsureSuccessStatusCode();
-
-            var obj = await resp.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
-
-            if (obj.TryGetProperty("carritoId", out var id))
-                CarritoId = id.GetString() ?? Guid.NewGuid().ToString();
-            else
-                throw new Exception("Respuesta inválida del servidor al inicializar carrito.");
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Error al inicializar carrito: {ex.Message}");
-        }
+        var response = await _http.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null);
+        return response.IsSuccessStatusCode;
     }
 
-    public int TotalItems => carrito.Values.Sum(i => i.Cantidad);
-
-    public decimal TotalImporte => carrito.Values.Sum(i => i.Producto.Precio * i.Cantidad);
-
-    public async Task ModificarCantidadAsync(int productoId, int nuevaCantidad)
+    public async Task VaciarCarrito(Guid carritoId)
     {
-        try
-        {
-            if (string.IsNullOrEmpty(CarritoId)) return;
-
-            if (carrito.ContainsKey(productoId))
-            {
-                if (nuevaCantidad <= 0)
-                {
-                    carrito.Remove(productoId);
-                    var deleteResponse = await _http.DeleteAsync($"carritos/{CarritoId}/{productoId}");
-                    deleteResponse.EnsureSuccessStatusCode();
-                }
-                else
-                {
-                    var producto = carrito[productoId].Producto;
-                    carrito[productoId] = (producto, nuevaCantidad);
-                    var putResponse = await _http.PutAsync($"carritos/{CarritoId}/{productoId}?cantidad={nuevaCantidad}", null);
-                    putResponse.EnsureSuccessStatusCode();
-                }
-
-                OnChange?.Invoke();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error modificando cantidad: {ex.Message}");
-            throw;
-        }
+        await _http.DeleteAsync($"/carritos/{carritoId}");
     }
 
-    public async Task QuitarProductoAsync(int productoId)
+    public async Task EliminarItem(Guid carritoId, int productoId)
     {
-        try
-        {
-            if (string.IsNullOrEmpty(CarritoId)) return;
-
-            if (carrito.ContainsKey(productoId))
-            {
-                carrito.Remove(productoId);
-                var response = await _http.DeleteAsync($"carritos/{CarritoId}/{productoId}");
-                response.EnsureSuccessStatusCode();
-                OnChange?.Invoke();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error quitando producto: {ex.Message}");
-            throw;
-        }
+        await _http.DeleteAsync($"/carritos/{carritoId}/{productoId}");
     }
 
-    public async Task VaciarCarritoAsync()
+    public async Task<bool> ConfirmarCompra(Guid carritoId, object datosCliente)
     {
-        try
-        {
-            if (string.IsNullOrEmpty(CarritoId)) return;
-
-            carrito.Clear();
-            var response = await _http.DeleteAsync($"carritos/{CarritoId}");
-            response.EnsureSuccessStatusCode();
-            OnChange?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error vaciando carrito: {ex.Message}");
-            throw;
-        }
+        var response = await _http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", datosCliente);
+        return response.IsSuccessStatusCode;
     }
 
-    public async Task ConfirmarCompraAsync(string nombre, string apellido, string email)
+    public class ItemCarrito
     {
-        try
-        {
-            if (string.IsNullOrEmpty(CarritoId)) return;
-
-            var data = new
-            {
-                Nombre = nombre,
-                Apellido = apellido,
-                Email = email
-            };
-
-            var resp = await _http.PutAsJsonAsync($"carritos/{CarritoId}/confirmar", data);
-            resp.EnsureSuccessStatusCode();
-
-            carrito.Clear();
-            CarritoId = string.Empty;
-            OnChange?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error confirmando compra: {ex.Message}");
-            throw;
-        }
+        public Producto Producto { get; set; }
+        public int Cantidad { get; set; }
+        public decimal Importe { get; set; }
     }
-
-    public async Task CargarCarritoDesdeServidor()
+    public class Producto
     {
-        try
-        {
-            if (string.IsNullOrEmpty(CarritoId)) return;
-
-            var respuesta = await _http.GetFromJsonAsync<List<ItemCarritoDTO>>($"carritos/{CarritoId}");
-            carrito.Clear();
-
-            if (respuesta != null)
-            {
-                foreach (var item in respuesta)
-                {
-                    carrito[item.Producto.Id] = (item.Producto, item.Cantidad);
-                }
-            }
-
-            OnChange?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error cargando carrito: {ex.Message}");
-            throw;
-        }
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
     }
-
-    public List<(Producto, int)> ObtenerItems() => carrito.Values.ToList();
-}
-
-public class ItemCarritoDTO
-{
-    public Producto Producto { get; set; } = default!;
-    public int Cantidad { get; set; }
 }

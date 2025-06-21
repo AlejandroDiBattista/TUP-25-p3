@@ -1,0 +1,123 @@
+@page "/carrito/confirmar-compra"
+@using Cliente.Services
+@using Cliente.Modelos
+@using System.ComponentModel.DataAnnotations
+@inject CarritoService CarritoService
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="confirmar-container">
+    <div class="confirmar-card">
+        <h3 class="mb-4 text-secondary text-center"><i class="bi bi-credit-card"></i> Completa con tus datos</h3>
+        <EditForm Model="@formulario" OnValidSubmit="OnConfirmarCompra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="confirmar-form-group">
+                <label class="confirmar-label">Nombre</label>
+                <InputText @bind-Value="formulario.Nombre" class="confirmar-input" />
+                <ValidationMessage For="@(() => formulario.Nombre)" />
+            </div>
+            <div class="confirmar-form-group">
+                <label class="confirmar-label">Apellido</label>
+                <InputText @bind-Value="formulario.Apellido" class="confirmar-input" />
+                <ValidationMessage For="@(() => formulario.Apellido)" />
+            </div>
+            <div class="confirmar-form-group">
+                <label class="confirmar-label">Email</label>
+                <InputText @bind-Value="formulario.Email" class="confirmar-input" />
+                <ValidationMessage For="@(() => formulario.Email)" />
+            </div>
+            <button class="btn-confirmar-compra" type="submit">
+                <i class="bi bi-bag-check"></i> Confirmar compra
+            </button>
+        </EditForm>
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div class="alert alert-info mt-3 text-center">
+                @mensaje
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private FormularioCompra formulario = new();
+    private string mensaje = "";
+    private string carritoId = "";
+    private List<CarritoItem> items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = CarritoService.ObtenerItems();
+
+        if (items.Count == 0)
+        {
+            mensaje = "El carrito está vacío.";
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsync("carritos", null);
+            if (response.IsSuccessStatusCode)
+            {
+                carritoId = await response.Content.ReadAsStringAsync();
+                carritoId = carritoId.Trim('"');
+                foreach (var item in items)
+                {
+                    var body = new { cantidad = item.Cantidad };
+                    await Http.PutAsJsonAsync(
+                        $"carritos/{carritoId}/{item.Producto.Id}",
+                        body
+                    );
+                }
+            }
+            else
+            {
+                mensaje = "No se pudo crear el carrito.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error al inicializar el carrito: {ex.Message}";
+        }
+    }
+
+    private async Task OnConfirmarCompra()
+    {
+        if (string.IsNullOrWhiteSpace(carritoId))
+        {
+            mensaje = "Carrito no inicializado.";
+            return;
+        }
+
+        var response = await Http.PutAsJsonAsync($"carritos/{carritoId}/confirmar", formulario);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = "Compra confirmada con éxito.";
+            CarritoService.Limpiar();
+            CarritoService.Limpiar();
+            StateHasChanged();
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            mensaje = "Error al confirmar la compra.";
+        }
+    }
+
+    public class FormularioCompra
+    {
+        [Required]
+        public string Nombre { get; set; } = "";
+
+        [Required]
+        public string Apellido { get; set; } = "";
+
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+    }
+}

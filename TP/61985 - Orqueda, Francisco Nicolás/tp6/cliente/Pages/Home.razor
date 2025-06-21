@@ -140,7 +140,10 @@ else
     async Task AgregarAlCarrito(int productoId)
     {
         var carritoId = await ApiService.ObtenerOCrearCarritoIdAsync();
-        await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, 1);
+        var items = await ApiService.ObtenerItemsCarritoAsync(carritoId);
+        var existente = items.FirstOrDefault(x => x.ProductoId == productoId);
+        int nuevaCantidad = (existente?.Cantidad ?? 0) + 1;
+        await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, nuevaCantidad);
         NavigationManager.NavigateTo("/carrito");
     }
 

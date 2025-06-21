@@ -29,21 +29,23 @@ public class CarritoService
         }
     }
 
-    public async Task<bool> AgregarProducto(int productoId)
+    public async Task<(bool Exito, string Mensaje)> AgregarProducto(int productoId, int cantidad = 1)
+{
+    if (CarritoId == null)
+        await InicializarCarritoAsync();
+
+    var dto = new { Cantidad = cantidad };
+    var response = await _http.PutAsJsonAsync($"http://localhost:5184/carritos/{CarritoId}/{productoId}", dto);
+
+    if (response.IsSuccessStatusCode)
     {
-        if (CarritoId == null) return false;
-
-        var resultado = await _http.PutAsJsonAsync($"http://localhost:5184/carritos/{CarritoId}/{productoId}", new { Cantidad = 1 });
-
-        if (resultado.IsSuccessStatusCode)
-        {
-            // Se aumenta el contador al agregar un producto
-            CantidadTotal++;
-            NotificarCambio(); // Para que se refleje la actualización de la cantidad de productos en el carrito
-        }
-
-        return resultado.IsSuccessStatusCode;
+        CantidadTotal += cantidad;
+        NotificarCambio();
+        return (true, "Producto agregado al carrito.");
     }
+    var mensajeError = await response.Content.ReadAsStringAsync();
+    return (false, mensajeError);
+}
 
     public async Task<bool> EliminarUnidad(int productoId)
     {
@@ -75,12 +77,6 @@ public class CarritoService
         }
 
         return respuesta.IsSuccessStatusCode;
-    }
-
-    public void Vaciar()
-    {
-        CantidadTotal = 0;
-        OnCambio?.Invoke();
     }
 
     public void ResetearCarrito()

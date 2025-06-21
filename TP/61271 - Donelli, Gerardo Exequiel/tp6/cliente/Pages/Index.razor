@@ -2,11 +2,9 @@
 
 @inject ProductosService ProductosService 
 @inject PageTitleService PageTitleService 
-@code {
-    protected override void OnInitialized() {
-        PageTitleService.Title = "Catálogo - Tienda Online";
-    }
-}
+@inject CarritoService CarritoService
+
+@implements IDisposable
 
 <div class="container py-4">
     <div class="row">
@@ -39,48 +37,52 @@
 </div>
 
 @code {
-    /// <summary>
-    /// Lista de productos a mostrar en el catálogo
-    /// </summary>
     private List<ProductoDTO> productos;
-
-    /// <summary>
-    /// Texto actual de búsqueda
-    /// </summary>
     private string textoBusqueda = "";
 
-
-    /// <summary>
-    /// Layout principal de la aplicación
-    /// </summary>
     [CascadingParameter]
     public MainLayout Layout { get; set; }
 
-    /// <summary>
-    /// Se ejecuta cuando se inicializa el componente
-    /// Carga los productos iniciales
-    /// </summary>
-    @* protected override async Task OnInitializedAsync()
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "buscar")]
+    public string? Buscar { get; set; }
+
+    protected override async Task OnInitializedAsync()
     {
-        await BuscarProductos("");
-    } *@
-[Parameter]
-[SupplyParameterFromQuery(Name = "buscar")]
-public string? Buscar { get; set; }
+        PageTitleService.Title = "Catálogo - Tienda Online";
+        productos = await ProductosService.ObtenerProductosAsync();
 
-protected override async Task OnParametersSetAsync()
-{
-    await BuscarProductos(Buscar ?? "");
-}
+           await CarritoService.InicializarAsync();
 
+        CarritoService.OnChange += StateHasChanged;
+        CarritoService.OnStockActualizar += ActualizarStock;
+    }
 
-    /// <summary>
-    /// Busca productos que coincidan con el texto especificado
-    /// </summary>
-    /// <param name="texto">Texto a buscar</param>
+    protected override async Task OnParametersSetAsync()
+    {
+        await BuscarProductos(Buscar ?? "");
+    }
+
     private async Task BuscarProductos(string texto)
     {
         textoBusqueda = texto;
         productos = await ProductosService.ObtenerProductosAsync(texto);
+    }
+
+    private void ActualizarStock(int productoId, int diferencia)
+    {
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            producto.Stock += diferencia;
+            if (producto.Stock < 0) producto.Stock = 0;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        CarritoService.OnChange -= StateHasChanged;
+        CarritoService.OnStockActualizar -= ActualizarStock;
     }
 }

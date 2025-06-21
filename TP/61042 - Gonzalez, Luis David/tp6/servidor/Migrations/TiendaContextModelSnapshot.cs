@@ -57,15 +57,18 @@ namespace servidor.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ApellidoCliente")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EmailCliente")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NombreCliente")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Total")
@@ -110,12 +113,15 @@ namespace servidor.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Descripcion")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ImagenUrl")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Nombre")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Precio")

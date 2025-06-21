@@ -1,0 +1,94 @@
+@page "/carrito"
+@using cliente.Services
+@using cliente.Models
+@inject ApiService ApiService
+@inject CarritoService CarritoSrv
+
+<div class="container">
+    <h2>Carrito de compras</h2>
+
+    @if (carritoItems.Count == 0)
+    {
+        <div class="text-center mt-4">
+            <p>🛒 El carrito está vacío.</p>
+            <NavLink class="btn btn-outline-primary" href="/">Volver al catálogo</NavLink>
+        </div>
+    }
+    else
+    {
+        <ul class="list-group mb-3">
+            @foreach (var item in carritoItems)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <img src="@item.ProductoImagenUrl" width="40" class="me-2" />
+                        @($"{item.ProductoNombre} (x{item.Cantidad})")
+                    </span>
+                    <span>
+                        <button class="btn btn-sm btn-secondary me-1"
+                                @onclick="() => CambiarCantidad(item.ProductoId, -1)"
+                                disabled="@(item.Cantidad <= 1)">−</button>
+                        <button class="btn btn-sm btn-secondary me-2"
+                                @onclick="() => CambiarCantidad(item.ProductoId, 1)">+</button>
+                        $@( (item.ProductoPrecio * item.Cantidad).ToString("N0") )
+                        <button class="btn btn-sm btn-danger ms-2" 
+                                @onclick="() => QuitarDelCarrito(item.ProductoId)">
+                            Eliminar del carrito
+                        </button>
+                    </span>
+                </li>
+            }
+        </ul>
+
+        <div class="mb-3">
+            <b>Total: $@carritoItems.Sum(i => i.ProductoPrecio * i.Cantidad).ToString("N0")</b>
+        </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+            <NavLink class="btn btn-primary" href="/confirmar-compra">Confirmar compra</NavLink>
+            <button class="btn btn-secondary" @onclick="VaciarCarrito">Vaciar carrito</button>
+            <NavLink class="btn btn-outline-primary" href="/">Volver al catálogo</NavLink>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CarritoItemDto> carritoItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerOCrearCarritoIdAsync();
+        await CargarCarritoAsync();
+    }
+
+    private async Task ObtenerOCrearCarritoIdAsync()
+    {
+        if (string.IsNullOrEmpty(CarritoSrv.CarritoId))
+        {
+            CarritoSrv.CarritoId = await ApiService.CrearCarritoAsync();
+        }
+    }
+
+    private async Task CargarCarritoAsync()
+    {
+        carritoItems = await ApiService.ObtenerCarritoAsync(CarritoSrv.CarritoId) ?? new();
+    }
+
+    private async Task QuitarDelCarrito(int productoId)
+    {
+        await ApiService.QuitarDelCarritoAsync(CarritoSrv.CarritoId, productoId);
+        await CargarCarritoAsync();
+    }
+
+    private async Task VaciarCarrito()
+    {
+        await ApiService.VaciarCarritoAsync(CarritoSrv.CarritoId);
+        await CargarCarritoAsync();
+    }
+
+    private async Task CambiarCantidad(int productoId, int delta)
+    {
+        await ApiService.CambiarCantidadCarritoAsync(CarritoSrv.CarritoId, productoId, delta);
+        await CargarCarritoAsync();
+    }
+}

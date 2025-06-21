@@ -1,0 +1,62 @@
+@page "/confirmacion"
+@using cliente.Services
+@using System.ComponentModel.DataAnnotations
+@inject CarritoService CarritoService
+@inject NavigationManager Navigation
+
+<h2 class="titulo">Confirmación de compra</h2>
+
+@if (!CarritoService.Items.Any())
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <div class="confirmacion">
+        <p>Total de ítems: <strong>@CarritoService.Items.Sum(p => p.Cantidad)</strong></p>
+        <p>Importe total: <strong>@CarritoService.TotalPrecio.ToString("C0", new System.Globalization.CultureInfo("es-AR"))</strong></p>
+
+        <EditForm Model="@formulario" OnValidSubmit="ConfirmarCompra" class="formulario-compra">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="campo">
+                <label>Nombre:</label>
+                <InputText @bind-Value="formulario.Nombre" class="input" />
+            </div>
+            <div class="campo">
+                <label>Apellido:</label>
+                <InputText @bind-Value="formulario.Apellido" class="input" />
+            </div>
+            <div class="campo">
+                <label>Email:</label>
+                <InputText @bind-Value="formulario.Email" class="input" />
+            </div>
+
+            <button type="submit" class="boton-confirmar">Confirmar y volver al inicio</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private FormularioCompra formulario = new();
+
+    private void ConfirmarCompra()
+    {
+        CarritoService.Vaciar();
+        Navigation.NavigateTo("/");
+    }
+
+    public class FormularioCompra
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Debe ser un email válido")]
+        public string Email { get; set; } = string.Empty;
+    }
+}

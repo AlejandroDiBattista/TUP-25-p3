@@ -2,6 +2,7 @@
 @using cliente.Services
 @using cliente.Models
 @inject ApiService ApiService
+@inject StockService StockService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
@@ -73,8 +74,7 @@
                             <div class="cart-item-modern fade-in" @key="item.ProductoId">
                                 <div class="row align-items-center">
                                     <div class="col-md-2">
-                                        <div class="cart-image-container">
-                                            <img src="@item.ImagenUrl" alt="@item.NombreProducto" 
+                                        <div class="cart-image-container">                                            <img src="@GetImageUrl(item.ImagenUrl)" alt="@item.NombreProducto" 
                                                  class="cart-product-image">
                                         </div>
                                     </div>
@@ -385,6 +385,7 @@
         try
         {
             actualizandoItem = productoId;
+            var cantidadAnterior = item.Cantidad;
             
             // Validar stock disponible antes de proceder
             var (esValido, stockDisponible, nombreProducto) = await ApiService.ValidarStockDisponibleAsync(productoId, nuevaCantidad);
@@ -402,7 +403,22 @@
             if (exitoEliminar && nuevaCantidad > 0)
             {
                 var exitoAgregar = await ApiService.AgregarProductoAlCarritoAsync(carritoId, productoId, nuevaCantidad);
-                if (!exitoAgregar)
+                if (exitoAgregar)
+                {
+                    // Calcular el cambio en stock y notificar al StockService
+                    var diferencia = cantidadAnterior - nuevaCantidad;
+                    if (diferencia > 0)
+                    {
+                        // Se redujo la cantidad, aumentar stock
+                        StockService.AumentarStock(productoId, diferencia);
+                    }
+                    else if (diferencia < 0)
+                    {
+                        // Se aumentó la cantidad, disminuir stock
+                        StockService.DisminuirStock(productoId, Math.Abs(diferencia));
+                    }
+                }
+                else
                 {
                     MostrarNotificacion("Error", "No se pudo actualizar la cantidad.", "error");
                 }
@@ -432,10 +448,20 @@
         {
             eliminandoItem = productoAEliminar;
             
+            // Obtener información del producto antes de eliminarlo para restaurar stock
+            var item = carrito?.Items.FirstOrDefault(i => i.ProductoId == productoAEliminar);
+            var cantidadARestaurar = item?.Cantidad ?? 0;
+            
             var exito = await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoAEliminar);
             
             if (exito)
             {
+                // Restaurar stock en el StockService
+                if (cantidadARestaurar > 0)
+                {
+                    StockService.AumentarStock(productoAEliminar, cantidadARestaurar);
+                }
+                
                 // Cerrar modal antes de recargar para evitar conflictos de DOM
                 mostrarModalEliminar = false;
                 
@@ -486,6 +512,15 @@
             // Cerrar modal primero para evitar conflictos de DOM
             mostrarModalVaciar = false;
             vaciandoCarrito = true;
+            
+            // Restaurar stock antes de vaciar carrito
+            if (carrito?.Items.Any() == true)
+            {
+                foreach (var item in carrito.Items)
+                {
+                    StockService.AumentarStock(item.ProductoId, item.Cantidad);
+                }
+            }
             
             var exito = await ApiService.VaciarCarritoAsync(carritoId);
             
@@ -548,10 +583,43 @@
         
         // Navegar al resumen de compra
         Navigation.NavigateTo("/resumen-compra");
-    }
-
-    private void VolverAlCatalogo()
+    }    private void VolverAlCatalogo()
     {
         Navigation.NavigateTo("/");
+    }
+
+    /// <summary>
+    /// Obtiene la URL de la imagen con validación y fallback al placeholder
+    /// </summary>
+    /// <param name="imagenUrl">URL de la imagen del producto</param>
+    /// <returns>URL válida de la imagen o placeholder</returns>
+    private string GetImageUrl(string imagenUrl)
+    {
+        // Si la imagen es nula, vacía o solo espacios, usar placeholder
+        if (string.IsNullOrWhiteSpace(imagenUrl))
+        {
+            return "images/placeholder.jpeg";
+        }
+
+        // Si ya es una URL absoluta (http/https), devolverla tal como está
+        if (imagenUrl.StartsWith("http://") || imagenUrl.StartsWith("https://"))
+        {
+            return imagenUrl;
+        }
+
+        // Si comienza con "/images/", remover la barra inicial para uso relativo
+        if (imagenUrl.StartsWith("/images/"))
+        {
+            return imagenUrl.Substring(1); // Remover el "/" inicial
+        }
+
+        // Si comienza con "images/", devolverla tal como está
+        if (imagenUrl.StartsWith("images/"))
+        {
+            return imagenUrl;
+        }
+
+        // Si no tiene el prefijo images/, agregarlo
+        return $"images/{imagenUrl}";
     }
 }

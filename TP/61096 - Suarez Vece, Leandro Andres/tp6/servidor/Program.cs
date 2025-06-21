@@ -92,6 +92,11 @@ app.MapPut("/carrito/{id}", async (int id, ItemCompraDto dto, IPruductServices s
     await servicio.ActualizarCarrito(id, dto);
     return Results.Ok();
 });
+app.MapPut("/producto/stock/{id}/{cantidad}", async (int id, int cantidad, IPruductServices servicio) =>
+{
+    await servicio.EditarSotckProductos(id, cantidad);
+    return Results.Ok();
+});
 
 app.MapPut("/carrito/{id}/confirmar", async (int id, ConfirmarCompraDto dto, IPruductServices servicio) =>
 {

@@ -2,12 +2,13 @@
 @using cliente.Services
 @using cliente.Models
 @inject ApiService ApiService
+@inject StockService StockService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
+@implements IDisposable
 
 <PageTitle>DualTech - Gaming Store</PageTitle>
 
-<!-- Content Header -->
 <div class="content-header">
     <div class="row align-items-center">
         <div class="col-lg-6">
@@ -37,8 +38,7 @@
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="container-fluid px-4">    <!-- Search Results Info -->
+<div class="container-fluid px-4">
     @if (!string.IsNullOrEmpty(terminoBusquedaActual))
     {
         <div class="alert alert-info shadow-modern fade-in">
@@ -47,7 +47,6 @@
         </div>
     }
 
-    <!-- Cart Info -->
     @if (carritoId != null && totalItemsCarrito > 0)
     {        <div class="alert alert-success shadow-modern fade-in">
             <div class="d-flex justify-content-between align-items-center">
@@ -78,10 +77,8 @@
                 <Icon Name="refresh-cw" Size="16" /> Reintentar
             </button>
         </div>
-    }
-    else
+    }    else
     {
-        <!-- Products Grid -->
         <div class="row g-4">            @if (productos == null || !productos.Any())
             {
                 <div class="col-12 text-center py-5">
@@ -193,7 +190,8 @@
     </div>
 }
 
-@code {private List<ProductoDto> productos = new();
+@code {
+    private List<ProductoDto> productos = new();
     private Dictionary<int, int> cantidadesSeleccionadas = new();
     private string terminoBusqueda = "";
     private string terminoBusquedaActual = "";
@@ -201,24 +199,46 @@
     private bool cargando = false;
     private bool agregandoProducto = false;
     
-    // Estado del carrito
     private string? carritoId;
     private int totalItemsCarrito = 0;
-      // Variables para la notificación
+      
     private bool mostrarNotificacion = false;
     private string tituloNotificacion = "";
     private string mensajeNotificacion = "";
-    private string tipoNotificacion = ""; // "success", "warning" o "error"
+    private string tipoNotificacion = "";
 
     protected override async Task OnInitializedAsync()
     {
+        StockService.StockCambiado += OnStockCambiado;
         await InicializarCarrito();
         await CargarProductos();
+    }
+
+    private void OnStockCambiado(int productoId, int nuevoStock)
+    {
+        var producto = productos?.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            producto.Stock = nuevoStock;
+            
+            if (cantidadesSeleccionadas.ContainsKey(productoId) && 
+                cantidadesSeleccionadas[productoId] > nuevoStock && 
+                nuevoStock > 0)
+            {
+                cantidadesSeleccionadas[productoId] = Math.Min(cantidadesSeleccionadas[productoId], nuevoStock);
+            }
+            
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        StockService.StockCambiado -= OnStockCambiado;
     }
     
     private async Task InicializarCarrito()
     {
-        // Intentar recuperar carrito existente del localStorage
         try
         {
             carritoId = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "carritoId");
@@ -246,30 +266,36 @@
                 }
             }
             
-            // Actualizar contador del carrito
-            await ActualizarContadorCarrito();
+            // Actualizar contador del carrito            await ActualizarContadorCarrito();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al inicializar carrito: {ex.Message}");
         }
-    }    private async Task CargarProductos()
+    }
+
+    private async Task CargarProductos()
     {
-        try
-        {
+        try        {
             cargando = true;
             error = null;
             
-            if (string.IsNullOrEmpty(terminoBusquedaActual))
+            productos = await StockService.SincronizarStockAsync(carritoId, terminoBusquedaActual);
+            
+            if (productos == null || productos.Count == 0)
             {
-                productos = await ApiService.ObtenerProductosAsync();
-            }
-            else
-            {
-                productos = await ApiService.BuscarProductosAsync(terminoBusquedaActual);
+                if (string.IsNullOrEmpty(terminoBusquedaActual))
+                {
+                    productos = await ApiService.ObtenerProductosAsync();
+                }
+                else
+                {
+                    productos = await ApiService.BuscarProductosAsync(terminoBusquedaActual);
+                }
+                
+                StockService.InicializarCache(productos);
             }
             
-            // Inicializar cantidades seleccionadas manteniendo las existentes
             foreach (var producto in productos)
             {
                 if (!cantidadesSeleccionadas.ContainsKey(producto.Id))
@@ -278,7 +304,6 @@
                 }
                 else
                 {
-                    // Ajustar cantidad si excede el stock actual
                     if (cantidadesSeleccionadas[producto.Id] > producto.Stock)
                     {
                         cantidadesSeleccionadas[producto.Id] = Math.Max(1, producto.Stock);
@@ -307,16 +332,14 @@
         terminoBusquedaActual = "";
         await CargarProductos();
     }
-    
-    private async Task OnBuscarKeyPress(KeyboardEventArgs e)
+      private async Task OnBuscarKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            // Pequeño delay para asegurar que el bind se complete
             await Task.Delay(10);
             await BuscarProductos();
         }
-    }    private async void IncrementarCantidad(int productoId, int stockMaximo)
+    }private async void IncrementarCantidad(int productoId, int stockMaximo)
     {
         if (cantidadesSeleccionadas[productoId] < stockMaximo)
         {
@@ -331,12 +354,10 @@
             {
                 MostrarNotificacion("Stock Limitado", 
                     $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "warning");
-            }
-            else
+            }            else
             {
-                // El stock local estaba desactualizado, incrementar y recargar productos
                 cantidadesSeleccionadas[productoId]++;
-                await CargarProductos(); // Sincronizar stock
+                await CargarProductos();
                 StateHasChanged();
             }
         }
@@ -357,35 +378,28 @@
         }
 
         try
-        {
-            agregandoProducto = true;
+        {            agregandoProducto = true;
             var cantidadAAgregar = cantidadesSeleccionadas[producto.Id];
             
-            // Validar stock real desde el servidor antes de proceder
-            var (esValido, stockDisponible, nombreProducto) = await ApiService.ValidarStockDisponibleAsync(producto.Id, cantidadAAgregar);
+            var (stockTotal, cantidadEnCarrito, stockDisponible, nombreProducto) = await ApiService.ObtenerStockDisponibleAsync(producto.Id, carritoId);
             
-            if (!esValido)
+            if (stockDisponible < cantidadAAgregar)
             {
                 MostrarNotificacion("Stock Insuficiente", 
-                    $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto}", "error");
+                    $"Solo quedan {stockDisponible} unidades disponibles de {nombreProducto} (ya tienes {cantidadEnCarrito} en el carrito)", "warning");
                 
-                // Ajustar cantidad seleccionada al stock disponible
                 if (stockDisponible > 0)
                 {
                     cantidadesSeleccionadas[producto.Id] = stockDisponible;
                 }
-                
-                // Recargar productos para sincronizar datos
-                await CargarProductos();
                 return;
             }
             
             var exito = await ApiService.AgregarProductoAlCarritoAsync(carritoId, producto.Id, cantidadAAgregar);
-            
-            if (exito)
+              if (exito)
             {
-                // Recargar productos para sincronizar stock desde servidor
-                await CargarProductos();
+                // Actualizar stock visual usando el StockService
+                StockService.DisminuirStock(producto.Id, cantidadAAgregar);
                 
                 // Resetear la cantidad seleccionada a 1 después de agregar
                 cantidadesSeleccionadas[producto.Id] = 1;
@@ -394,6 +408,9 @@
                 
                 MostrarNotificacion("Producto Agregado", 
                     $"{cantidadAAgregar} unidad(es) de {nombreProducto} agregadas al carrito", "success");
+                
+                // Forzar re-renderizado de la UI
+                StateHasChanged();
             }
             else
             {
@@ -404,9 +421,9 @@
                 if (!string.IsNullOrEmpty(carritoId))
                 {
                     // Revalidar stock antes del segundo intento
-                    var (esValidoReintento, stockDisponibleReintento, _) = await ApiService.ValidarStockDisponibleAsync(producto.Id, cantidadAAgregar);
+                    var (_, _, stockDisponibleReintento, _) = await ApiService.ObtenerStockDisponibleAsync(producto.Id, carritoId);
                     
-                    if (!esValidoReintento)
+                    if (stockDisponibleReintento < cantidadAAgregar)
                     {
                         MostrarNotificacion("Stock Insuficiente", 
                             $"Solo quedan {stockDisponibleReintento} unidades disponibles de {nombreProducto}", "error");
@@ -498,8 +515,7 @@
     }
 
     /// <summary>
-    /// Obtiene la URL de la imagen con validación y fallback al placeholder
-    /// </summary>
+    /// Obtiene la URL de la imagen con validación y fallback al placeholder    /// </summary>
     /// <param name="imagenUrl">URL de la imagen del producto</param>
     /// <returns>URL válida de la imagen o placeholder</returns>
     private string GetImageUrl(string imagenUrl)
@@ -516,7 +532,13 @@
             return imagenUrl;
         }
 
-        // Si es una ruta relativa, asegurar que esté bien formateada
+        // Si comienza con "/images/", remover la barra inicial para uso relativo
+        if (imagenUrl.StartsWith("/images/"))
+        {
+            return imagenUrl.Substring(1); // Remover el "/" inicial
+        }
+
+        // Si comienza con "images/", devolverla tal como está
         if (imagenUrl.StartsWith("images/"))
         {
             return imagenUrl;

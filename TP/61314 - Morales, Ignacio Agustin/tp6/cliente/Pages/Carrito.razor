@@ -25,13 +25,26 @@ else
         <tbody>
             @foreach (var item in micarrito.Items)
             {
+                var stockDisponible = StockDisponible(item.Producto.Id);
                 <tr>
                     <td>@item.Producto.Nombre</td>
                     <td>$@item.Producto.Precio</td>
                     <td>
-                        <button @onclick="() => CambiarCantidad(item.Producto.Id, -1)">-</button>
+                        <button 
+                            @onclick="() => CambiarCantidad(item.Producto.Id, -1)" 
+                            disabled="@(item.Cantidad <= 1)">
+                            -
+                        </button>
                         @item.Cantidad
-                        <button @onclick="() => CambiarCantidad(item.Producto.Id, 1)">+</button>
+                        <button 
+                            @onclick="() => CambiarCantidad(item.Producto.Id, 1)" 
+                            disabled="@(StockDisponible(item.Producto.Id) <= 0)">
+                            +
+                        </button>
+                        @if (stockDisponible <= 0)
+                        {
+                            <span class="stock-agotado">Sin stock</span>
+                        }
                     </td>
                     <td>$@(item.Producto.Precio * item.Cantidad)</td>
                     <td>
@@ -51,6 +64,14 @@ else
 }
 
 @code {
+     int StockDisponible(int productoId)
+    {
+      var stockCatalogo = micarrito.ObtenerStockDisponible?.Invoke(productoId) ?? 0;
+      var enCarrito = micarrito.Items.FirstOrDefault(i => i.Producto.Id == productoId)?.Cantidad ?? 0;
+      return stockCatalogo - enCarrito;
+ }
+
+
     void CambiarCantidad(int productoId, int cambio)
     {
         micarrito.CambiarCantidad(productoId, cambio);

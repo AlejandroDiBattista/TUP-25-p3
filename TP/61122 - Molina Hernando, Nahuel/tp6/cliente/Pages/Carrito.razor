@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject AppState AppState
+@inject IToastService ToastService
 
 <h2 class="fw-bold text-center text-dark mb-4">Tu Carrito</h2>
 
@@ -39,7 +40,8 @@ else
                             <div class="d-flex align-items-center">
                                 @if (!string.IsNullOrEmpty(item.Producto.ImagenUrl))
                                 {
-                                    <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" class="rounded shadow-sm me-2" style="max-height: 48px; max-width: 48px; object-fit: contain;" />
+                                    <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" class="rounded shadow-sm me-2"
+                                        style="max-height: 48px; max-width: 48px; object-fit: contain;" />
                                 }
                                 <span class="fw-semibold">@item.Producto.Nombre</span>
                             </div>
@@ -47,18 +49,22 @@ else
                         <td class="text-success fw-bold">$@item.Producto.Precio</td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" @onclick="() => EliminarProducto(item.Producto.Id, 1)" disabled="@(item.Cantidad <= 1)">
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle me-1"
+                                    @onclick="() => EliminarProducto(item.Producto.Id, 1)" disabled="@(item.Cantidad <= 1)">
                                     <i class="bi bi-dash"></i>
                                 </button>
                                 <span class="mx-2">@item.Cantidad</span>
-                                <button class="btn btn-sm btn-outline-secondary rounded-circle ms-1" @onclick="() => AgregarProducto(item.Producto.Id, 1)" disabled="@(item.Cantidad >= item.Producto.Stock)">
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle ms-1"
+                                    @onclick="() => AgregarProducto(item.Producto.Id, 1)"
+                                    disabled="@(item.Producto.Stock <= 0)">
                                     <i class="bi bi-plus"></i>
                                 </button>
                             </div>
                         </td>
-                        <td class="fw-bold">$@(item.Producto.Precio * item.Cantidad)</td>
+                        <td class="fw-bold">$@(item.Producto.Precio* item.Cantidad)</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-danger rounded-circle" @onclick="() => EliminarProducto(item.Producto.Id, item.Cantidad)">
+                            <button class="btn btn-sm btn-outline-danger rounded-circle"
+                                @onclick="() => EliminarProducto(item.Producto.Id, item.Cantidad)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -108,11 +114,12 @@ else
         error = null;
         try
         {
-            carritoId = await ObtenerOCrearCarritoId();
+            carritoId = await ObtenerCarrito();
             await CargarCarrito();
         }
-        catch
+        catch (Exception ex)
         {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
             error = "No se pudo cargar el carrito. Intenta vaciar el carrito o recargar la página.";
             items = null;
         }
@@ -120,53 +127,98 @@ else
         StateHasChanged();
     }
 
-    async Task<string> ObtenerOCrearCarritoId()
+    async Task<string> ObtenerCarrito()
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
         if (string.IsNullOrEmpty(id))
         {
-            id = await ApiService.CrearCarritoAsync();
-            id = id.Trim('"');
-            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
+            return await CrearCarrito();
         }
+
+        try
+        {
+            var items = await ApiService.ObtenerCarritoAsync(id);
+            return id;
+        }
+        catch (Exception ex)
+        {
+            return await CrearCarrito();
+        }
+    }
+
+    async Task<string> CrearCarrito()
+    {
+        string id = await ApiService.CrearCarritoAsync();
+        id = id.Trim('"');
+        await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
         return id;
     }
 
     async Task CargarCarrito()
     {
-        items = await ApiService.ObtenerCarritoAsync(carritoId);
-        total = items?.Sum(i => i.Producto.Precio * i.Cantidad) ?? 0;
-        AppState.ContadorCarrito = items?.Sum(p => p.Cantidad) ?? 0;
+        try
+        {
+            items = await ApiService.ObtenerCarritoAsync(carritoId);
+            total = items?.Sum(i => i.Producto.Precio * i.Cantidad) ?? 0;
+            AppState.ContadorCarrito = items?.Sum(p => p.Cantidad) ?? 0;
 
-        StateHasChanged();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
+        }
     }
 
     async Task AgregarProducto(int productoId, int cantidad)
     {
-        var item = items.FirstOrDefault(i => i.Producto.Id == productoId);
-        if (item != null && cantidad > item.Producto.Stock)
+        try
         {
-            mensajeStock = "No hay suficiente stock para este producto.";
-            StateHasChanged();
-            return;
-        }
+            var item = items.FirstOrDefault(i => i.Producto.Id == productoId);
+            var producto = item?.Producto;
+            // Solo validar contra el stock actual
+            if (producto != null && cantidad > producto.Stock)
+            {
+                mensajeStock = "No hay suficiente stock para este producto.";
+                StateHasChanged();
+                return;
+            }
 
-        mensajeStock = null;
-        await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, cantidad);
-        await CargarCarrito();
+            mensajeStock = null;
+            await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, cantidad);
+            await CargarCarrito();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
+        }
     }
 
     async Task EliminarProducto(int productoId, int cantidad)
     {
-        await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoId, cantidad);
-        await CargarCarrito();
+        try
+        {
+            await ApiService.EliminarProductoDelCarritoAsync(carritoId, productoId, cantidad);
+            await CargarCarrito();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
+        }
     }
 
     async Task VaciarCarrito()
     {
-        await ApiService.VaciarCarritoAsync(carritoId);
-        await CargarCarrito();
-        Navigation.NavigateTo("/");
+        try
+        {
+            await ApiService.VaciarCarritoAsync(carritoId);
+            await CargarCarrito();
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
+        }
     }
 
     void ConfirmarCompra()

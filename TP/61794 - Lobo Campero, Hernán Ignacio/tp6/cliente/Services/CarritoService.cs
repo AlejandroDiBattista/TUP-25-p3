@@ -109,14 +109,12 @@ public class CarritoService
             _logger.LogError(ex, "Error al agregar producto {ProductoId} al carrito", productoId);
             return false;
         }
-    }
-
-    public async Task<bool> ModificarCantidadAsync(int productoId, int cantidad)
+    }    public async Task<bool> ModificarCantidadAsync(int productoId, int cantidad)
     {
         try
         {
             var response = await ExecuteWithCarritoRetryAsync(async carritoId =>
-                await _httpClient.PutAsync($"/carritos/{carritoId}/{productoId}?cantidad={cantidad}", null));
+                await _httpClient.PostAsync($"/carritos/{carritoId}/{productoId}/modificar?cantidad={cantidad}", null));
             
             var success = response.IsSuccessStatusCode;
             if (success)
@@ -135,7 +133,7 @@ public class CarritoService
             _logger.LogError(ex, "Error al modificar cantidad para producto {ProductoId}", productoId);
             return false;
         }
-    }    public async Task<bool> EliminarProductoAsync(int productoId)
+    }public async Task<bool> EliminarProductoAsync(int productoId)
     {
         try
         {

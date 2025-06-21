@@ -1,7 +1,7 @@
 # Evaluacion 2do Parcial
 - 61028 : no controla stock, no actualiza stock, no muestra imagen
 - 61032 : no descuenta stock al agregar al carrito
-- 61037 : no agrega al carrito
+- 61037 : no controla stock en el carrito.
 - 61041 : ok cuando no esta agregado al carrito la cantidad representa cuanto se va agregar, cuando esta agregado modifica la cantidad a comprar. 
 - 61042 : no tiene imagenes, no actualiza stock, en el carrito no controla stock
 - 61048 : no actualiza stock, al agregar un producto al carrito lo reinicia, no muestra las imagenes
@@ -10,7 +10,7 @@
 - 61053 : no actualiza stock, no vacia el carrito al confirmar la compra
 - 61060 : no actualiza stock al agregar al carrito, estetica muy cuidada
 - 61064 : no agrega al carrito
-- 61072 : error - Component 'confirmacion' starts with a lowercase character
+- 61072 : ok
 - 61096 : error - El espacio de nombres 'Servidor.Models' ya contiene una definición para 'Producto'
 - 61122 : no agrega al carrito
 - 61125 : no muestra imagen, no agrega al carrito, doble navegacion, ir al catalogo directamente
@@ -25,7 +25,7 @@
 - 61227 : cuando confirma no vuelve al catalogo, no carga toda las imagenes
 - 61247 : esta rota la presentacion (falta bootstrap.min.css), no permite cambiar la cantidad en el carrito
 - 61271 : no descuenta stock, pesima presentacion
-- 61290 : error - No se pudo iniciar el servidor correctamente.
+- 61290 : ok
 - 61312 : error - no funciona
 - 61314 : debe ir directamente al catalogo, no controla stock en el carrito
 - 61328 : error - internal server error
@@ -50,7 +50,7 @@
 - 61652 : no actualiza stock, al agregar al carrito no incrementa la cantidad
 - 61667 : no descuenta stock al agregar al carrito 
 - 61671 : ok
-- 61673 : no funciona, no muestra productos
+- 61673 : ok
 - 61676 : no muestra productos al iniciar, no descuenta stock, no controla stock
 - 61679 : error - "Carrito" no contiene una definición para "Items"
 - 61680 : me da error al confirmar la compra, no actualiza stock, ni controla el stock
@@ -71,4 +71,4 @@
 - 62104 : ok
 - 62136 : ir directamente al catalogo, no actualiza stock, no verifica el stock, no permite confirmar pedido
 - 62263 : no actualiza stock al agregar, mal presentacion (falla bootstrap.min.css)
-- 62555 : no actualiza stock, mejorar presentacion
+- 62555 : al agregar al carrito lo reinicia (debe acumular la cantidad)

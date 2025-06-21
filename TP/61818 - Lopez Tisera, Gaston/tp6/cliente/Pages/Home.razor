@@ -1,56 +1,126 @@
-﻿@using Cliente.Services
+﻿@page "/"
+@using Cliente.Services
 @using Cliente.Modelos
-@page "/"
-@inject CarritoService CarritoService
 @inject ApiService ApiService
+@inject CarritoService CarritoService
+@inject FiltroService FiltroService
+
+@implements IDisposable
 
 <div class="home-container">
-    <div style="width:100%;">
-        <h2 class="text-center mb-4" style="font-size:2.5rem;font-weight:700;color:#0d6efd;">
-            <i class="bi bi-shop"></i> Lista de Productos
-        </h2>
-
-        @if (productos is null)
-        {
-            <div class="text-center mt-5">
-                <div class="spinner-border text-primary" role="status"></div>
-                <div class="mt-3" style="font-size:1.3rem;">Cargando productos...</div>
-            </div>
-        }
-        else if (productos.Count == 0)
-        {
-            <div class="alert alert-warning text-center mt-5" style="font-size:1.2rem;">
-                <i class="bi bi-emoji-frown"></i> No se encontraron productos.
-            </div>
-        }
-        else
-        {
-            <div class="productos-grid">
-                @foreach (var producto in productos)
-                {
-                    <div class="producto-card">
-                        <div class="producto-nombre">@producto.Nombre</div>
-                        <div class="producto-descripcion">@producto.Descripcion</div>
-                        <div class="producto-precio">$@producto.Precio</div>
-                        <div class="producto-stock">Stock: @producto.Stock</div>
-                        <button class="agregar-btn mt-auto" @onclick="@(() => AgregarAlCarrito(producto))">
-                            <i class="bi bi-cart-plus"></i> Agregar al carrito
-                        </button>
-                    </div>
-                }
-            </div>
-        }
-    </div>
+    @if (!string.IsNullOrEmpty(aviso))
+    {
+        <div class="alert alert-success text-center" style="font-size:1.1rem;">
+            @aviso
+        </div>
+    }
+    @if (productos is null)
+    {
+        <div class="text-center mt-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-3" style="font-size:1.3rem;">Cargando productos...</div>
+        </div>
+    }
+    else if (!productosFiltrados.Any())
+    {
+        <div class="alert alert-warning text-center mt-5" style="font-size:1.2rem;">
+            <i class="bi bi-emoji-frown"></i> No se encontraron productos.
+        </div>
+    }
+    else
+    {
+        <div class="productos-grid">
+            @foreach (var producto in productosFiltrados)
+            {
+                <div class="producto-card">
+                    <img src="@producto.ImagenUrl" alt="@producto.Nombre" style="width:100%;max-height:180px;object-fit:contain;margin-bottom:1rem;" />
+                    <div class="producto-nombre">@producto.Nombre</div>
+                    <div class="producto-descripcion">@producto.Descripcion</div>
+                    <div class="producto-precio">$@producto.Precio</div>
+                    <div class="producto-stock">Stock: @producto.Stock</div>
+                    <button class="agregar-btn mt-auto" 
+                        @onclick="@(() => AgregarAlCarrito(producto))"
+                        disabled="@(producto.Stock <= 0)"
+                    >
+                        <i class="bi bi-cart-plus"></i> Agregar al carrito
+                    </button>
+                </div>
+            }
+        </div>
+    }    
 </div>
-@code {
-    List<Producto>? productos;
 
+@code {
+    private List<Producto>? productos;
+    private string aviso = "";
+    private System.Timers.Timer? avisoTimer;
     protected override async Task OnInitializedAsync()
     {
+        FiltroService.OnFiltroChanged += StateHasChanged; 
+        CarritoService.OnProductoRemovido += DevolverStock;
         productos = await ApiService.ObtenerProductosAsync();
     }
+
+    public void Dispose()
+    {
+        FiltroService.OnFiltroChanged -= StateHasChanged; 
+        CarritoService.OnProductoRemovido -= DevolverStock;
+    }
+    private void DevolverStock(int productoId, int cantidad)
+    {
+        var prod = productos?.FirstOrDefault(p => p.Id == productoId);
+        if (prod != null)
+        {
+            prod.Stock += cantidad;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
     private void AgregarAlCarrito(Producto producto)
     {
-        CarritoService.AgregarProducto(producto);
+        if (producto.Stock <= 0)
+    {
+        aviso = $"No hay más stock disponible de {producto.Nombre}.";
+        MostrarAvisoTemporal();
+        return;
     }
+        CarritoService.AgregarProducto(producto);
+        producto.Stock--;
+        aviso = $"¡{producto.Nombre} agregado al carrito!";
+        avisoTimer?.Stop();
+        avisoTimer = new System.Timers.Timer(1800);
+        avisoTimer.Elapsed += (s, e) =>
+        {
+            aviso = "";
+            InvokeAsync(StateHasChanged);
+            avisoTimer?.Dispose();
+        };
+        avisoTimer.AutoReset = false;
+        avisoTimer.Start();
+        StateHasChanged();
+    }
+    private void MostrarAvisoTemporal()
+    {
+        avisoTimer?.Stop();
+        avisoTimer = new System.Timers.Timer(1800);
+        avisoTimer.Elapsed += (s, e) =>
+        {
+            aviso = "";
+            InvokeAsync(StateHasChanged);
+            avisoTimer?.Dispose();
+        };
+        avisoTimer.AutoReset = false;
+        avisoTimer.Start();
+        StateHasChanged();
+    }
+    
+    IEnumerable<Producto> productosFiltrados =>
+        productos == null
+            ? Enumerable.Empty<Producto>()
+            : string.IsNullOrWhiteSpace(FiltroService.Filtro)
+                ? productos
+                : productos.Where(p =>
+                    (p.Nombre?.Contains(FiltroService.Filtro, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (p.Descripcion?.Contains(FiltroService.Filtro, StringComparison.OrdinalIgnoreCase) ?? false)
+                );
 }

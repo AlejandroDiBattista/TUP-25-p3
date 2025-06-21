@@ -1,5 +1,6 @@
 namespace cliente.Models
 {
+   
     public class CarritoDto
     {
         public int ProductoId { get; set; }
@@ -8,4 +9,5 @@ namespace cliente.Models
         public string Descripcion { get; set; }
         public int Precio { get; set; }
     }
+
 }

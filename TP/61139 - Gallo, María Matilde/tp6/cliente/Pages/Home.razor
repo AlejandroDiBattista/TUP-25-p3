@@ -1,59 +1,92 @@
 ﻿@page "/"
+@using cliente.Modelos
 @using cliente.Services
+@using cliente.Componentes
+@using Microsoft.AspNetCore.WebUtilities
+
 @inject ApiService ApiService
+@inject NavigationManager Navigation  
+@inject CarritoService CarritoService
 
-<PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
-        </div>
-    </div>
+<h1 class="titulo">Tienda de Zapatillas</h1>
 
-    <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
-                </div>
-            }
-        </div>
+@if (productos is null)
+{
+    <p>Cargando productos...</p>
+}
+else if (!productos.Any())
+{
+    <div class="alert alert-info">No hay productos disponibles.</div>
+}
+else
+{
+    <div class="productos-grid">
+        @foreach (var producto in productos)
+        {
+            <ProductoCard Producto="producto" OnAgregar="AgregarProducto" />
+        }
     </div>
-</div>
+}
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private List<Producto>? productos;
+    private string filtro = "";
+    private string terminoBusqueda = "";
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductosAsync();
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        await CargarProductosAsync();
+        StateHasChanged();
+    }
+
+    private async Task CargarProductosAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("buscar", out var valor))
+        {
+            filtro = valor;
+            terminoBusqueda = filtro; // actualiza input visible
         }
+        else
+        {
+            filtro = "";
+            terminoBusqueda = "";
+        }
+
+        var todos = await ApiService.GetProductosAsync();
+
+        productos = string.IsNullOrWhiteSpace(filtro)
+            ? todos
+            : todos.Where(p => p.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+            Navigation.NavigateTo($"/?buscar={terminoBusqueda}");
+        else
+            Navigation.NavigateTo("/");
+    }
+
+    void AgregarProducto(Producto p)
+    {
+        CarritoService.AgregarProducto(p);
+        Console.WriteLine($"Producto agregado: {p.Nombre}");
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

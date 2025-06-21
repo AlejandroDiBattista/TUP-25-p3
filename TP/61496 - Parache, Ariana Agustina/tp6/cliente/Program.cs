@@ -2,20 +2,12 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using cliente;
 using cliente.Services;
-using cliente.Models;
-using System.Net.Http;
-
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-
-builder.Services.AddHttpClient<ApiService>(client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5000/");
-});
-
-builder.Services.AddScoped<CarritoService>();
-builder.Services.AddScoped<ProductoService>();
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5100") });
+builder.Services.AddScoped<TiendaService>();
 
 await builder.Build().RunAsync();

@@ -1,129 +1,137 @@
 @page "/carrito"
-@inject cliente.Services.CarritoService CarritoService
-@inject HttpClient Http
-@using System.Net.Http.Json
-@using cliente.Modelos
+@inject cliente.Services.ApiService ApiService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Nav
 
-<h3 class="mt-3 mb-4">Carrito de compras</h3>
+@using cliente.Models
+@using cliente.Shared
 
-@if (items == null)
-{
-    <p>Cargando productos...</p>
-}
-else if (!items.Any())
-{
-    <p>Tu carrito está vacío.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in items)
-            {
-                <tr>
-                    <td>@item.Nombre</td>
-                    <td>$@item.Precio</td>
-                    <td>@item.Cantidad</td>
-                    <td>$@(item.Precio * item.Cantidad)</td>
-                    <td>
-                        <button class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(item.Id)">Eliminar</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<PageTitle>Carrito</PageTitle>
 
-    <p class="fw-bold">Total: $@items.Sum(i => i.Precio * i.Cantidad)</p>
+<div class="container main-content carrito-bg">
+    <div class="home-animated-text">
+        <span style="color:#1976d2;">Tu Carrito</span>
+    </div>
+    <div class="home-animated-subtext">
+        Estos son los productos que elegiste. ¡Listo para confirmar tu compra!
+    </div>
 
-    <button class="btn btn-success" @onclick="ConfirmarCompra">Confirmar compra</button>
-}
+    @if (mensajeError is not null)
+    {
+        <div class="alert alert-danger">@mensajeError</div>
+    }
+    else if (items is null || productos is null)
+    {
+        <p class="text-center">Cargando carrito...</p>
+    }
+    else if (!items.Any())
+    {
+        <div class="alert alert-info home-animated-subtext">El carrito está vacío.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover rounded carrito-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        var producto = productos.FirstOrDefault(p => p.Id == item.ProductoId);
+                        if (producto is not null)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="home-image" style="height:60px;width:80px;object-fit:cover;" />
+                                </td>
+                                <td style="vertical-align:middle"><b style="color:#1976d2">@producto.Nombre</b></td>
+                                <td style="vertical-align:middle">
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => Quitar(item.ProductoId)">-</button>
+                                    <span style="margin:0 12px;">@item.Cantidad</span>
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => Agregar(item.ProductoId)">+</button>
+                                </td>
+                                <td style="vertical-align:middle">$@producto.Precio</td>
+                                <td style="vertical-align:middle">$@(producto.Precio * item.Cantidad)</td>
+                                <td style="vertical-align:middle">
+                                    <button class="btn btn-danger btn-sm" @onclick="() => Quitar(item.ProductoId)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div style="margin:20px 0; font-size:1.3em; text-align:right;">
+            <b>Total: $@items.Sum(i => {
+                var prod = productos.FirstOrDefault(p => p.Id == i.ProductoId);
+                return prod is not null ? prod.Precio * i.Cantidad : 0;
+            })</b>
+        </div>
+        <div class="text-center" style="margin:32px 0 0 0">
+            <button class="btn btn-warning btn-lg me-3" @onclick="Vaciar">Vaciar carrito</button>
+            <button class="btn btn-success btn-lg" @onclick="ConfirmarCompra">Confirmar compra</button>
+        </div>
+    }
+</div>
 
 @code {
-    List<Producto>? items = new();
+    List<ItemCarrito>? items;
+    List<Producto>? productos;
+    string? mensajeError;
+    bool carritoRecreado = false;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            var carritoId = await CarritoService.ObtenerCarritoIdAsync();
-            var response = await Http.GetAsync($"/api/carritos/{carritoId}/productos");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"⚠️ Error al obtener el carrito: {response.StatusCode}");
-                items = new List<Producto>();
-                return;
-            }
-
-            var jsonString = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(jsonString))
-            {
-                Console.WriteLine("⚠️ La respuesta de la API está vacía.");
-                items = new List<Producto>();
-                return;
-            }
-
-            items = await response.Content.ReadFromJsonAsync<List<Producto>>() ?? new List<Producto>();
-            Console.WriteLine($"✅ Productos en el carrito: {items.Count}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error al cargar el carrito: {ex.Message}");
-        }
+        await CargarDatos();
     }
 
-    async Task Eliminar(int productoId)
+    private async Task CargarDatos()
     {
-        try
-        {
-            var carritoId = await CarritoService.ObtenerCarritoIdAsync();
-            var response = await Http.DeleteAsync($"/api/carritos/{carritoId}/productos/{productoId}");
+        mensajeError = null;
+        productos = await ApiService.GetProductosAsync();
+        (Guid carritoId, List<ItemCarrito> itemsList, bool recreated) =
+            await CarritoHelper.ObtenerOCrearCarritoValidoAsync(LocalStorage, ApiService);
+        items = itemsList;
+        carritoRecreado = recreated;
 
-            if (response.IsSuccessStatusCode)
-            {
-                items = items!.Where(p => p.Id != productoId).ToList();
-                Console.WriteLine($"✅ Producto {productoId} eliminado del carrito.");
-            }
-            else
-            {
-                Console.WriteLine($"⚠️ No se pudo eliminar el producto: {response.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"🚨 Error al eliminar producto: {ex.Message}");
-        }
+        if (carritoRecreado)
+            mensajeError = "Tu carrito anterior expiró o fue eliminado. Se creó uno nuevo. Agregá productos otra vez.";
     }
 
-    async Task ConfirmarCompra()
+    private async Task Agregar(int productoId)
     {
-        try
-        {
-            var carritoId = await CarritoService.ObtenerCarritoIdAsync();
-            var response = await Http.PostAsync($"/api/carritos/{carritoId}/confirmar", null);
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
+        await CargarDatos();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
+    }
 
-            if (response.IsSuccessStatusCode)
-            {
-                items = new();
-                Console.WriteLine("✅ Compra confirmada");
-            }
-            else
-            {
-                Console.WriteLine($"❌ Error al confirmar la compra: {response.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"🚨 Error al confirmar compra: {ex.Message}");
-        }
+    private async Task Quitar(int productoId)
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        await ApiService.QuitarDelCarritoAsync(carritoId, productoId);
+        await CargarDatos();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
+    }
+
+    private async Task Vaciar()
+    {
+        var carritoId = await LocalStorage.GetItemAsync<Guid>("carritoId");
+        await ApiService.VaciarCarritoAsync(carritoId);
+        await CargarDatos();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
+    }
+
+    private void ConfirmarCompra()
+    {
+        Nav.NavigateTo("/confirmar");
     }
 }

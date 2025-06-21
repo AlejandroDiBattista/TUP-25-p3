@@ -1,8 +1,8 @@
-using Cliente;
+using cliente;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Cliente.Services;
-using Cliente.Modelo;
+using cliente.Services;
+using cliente.Modelo;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

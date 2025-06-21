@@ -35,12 +35,17 @@ namespace cliente.Services
                 return _carritoId.Value;
             }
 
-            var carritoIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", CarritoIdStorageKey);
-
-            if (!string.IsNullOrEmpty(carritoIdString) && Guid.TryParse(carritoIdString, out var storedGuid))
+            var carritoIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", CarritoIdStorageKey);            if (!string.IsNullOrEmpty(carritoIdString) && Guid.TryParse(carritoIdString, out var storedGuid))
             {
-                _carritoId = storedGuid;
-                return _carritoId.Value;
+                try
+                {
+                    await _apiService.GetCarritoAsync(storedGuid);
+                    _carritoId = storedGuid;
+                    return _carritoId.Value;
+                }
+                catch (Exception)
+                {
+                }
             }
 
             var nuevaCompra = await _apiService.CrearCarritoAsync();
@@ -59,7 +64,7 @@ namespace cliente.Services
             if (!_carritoId.HasValue)
             {
                 _carritoId = await GetOrCreateCarritoIdAsyncInternal();
-                if (!_carritoId.HasValue) // Still null after trying to create/get
+                if (!_carritoId.HasValue)
                 {
                      throw new Exception("No se pudo obtener el ID del carrito después de la inicialización.");
                 }

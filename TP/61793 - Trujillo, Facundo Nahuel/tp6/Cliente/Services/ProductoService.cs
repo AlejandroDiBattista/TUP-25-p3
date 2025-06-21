@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
-using Cliente.Modelo;
-using Cliente.Services;
+using cliente.Modelo;
+using cliente.Services;
 
 
-namespace Cliente.Services
+namespace cliente.Services
 {
     public class ProductoService
     {

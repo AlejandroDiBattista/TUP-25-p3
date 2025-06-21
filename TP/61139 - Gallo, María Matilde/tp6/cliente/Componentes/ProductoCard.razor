@@ -1,0 +1,27 @@
+@using cliente.Modelos
+@using cliente.Services
+@inject NavigationManager NavigationManager
+
+<div class="producto-card">
+    <img class="producto-imagen" src="img/@Producto.ImagenUrl" alt="@Producto.Nombre" />
+    <div class="producto-detalles">
+        <h3>@Producto.Nombre</h3>
+        <p class="descripcion">@Producto.Descripcion</p>
+        <p class="precio">@Producto.Precio.ToString("C0", new System.Globalization.CultureInfo("es-AR"))</p>
+        <p class="stock">stock disponible: @Producto.Stock</p>
+        <button class="boton-agregar" @onclick="AgregarAlCarrito">Agregar al carrito</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Producto Producto { get; set; }
+
+    [Parameter] public EventCallback<Producto> OnAgregar { get; set; }
+
+    private async Task AgregarAlCarrito()
+    {
+        if (OnAgregar.HasDelegate)
+            await OnAgregar.InvokeAsync(Producto);
+    }
+}
+

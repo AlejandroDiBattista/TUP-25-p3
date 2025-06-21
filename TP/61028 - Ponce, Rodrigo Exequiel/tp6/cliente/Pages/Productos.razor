@@ -6,61 +6,88 @@
 @inject ServicioCarrito Carritoo
 @inject NavigationManager Nav
 @inject BusquedaService BusquedaService
+@inject HttpClient Http
 
-<h3>Productos</h3>
+<div class="productos-catalogo">
+    <div class="titulo-catalogo">Catálogo</div>
+    <div class="productos-grid">
+        @if (productos == null)
+        {
+            <p>Cargando productos...</p>
+        }
+        else if (!productos.Any())
+        {
+            <p>No hay productos disponibles.</p>
+        }
+        else
+        {
+            @foreach (var producto in productos.Where(p =>
+                string.IsNullOrWhiteSpace(BusquedaService.Busqueda) ||
+                p.Nombre.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase) ||
+                p.Talle.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase)))
+            {
+                <div class="producto-card">
+                    <img src="ROPA/@producto.ImagenUrl"
+                         alt="@producto.Nombre"
+                         onerror="this.onerror=null;this.src='img/default.jpg';" />
+                    <div class="producto-nombre">@producto.Nombre</div>
+                    <div class="producto-talle">Talla: @producto.Talle</div>
+                    <div class="producto-precio">$@producto.Precio</div>
+                    <div class="producto-stock">(Existencias: @producto.Stock)</div>
+                    <button @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
+                        Agregar al carrito
+                    </button>
+                </div>
+            }
+        }
+    </div>
+</div>
 
-@if (productos == null)
+@if (!string.IsNullOrEmpty(mensajeStock))
 {
-    <p>Cargando productos...</p>
+    <p style="color:red">@mensajeStock</p>
 }
-else if (!productos.Any())
-{
-    <p>No hay productos disponibles.</p>
-}
-else
-{
-    @foreach (var producto in productos.Where(p =>
-        string.IsNullOrWhiteSpace(BusquedaService.Busqueda) ||
-        p.Nombre.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase) ||
-        p.Descripcion.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase)))
-    {
-        <div>
-            <span>@producto.Nombre - $@producto.Precio (Stock: @producto.Stock)</span>
-            <button @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
-        </div>
-    }
-}
-
 
 @code {
     List<Producto> productos;
+    string mensajeStock = null;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await Services.ObtenerProductosAsync();
+        await CargarProductos();
     }
 
     protected override void OnInitialized()
     {
-        BusquedaService.OnChange += StateHasChanged;
         Carritoo.OnChange += StateHasChanged;
+        BusquedaService.OnBusquedaChanged += StateHasChanged;
     }
 
     public void Dispose()
     {
-        BusquedaService.OnChange -= StateHasChanged;
         Carritoo.OnChange -= StateHasChanged;
+        BusquedaService.OnBusquedaChanged -= StateHasChanged;
     }
 
-    void AgregarAlCarrito(Producto producto)
+    async Task AgregarAlCarrito(Producto producto)
     {
-        Console.WriteLine("Agregando: " + producto.Nombre);
-        Carritoo.AgregarAlCarrito(producto);
+        var ok = await Carritoo.AgregarAlCarritoAsync(producto, Http);
+        if (ok)
+        {
+            await CargarProductos(); // Recarga productos para actualizar stock
+        }
+    }
+
+    async Task CargarProductos()
+    {
+        productos = await Http.GetFromJsonAsync<List<Producto>>("productos");
+        StateHasChanged();
     }
 
     void IrAlCarrito()
     {
         Nav.NavigateTo("/carrito");
     }
+
 }
 @implements IDisposable

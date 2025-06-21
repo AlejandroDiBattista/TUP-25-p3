@@ -1,13 +1,8 @@
 @using cliente.Models
 @using cliente.Services
-
-@* 
-    Componente que representa una tarjeta de producto en el catálogo.
-    Muestra la información principal del producto y permite agregarlo al carrito.
-*@
+@inject CarritoService CarritoService
 
 <div class="card h-100 shadow-sm">    
-    @* Contenedor de la imagen con tamaño fijo y centrado del contenido *@
     <div class="position-relative" style="height: 200px;">
         <img src="@(imagenError ? imagenPorDefecto : Producto.ImagenUrl)" 
              class="card-img-top p-3 position-absolute w-100 h-100" 
@@ -24,49 +19,31 @@
         </div>
         <button class="btn btn-primary mt-3 w-100" 
                 @onclick="AgregarAlCarrito"
-                disabled="@(Producto.Stock <= 0)">
+                  disabled="@(Producto.Stock <= 0 || CantidadEnCarrito >= 10)"> @*Botón para agregar al carrito, deshabilitado si no hay stock o si ya se alcanzó el máximo permitido*@ 
             @(Producto.Stock > 0 ? "Agregar al carrito" : "Sin stock")
         </button>
     </div>
 </div>
 
 @code {
-    /// <summary>
-    /// Producto a mostrar en la tarjeta
-    /// </summary>
     [Parameter]
     public ProductoDTO Producto { get; set; } = default!;
-
-    /// <summary>
-    /// Servicio para gestionar el carrito de compras
-    /// </summary>
-    [Inject]
-    public CarritoService Carrito { get; set; } = default!;
-
-    /// <summary>
-    /// Servicio para interactuar con JavaScript
-    /// </summary>
-    [Inject]
-    private IJSRuntime JSRuntime { get; set; } = default!;
 
     private bool imagenError = false;
     private string imagenPorDefecto = "images/no-image.png";
 
-    /// <summary>
-    /// Agrega el producto al carrito si hay stock disponible
-    /// </summary>
+    // Obtiene la cantidad actual de este producto en el carrito
+    private int CantidadEnCarrito => CarritoService.ObtenerItems()
+                                       .FirstOrDefault(i => i.ProductoId == Producto.Id)?.Cantidad ?? 0;
+
     private void AgregarAlCarrito()
     {
-        if (Producto.Stock > 0)
+        if (Producto.Stock > 0 && CantidadEnCarrito < 10)
         {
-            Carrito.AgregarItem(Producto);
-            JSRuntime.InvokeVoidAsync("alert", $"{Producto.Nombre} agregado al carrito");
+            CarritoService.AgregarItem(Producto);
         }
     }
 
-    /// <summary>
-    /// Maneja el error de carga de la imagen del producto
-    /// </summary>
     private void OnImageError()
     {
         imagenError = true;

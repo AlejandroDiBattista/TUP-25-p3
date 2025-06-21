@@ -21,7 +21,8 @@
             <div class="card-body">
                 <h5 class="card-title">@p.Nombre</h5>
                 <p class="card-text">@p.Descripcion</p>
-                <p class="card-text"><strong>Stock:</strong> @p.Stock unidades</p>
+                <p class="card-text"><strong>Stock:</strong> @GetStockTemporal(p.Id, p.Stock) unidades</p>
+
                 <p class="card-text text-success"><strong>Precio:</strong> $@p.Precio.ToString()</p>
                 @if (p is ItemCompraGtDto item)
                 {
@@ -30,32 +31,38 @@
                 <div class="d-grid gap-2">
                     @if (ApiService.Compra != null)
                     {
+
                         <div class="d-flex justify-content-center align-items-center gap-2">
                             <button type="button" class="btn btn-outline-primary"
                                 @onclick="()=>ModificarCantidad(p.Id, -1)">-</button>
 
-                            <input type="number" meta-id="@p.Id" min="0" max="@p.Stock"
-                                value="@((p is ItemCompraGtDto c ? c.Cantidad : cantidades[p.Id]))"
-                                @onchange="(e) => CapturarCantidad(p.Id, e.Value)"
+                            <input type="number" disabled meta-id="@p.Id" min="0" max="@p.Stock" value="@cantidades[p.Id]"
                                 class="form-control text-center w-auto border-bottom border-primary" style="max-width: 80px;">
 
                             <button type="button" class="btn btn-outline-primary"
                                 @onclick="()=>ModificarCantidad(p.Id, 1)">+</button>
                         </div>
 
+
                         <button type="button" class="btn btn-primary"
-                            @onclick="async () => AgregarCarrito(p.Id, p.Precio, p.Stock, p.Nombre)">Agregar
-                            Carrito</button>
+                            @onclick="async () => AgregarCarrito(p.Id, p.Precio, p.Stock, p.Nombre)">
+                            Agregar/Modificar Carrito
+                        </button>
                         @if (Navigation.Uri.Contains("/carrito"))
                         {
+
                             <button type="button" class="btn btn-danger"
                                 @onclick="async () => EliminarDelCarrito(p.Id)">Eliminar</button>
                         }
 
+
                     }
                     else
                     {
-                        <button type="button" class="btn btn-primary" @onclick="InicairCarrito">Iniciar compra</button>
+                        if (!Navigation.Uri.Contains("/historial"))
+                        {
+                            <button type="button" class="btn btn-primary" @onclick="InicairCarrito">Iniciar compra</button>
+                        }
 
                     }
                 </div>
@@ -68,17 +75,17 @@
 @code {
 
     private Dictionary<int, int> cantidades = new Dictionary<int, int>();
-
+    private Dictionary<int, int> cantidadesPrevias = new Dictionary<int, int>();
 
     protected override async Task OnInitializedAsync()
     {
-        ApiService.OnChange += StateHasChanged;
         InicializarListaCantidades();
+
     }
 
     public void Dispose()
     {
-        ApiService.OnChange -= StateHasChanged;
+        @* ApiService.OnChange -= StateHasChanged; *@
     }
 
 
@@ -94,59 +101,53 @@
         }
     }
 
-    void CapturarCantidad(int productoId, object valor)
-    {
-        if (int.TryParse(valor.ToString(), out int cantidad))
-        {
-            cantidades[productoId] = Math.Max(0, cantidad); // Evita valores negativos
-        }
-    }
+
 
     void ModificarCantidad(int productoId, int cambio)
     {
+
         if (!cantidades.ContainsKey(productoId))
         {
             cantidades[productoId] = 0;
         }
         cantidades[productoId] = Math.Max(0, cantidades[productoId] + cambio);
+
     }
+
+    private int GetStockTemporal(int productoId, int stockOriginal)
+    {
+
+        if (cantidades.ContainsKey(productoId) && cantidadesPrevias.ContainsKey(productoId))
+        {
+            var diferencia = cantidades[productoId] - cantidadesPrevias[productoId];
+            return stockOriginal - diferencia;
+        }
+        return stockOriginal;
+    }
+
+
 
     public void InicializarListaCantidades()
     {
+        cantidades.Clear();
+        cantidadesPrevias.Clear();
+        foreach (var x in ApiService.ListaProductos)
+        {
+            Console.WriteLine($"{x.Nombre}-{x.Cantidad}");
+        }
         foreach (var p in Items ?? new List<T>())
         {
-            if (!cantidades.ContainsKey(p.Id))
-            {
-                cantidades[p.Id] = 0; // Inicializa con 0
-            }
-        }
-    }
+            int cantidad = 0;
 
-    public async Task AgregarCarrito(int id, decimal precio, int stock, string nombre)
-    {
-        try
-        {
-            var cantidad = cantidades[id];
-            if (cantidad <= stock)
+            var encontrado = ApiService.ListaProductos.FirstOrDefault(x => x.ProductoId == p.Id);
+            if (encontrado != null)
             {
-                var data = new ItemCompraDto
-                {
-                    ProductoId = id,
-                    Cantidad = cantidades[id],
-                    PrecioUnitario = precio
-                };
-                await ApiService.AgregarProductoAlCarrito(data, nombre, stock);
+                cantidad = encontrado.Cantidad;
 
             }
-            else
-            {
-                Console.WriteLine($"Sobrepasa el stock disponible");
-            }
 
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+            cantidades[p.Id] = cantidad;
+            cantidadesPrevias[p.Id] = cantidad; // Inicializa la cantidad previa igual a la actual
         }
     }
 
@@ -155,13 +156,52 @@
         try
         {
             await ApiService.ElimarDelCarrito(idP);
-            Console.WriteLine($"Producto Eliminado");
 
+            var cantidad = cantidades[idP];
+            await ApiService.CambiarStockProd(idP, cantidad);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
         }
     }
+
+
+    public async Task AgregarCarrito(int id, decimal precio, int stock, string nombre)
+    {
+        try
+        {
+            var cantidadActual = cantidades[id];
+            var cantidadAnterior = cantidadesPrevias.ContainsKey(id) ? cantidadesPrevias[id] : 0;
+            var diferencia = cantidadActual - cantidadAnterior;
+            if (cantidadActual <= stock && cantidadActual > 0 && diferencia != 0)
+            {
+                var data = new ItemCompraDto
+                {
+                    ProductoId = id,
+                    Cantidad = cantidadActual,
+                    PrecioUnitario = precio
+                };
+                await ApiService.AgregarProductoAlCarrito(data, nombre, stock);
+                await ApiService.CambiarStockProd(id, -diferencia); // Solo resta la diferencia
+                cantidadesPrevias[id] = cantidadActual; // Actualiza la cantidad previa
+                Console.WriteLine($"{cantidadActual}");
+
+            }
+            else if (diferencia == 0)
+            {
+                Console.WriteLine($"No hay cambio en la cantidad, no se actualiza el stock");
+            }
+            else
+            {
+                Console.WriteLine($"Sobrepasa el stock disponible");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+        }
+    }
+
 
 }

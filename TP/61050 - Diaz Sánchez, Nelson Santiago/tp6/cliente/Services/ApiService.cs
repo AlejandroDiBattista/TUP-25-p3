@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using cliente.Models; 
+using cliente.Models;
 using cliente.DTOs;
 
 namespace cliente.Services;
@@ -35,19 +35,24 @@ public class ApiService
             return new List<Producto>();
         }
     }
-    public async Task<bool> ConfirmarCompraAsync(CompraDTO compra)
+    public async Task<bool> ReservarProductoAsync(ReservacionDTO reserva)
 {
-    try
-    {
-        var response = await _httpClient.PutAsJsonAsync("api/ControladorCarrito/confirmar", compra);
-        return response.IsSuccessStatusCode;
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error al confirmar la compra: {ex.Message}");
-        return false;
-    }
+    var response = await _httpClient.PostAsJsonAsync("api/reservas", reserva); 
+    return response.IsSuccessStatusCode;
 }
+    public async Task<bool> ConfirmarCompraAsync(CompraDTO compra)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync("api/ControladorCarrito/confirmar", compra);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al confirmar la compra: {ex.Message}");
+            return false;
+        }
+    }
 }
 
 

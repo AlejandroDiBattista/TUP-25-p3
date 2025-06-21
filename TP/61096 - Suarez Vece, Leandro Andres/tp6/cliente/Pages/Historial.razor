@@ -91,7 +91,7 @@ else
         
         ApiService.OnChange += StateHasChanged;
         ApiService.OnBuscar += OnBuscar;
-        await ObtenerDatosDelServidor();
+        await ObtenerDatos();
 
     }
 
@@ -109,7 +109,7 @@ else
         ApiService.OnBuscar -= OnBuscar;
     }
 
-    private async Task ObtenerDatosDelServidor()
+    private async Task ObtenerDatos()
     {
         try
         {
@@ -126,7 +126,7 @@ else
 
     private async void OnBuscar(string texto)
     {
-        await ObtenerDatosDelServidor(texto);
+        await ObtenerDatos();
         StateHasChanged();
     }
   

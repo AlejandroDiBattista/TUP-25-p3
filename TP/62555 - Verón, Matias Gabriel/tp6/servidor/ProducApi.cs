@@ -140,13 +140,43 @@ public static class ProductoApi
             }
             else
             {
+                item.Cantidad += cantidad;
+            }
+
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        });
+        // Endpoint para setear la cantidad absoluta de un producto en el carrito (sin modificar stock real)
+        app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}/cantidad", async (
+            int carritoId,
+            int productoId,
+            [FromBody] int cantidad,
+            TiendaContext db) =>
+        {
+            if (cantidad < 1)
+                return Results.BadRequest("Cantidad inválida.");
+
+            var carrito = await db.Carritos.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == carritoId);
+            if (carrito == null)
+                return Results.NotFound("Carrito no encontrado.");
+
+            var producto = await db.Productos.FindAsync(productoId);
+            if (producto == null)
+                return Results.NotFound("Producto no encontrado.");
+
+            var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+            if (item == null)
+            {
+                carrito.Items.Add(new ItemCarrito { ProductoId = productoId, Cantidad = cantidad });
+            }
+            else
+            {
                 item.Cantidad = cantidad;
             }
 
             await db.SaveChangesAsync();
             return Results.Ok();
         });
-        //
     
 
         app.MapGet("/api/carritos/{carritoId:int}", async (int carritoId, TiendaContext db) =>

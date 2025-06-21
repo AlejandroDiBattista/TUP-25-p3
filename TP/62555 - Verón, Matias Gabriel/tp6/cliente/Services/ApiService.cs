@@ -81,18 +81,17 @@ public partial class ApiService
     public async Task<bool> AgregarProductoAlCarrito(int carritoId, int productoId, int cantidad)
     {
         try
-    {
-        var response = await _httpClient.PutAsJsonAsync(
-            $"/api/carritos/{carritoId}/{productoId}",
-            cantidad // Envía solo el número, no un objeto
-        );
-        return response.IsSuccessStatusCode;
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error agregando producto: {ex.Message}");
-        return false;
-    }
+        {
+            // Enviar la cantidad en el body como int
+            var response = await _httpClient.PutAsJsonAsync(
+                $"/api/carritos/{carritoId}/{productoId}", cantidad);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error agregando producto: {ex.Message}");
+            return false;
+        }
     }
 
     public async Task<(bool Success, string Message)> QuitarProductoDelCarrito(int carritoId, int productoId)
@@ -139,5 +138,19 @@ public async Task<CompraResumen?> ConfirmarCompra(int carritoId, CompraDTO compr
             return await response.Content.ReadFromJsonAsync<CompraResumen>();
         }
         return null;
+    }
+
+    public async Task<bool> SetearCantidadProductoEnCarrito(int carritoId, int productoId, int cantidad)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/carritos/{carritoId}/{productoId}/cantidad", cantidad);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error seteando cantidad: {ex.Message}");
+            return false;
+        }
     }
 }

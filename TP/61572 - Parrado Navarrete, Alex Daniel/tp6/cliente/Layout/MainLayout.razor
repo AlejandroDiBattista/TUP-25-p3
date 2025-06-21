@@ -1,0 +1,35 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject CartState CartState
+@inject HttpClient Http
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">
+      <img src="images/logo.png" alt="Maxikiosko" width="32" height="32" class="me-2" />
+      Maxikiosko
+    </a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/carrito">
+            🛒 Carrito (@CartState.ItemCount)
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  @Body
+</div>
+
+@code {
+  protected override async Task OnInitializedAsync()
+  {
+    CartState.OnChange += StateHasChanged;
+    await CartState.RefreshCountAsync(Http);
+  }
+  public void Dispose() => CartState.OnChange -= StateHasChanged;
+}

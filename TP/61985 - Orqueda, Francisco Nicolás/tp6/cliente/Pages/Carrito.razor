@@ -37,7 +37,7 @@ else
                         <button @onclick="() => CambiarCantidad(item.ProductoId, item.Cantidad + 1)">+</button>
                     </td>
                     <td>@item.Producto?.Precio.ToString("C")</td>
-                    <td>@((item.Producto?.Precio ?? 0) * item.Cantidad).ToString("C")</td>
+                    <td>@((item.Producto?.Precio ?? 0) * item.Cantidad)</td>
                     <td>
                         <button @onclick="() => QuitarProducto(item.ProductoId)">Quitar</button>
                     </td>

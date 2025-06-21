@@ -79,6 +79,10 @@ namespace cliente.Services {
         public async Task ActualizarCantidadProductoAsync(Guid carritoId, int productoId, int cantidad) {
             await _httpClient.PutAsync($"/api/carritos/{carritoId}/{productoId}?cantidad={cantidad}&set=true", null);
         }
+
+        public async Task DisminuirCantidadAsync(Guid carritoId, int productoId, int cantidadARestar) {
+            await _httpClient.PostAsJsonAsync($"api/carritos/{carritoId}/disminuir", new { productoId, cantidad = cantidadARestar });
+        }
     }
 
     public class DatosRespuesta {

@@ -1,0 +1,36 @@
+@page "/comprobante"
+@using Microsoft.AspNetCore.Components
+
+@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter, SupplyParameterFromQuery]
+    public string Nombre { get; set; }
+    [Parameter, SupplyParameterFromQuery]
+    public string Apellido { get; set; }
+    [Parameter, SupplyParameterFromQuery]
+    public string Email { get; set; }
+    [Parameter, SupplyParameterFromQuery]
+    public string Total { get; set; }
+
+    decimal TotalDecimal => decimal.TryParse(Total, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var t) ? t : 0;
+}
+
+<div class="comprobante-container">
+    <h2>¡Gracias por tu compra!</h2>
+    <p>Tu pedido ha sido registrado correctamente.</p>
+    <div class="comprobante-datos">
+        <div><span class="comprobante-label">Nombre:</span> <span>@Nombre</span></div>
+        <div><span class="comprobante-label">Apellido:</span> <span>@Apellido</span></div>
+        <div><span class="comprobante-label">Email:</span> <span>@Email</span></div>
+        <div><span class="comprobante-label">Total:</span> <span>$@TotalDecimal</span></div>
+    </div>
+    <button @onclick="VolverAlCatalogo">Volver al catálogo</button>
+</div>
+
+@code {
+    void VolverAlCatalogo()
+    {
+        NavigationManager.NavigateTo("/productos");
+    }
+}

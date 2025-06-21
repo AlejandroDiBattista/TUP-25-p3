@@ -4,31 +4,53 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject AppState AppState
+@inject IToastService ToastService
+
+<style>
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+
+    .card:hover {
+        transform: scale(1.04);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+</style>
 
 <h2 class="fw-bold text-center text-dark mb-4">Catálogo de Iphones</h2>
 
-@if (AppState.Productos is null)
+<div class="mb-4">
+    <form class="d-flex" style="max-width: 400px;" @onsubmit="BuscarProductos">
+        <input class="form-control me-2" type="search" placeholder="Buscar productos..." @bind="busqueda" />
+        <button class="btn btn-outline-success" type="submit">Buscar</button>
+    </form>
+</div>
+
+@if (productos is null)
 {
     <p>Cargando productos...</p>
 }
-else if (AppState.Productos.Count == 0)
+else if (productos.Count == 0)
 {
     <p>No hay productos para mostrar.</p>
 }
 else
 {
     <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var producto in AppState.Productos)
+        @foreach (var producto in productos)
         {
             <div class="col" @key="producto">
                 <div class="card h-100 shadow-sm border-0 rounded-4">
                     @if (!string.IsNullOrEmpty(producto.ImagenUrl))
                     {
-                        <img src="@producto.ImagenUrl" class="card-img-top p-3" alt="@producto.Nombre" style="max-height: 180px; object-fit: contain; border-radius: 1rem;" />
+                        <img src="@producto.ImagenUrl" class="card-img-top p-3" alt="@producto.Nombre"
+                            style="max-height: 180px; object-fit: contain; border-radius: 1rem;" />
                     }
                     <div class="card-body">
-                        <h5 class="card-title fw-bold text-dark">@producto.Nombre</h5>
-                        <p class="card-text text-muted">@producto.Descripcion</p>
+                        <h5 class="card-title fw-bold">@producto.Nombre</h5>
+                        <p class="card-text">@producto.Descripcion</p>
                     </div>
                     <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
                         <div>
@@ -36,8 +58,7 @@ else
                             <span class="text-secondary small ms-2">Stock: @producto.Stock</span>
                         </div>
                         <button class="btn btn-outline-primary rounded-pill d-flex align-items-center"
-                                @onclick="() => AgregarAlCarrito(producto.Id, producto.Stock)"
-                                disabled="@((producto.Stock == 0))">
+                            @onclick="() => AgregarAlCarrito(producto.Id, producto.Stock)" disabled="@((producto.Stock == 0))">
                             <i class="bi bi-cart-plus me-2"></i> Agregar
                         </button>
                     </div>
@@ -53,43 +74,76 @@ else
 }
 
 @code {
+    string busqueda = "";
     string carritoId;
     string mensaje;
+    List<Producto> productos;
 
     protected override async Task OnInitializedAsync()
     {
-        AppState.OnProductosChange += StateHasChanged;
+        busqueda = "";
+        await BuscarProductos();
     }
 
-    async Task<string> ObtenerOCrearCarritoId()
+    async Task BuscarProductos()
+    {
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync(busqueda);
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
+        }
+    }
+
+    async Task<string> ObtenerCarrito()
     {
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
         if (string.IsNullOrEmpty(id))
         {
-            id = await ApiService.CrearCarritoAsync();
-            id = id.Trim('"');
-            await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
+            return await CrearCarrito();
         }
+
+        try
+        {
+            var items = await ApiService.ObtenerCarritoAsync(id);
+            return id;
+        }
+        catch (Exception ex)
+        {
+            return await CrearCarrito();
+        }
+    }
+
+    async Task<string> CrearCarrito()
+    {
+        string id = await ApiService.CrearCarritoAsync();
+        id = id.Trim('"');
+        await JS.InvokeVoidAsync("localStorage.setItem", "carritoId", id);
         return id;
     }
 
     async Task AgregarAlCarrito(int productoId, int stock)
     {
-        carritoId = await ObtenerOCrearCarritoId();
-        if (stock > 0)
+        try
         {
-            await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, 1);
-            Navigation.NavigateTo("/carrito"); 
-        }
-        else
-        {
-            mensaje = "No hay stock disponible.";
-        }
-        StateHasChanged();
-    }
+            carritoId = await ObtenerCarrito();
 
-    public void Dispose()
-    {
-        AppState.OnProductosChange -= StateHasChanged;
+            await ApiService.AgregarOActualizarProductoEnCarritoAsync(carritoId, productoId, 1);
+            mensaje = "Producto agregado al carrito.";
+            var items = await ApiService.ObtenerCarritoAsync(carritoId);
+            AppState.ContadorCarrito = items?.Sum(p => p.Cantidad) ?? 0;
+
+            ToastService.ShowInfo("Producto agregado al carrito");
+
+            await BuscarProductos();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Ocurrió un error {ex.Message}");
+        }
     }
 }

@@ -1,89 +1,514 @@
 @page "/confirmacion"
-@using cliente.Modelos
-@using cliente.Services
+@inject NavigationManager Navigation
 @inject CartService CartService
-@inject NavigationManager NavigationManager
+@inject ApiService ApiService
 
 <PageTitle>Confirmar Compra</PageTitle>
 
-<h3>Confirmación de Compra</h3>
-
-@if (isProcessing)
-{
-    <p><em>Procesando su compra...</em></p>
-}
-else
-{
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Resumen del Pedido</h4>
-            <ul class="list-group mb-3">
-                <li class="list-group-item d-flex justify-content-between lh-sm">
-                    <div>
-                        <h6 class="my-0">Total de productos</h6>
-                        <small class="text-muted">Cantidad de items diferentes</small>
-                    </div>
-
-                    <span class="text-muted">@CartService.Items.Count</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Total (ARS)</span>
-            
-                    <strong>@CalcularTotal().ToString("C")</strong>
-                </li>
-            </ul>
-        </div>
-        <div class="col-md-6">
-            <h4>Datos de Contacto</h4>
-            <EditForm Model="@cliente" OnValidSubmit="HandleValidSubmit">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <InputText id="nombre" class="form-control" @bind-Value="cliente.NombreCliente" />
-                </div>
-                <div class="mb-3">
-                    <label for="apellido" class="form-label">Apellido</label>
-                    <InputText id="apellido" class="form-control" @bind-Value="cliente.ApellidoCliente" />
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <InputText type="email" id="email" class="form-control" @bind-Value="cliente.EmailCliente" />
-                </div>
-                
-                <hr class="my-4">
-
-                <button class="w-100 btn btn-primary btn-lg" type="submit">Confirmar y Pagar</button>
-            </EditForm>
-        </div>
-    </div>
-}
-
-
-@code {
-    private DatosCliente cliente = new();
-    private bool isProcessing = false;
-
-    private async Task HandleValidSubmit()
+<div class="confirmation-container">
+    @if (CartService.Items.Any())
     {
-        isProcessing = true;
-        await CartService.ConfirmPurchaseAsync(cliente);
-        isProcessing = false;
-        NavigationManager.NavigateTo("/compra-exitosa");
+        <div class="confirmation-content">
+            <header class="confirmation-header">
+                <h1 class="page-title">
+                    <svg class="title-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Confirmar Compra
+                </h1>
+                <p class="page-subtitle">Revisa tu pedido y completa tus datos</p>
+            </header>
+
+            <div class="confirmation-grid">
+                <div class="order-summary">
+                    <div class="summary-card">
+                        <h2 class="section-title">Resumen del Pedido</h2>
+                        
+                        <div class="order-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Total de productos:</span>
+                                <span class="stat-value">@CartService.ItemCount</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Importe total:</span>
+                                <span class="stat-value total-amount">@CartService.Items.Sum(i => i.Cantidad * i.PrecioUnitario).ToString("C")</span>
+                            </div>
+                        </div>
+
+                        <div class="order-items">
+                            @foreach (var item in CartService.Items.Take(3))
+                            {
+                                <div class="order-item">
+                                    <div class="item-info">
+                                        <span class="item-name">Producto ID: @item.ProductoId</span>
+                                        <span class="item-quantity">@item.Cantidad x @item.PrecioUnitario.ToString("C")</span>
+                                    </div>
+                                    <span class="item-total">@((item.Cantidad * item.PrecioUnitario).ToString("C"))</span>
+                                </div>
+                            }
+                            @if (CartService.Items.Count > 3)
+                            {
+                                <div class="more-items">
+                                    y @(CartService.Items.Count - 3) producto(s) más...
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="customer-form">
+                    <div class="form-card">
+                        <h2 class="section-title">Datos del Cliente</h2>
+                        
+                        <EditForm Model="datosCliente" OnValidSubmit="HandleConfirmPurchase">
+                            <DataAnnotationsValidator />
+                            
+                            <div class="form-group">
+                                <label for="nombre" class="form-label">
+                                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    Nombre *
+                                </label>
+                                <InputText id="nombre" 
+                                          class="form-input" 
+                                          @bind-Value="datosCliente.Nombre" 
+                                          placeholder="Ingresa tu nombre" />
+                                <ValidationMessage For="() => datosCliente.Nombre" class="validation-message" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="apellido" class="form-label">
+                                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    Apellido *
+                                </label>
+                                <InputText id="apellido" 
+                                          class="form-input" 
+                                          @bind-Value="datosCliente.Apellido" 
+                                          placeholder="Ingresa tu apellido" />
+                                <ValidationMessage For="() => datosCliente.Apellido" class="validation-message" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email" class="form-label">
+                                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    Email *
+                                </label>
+                                <InputText id="email" 
+                                          type="email" 
+                                          class="form-input" 
+                                          @bind-Value="datosCliente.Email" 
+                                          placeholder="ejemplo@correo.com" />
+                                <ValidationMessage For="() => datosCliente.Email" class="validation-message" />
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" 
+                                        class="back-btn" 
+                                        @onclick='() => Navigation.NavigateTo("/carrito")'>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M19 12H5"></path>
+                                        <path d="M12 19l-7-7 7-7"></path>
+                                    </svg>
+                                    Volver al Carrito
+                                </button>
+                                
+                                <button type="submit" 
+                                        class="confirm-btn" 
+                                        disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <div class="btn-spinner"></div>
+                                        <span>Procesando...</span>
+                                    }
+                                    else
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 12l2 2 4-4"></path>
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                        </svg>
+                                        <span>Confirmar Compra</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <svg class="empty-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="m1 1 4 4 16 3 -4 8H7L5 6H2"></path>
+            </svg>
+            <h2 class="empty-title">No hay nada que confirmar</h2>
+            <p class="empty-subtitle">Tu carrito está vacío. Agrega algunos productos para continuar.</p>
+            <button class="shop-btn" @onclick='() => Navigation.NavigateTo("/")'>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+                Volver al Catálogo
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .confirmation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fafafa;
+        min-height: 100vh;
     }
 
-    private decimal CalcularTotal()
+    .confirmation-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 40px 20px;
+    }
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 2.2rem;
+        font-weight: 300;
+        color: #333;
+        margin: 0 0 12px 0;
+    }
+
+    .title-icon {
+        color: #28a745;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: #666;
+        margin: 0;
+    }
+
+    .confirmation-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+
+    .summary-card, .form-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        height: fit-content;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 24px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .order-stats {
+        margin-bottom: 24px;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 16px;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .total-amount {
+        font-size: 20px;
+        color: #28a745;
+    }
+
+    .order-items {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8f8f8;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .item-name {
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .item-quantity {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .item-total {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .more-items {
+        padding: 12px 0;
+        font-style: italic;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .field-icon {
+        color: #666;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: 16px;
+        background: #fff;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .form-input:focus {
+        border-color: #333;
+        box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+    }
+
+    .validation-message {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+    }
+
+    .back-btn {
+        background: #fff;
+        color: #666;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .back-btn:hover {
+        border-color: #333;
+        color: #333;
+    }
+
+    .confirm-btn {
+        background: #333;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 2;
+        justify-content: center;
+    }
+
+    .confirm-btn:hover:not(:disabled) {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    .confirm-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .empty-icon {
+        color: #ccc;
+        margin-bottom: 24px;
+    }
+
+    .empty-title {
+        font-size: 1.8rem;
+        font-weight: 300;
+        color: #333;
+        margin: 0 0 12px 0;
+    }
+
+    .empty-subtitle {
+        color: #666;
+        margin: 0 0 32px 0;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .shop-btn {
+        background: #333;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 28px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .shop-btn:hover {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    @@media (max-width: 768px) {
+        .confirmation-container {
+            padding: 16px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .confirmation-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .summary-card, .form-card {
+            padding: 24px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .back-btn, .confirm-btn {
+            flex: 1;
+        }
+    }
+</style>
+
+@code {
+    private DatosClienteDto datosCliente = new() { Nombre = "", Apellido = "", Email = "" };
+    private bool isSubmitting = false;
+
+    private async Task HandleConfirmPurchase()
     {
-        decimal total = 0;
-        foreach(var item in CartService.Items)
+        isSubmitting = true;
+        if (CartService.CartId.HasValue)
         {
-            var producto = CartService.GetProductDetails(item.Key); 
-            if (producto != null)
+            var compra = await ApiService.ConfirmPurchaseAsync(CartService.CartId.Value, datosCliente);
+            if (compra != null)
             {
-                total += producto.Precio * item.Value; 
+                await CartService.EmptyCartAsync(); 
+                Navigation.NavigateTo("/compra-exitosa");
+            }
+            else
+            {
+                isSubmitting = false;
             }
         }
-        return total;
     }
 }

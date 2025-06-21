@@ -9,6 +9,7 @@ namespace cliente.Services {
 
         public int CantidadTotal => productosEnCarrito.Sum(p => p.Cantidad);
 
+        public List<Producto> ProductosConStock { get; set; } = new();
         public List<Producto> ObtenerCarrito()
         {
             return productosEnCarrito;

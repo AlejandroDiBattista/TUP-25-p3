@@ -37,6 +37,14 @@ app.MapGet("/productos", async (TiendaDbContext db, string? query) =>
 
     return Results.Ok(productos);
 });
+// Buscar Imagenes de productos
+app.MapPost("/productos", async (TiendaDbContext db) =>
+{
+    db.Productos.RemoveRange(db.Productos);
+    await db.SaveChangesAsync();
+
+    return Results.Ok("Productos cargados correctamente");
+});
 app.MapPost("/carritos", () =>
 {
     var carrito = new Carrito();
@@ -173,5 +181,5 @@ app.MapGet("/compras/{id:int}", async (int id, TiendaDbContext db) =>
     return Results.Ok(compra);
 });
 
-
+app.UseStaticFiles();
 app.Run();

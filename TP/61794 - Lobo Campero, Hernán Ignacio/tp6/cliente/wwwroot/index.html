@@ -106,6 +106,42 @@
             }
         };
         
+        window.replaceToast = (oldToastId, newToastId, duration) => {
+            const oldElement = oldToastId ? document.getElementById('toast-' + oldToastId) : null;
+            const newElement = document.getElementById('toast-' + newToastId);
+            
+            if (oldElement) {
+                const oldToast = bootstrap.Toast.getInstance(oldElement);
+                if (oldToast) {
+                    oldToast.hide();
+                }
+            }
+            
+            if (newElement) {
+                setTimeout(() => {
+                    const newToast = new bootstrap.Toast(newElement, { delay: duration });
+                    newToast.show();
+                }, 100);
+            }
+        };
+        
+        window.refreshToast = (toastId, duration) => {
+            const toastElement = document.getElementById('toast-' + toastId);
+            if (toastElement) {
+                const toast = bootstrap.Toast.getInstance(toastElement);
+                if (toast) {
+                    toast.hide();
+                    setTimeout(() => {
+                        const newToast = new bootstrap.Toast(toastElement, { delay: duration });
+                        newToast.show();
+                    }, 100);
+                } else {
+                    const newToast = new bootstrap.Toast(toastElement, { delay: duration });
+                    newToast.show();
+                }
+            }
+        };
+        
         // Función para ocultar el loader inicial cuando Blazor cargue
         window.hideInitialLoader = () => {
             const loader = document.getElementById('initial-loader');

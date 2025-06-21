@@ -1,66 +1,129 @@
 @page "/confirmacion"
-@using cliente.Models
-@using cliente.Services
-@inject CarritoService CarritoService
-@inject NavigationManager NavManager
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@using System.Net.Http.Json
 
-<PageTitle>Confirmación</PageTitle>
+<h2>Confirmar Compra</h2>
 
-@if (CarritoService.TotalItems == 0)
+@if (!string.IsNullOrEmpty(mensajeExito))
 {
-    <div class="alert alert-warning">Carrito vacío. Volviendo...</div>
+    <div class="alert alert-success text-center" role="alert">
+        @mensajeExito
+    </div>
+}
+
+@if (items == null)
+{
+    <p>Cargando resumen...</p>
+}
+else if (!items.Any())
+{
+    <div class="alert alert-info">El carrito está vacío.</div>
 }
 else
 {
-    <div>
-        <h4>Resumen</h4>
-        <p>Total ítems: @CarritoService.TotalItems</p>
-        <p>Total a pagar: $@CarritoService.TotalImporte</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>$@item.Producto.Precio</td>
+                    <td>@item.Cantidad</td>
+                    <td>$@item.Importe</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="text-end">
+        <b>Total: $@items.Sum(i => i.Importe)</b>
     </div>
-
-    <EditForm Model="cliente" OnValidSubmit="OnSubmit">
+    <EditForm Model="cliente" OnValidSubmit="ConfirmarCompra">
         <DataAnnotationsValidator />
         <ValidationSummary />
-        <InputText @bind-Value="cliente.Nombre" placeholder="Nombre" class="form-control mb-2" />
-        <InputText @bind-Value="cliente.Apellido" placeholder="Apellido" class="form-control mb-2" />
-        <InputText type="email" @bind-Value="cliente.Email" placeholder="Email" class="form-control mb-2" />
-        <button type="submit" class="btn btn-success">Confirmar</button>
+        <div class="mb-2">
+            <label>Nombre</label>
+            <InputText class="form-control" @bind-Value="cliente.NombreCliente" required />
+        </div>
+        <div class="mb-2">
+            <label>Apellido</label>
+            <InputText class="form-control" @bind-Value="cliente.ApellidoCliente" required />
+        </div>
+        <div class="mb-2">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="cliente.EmailCliente" required />
+        </div>
+        <button class="btn btn-success mt-2" type="submit">Confirmar compra</button>
     </EditForm>
-
-    @if (mensaje != null)
-    {
-        <div class="alert alert-info mt-3">@mensaje</div>
-    }
 }
 
 @code {
-    private ClienteDTO cliente = new();
-    private string mensaje;
+    private Guid? carritoId;
+    private List<ItemCarrito>? items;
+    private ClienteCompra cliente = new();
+    private string? mensajeExito;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        CarritoService.OnChange += StateHasChanged;
+        var idStr = await JS.InvokeAsync<string>("localStorage.getItem", "carritoId");
+        if (Guid.TryParse(idStr, out var id))
+            carritoId = id;
+
+        if (carritoId != null)
+            items = await Http.GetFromJsonAsync<List<ItemCarrito>>($"/carritos/{carritoId}");
     }
 
-    private async Task OnSubmit()
+    private async Task ConfirmarCompra()
     {
-        try
+        if (carritoId == null)
+            return;
+
+        var response = await Http.PutAsJsonAsync($"/carritos/{carritoId}/confirmar", cliente);
+        if (response.IsSuccessStatusCode)
         {
-            await CarritoService.ConfirmarCompraAsync(cliente.Nombre, cliente.Apellido, cliente.Email);
-            mensaje = "✅ Compra registrada con éxito!";
-            await Task.Delay(2000);
-            NavManager.NavigateTo("/");
+            await JS.InvokeVoidAsync("localStorage.removeItem", "carritoId");
+            mensajeExito = "¡Compra confirmada! Gracias por tu compra 😊";
+            items = new();
+            cliente = new();
+            StateHasChanged();
+            await Task.Delay(1800); // Espera 1.8 segundos para mostrar el mensaje
+            Nav.NavigateTo("/");
         }
-        catch (Exception ex)
+        else
         {
-            mensaje = $"❌ Error: {ex.Message}";
+            var error = await response.Content.ReadAsStringAsync();
+            mensajeExito = $"<span class='text-danger'>No se pudo confirmar la compra: {error}</span>";
         }
     }
 
-    class ClienteDTO
+    public class ItemCarrito
     {
-        [Required] public string Nombre { get; set; }
-        [Required] public string Apellido { get; set; }
-        [Required][EmailAddress] public string Email { get; set; }
+        public Producto Producto { get; set; }
+        public int Cantidad { get; set; }
+        public decimal Importe { get; set; }
+    }
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int Stock { get; set; }
+        public string ImagenUrl { get; set; }
+    }
+    public class ClienteCompra
+    {
+        public string NombreCliente { get; set; }
+        public string ApellidoCliente { get; set; }
+        public string EmailCliente { get; set; }
     }
 }

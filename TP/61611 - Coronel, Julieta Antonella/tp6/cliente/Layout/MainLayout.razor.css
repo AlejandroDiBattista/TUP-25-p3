@@ -1,4 +1,4 @@
- .page {
+.page {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -21,7 +21,7 @@ main {
     align-items: center;
 }
 
-   .top-row ::deep a, .top-row ::deep .btn-link {
+    .top-row ::deep a, .top-row ::deep .btn-link {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
@@ -74,4 +74,12 @@ main {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
+}
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

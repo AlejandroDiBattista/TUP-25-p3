@@ -1,78 +1,458 @@
 ﻿@page "/"
-@using cliente.Modelos
-@using cliente.Services
 @inject ApiService ApiService
-@inject CartService CartService
 
-<PageTitle>Catálogo de Productos</PageTitle>
+<PageTitle>Catálogo de Productos - ImportadosYa</PageTitle>
 
-<h1>Nuestros Productos</h1>
+<div class="home-container">
+    <header class="hero-section">
+        <h1 class="main-title">Descubre Nuestra Tecnología</h1>
+        <p class="subtitle">Los mejores productos tecnológicos al alcance de tus manos</p>
+    </header>
 
-@if (error != null)
-{
-    <div class="alert alert-danger">Error al cargar productos: @error</div>
-}
-else if (productos == null)
-{
-    <p><em>Cargando productos...</em></p>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @foreach (var producto in productos)
+    <div class="search-section">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Buscar productos..." 
+                       @bind="searchTerm" 
+                       @onkeyup="HandleKeyUp" />
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <button class="clear-search-btn" @onclick="ClearSearch" title="Limpiar búsqueda">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                }
+            </div>
+            <button class="search-btn" @onclick="BuscarProductos">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <span>Buscar</span>
+            </button>
+        </div>
+    </div>
+
+    <main class="content-section">
+        @if (productos is null && string.IsNullOrEmpty(errorMessage))
         {
-            <div class="col">
-                <div class="card h-100">
-                    <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: contain;">
-                    <div class="card-body">
-                        <h5 class="card-title">@producto.Nombre</h5>
-                        <p class="card-text">@producto.Descripcion</p>
-                        <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
-                        <p class="card-text"><small class="text-muted">Stock disponible: @producto.Stock</small></p>
-                    </div>
-                    <div class="card-footer">
-                        <button class="btn btn-primary w-100" 
-                                disabled="@(producto.Stock == 0)" 
-                                @onclick="() => AddToCart(producto)">
-                            @(producto.Stock == 0 ? "Sin Stock" : "Agregar al carrito")
-                        </button>
-                    </div>
-                </div>
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Cargando productos...</p>
             </div>
         }
-    </div>
-}
+        else if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-container">
+                <svg class="error-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <p class="error-message">@errorMessage</p>
+                <button class="retry-btn" @onclick="CargarProductos">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23,4 23,10 17,10"></polyline>
+                        <path d="M20.49,15a9,9,0,1,1-2.12-9.36L23,10"></path>
+                    </svg>
+                    Reintentar
+                </button>
+            </div>
+        }
+        else if (productos is not null && !productos.Any())
+        {
+            <div class="empty-container">
+                <svg class="empty-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <p class="empty-message">No se encontraron productos</p>
+                <p class="empty-subtitle">Intenta con otros términos de búsqueda</p>
+                <button class="clear-filters-btn" @onclick="ClearSearch">
+                    Mostrar todos los productos
+                </button>
+            </div>
+        }
+        else if (productos is not null)
+        {
+            <div class="results-header">
+                <h2 class="results-title">
+                    @if (string.IsNullOrEmpty(searchTerm))
+                    {
+                        <span>Todos los productos (@productos.Length)</span>
+                    }
+                    else
+                    {
+                        <span>Resultados para "@searchTerm" (@productos.Length)</span>
+                    }
+                </h2>
+            </div>
+            <div class="products-grid">
+                @foreach (var producto in productos)
+                {
+                    <TarjetaProducto Producto="producto" />
+                }
+            </div>
+        }
+    </main>
+</div>
+
+<style>
+    .home-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px 20px;
+        background-color: #f5f5f5;
+        min-height: calc(100vh - 140px); /* Ajustar por navbar y footer */
+    }
+
+    .hero-section {
+        text-align: center;
+        margin-bottom: 50px;
+        padding: 60px 20px;
+        background: linear-gradient(135deg, rgba(68, 68, 68, 0.1) 0%, rgba(34, 34, 34, 0.1) 100%);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(68,68,68,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.5;
+    }
+
+    .main-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin: 0 0 16px 0;
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin: 0;
+        font-weight: 400;
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-section {
+        margin-bottom: 50px;
+    }
+
+    .search-container {
+        display: flex;
+        max-width: 700px;
+        margin: 0 auto;
+        gap: 16px;
+        padding: 8px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e0e0e0;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        color: #999;
+        z-index: 1;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 18px 20px 18px 52px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        background: transparent;
+        transition: all 0.3s ease;
+        outline: none;
+        color: #333;
+    }
+
+    .search-input::placeholder {
+        color: #999;
+    }
+
+    .search-input:focus {
+        background: #f8f9fa;
+    }
+
+    .clear-search-btn {
+        position: absolute;
+        right: 20px;
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .clear-search-btn:hover {
+        color: #333;
+        background: rgba(51, 51, 51, 0.1);
+    }
+
+    .search-btn {
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 18px 28px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(44, 44, 44, 0.3);
+    }
+
+    .search-btn:active {
+        transform: translateY(0);
+    }
+
+    .content-section {
+        margin-top: 20px;
+    }
+
+    .results-header {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .results-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .loading-container, .error-container, .empty-container {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin: 40px auto;
+        max-width: 500px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f0f0f0;
+        border-top: 4px solid #333;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 30px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+        color: #666;
+        font-size: 18px;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .error-icon, .empty-icon {
+        color: #999;
+        margin-bottom: 30px;
+    }
+
+    .error-message, .empty-message {
+        color: #333;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+    }
+
+    .empty-subtitle {
+        color: #666;
+        margin: 0 0 30px 0;
+        font-size: 16px;
+    }
+
+    .retry-btn, .clear-filters-btn {
+        background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 14px 28px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .retry-btn:hover, .clear-filters-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(44, 44, 44, 0.3);
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 20px 0 40px;
+        justify-items: center;
+    }
+
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .home-container {
+            padding: 20px 16px;
+        }
+
+        .hero-section {
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+        }
+
+        .search-container {
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .search-btn {
+            padding: 16px 24px;
+            width: 100%;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .loading-container, .error-container, .empty-container {
+            padding: 60px 20px;
+            margin: 20px 0;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .main-title {
+            font-size: 1.75rem;
+        }
+
+        .search-input {
+            padding: 16px 16px 16px 48px;
+        }
+
+        .search-btn span {
+            display: none;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+    }
+</style>
 
 @code {
-    private List<Producto> productos;
-    private string error;
-
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string q { get; set; }
+    private Producto[]? productos;
+    private string? errorMessage;
+    private string? searchTerm;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadProducts();
+        await CargarProductos();
     }
 
-    protected override async Task OnParametersSetAsync()
+    private async Task CargarProductos()
     {
-        await LoadProducts();
-    }
-
-    private async Task LoadProducts()
-    {
-        try {
-            productos = await ApiService.GetProductosAsync(q);
+        try
+        {
+            productos = await ApiService.GetProductosAsync(searchTerm);
+            errorMessage = null;
         }
-        catch (Exception ex) {
-            error = ex.Message;
+        catch (Exception ex)
+        {
+            errorMessage = $"No se pudieron cargar los productos. Asegúrate de que el servidor esté corriendo. Error: {ex.Message}";
         }
     }
 
-    private async Task AddToCart(Producto producto)
+    private async Task BuscarProductos()
     {
-        await CartService.AddToCartAsync(producto);
+        productos = null;
+        errorMessage = null;
+        await CargarProductos();
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = "";
+        await BuscarProductos();
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await BuscarProductos();
+        }
     }
 }

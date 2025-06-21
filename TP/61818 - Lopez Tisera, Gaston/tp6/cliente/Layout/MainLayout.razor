@@ -1,10 +1,32 @@
 ﻿@inherits LayoutComponentBase
+@inject Cliente.Services.FiltroService FiltroService
+@inject NavigationManager Navigation
 
 <div class="navbar">
-    <a href="/">Inicio</a>
-    <a href="/carrito">Carrito</a>
+    <a href="/" class="navbar-logo">Compra Gamer</a>
+    <div class="navbar-center">
+        @if (Navigation.Uri.EndsWith("/"))
+        {
+            <input class="buscador"
+                   type="text"
+                   placeholder="Buscar productos..."
+                   value="@FiltroService.Filtro"
+                   @oninput="OnInputFiltro"
+                   style="max-width: 320px;" />
+        }
+    </div>
+    <a href="/carrito" class="navbar-cart">
+        <i class="bi bi-cart3" style="font-size:2rem;"></i>
+    </a>
 </div>
 
 <main>
     @Body
 </main>
+
+@code {
+    private void OnInputFiltro(ChangeEventArgs e)
+    {
+        FiltroService.SetFiltro(e.Value?.ToString() ?? "");
+    }
+}

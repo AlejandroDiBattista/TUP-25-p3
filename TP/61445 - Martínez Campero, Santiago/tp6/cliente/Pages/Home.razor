@@ -2,20 +2,22 @@
 @using Compartido
 @using cliente.Services
 @using System.Linq
+@using System.Collections.Generic
 @inject ApiService ApiService
 @inject CarritoStateService CarritoStateService
 @inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+@implements IDisposable
 
 <div class="container mt-4">
-    <div class="row mb-3">
-        <div class="col-md-8">
-            <input type="text" class="form-control" placeholder="Buscar productos..." @bind="searchTerm" @oninput="BuscarProductos" />
+    @if (!string.IsNullOrEmpty(searchTerm))
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-search"></i> Mostrando resultados para: <strong>@searchTerm</strong>
+            <button type="button" class="btn-close float-end" @onclick="LimpiarBusqueda"></button>
         </div>
-        <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-primary w-100" @onclick="BuscarProductosManual">Buscar</button>
-        </div>
-    </div>
-
+    }
+    
     @if (productos == null && !cargando && string.IsNullOrEmpty(error))
     {
         <p><em>Cargando productos...</em></p>
@@ -37,14 +39,14 @@
             {
                 <div class="col">
                     <div class="card h-100">
-                        <img src="@(!string.IsNullOrWhiteSpace(producto.ImagenUrl) ? producto.ImagenUrl : "https://via.placeholder.com/300x200.png?text=Sin+Imagen")" class="card-img-top" alt="@producto.Nombre" style="max-height:200px;object-fit:contain;padding-top:10px;" />
+                        <img src="@GetImageUrl(producto.ImagenUrl)" class="card-img-top" alt="@producto.Nombre" style="max-height:200px;object-fit:contain;padding-top:10px;" />
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text flex-grow-1">@producto.Descripcion</p>
                             <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
                             <p class="card-text"><strong>Stock:</strong> @(producto.Stock>0?producto.Stock.ToString():"Agotado")</p>
                             <button class="btn btn-success mt-auto" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@(producto.Stock<=0)">
-                                <i class="fas fa-cart-plus"></i> Agregar al carrito
+                                <i class="fas fa-cart-plus"></i> @(producto.Stock<=0?"Agotado":"Agregar al carrito")
                             </button>
                         </div>
                     </div>
@@ -54,7 +56,14 @@
     }
     else
     {
-        <p>No se encontraron productos.</p>
+        <div class="text-center">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <p class="lead">No se encontraron productos@(string.IsNullOrEmpty(searchTerm) ? "" : $" para \"{searchTerm}\"")</p>
+            @if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <button class="btn btn-primary" @onclick="LimpiarBusqueda">Ver todos los productos</button>
+            }
+        </div>
     }
 </div>
 
@@ -63,46 +72,58 @@
     private Producto[]? productos;
     private string? error;
     private bool cargando;
-
-    protected override async Task OnInitializedAsync()
+    private Dictionary<int,int> cantidadesEnCarrito = new Dictionary<int,int>();    protected override async Task OnInitializedAsync()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
         await HandleLocationAsync(NavigationManager.Uri);
     }
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
-        => await InvokeAsync(() => HandleLocationAsync(args.Location));
-
-    private async Task HandleLocationAsync(string uri)
     {
-
-        if (uri.Contains("?"))
+        await InvokeAsync(async () => 
         {
-            var qs = uri.Split('?', 2)[1];
-            var param = qs.Split('&').FirstOrDefault(p => p.StartsWith("search="));
-            searchTerm = param!=null? Uri.UnescapeDataString(param.Split('=',2)[1]) : null;
+            await HandleLocationAsync(args.Location);
+            StateHasChanged();
+        });
+    }    private async Task HandleLocationAsync(string uri)
+    {
+        var uriObj = new Uri(uri);
+        var query = uriObj.Query;
+        if (!string.IsNullOrEmpty(query))
+        {
+            var qs = query.TrimStart('?');
+            var param = qs.Split('&').FirstOrDefault(p => p.StartsWith("search=", StringComparison.OrdinalIgnoreCase));
+            searchTerm = param != null ? Uri.UnescapeDataString(param.Split('=', 2)[1]) : null;
         }
         else
         {
             searchTerm = null;
         }
         await CargarProductosAsync(searchTerm);
-    }
-
-    private async Task CargarProductosAsync(string? busqueda)
+    }    private async Task CargarProductosAsync(string? busqueda)
     {
         cargando = true;
         error = null;
+        StateHasChanged();
+        
         try
         {
             productos = await ApiService.GetProductosAsync(busqueda);
+            var carritoId = await CarritoStateService.GetCarritoIdAsync();
+            var itemsCarrito = await ApiService.GetCarritoAsync(carritoId);
+            cantidadesEnCarrito = itemsCarrito?.ToDictionary(i => i.ProductoId, i => i.Cantidad)
+                                   ?? new Dictionary<int,int>();
         }
         catch (Exception ex)
         {
             error = $"Error al cargar productos: {ex.Message}";
             Console.WriteLine(ex);
         }
-        finally { cargando = false; }
+        finally 
+        { 
+            cargando = false; 
+            StateHasChanged();
+        }
     }
 
     private async Task BuscarProductos(ChangeEventArgs _) => await CargarProductosAsync(searchTerm);
@@ -111,6 +132,11 @@
     {
         var query = string.IsNullOrEmpty(searchTerm) ? string.Empty : $"?search={Uri.EscapeDataString(searchTerm)}";
         NavigationManager.NavigateTo($"/{query}");
+    }
+
+    private void LimpiarBusqueda()
+    {
+        NavigationManager.NavigateTo("/");
     }
 
     private async Task AgregarAlCarrito(int productoId)
@@ -123,18 +149,42 @@
             {
                 error="Producto no disponible.";
                 return;
-            }
-            var carritoId = await CarritoStateService.GetCarritoIdAsync();
-            var res = await ApiService.AgregarOActualizarItemCarritoAsync(carritoId,productoId,1);
+            }            var carritoId = await CarritoStateService.GetCarritoIdAsync();
+            cantidadesEnCarrito.TryGetValue(productoId, out int cantidadActual);
+            var nuevaCantidad = cantidadActual + 1;
+            var res = await ApiService.AgregarOActualizarItemCarritoAsync(carritoId, productoId, nuevaCantidad);
+
             if (res!=null)
             {
+                cantidadesEnCarrito[productoId] = nuevaCantidad;
+                if (seleccionado != null)
+                {
+                    seleccionado.Stock = Math.Max(0, seleccionado.Stock - 1);
+                }
                 await CarritoStateService.ActualizarCantidadItems();
+                StateHasChanged();
 
             }
             else error="Error al agregar el producto.";
-        }
-        catch(Exception ex){ error=$"Error: {ex.Message}"; Console.WriteLine(ex); }
+        }        catch(Exception ex){ error=$"Error: {ex.Message}"; Console.WriteLine(ex); }
     }
 
-    public void Dispose() => NavigationManager.LocationChanged -= OnLocationChanged;
+    private string GetImageUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))        {
+            return "https://via.placeholder.com/300x200.png?text=Sin+Imagen";
+        }
+        if (Uri.TryCreate(url, UriKind.Absolute, out _))
+        {
+            return url;
+        }
+        var baseAddress = HttpClient.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+        var path = url.StartsWith("/") ? url : "/" + url;
+        return baseAddress + path;
+    }
+
+    public void Dispose() 
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 }

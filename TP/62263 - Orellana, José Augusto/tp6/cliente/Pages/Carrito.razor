@@ -1,9 +1,15 @@
 @page "/carrito"
+@using cliente.Services
 @inject HttpClient Http
 @inject CarritoService CarritoService
+@inject ApiService Api
 @inject NavigationManager NavigationManager
 
 <h3>Carrito de Compras</h3>
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="mensaje-exito">@mensaje</div>
+}
 
 @if (items == null)
 {
@@ -30,7 +36,7 @@ else
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <img src="@item.imagenUrl" style="width: 50px; height: 50px; object-fit: cover;" />
+                            <img src="@($"{Api.GetApiBaseUrl()}{item.imagenUrl}")" style="width: 50px; height: 50px; object-fit: cover;" />
                             @item.nombreProducto
                         </div>
                     </td>
@@ -58,6 +64,7 @@ else
 @code {
     List<ItemCarritoDTO>? items;
     string mensaje = "";
+    CancellationTokenSource? cts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,25 +84,42 @@ else
     {
         if (CarritoService.CarritoId == null) return;
 
-        bool ok = false;
+        cts?.Cancel(); // Para cancelar cualquier mensaje anterior
+        mensaje = "";
+        StateHasChanged();
+        await Task.Delay(50); // pequeña espera para limpiar visual
+
+        cts = new CancellationTokenSource();
+
+        (bool ok, string respuesta) resultado;
 
         if (delta > 0)
         {
-            ok = await CarritoService.AgregarProducto(productoId);
-            if (!ok) mensaje = "No se pudo aumentar la cantidad.";
+            resultado = await CarritoService.AgregarProducto(productoId);
         }
         else
         {
-            ok = await CarritoService.EliminarUnidad(productoId);
-            if (!ok) mensaje = "No se pudo disminuir la cantidad.";
+            var eliminado = await CarritoService.EliminarUnidad(productoId);
+            resultado = (eliminado, eliminado ? "Producto actualizado." : "No se pudo disminuir la cantidad.");
         }
 
-        if (ok)
+        if (resultado.ok)
         {
             // Refrescar los ítems del carrito
             items = await Http.GetFromJsonAsync<List<ItemCarritoDTO>>(
                 $"http://localhost:5184/carritos/{CarritoService.CarritoId}");
         }
+
+        mensaje = resultado.respuesta;
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(2000, cts.Token); // Ocultar mensaje después de 2 segundos
+            mensaje = "";
+            StateHasChanged();
+        }
+        catch (TaskCanceledException) { }
     }
 
 
@@ -114,6 +138,8 @@ else
         {
             mensaje = "Error al vaciar carrito.";
         }
+
+        StateHasChanged();
     }
 
     void Confirmar()

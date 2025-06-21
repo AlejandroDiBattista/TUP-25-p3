@@ -1,19 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', 'Segoe UI', 'Roboto', Arial, sans-serif;
+    background: linear-gradient(135deg, #ffb6ea 0%, #ffecd2 100%);
+    min-height: 100vh;
+    margin: 0;
+}
+
+.inicio-bg-gradient {
+    background: linear-gradient(135deg, #ffb6ea 0%, #ffecd2 100%);
+    min-height: 100vh;
 }
 
 h1:focus {
     outline: none;
 }
 
+.product-card, .product-block, .card, .cart-card, .confirmation-card {
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #fff;
+}
+
+.product-card:hover, .product-block:hover, .card:hover, .cart-card:hover, .confirmation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 3px 8px rgba(0,0,0,0.08);
+    border-color: #6f4e37; /* Marrón más oscuro al pasar el mouse */
+}
+
 a, .btn-link {
     color: #0071c1;
 }
 
+.btn {
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255,182,234,0.08);
+}
+
 .btn-primary {
+    background: linear-gradient(90deg, #ffb6ea 0%, #ffecd2 100%);
+    color: #333;
+    border: none;
+}
+.btn-primary:hover {
+    background: linear-gradient(90deg, #ffecd2 0%, #ffb6ea 100%);
+    color: #111;
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(255,182,234,0.18);
+}
+
+.btn-success {
+    background: linear-gradient(90deg, #a8ff78 0%, #78ffd6 100%);
+    color: #222;
+    border: none;
+}
+.btn-success:hover {
+    background: linear-gradient(90deg, #78ffd6 0%, #a8ff78 100%);
+    color: #111;
+    transform: scale(1.05);
+}
+
+.btn-danger {
+    background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    border: none;
+}
+.btn-danger:hover {
+    background: linear-gradient(90deg, #f09819 0%, #ff5858 100%);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+h1, h2, h3 {
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -111,4 +174,31 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+/* Mejora de visibilidad para el input del buscador y botón sin stock */
+.input-buscador {
+    color: black !important;
+    background-color: #fff !important;
+}
+.input-buscador::placeholder {
+    color: #333 !important;
+    opacity: 1 !important;
+}
+.btn[disabled], .btn:disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    border-color: #bbb !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .product-block, .cart-card, .confirmation-card {
+        margin: 1rem 0;
+        padding: 1rem;
+    }
+    h1 {
+        font-size: 2rem;
+    }
 }

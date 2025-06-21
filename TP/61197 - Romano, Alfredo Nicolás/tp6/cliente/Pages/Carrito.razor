@@ -66,13 +66,20 @@
         if (nuevaCantidad < 1 || nuevaCantidad > item.Stock)
             return;
 
-        var request = new HttpRequestMessage(HttpMethod.Put, $"/carritos/{carritoId}/{item.Id}")
+        // Si la nueva cantidad es mayor, sumamos
+        if (nuevaCantidad > item.Cantidad)
         {
-            Content = new StringContent(nuevaCantidad.ToString(), System.Text.Encoding.UTF8, "application/json")
-        };
-        var resp = await Http.SendAsync(request);
-        if (resp.IsSuccessStatusCode)
-            await CargarCarrito();
+            var resp = await Http.PutAsync($"/carritos/{carritoId}/{item.Id}", null);
+            if (resp.IsSuccessStatusCode)
+                await CargarCarrito();
+        }
+        // Si la nueva cantidad es menor, restamos
+        else if (nuevaCantidad < item.Cantidad)
+        {
+            var resp = await Http.PutAsync($"/carritos/{carritoId}/{item.Id}?accion=restar", null);
+            if (resp.IsSuccessStatusCode)
+                await CargarCarrito();
+        }
     }
 
     async Task EliminarDelCarrito(ItemCarritoDto item)

@@ -1,0 +1,126 @@
+@page "/confirmacion"
+@using cliente.Services
+@using cliente.Models
+@inject CarritoService CarritoService
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+
+<div class="confirmacion-container">
+<h3>Confirmación de Compra</h3>
+
+@if (CarritoService.ObtenerCarrito().Count == 0)
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <section class="resumen-pedido">
+            <h4>Resumen del pedido:</h4>
+            <table class="resumen-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in CarritoService.ObtenerCarrito())
+                    {
+                        <tr>
+                            <td>@item.Producto.Nombre</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@(item.Cantidad * item.Producto.Precio)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td><strong>$@CarritoService.CalcularTotal()</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+
+    <EditForm Model="@cliente" OnValidSubmit="@ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre:</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
+        </div>
+
+        <div class="mb-3">
+            <label>Apellido:</label>
+            <InputText class="form-control" @bind-Value="cliente.Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
+        </div>
+
+        <div class="mb-3">
+            <label>Email:</label>
+            <InputText class="form-control" @bind-Value="cliente.Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Finalizar Compra</button>
+    </EditForm>
+}
+</div>
+
+@code {
+    private ClienteDTO cliente = new();
+
+    private async Task ConfirmarCompra()
+    {
+        var carrito = CarritoService.ObtenerCarrito();
+
+        var orden = new Orden
+        {
+            Items = carrito.Select(i => new ItemOrden
+            {
+                ProductoId = i.Producto.Id,
+                NombreProducto = i.Producto.Nombre,
+                Precio = i.Producto.Precio,
+                Cantidad = i.Cantidad
+            }).ToList(),
+            Total = CarritoService.CalcularTotal()
+        };
+
+        var exito = await ApiService.ConfirmarCompraAsync(orden);
+        if (exito)
+        {
+            foreach (var item in carrito)
+            {
+                item.Producto.StockDisponible -= item.Cantidad;
+                if (item.Producto.StockDisponible < 0)
+                    item.Producto.StockDisponible = 0;
+            }
+
+            CarritoService.VaciarCarrito();
+            Navigation.NavigateTo("/", true);
+        }
+        else
+        {
+            Console.WriteLine("Error al confirmar la compra.");
+        }
+    }
+
+    public class ClienteDTO
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; } = "";
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }  = "";
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string Email { get; set; } = "";
+    }
+}

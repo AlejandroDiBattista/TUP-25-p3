@@ -4,7 +4,7 @@
 @inject NavigationManager Navigation
 @inject ApiService ApiService
 @inject CarritoService CarritoService
-
+@inject StockLocalService StockLocalService
 
 <PageTitle>TiendaOnline</PageTitle>
 
@@ -39,29 +39,18 @@
                             <p class="card-text">@producto.Descripcion</p>
                             <p><strong>Stock:</strong> @producto.Stock</p>
                             <p><strong>Precio:</strong> $@producto.Precio</p>
-
-                            <label for="cantidad-@producto.Id" class="form-label">Cantidad</label>
-                            <input id="cantidad-@producto.Id"
-                                type="number"
-                                class="form-control mb-2"
-                                min="1"
-                                max="@producto.Stock"
-                                @bind="cantidades[producto.Id]" />
-                            <div/>
-                            <button class="btn btn-primary w-100" disabled="@(producto.Stock == 0)" @onclick="@(() => AgregarAlCarrito(producto))">
+                            <button class="btn btn-primary w-100" disabled="@(producto.Stock == 0)" @onclick="async () => await AgregarAlCarrito(producto)">
                                 Agregar al carrito
                             </button>
-                            </div>
                         </div>
                     </div>
+                </div>
             }
         </div>
     }
 </div>
 
 @code {
-
-    private Dictionary<int, int> cantidades = new();
     private List<Producto> productos;
     private string busqueda = "";
 
@@ -72,31 +61,33 @@
 
     protected override async Task OnInitializedAsync()
     {
-
-        productos = await ApiService.ObtenerProductosAsync();
-        await CarritoService.InicializarCarritoAsync(ApiService);
-
-        foreach (var producto in productos)
+        productos = await StockLocalService.LeerStockAsync();
+        if (productos == null)
         {
-        cantidades[producto.Id] = 1;
+            productos = await ApiService.ObtenerProductosAsync();
+            await StockLocalService.GuardarStockAsync(productos);
+            await StockLocalService.GuardarStockInicialAsync(productos);
         }
-    }
-    
-    void AgregarAlCarrito(Producto producto)
-    { 
-
-        if (cantidades.TryGetValue(producto.Id, out int cantidad))
+        else
         {
-            for (int i = 0; i < cantidad && i < producto.Stock; i++)
+            var stockInicial = await StockLocalService.LeerStockInicialAsync();
+            if (stockInicial == null)
             {
-                CarritoService.AgregarProducto(producto);
+                await StockLocalService.GuardarStockInicialAsync(productos);
             }
         }
-
-        StateHasChanged();
-
-        Navigation.NavigateTo("/carrito");
-        
+        await CarritoService.InicializarCarritoAsync(ApiService);
     }
-
+    
+    async Task AgregarAlCarrito(Producto producto)
+    { 
+        if (producto.Stock > 0)
+        {
+            CarritoService.AgregarProducto(producto);
+            producto.Stock -= 1;
+            await StockLocalService.GuardarStockAsync(productos);
+        }
+        StateHasChanged();
+        Navigation.NavigateTo("/carrito");
+    }
 }

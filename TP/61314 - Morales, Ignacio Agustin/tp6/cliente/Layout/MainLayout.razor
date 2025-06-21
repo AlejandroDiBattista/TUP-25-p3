@@ -11,7 +11,7 @@
                 <span class="store-name">Apple Store</span>
             </a>
 
-        <a class="btn btn-dark btn-lg mt-2" href="/catalogo">📱 Ver Catálogo</a>
+        
             <a href="/carrito" class="carrito-icono">
                 🛒 (@CantidadCarrito)
             </a>
@@ -20,20 +20,7 @@
         
     <main class="contenido">
         @Body
-         @if (IsHomePage)
-        {
-            <div class="home-content">
-                <h3> Apple Store Tucumán</h3>
-                <h4>Descubre los últimos productos de Apple y disfruta de una experiencia única de compra.</h4>
-            </div>
-        }
-        @if (IsHomePage)
-    {
-        <div class="main-layout @(IsHomePage ? "home-background" : "")">
-            <img src="/logoaplle.jpg" alt="Apple Store Tucumán" class="img-fluid rounded" />
-        </div>
-    }
-        
+          
     </main>
       
     <footer class="footer">

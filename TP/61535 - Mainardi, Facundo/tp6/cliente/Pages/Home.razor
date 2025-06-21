@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 
 <h2 style="text-align: center; font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: #333;">
-    Productos disponibles
+    Productos Disponibles
 </h2>
 @if (productosFiltrados == null)
 {
@@ -29,8 +29,11 @@ else
                 <p>@producto.Descripcion</p>
                 <p><strong>Precio:</strong> $@producto.Precio</p>
                 <p><strong>Stock:</strong> @producto.Stock</p>
-                <button class="btn btn-primary" @onclick="@(() => AgregarProducto(producto))">
-                    <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
+                <button class="btn btn-primary"
+                @onclick="@(() => AgregarProducto(producto))"
+                disabled="@(producto.Stock == 0)"
+                style="opacity: @(producto.Stock == 0 ? "0.5" : "1"); cursor: @(producto.Stock == 0 ? "not-allowed" : "pointer")">
+                <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
                 </button>
             </div>
         }
@@ -62,9 +65,17 @@ else
         {
             search = "";
         }
-
         productosFiltrados = await ApiService.BuscarProductos(search);
+        foreach (var producto in productosFiltrados)
+        {
+            int enCarrito = CarritoFinal.CantidadEnCarrito(producto.Id);
+            producto.Stock -= enCarrito;
+
+            if (producto.Stock < 0)
+                producto.Stock = 0; 
+        }
     }
+
     private void CarritoActualizado()
     {
         InvokeAsync(StateHasChanged); 
@@ -75,25 +86,27 @@ else
         CarritoFinal.OnChange -= CarritoActualizado; 
     }
 
- private async Task AgregarProducto(Producto producto)
-{
-    var existente = CarritoFinal.Items.FirstOrDefault(i => i.ProductoId == producto.Id);
-
-    if (existente != null && existente.Cantidad >= producto.Stock)
+    private async Task AgregarProducto(Producto producto)
     {
-        Console.WriteLine($"⚠️ No se puede agregar más del stock disponible ({producto.Stock}).");
+        int enCarrito = CarritoFinal.CantidadEnCarrito(producto.Id);
+
+    if (producto.Stock <= 0)
+    {
+        Console.WriteLine($"⚠️ No hay más stock disponible para {producto.Nombre}.");
         return;
     }
     var item = new ItemCarrito
     {
         ProductoId = producto.Id,
         Nombre = producto.Nombre,
-        Precio = producto.Precio,
-        Cantidad = 1
+        Precio = producto.Precio
     };
 
-    await CarritoFinal.AgregarProductoAsync(item); 
+    await CarritoFinal.AgregarProductoAsync(item);
+    producto.Stock--;
+    StateHasChanged();
 }
+
   private async ValueTask OnLocationChanged(LocationChangingContext context)
 {
     var uri = new Uri(context.TargetLocation);

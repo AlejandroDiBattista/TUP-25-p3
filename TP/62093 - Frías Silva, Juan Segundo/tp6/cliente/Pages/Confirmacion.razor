@@ -1,5 +1,6 @@
 @page "/confirmacion"
 @using cliente.Models
+@using System.ComponentModel.DataAnnotations
 @inject CartService CartService
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -19,14 +20,19 @@ else
         <div class="mb-3">
             <label>Nombre:</label>
             <InputText class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="@(() => cliente.Nombre)" />
         </div>
+
         <div class="mb-3">
             <label>Apellido:</label>
             <InputText class="form-control" @bind-Value="cliente.Apellido" />
+            <ValidationMessage For="@(() => cliente.Apellido)" />
         </div>
+
         <div class="mb-3">
             <label>Email:</label>
             <InputText class="form-control" @bind-Value="cliente.Email" />
+            <ValidationMessage For="@(() => cliente.Email)" />
         </div>
 
         <h4>Resumen de Compra</h4>
@@ -80,8 +86,14 @@ else
 
     class ClienteDatos
     {
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
         public string Nombre { get; set; } = "";
+
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
         public string Apellido { get; set; } = "";
+
+        [Required(ErrorMessage = "El email es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Debe ingresar un email válido.")]
         public string Email { get; set; } = "";
     }
 

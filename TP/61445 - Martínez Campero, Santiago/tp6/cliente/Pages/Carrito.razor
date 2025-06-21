@@ -31,11 +31,11 @@
                 @foreach (var item in items)
                 {
                     <tr>
-                        <td>@item.NombreProducto</td>
+                        <td>@item.NombreProducto <small class="text-muted">(Stock: @item.Stock)</small></td>
                         <td>
                             <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => Modificar(item, -1)">−</button>
                             @item.Cantidad
-                            <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => Modificar(item, +1)">+</button>
+                            <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="() => Modificar(item, +1)" disabled="@(item.Cantidad >= item.Stock)">+</button>
                         </td>
                         <td>@item.PrecioUnitario.ToString("C")</td>
                         <td>@((item.Cantidad * item.PrecioUnitario).ToString("C"))</td>

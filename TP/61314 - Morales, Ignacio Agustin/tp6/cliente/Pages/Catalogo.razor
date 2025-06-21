@@ -2,9 +2,11 @@
 @using cliente.shared
 @using cliente.Services
 
-@page "/catalogo"
+@page "/"
+@page "/home"
 @inject ApiService Api
 @inject CarritoService Carrito
+@implements IDisposable
 
 <h1 class="titulo-catalogo">Catálogo de Productos Apple</h1>
 
@@ -30,12 +32,13 @@ else
     <div class="grid-productos">
         @foreach (var Producto in productosFiltrados)
         {
-            <div class="card-producto">
-                <img src="@Producto.ImagenUrl" alt="@Producto.Nombre" width="200"/>
-                <h3>@Producto.Nombre</h3>
-                <p>@Producto.Descripcion</p>
-                <p><strong>Precio:</strong> $@Producto.Precio</p>
-                <p><strong>Stock:</strong> @Producto.Stock unidades</p>
+            <div class="justify-content-center card-producto">
+
+                <img class="justify-content-center card-producto" src="@Producto.ImagenUrl" alt="@Producto.Nombre" width="200" />
+                <h3 class="justify-content-center card-producto"> @Producto.Nombre</h3>
+                <p class="justify-content-center card-producto">@Producto.Descripcion</p>
+                <p class="justify-content-center card-producto"><strong>Precio:</strong> $@Producto.Precio</p>
+                <p class="justify-content-center card-producto"><strong>Stock:</strong> @Producto.Stock unidades</p>
                 <button @onclick="@(async () => await AgregarAlCarrito(Producto))"
                         disabled="@(!PuedeAgregar(Producto))"
                         class="boton-agregar">
@@ -58,19 +61,15 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var productosApi = await Api.ObtenerProductos();
-        productos = productosApi.Select(p => new Producto
-        {
-            Id = p.Id,
-            Nombre = p.Nombre,
-            Descripcion = p.Descripcion,
-            Precio = p.Precio,
-            Stock = p.Stock,
-            ImagenUrl = p.ImagenUrl
-        }).ToList();
+        Carrito.ObtenerStockDisponible = (id) =>
+       {
+         var prod = productos.FirstOrDefault(p => p.Id == id);
+         return prod?.Stock ?? 0;
+      };
+        productos = await Api.ObtenerProductos();
+        productosFiltrados = productos.ToList();
 
-        productosFiltrados = productos.ToList(); // Mostrar todos al inicio
-
+        Carrito.CarritoActualizado -= OnCarritoActualizado;
         Carrito.CarritoActualizado += OnCarritoActualizado;
     }
 
@@ -87,35 +86,24 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    async Task AgregarAlCarrito(Producto dto)
+    async Task AgregarAlCarrito(Producto producto)
     {
-        var producto = new Producto
+        bool pudoAgregar = Carrito.AgregarProducto(producto);
+        if (pudoAgregar)
         {
-            Id = dto.Id,
-            Nombre = dto.Nombre,
-            Descripcion = dto.Descripcion,
-            Precio = dto.Precio,
-            Stock = dto.Stock,
-            ImagenUrl = dto.ImagenUrl
-        };
-
-        Carrito.AgregarProducto(producto);
-
-        var exito = await Api.RestarStockProducto(dto.Id);
-
-        if (exito)
-        {
-            var productoActual = productos.FirstOrDefault(p => p.Id == dto.Id);
-            if (productoActual != null && productoActual.Stock > 0)
+            bool exito = await Api.RestarStockProducto(producto.Id);
+            if (exito)
             {
-                productoActual.Stock--;
+                mensajeAlerta = $"{producto.Nombre} agregado al carrito ✅";
             }
-
-            mensajeAlerta = $"{producto.Nombre} agregado al carrito ✅";
+            else
+            {
+                mensajeAlerta = $"❌ No se pudo actualizar el stock para {producto.Nombre}.";
+            }
         }
         else
         {
-            mensajeAlerta = $"❌ No se pudo actualizar el stock para {producto.Nombre}.";
+            mensajeAlerta = $"⚠️ No se pudo agregar {producto.Nombre}. Stock insuficiente.";
         }
 
         StateHasChanged();
@@ -126,15 +114,16 @@ else
 
     bool PuedeAgregar(Producto p) => p.Stock > 0;
 
-    private void OnCarritoActualizado(int productoId)
+    private async void OnCarritoActualizado(int productoId, int cambioCantidad)
     {
-        var productoActual = productos.FirstOrDefault(p => p.Id == productoId);
-        if (productoActual != null)
-        {
-            productoActual.Stock++;
-            InvokeAsync(StateHasChanged);
-        }
+    var productoActual = productos.FirstOrDefault(p => p.Id == productoId);
+    if (productoActual != null)
+    {
+        productoActual.Stock += cambioCantidad;
+        await Api.SumarStockProducto(productoId, cambioCantidad); 
+        await InvokeAsync(StateHasChanged);
     }
+}
 
     public void Dispose()
     {

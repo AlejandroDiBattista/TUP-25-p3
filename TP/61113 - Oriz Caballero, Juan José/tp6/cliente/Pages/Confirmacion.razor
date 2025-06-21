@@ -1,0 +1,105 @@
+@page "/confirmacion"
+@inject CarritoService CarritoService
+
+<h1 class="text-2xl font-bold mb-4">Confirmar Compra</h1>
+
+@if (CompraExitosa)
+{
+    <div class="p-4 bg-green-100 text-green-800 font-semibold border border-green-300 rounded mb-4">
+        Compra confirmada. ¡Gracias por apoyar a productores locales!
+    </div>
+
+    <div class="border p-4 rounded shadow-md bg-white">
+        <h2 class="text-xl font-semibold mb-2">Recibo de la compra</h2>
+        <p><strong>Nombre:</strong> @Datos.Nombre</p>
+        <p><strong>Apellido:</strong> @Datos.Apellido</p>
+        <p><strong>Email:</strong> @Datos.Email</p>
+        <p><strong>Total pagado:</strong> $@TotalPagado</p>
+
+        <button class="btn-principal" @onclick="VolverInicio">
+            Volver al inicio
+        </button>
+    </div>
+}
+else if (Carrito is null)
+{
+    <p>Cargando...</p>
+}
+else if (!Carrito.Items.Any())
+{
+    <p>No hay productos en el carrito.</p>
+}
+else
+{
+    <div class="mb-4">
+        <h2 class="font-semibold">Resumen de la compra:</h2>
+        <p>Total de ítems: @Carrito.Items.Sum(i => i.Cantidad)</p>
+        <p>Total a pagar: $@Carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario)</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ErrorMensaje))
+    {
+        <div class="text-red-600 font-semibold mb-2">@ErrorMensaje</div>
+    }
+
+    <EditForm Model="Datos" OnValidSubmit="ConfirmarCompra">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-2">
+            <label class="block font-semibold">Nombre</label>
+            <InputText class="border p-1 rounded w-full" @bind-Value="Datos.Nombre" />
+            <ValidationMessage For="@(() => Datos.Nombre)" />
+        </div>
+
+        <div class="mb-2">
+            <label class="block font-semibold">Apellido</label>
+            <InputText class="border p-1 rounded w-full" @bind-Value="Datos.Apellido" />
+            <ValidationMessage For="@(() => Datos.Apellido)" />
+        </div>
+
+        <div class="mb-4">
+            <label class="block font-semibold">Email</label>
+            <InputText type="email" class="border p-1 rounded w-full" @bind-Value="Datos.Email" />
+            <ValidationMessage For="@(() => Datos.Email)" />
+        </div>
+
+        <button type="submit" class="btn-principal">Confirmar</button>
+    </EditForm>
+}
+
+@code {
+    private CarritoDto Carrito;
+    private ConfirmacionCompraDto Datos = new();
+    private string ErrorMensaje;
+    private bool CompraExitosa = false;
+    private decimal TotalPagado = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Carrito = await CarritoService.ObtenerCarrito();
+    }
+
+    private async Task ConfirmarCompra()
+    {
+        var exito = await CarritoService.ConfirmarCompra(Datos);
+        if (exito)
+        {
+            CompraExitosa = true;
+            TotalPagado = Carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
+            Carrito = new CarritoDto(); // Limpiamos visualmente el carrito
+        }
+        else
+        {
+            ErrorMensaje = "Error al confirmar la compra. Por favor, inténtelo de nuevo más tarde.";
+        }
+    }
+
+    private void VolverInicio()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+}

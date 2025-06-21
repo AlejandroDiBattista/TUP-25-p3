@@ -6,7 +6,7 @@ using Servidor.Models;
 namespace Servidor.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] // Ruta base: /api/carritos
     public class CarritosController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -16,6 +16,7 @@ namespace Servidor.Controllers
             _context = context;
         }
 
+        // Crea un nuevo carrito vacío en la base de datos
         [HttpPost]
         public async Task<ActionResult<string>> CrearCarrito()
         {
@@ -23,19 +24,25 @@ namespace Servidor.Controllers
             _context.Carritos.Add(carrito);
             await _context.SaveChangesAsync();
             return Ok(carrito.Id);
+            
+    Console.WriteLine($"🛒 Carrito creado con ID: {carrito.Id}"); 
+
+    return Ok(carrito.Id);
         }
 
+        // Obtiene el contenido del carrito con sus productos
         [HttpGet("{id}")]
         public async Task<ActionResult<IEnumerable<object>>> ObtenerCarrito(string id)
         {
             var carrito = await _context.Carritos
-                .Include(c => c.Items)
-                .ThenInclude(i => i.Producto)
+                .Include(c => c.Items)               // Incluye ítems del carrito
+                .ThenInclude(i => i.Producto)        // Incluye datos del producto
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (carrito == null)
                 return NotFound();
 
+            // Retorna solo los datos necesarios
             var resultado = carrito.Items.Select(i => new {
                 i.Id,
                 i.ProductoId,
@@ -52,45 +59,52 @@ namespace Servidor.Controllers
             return Ok(resultado);
         }
 
+        // Agrega o actualiza un producto dentro del carrito, actualizando stock inmediatamente
         [HttpPut("{id}/{productoId}")]
-public async Task<IActionResult> AgregarProducto(string id, int productoId, [FromQuery] int cantidad)
-{
-    var carrito = await _context.Carritos
-        .Include(c => c.Items)
-        .FirstOrDefaultAsync(c => c.Id == id);
-
-    if (carrito == null)
-        return NotFound("Carrito no encontrado");
-
-    var producto = await _context.Productos.FindAsync(productoId);
-    if (producto == null)
-        return NotFound("Producto no encontrado");
-
-    if (producto.Stock < cantidad)
-        return BadRequest("Producto sin stock suficiente");
-
-    var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
-    if (item != null)
-    {
-        if (producto.Stock < item.Cantidad + cantidad)
-            return BadRequest("No hay suficiente stock para incrementar");
-        item.Cantidad += cantidad;
-    }
-    else
-    {
-        carrito.Items.Add(new ItemCarrito
+        public async Task<IActionResult> AgregarProducto(string id, int productoId, [FromQuery] int cantidad)
         {
-            ProductoId = producto.Id,
-            Cantidad = cantidad,
-            PrecioUnitario = producto.Precio
-        });
-    }
+            var carrito = await _context.Carritos
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
-    await _context.SaveChangesAsync();
-    return Ok(new { mensaje = "Producto agregado correctamente" });
-}
+            if (carrito == null)
+                return NotFound("Carrito no encontrado");
 
+            var producto = await _context.Productos.FindAsync(productoId);
+            if (producto == null)
+                return NotFound("Producto no encontrado");
 
+            var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
+
+            int cantidadAnterior = item?.Cantidad ?? 0;
+            int nuevaCantidad = cantidadAnterior + cantidad;
+
+            int diferencia = nuevaCantidad - cantidadAnterior;
+
+            if (producto.Stock < diferencia)
+                return BadRequest("Producto sin stock suficiente");
+
+            producto.Stock -= diferencia;
+
+            if (item != null)
+            {
+                item.Cantidad = nuevaCantidad;
+            }
+            else
+            {
+                carrito.Items.Add(new ItemCarrito
+                {
+                    ProductoId = producto.Id,
+                    Cantidad = cantidad,
+                    PrecioUnitario = producto.Precio
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { mensaje = "Producto agregado correctamente" });
+        }
+
+        // Confirma la compra, ya que stock fue descontado antes, solo registra compra y elimina carrito
         [HttpPut("{id}/confirmar")]
         public async Task<IActionResult> ConfirmarCompra(string id, [FromBody] Compra datos)
         {
@@ -105,16 +119,7 @@ public async Task<IActionResult> AgregarProducto(string id, int productoId, [Fro
             if (!carrito.Items.Any())
                 return BadRequest("El carrito está vacío");
 
-            decimal total = 0;
-            foreach (var item in carrito.Items)
-            {
-                var producto = item.Producto!;
-                if (producto.Stock < item.Cantidad)
-                    return BadRequest($"Stock insuficiente para {producto.Nombre}");
-
-                producto.Stock -= item.Cantidad;
-                total += item.Cantidad * item.PrecioUnitario;
-            }
+            decimal total = carrito.Items.Sum(i => i.Cantidad * i.PrecioUnitario);
 
             var compra = new Compra
             {
@@ -132,12 +137,13 @@ public async Task<IActionResult> AgregarProducto(string id, int productoId, [Fro
             };
 
             _context.Compras.Add(compra);
-            _context.Carritos.Remove(carrito); // Limpia carrito tras la compra
+            _context.Carritos.Remove(carrito); // Elimina el carrito tras la compra
             await _context.SaveChangesAsync();
 
             return Ok(new { mensaje = "Compra confirmada", compra.Id });
         }
 
+        // Elimina todos los productos del carrito y devuelve el stock
         [HttpDelete("{id}")]
         public async Task<IActionResult> VaciarCarrito(string id)
         {
@@ -148,11 +154,22 @@ public async Task<IActionResult> AgregarProducto(string id, int productoId, [Fro
             if (carrito == null)
                 return NotFound();
 
+            // Devolver stock de cada producto
+            foreach (var item in carrito.Items)
+            {
+                var producto = await _context.Productos.FindAsync(item.ProductoId);
+                if (producto != null)
+                {
+                    producto.Stock += item.Cantidad;
+                }
+            }
+
             carrito.Items.Clear();
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
+        // Quita un producto del carrito y devuelve el stock
         [HttpDelete("{id}/{productoId}")]
         public async Task<IActionResult> QuitarProducto(string id, int productoId)
         {
@@ -166,6 +183,12 @@ public async Task<IActionResult> AgregarProducto(string id, int productoId, [Fro
             var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
             if (item != null)
             {
+                var producto = await _context.Productos.FindAsync(productoId);
+                if (producto != null)
+                {
+                    producto.Stock += item.Cantidad;
+                }
+
                 carrito.Items.Remove(item);
                 await _context.SaveChangesAsync();
             }

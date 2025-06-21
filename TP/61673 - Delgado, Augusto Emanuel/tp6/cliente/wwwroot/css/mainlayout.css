@@ -1,26 +1,21 @@
-/* Estilos generales de layout para la página */
+
 .page {
     display: flex;
     min-height: 100vh;
-    background-color: #f0f2f5; /* Fondo general de la página */
+    background-color: #ffffff; 
+
 }
 
-/* Contenedor del sidebar (ocupa su espacio en el flujo del documento) */
-.sidebar {
-    width: 250px; /* Ancho fijo para el área del sidebar */
-    flex-shrink: 0; /* Evita que el sidebar se encoja */
-    /* La NavMenu (sidebar-wrapper) dentro de este div es la que tiene 'position: fixed' */
-}
 
-/* Contenedor del contenido principal */
+
 .main-content {
-    flex-grow: 1; /* Ocupa el espacio restante */
-    margin-left: 250px; /* Margen izquierdo igual al ancho del sidebar fijo */
-    background-color: #f0f2f5; /* Fondo del área de contenido principal */
-    padding: 0; /* Reset padding, los elementos internos lo tendrán */
+    flex-grow: 1;
+    margin-left: 0 !important; 
+    background-color: #f0f2f5; 
+    padding: 0; 
 }
 
-/* Estilos para el nuevo header de la aplicación */
+
 .app-header {
     background-color: #007bff;
     color: white;
@@ -44,35 +39,35 @@
     margin-top: 0;
 }
 
-/* Estilos para el área donde se cargan las páginas (Home, Carrito, etc.) */
+
 .content.px-4 {
-    padding: 20px 40px; /* Padding interno para el contenido de la página */
-    background-color: #fff; /* Fondo blanco para las tarjetas de productos, formularios, etc. */
+    padding: 20px 40px; 
+    background-color: #fff; 
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin: 20px; /* Margen alrededor del bloque de contenido */
-    min-height: calc(100vh - 40px - 56px - 100px); /* Ajuste de altura para depuración */
+    margin: 20px; 
+    min-height: calc(100vh - 40px - 56px - 100px); 
 }
 
-/* Media queries para adaptar el layout en pantallas pequeñas */
+
 @media (max-width: 991.98px) {
     .page {
-        flex-direction: column; /* Apila el sidebar y el main content */
+        flex-direction: column; 
     }
     .sidebar {
-        width: 100%; /* Sidebar ocupa todo el ancho */
-        height: auto; /* Altura automática */
-        position: relative; /* No fixed, vuelve al flujo normal */
+        width: 100%; 
+        height: auto; 
+        position: relative; 
         box-shadow: none;
-        order: -1; /* Muestra el sidebar encima del contenido principal */
+        order: -1; 
     }
     .main-content {
-        margin-left: 0; /* Elimina el margen fijo */
-        width: 100%; /* Ocupa todo el ancho disponible */
+        margin-left: 0; 
+        width: 100%; 
     }
     .top-row, .app-header, .content.px-4 {
-        margin: 10px; /* Márgenes más pequeños en móvil */
-        padding: 15px 20px; /* Padding más pequeño */
-        border-radius: 0; /* Sin bordes redondeados */
+        margin: 10px; 
+        padding: 15px 20px; 
+        border-radius: 0; 
     }
 }

@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Threading.Tasks;
 using cliente.Models;
 
 namespace cliente.Services
@@ -11,6 +13,13 @@ namespace cliente.Services
     
         public int CantidadTotal => Items.Sum(i => i.Cantidad);
 
+        private readonly HttpClient _httpClient;
+
+        public CarritoService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public async Task InicializarCarritoAsync(ApiService apiService)
         {
             if (CarritoId == 0)
@@ -19,12 +28,30 @@ namespace cliente.Services
             }
         }
 
-        public void CambiarCantidad(int productoId, int nuevaCantidad)
+        public void CambiarCantidad(int productoId, int nuevaCantidad, List<Producto> productosCatalogo = null)
         {
             var item = Items.FirstOrDefault(i => i.Producto.Id == productoId);
-            if (item != null && nuevaCantidad > 0 && nuevaCantidad <= item.Producto.Stock)
+            if (item != null)
             {
-                item.Cantidad = nuevaCantidad;
+                int cantidadAnterior = item.Cantidad;
+                if (nuevaCantidad == 0)
+                {
+                    items.Remove(item);
+                }
+                else if (nuevaCantidad > 0 && nuevaCantidad <= item.Producto.Stock + cantidadAnterior)
+                {
+                    item.Cantidad = nuevaCantidad;
+                }
+                // Actualizar stock en catálogo si se pasa la lista
+                if (productosCatalogo != null)
+                {
+                    var productoCatalogo = productosCatalogo.FirstOrDefault(p => p.Id == productoId);
+                    if (productoCatalogo != null)
+                    {
+                        productoCatalogo.Stock += (cantidadAnterior - nuevaCantidad);
+                        if (productoCatalogo.Stock < 0) productoCatalogo.Stock = 0;
+                    }
+                }
             }
         }
         
@@ -40,6 +67,15 @@ namespace cliente.Services
             {
                 items.Add(new ItemCarrito { Producto = producto, Cantidad = 1 });
             }
+        }
+
+         public async Task AgregarProductoAsync(int productoId)
+        {
+            if (CarritoId == 0)
+                throw new InvalidOperationException("Carrito no inicializado.");
+
+            var response = await _httpClient.PutAsync($"/carritos/{CarritoId}/{productoId}", null);
+            response.EnsureSuccessStatusCode();
         }
 
         public void Vaciar()

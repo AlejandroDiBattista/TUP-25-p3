@@ -74,9 +74,11 @@
 
     private bool PuedeAgregar(Producto producto) => producto.Stock > 0;
 
-    private void AgregarAlCarrito(Producto producto)
+    private async Task AgregarAlCarrito(Producto producto)
     {
-        CarritoService.AgregarAsync(producto, 1);
-        Navigation.NavigateTo("/carrito");
+        await CarritoService.AgregarAsync(producto, 1);
+        await CargarProductos();
     }
+
+
 }

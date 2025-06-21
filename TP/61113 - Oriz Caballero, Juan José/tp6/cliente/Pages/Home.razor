@@ -1,59 +1,93 @@
 ﻿@page "/"
-@using cliente.Services
+@using Cliente.Components
+@using Cliente.Modelo
 @inject ApiService ApiService
+@inject CarritoService CarritoService
 
-<PageTitle>Inicio</PageTitle>
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1>Comunicación Cliente-Servidor</h1>
+
+<div class="contenido-principal mt-4 px-4">
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8">
+            <h2 class="titulo-principal">Catálogo de productos</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="badge bg-dark fs-6">🛒 Total en carrito: @CarritoService.TotalItems</span>
         </div>
     </div>
-    
+
     <div class="row mb-4">
         <div class="col-12">
-            <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
+            <input class="form-control"
+                   value="@busqueda"
+                   @oninput="OnBusquedaChanged"
+                   placeholder="Buscar productos..." />
         </div>
     </div>
 
     <div class="row">
-        <div class="col-12">            
-            @if (cargando) {
-                <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
-                    <div class="card-header">
-                        Respuesta del servidor
+        @if (productos == null)
+        {
+            <div class="col-12">
+                <div class="alert alert-info">Cargando productos...</div>
+            </div>
+        }
+        else if (!productos.Any())
+        {
+            <div class="col-12">
+                <div class="alert alert-warning">No se encontraron productos.</div>
+            </div>
+        }
+        else
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm" style="background-color: #f0fdf9;">
+                        <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title">@producto.Nombre</h5>
+                                <p class="card-text">@producto.Descripcion</p>
+                                <p><strong>Precio:</strong> $@producto.Precio</p>
+                                <p><strong>Stock:</strong> @producto.Stock</p>
+                            </div>
+                            <button class="btn-principal"
+                                    @onclick="() => AgregarAlCarrito(producto.Id)"
+                                    disabled="@(producto.Stock == 0)">
+                                Agregar al carrito
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">@datos.Mensaje</h5>
-                        <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                    </div>
-                </div>
-            } else if (error != null) {
-                <div class="alert alert-danger">
-                    Error: @error
                 </div>
             }
-        </div>
+        }
     </div>
 </div>
 
 @code {
-    private DatosRespuesta datos;
-    private string error;
-    private bool cargando = false;
+    private string busqueda = "";
+    private List<Producto> productos = new();
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
-            cargando = true;
-            error = null;
-            datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
-            error = ex.Message;
-            datos = null;
-        } finally {
-            cargando = false;
-        }
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await ApiService.ObtenerProductosAsync(busqueda);
+    }
+
+    private async Task OnBusquedaChanged(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? "";
+        await CargarProductos();
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        await CarritoService.AgregarProducto(productoId, 1);
+        await CargarProductos();
     }
 }

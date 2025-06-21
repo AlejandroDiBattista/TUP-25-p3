@@ -1,0 +1,114 @@
+﻿@page "/carrito"
+@inject ApiClient Api
+@inject CartState Cart
+@using TiendaOnline.Frontend.Services
+
+<h3>Carrito</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+else if (Cart.CarritoId is null)
+{
+    <p>Aún no agregaste productos.</p>
+}
+else if (_carrito is null)
+{
+    <p>Cargando…</p>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtot.</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var i in _carrito.Items)
+        {
+            <tr>
+                <td>@i.Producto?.Nombre</td>
+                <td>
+                    <button class="btn btn-sm btn-light" @onclick="() => Cambiar(i.ProductoId,-1)">-</button>
+                    @i.Cantidad
+                    <button class="btn btn-sm btn-light" @onclick="() => Cambiar(i.ProductoId,1)">+</button>
+                </td>
+                <td>@i.Producto?.Precio</td>
+                <td>@(i.Cantidad * (i.Producto?.Precio ?? 0))</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <p class="fw-bold">Total: @_total</p>
+    <button class="btn btn-warning me-2" @onclick="Vaciar">Vaciar</button>
+    <a class="btn btn-success" href="/confirmar">Confirmar</a>
+}
+
+@code {
+    private TiendaOnline.Frontend.Models.Carrito? _carrito;
+    private string? errorMessage;
+
+    private decimal _total => _carrito?.Items.Sum(
+        i => i.Cantidad * (i.Producto?.Precio ?? 0)) ?? 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refrescar();
+    }
+
+    private async Task Refrescar()
+    {
+        if (Cart.CarritoId is null)
+        {
+            _carrito = null;
+            return;
+        }
+
+        errorMessage = null;
+        try
+        {
+            _carrito = await Api.GetCarrito(Cart.CarritoId.Value);
+
+            if (_carrito is null)
+            {
+                Cart.Reset();
+            }
+            else
+            {
+                Cart.SetTotal(_carrito.Items.Sum(i => i.Cantidad));
+            }
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Error de conexión. No se pudo obtener el estado del carrito.";
+        }
+    }
+
+    private async Task Cambiar(int pid, int delta)
+    {
+        if(Cart.CarritoId is null) return;
+        
+        if (delta > 0)
+        {
+            await Api.Add(Cart.CarritoId.Value, pid, delta);
+        }
+        else
+        {
+            await Api.Remove(Cart.CarritoId.Value, pid, -delta);
+        }
+
+        await Refrescar();
+    }
+
+    private async Task Vaciar()
+    {
+        if(Cart.CarritoId is null) return;
+        
+        await Api.Vaciar(Cart.CarritoId.Value);
+        Cart.Reset();
+        _carrito = null;
+    }
+}

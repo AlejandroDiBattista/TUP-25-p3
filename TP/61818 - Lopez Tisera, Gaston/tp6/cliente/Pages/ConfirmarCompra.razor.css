@@ -1,0 +1,73 @@
+.confirmar-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmar-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 0 24px 0 rgba(0,0,0,0.08);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+}
+
+.confirmar-form-group {
+    /* width: 80%; */
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.confirmar-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #444;
+}
+
+.confirmar-input {
+    padding: 0.7rem 1.1rem;
+    border-radius: 0.7rem;
+    border: 1px solid #ccc;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border 0.2s;
+    background: #f8f9fa;
+}
+
+.confirmar-input:focus {
+    border: 1.5px solid #0d6efd;
+}
+
+.btn-confirmar-compra {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    background: linear-gradient(90deg, #0d6efd 60%, #198754 100%);
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.8rem;
+    padding: 1rem 0;
+    width: 100%;
+    box-shadow: 0 2px 12px 0 rgba(13,110,253,0.08);
+    transition: background 0.2s, transform 0.13s;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-confirmar-compra:hover, .btn-confirmar-compra:focus {
+    background: linear-gradient(90deg, #198754 60%, #0d6efd 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 18px 0 rgba(25,135,84,0.13);
+}

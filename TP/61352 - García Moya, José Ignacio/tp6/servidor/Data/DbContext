@@ -1,0 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+using servidor.Modelo;
+namespace servidor.Data
+{
+
+        public class TiendaDbContext : DbContext
+        {
+            public TiendaDbContext(DbContextOptions<TiendaDbContext> options) : base(options) { }
+
+            public DbSet<Producto> Productos => Set<Producto>();
+            public DbSet<Compra> Compras => Set<Compra>();
+            public DbSet<CarritoTemporal> CarritosTemporales => Set<CarritoTemporal>();
+
+            public DbSet<ItemCompra> ItemsCompra => Set<ItemCompra>();
+        }
+    
+}
+
+
+
+    
+

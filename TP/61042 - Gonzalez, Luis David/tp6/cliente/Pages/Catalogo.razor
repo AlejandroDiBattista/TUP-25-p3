@@ -5,44 +5,84 @@
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<div class="header">
-    
-    <button @onclick="IrAlCarrito" class="carrito-btn" style="font-size:2.2rem; padding:0.5rem 1.5rem; color:red;">
-        <span style="font-size:2.8rem; vertical-align:middle;">🛒</span> <span class="contador" style="font-size:1.5rem;">@cantidadCarrito</span>
-    </button>
-</div>
-
-<div style="color:red; font-size:1.5rem; text-align:center; margin-bottom:1rem;">Carrito de compra</div>
-
-<div class="productos">
-    @if (productos == null)
-    {
-        <p>Cargando productos...</p>
-    }
-    else if (!productos.Any())
-    {
-        <p>No hay productos.</p>
-    }
-    else
-    {
-        @foreach (var p in productos)
-        {
-            <div class="producto">
-               
-                <h3>@p.Nombre</h3>
-                <p>@p.Descripcion</p>
-                <p><b>Stock:</b> @p.Stock</p>
-                <p><b>Precio:</b> $@p.Precio</p>
-                <button @onclick="() => AgregarAlCarrito(p.Id)" disabled="@(p.Stock == 0)">Agregar al carrito</button>
+<div class="catalogo-main-center">
+    <div class="container py-4">
+        <div class="catalogo-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="catalogo-titulo-box">
+                        <h1 class="catalogo-titulo-text mb-0">Catálogo de Zapatillas</h1>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+                    <button @onclick="IrAlCarrito" class="catalogo-carrito-btn shadow-sm px-4 py-2 fs-5">
+                        <span style="font-size:2rem; vertical-align:middle;">🛒</span>
+                        <span class="catalogo-carrito-badge">@cantidadCarrito</span>
+                        Carrito
+                    </button>
+                </div>
             </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-12 col-md-6 mx-auto">
+                <form class="d-flex" @onsubmit="BuscarSubmit">
+                    <input class="form-control me-2 catalogo-busqueda" type="search" placeholder="Buscar producto" aria-label="Buscar producto" @bind="busqueda" />
+                    <button class="btn btn-outline-primary catalogo-btn-buscar" type="submit">Buscar</button>
+                </form>
+            </div>
+        </div>
+        <div class="row mb-2" >
+            @if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                <div class="col-12 text-center">
+                    <button class="btn btn-secondary" @onclick="LimpiarBusqueda">Volver al catálogo</button>
+                </div>
+            }
+        </div>
+        <div class="row g-4">
+            @if (productos == null)
+            {
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else if (!productos.Any())
+            {
+                <div class="col-12 text-center">
+                    <p class="text-danger fw-bold fs-3">No hay productos.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var p in productos)
+                {
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100 shadow-sm border-0 p-3 catalogo-card-separada">
+                            <img src="@(!string.IsNullOrEmpty(p.ImagenUrl) ? p.ImagenUrl : "img/zapatilla-default.jpg")" class="catalogo-producto-img mb-3" alt="Imagen de @p.Nombre" />
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <h5 class="card-title fw-bold">@p.Nombre</h5>
+                                <p class="card-text text-muted">@p.Descripcion</p>
+                                <div class="d-flex align-items-center justify-content-between mt-2 mb-3">
+                                    <span class="catalogo-card-precio">@p.Precio.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))</span>
+                                    <span class="catalogo-badge">Stock: @p.Stock</span>
+                                </div>
+                                <button class="btn catalogo-btn-agregar mt-auto w-100" @onclick="() => AgregarAlCarrito(p.Id)">
+                                    <i class="bi bi-plus-circle"></i> Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger mt-4">@error</div>
         }
-    }
+    </div>
 </div>
-
-@if (!string.IsNullOrEmpty(error))
-{
-    <div class="alert alert-danger">@error</div>
-}
 
 @code {
     string busqueda = "";
@@ -50,6 +90,7 @@
     int cantidadCarrito = 0;
     Guid carritoId;
     string error = null;
+    List<CarritoItemDto> itemsCarrito = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,7 +106,18 @@
     async Task Buscar()
     {
         try {
-            productos = await Api.ObtenerProductosAsync(busqueda);
+            var texto = busqueda?.ToLowerInvariant() ?? "";
+            var todos = await Api.ObtenerProductosAsync();
+            itemsCarrito = await Api.ObtenerCarritoAsync(carritoId);
+            productos = string.IsNullOrWhiteSpace(texto)
+                ? todos
+                : todos.Where(p => p.Nombre.ToLowerInvariant().Contains(texto) || p.Descripcion.ToLowerInvariant().Contains(texto)).ToList();
+            foreach (var prod in productos)
+            {
+                var enCarrito = itemsCarrito.FirstOrDefault(i => i.ProductoId == prod.Id);
+                if (enCarrito != null)
+                    prod.Stock -= enCarrito.Cantidad;
+            }
             error = null;
         } catch (Exception ex) {
             error = "Error al cargar productos: " + ex.Message;
@@ -76,10 +128,28 @@
     {
         try {
             await Api.AgregarProductoAsync(carritoId, productoId, 1);
+            await Buscar();
             await ActualizarCantidadCarrito();
             error = null;
         } catch (Exception ex) {
             error = "Error al agregar al carrito: " + ex.Message;
+        }
+    }
+
+    int ObtenerCantidadEnCarrito(int productoId)
+    {
+        return itemsCarrito.FirstOrDefault(i => i.ProductoId == productoId)?.Cantidad ?? 0;
+    }
+
+    async Task QuitarDelCarrito(int productoId)
+    {
+        try {
+            await Api.QuitarProductoAsync(carritoId, productoId);
+            await Buscar();
+            await ActualizarCantidadCarrito();
+            error = null;
+        } catch (Exception ex) {
+            error = "Error al quitar del carrito: " + ex.Message;
         }
     }
 
@@ -110,5 +180,15 @@
         }
     }
 
+    async Task BuscarSubmit()
+    {
+        await Buscar();
+    }
+
     void IrAlCarrito() => Nav.NavigateTo("/carrito");
+    void LimpiarBusqueda()
+    {
+        busqueda = "";
+        Nav.NavigateTo("/", true);
+    }
 }

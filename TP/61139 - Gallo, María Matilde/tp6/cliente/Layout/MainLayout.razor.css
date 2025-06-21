@@ -75,3 +75,50 @@ main {
         padding-right: 1.5rem !important;
     }
 }
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(to right, #f06292, #ba68c8);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.header-search {
+    flex-grow: 1;
+    margin: 0 1rem;
+    max-width: 400px;
+}
+
+.header-search input {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.header-cart {
+    position: relative;
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: white;
+    color: #ba68c8;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}

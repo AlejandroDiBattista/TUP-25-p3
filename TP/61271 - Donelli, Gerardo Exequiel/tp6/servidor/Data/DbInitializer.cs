@@ -25,7 +25,7 @@ public static class ProductosSeed
                 Nombre = "Arroz Largo Fino",
                 Descripcion = "Arroz largo fino calidad 00000, paquete de 1kg",
                 Precio = 999.99M,
-                Stock = 50,
+                Stock = 500,
                 ImagenUrl = "images/arroz-largo-fino-pulido.webp"
             },
             new Producto
@@ -33,7 +33,7 @@ public static class ProductosSeed
                 Nombre = "Aceite de Girasol",
                 Descripcion = "Aceite de girasol 100% puro, botella de 1.5L",
                 Precio = 123.99M,
-                Stock = 30,
+                Stock = 0,
                 ImagenUrl = "images/Aceite-girasol.webp"
             },
             new Producto
@@ -41,7 +41,7 @@ public static class ProductosSeed
                 Nombre = "Leche Entera",
                 Descripcion = "Leche entera larga vida, 1 litro",
                 Precio = 541.49M,
-                Stock = 40,
+                Stock = 400,
                 ImagenUrl = "images/Leche-Entera-Larga-Vida-1-Lt-_1.webp"
             },
             new Producto
@@ -49,7 +49,7 @@ public static class ProductosSeed
                 Nombre = "Fideos Spaghetti",
                 Descripcion = "Fideos tipo spaghetti, paquete de 500g",
                 Precio = 100.20M,
-                Stock = 60,
+                Stock = 600,
                 ImagenUrl = "images/fideos-Lucchetti.webp"
             },
             new Producto
@@ -57,7 +57,7 @@ public static class ProductosSeed
                 Nombre = "Harina de Trigo",
                 Descripcion = "Harina de trigo común 000, paquete de 1kg",
                 Precio = 188.10M,
-                Stock = 45,
+                Stock = 450,
                 ImagenUrl = "images/Harina-trigo-000.webp"
             },
             new Producto
@@ -65,7 +65,7 @@ public static class ProductosSeed
                 Nombre = "Azúcar Blanca",
                 Descripcion = "Azúcar refinada blanca, paquete de 1kg",
                 Precio = 1999.35M,
-                Stock = 55,
+                Stock = 550,
                 ImagenUrl = "images/azucar-blaco.webp"
             },
             new Producto
@@ -73,7 +73,7 @@ public static class ProductosSeed
                 Nombre = "Yerba Mate",
                 Descripcion = "Yerba mate con palo tradicional, paquete de 1kg",
                 Precio = 3777.49M,
-                Stock = 28,
+                Stock = 280,
                 ImagenUrl = "images/Yerba_Mate_Elaborada_con_Palo,_1_kg.jpg"
             },
             new Producto
@@ -81,7 +81,7 @@ public static class ProductosSeed
                 Nombre = "Galletitas Dulces",
                 Descripcion = "Galletitas dulces surtidas",
                 Precio = 152.75M,
-                Stock = 35,
+                Stock = 350,
                 ImagenUrl = "images/Surtido-galletas.png"
             },
             new Producto
@@ -89,7 +89,7 @@ public static class ProductosSeed
                 Nombre = "Huevos",
                 Descripcion = "Maple de huevos frescos blancos, docena",
                 Precio = 220.90M,
-                Stock = 20,
+                Stock = 200,
                 ImagenUrl = "images/huevos.png"
             },
             new Producto
@@ -97,7 +97,7 @@ public static class ProductosSeed
                 Nombre = "Pan Lactal",
                 Descripcion = "Pan lactal blanco sin corteza, 500g",
                 Precio = 252.50M,
-                Stock = 25,
+                Stock = 200,
                 ImagenUrl = "images/Pan-lactal.webp"
             }
         };

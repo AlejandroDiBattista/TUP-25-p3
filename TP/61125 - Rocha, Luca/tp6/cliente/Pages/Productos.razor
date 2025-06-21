@@ -1,127 +1,183 @@
-#nullable enable
 @page "/productos"
-@using cliente.Modelos
-@inject cliente.Services.ProductoService ProductoService
-@inject cliente.Services.CarritoService CarritoService
+@inject cliente.Services.ApiService ApiService
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Nav
 
-<h1>Bienvenido a nuestra tienda</h1>
-<p>Explora nuestros productos y añade al carrito lo que desees comprar.</p>
+@using cliente.Models
+@using Microsoft.AspNetCore.Components.Web
 
-<h2>Productos disponibles</h2>
+<PageTitle>Productos</PageTitle>
 
-<button class="btn btn-success mb-3" @onclick="MostrarFormularioAgregarProducto">
-    ➕ Agregar producto
-</button>
+<div class="container mt-4">
+    <h2 class="text-center mb-4" style="color:#1976d2;font-weight:700;">Catálogo de Productos</h2>
+    
+    <div class="input-group mb-4 mx-auto" style="max-width:400px;">
+        <input class="form-control" placeholder="Buscar productos..." @bind="busqueda" @bind:event="oninput" @onkeypress="BuscarSiEnter" />
+        <button class="btn btn-primary" @onclick="Buscar">Buscar</button>
+    </div>
 
-@if (productos is null)
-{
-    <p style="color: red;">⚠️ Cargando productos...</p>
-}
-else if (!productos.Any())
-{
-    <p>Tu tienda aún no tiene productos disponibles.</p>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var producto in productos)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <img src="@($"/images/{producto.ImagenUrl}")" class="card-img-top" alt="@producto.Nombre"
-                         style="height: 180px; object-fit: contain;" />
-                    <div class="card-body">
-                        <h5 class="card-title">@producto.Nombre</h5>
-                        <p class="card-text text-muted">@producto.Descripcion</p>
-                        <p class="fw-bold mb-1">$@producto.Precio</p>
-                        <button class="btn btn-primary w-100" @onclick="() => AñadirAlCarrito(producto)">
-                            🛒 Agregar al carrito
-                        </button>
+    @if (productos != null)
+    {
+        <p class="text-end" style="color:#1976d2;font-weight:500;">Cantidad de productos: @productos.Count</p>
+    }
+
+    @if (productos is null)
+    {
+        <p class="text-center">Cargando productos...</p>
+    }
+    else if (!productos.Any())
+    {
+        <div class="alert alert-warning text-center">Producto no encontrado</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var producto in productos)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch">
+                    <div class="product-card w-100 d-flex flex-column">
+                        <img src="@producto.ImagenUrl" class="product-img" alt="@producto.Nombre">
+                        <div class="product-body d-flex flex-column flex-grow-1">
+                            <h5 class="product-title">@producto.Nombre</h5>
+                            <p class="product-desc flex-grow-1">@producto.Descripcion</p>
+                            <div class="product-info mb-2">
+                                <span class="product-price">$@producto.Precio</span>
+                                <span class="product-stock">Stock: @producto.Stock</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm w-100 mb-2" @onclick="() => AgregarAlCarrito(producto.Id)" disabled="@((producto.Stock < 1))">
+                                Agregar al carrito
+                            </button>
+                            
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (mostrarDialogoStock)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar stock</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarDialogoStock"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label>Palabra clave:</label>
+                            <input type="password" class="form-control" @bind="claveStock" />
+                        </div>
+                        <div class="mb-2">
+                            <label>Cantidad a agregar:</label>
+                            <input type="number" class="form-control" @bind="cantidadStock" min="1" />
+                        </div>
+                        @if (!string.IsNullOrEmpty(errorStock))
+                        {
+                            <div class="alert alert-danger">@errorStock</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CerrarDialogoStock">Cancelar</button>
+                        <button class="btn btn-success" @onclick="ConfirmarAgregarStock">Agregar</button>
                     </div>
                 </div>
             </div>
-        }
-    </div>
-}
-
-@if (mostrarFormularioAgregar)
-{
-    <h2>Agregar nuevo producto</h2>
-    <form @onsubmit="AgregarProducto">
-        <div class="mb-3">
-            <label>Nombre del producto</label>
-            <input type="text" class="form-control" @bind="nuevoProducto.Nombre" required />
         </div>
-        <div class="mb-3">
-            <label>Descripción</label>
-            <input type="text" class="form-control" @bind="nuevoProducto.Descripcion" required />
-        </div>
-        <div class="mb-3">
-            <label>Precio</label>
-            <input type="number" class="form-control" @bind="nuevoProducto.Precio" required />
-        </div>
-        <div class="mb-3">
-            <label>Stock</label>
-            <input type="number" class="form-control" @bind="nuevoProducto.Stock" required />
-        </div>
-        <div class="mb-3">
-            <label>Imagen (nombre de archivo)</label>
-            <input type="text" class="form-control" @bind="nuevoProducto.ImagenUrl" required />
-        </div>
-        <button type="submit" class="btn btn-primary">Guardar producto</button>
-        <button type="button" class="btn btn-secondary" @onclick="CancelarAgregarProducto">Cancelar</button>
-    </form>
-}
+        <div class="modal-backdrop fade show"></div>
+    }
+</div>
 
 @code {
-    private List<Producto>? productos;
-    private List<Producto> carrito = new List<Producto>();
-    private bool mostrarFormularioAgregar = false;
-    private Producto nuevoProducto = new Producto();
+    List<Producto>? productos;
+    string busqueda = "";
+    string mensaje = "";
+    string errorStock = "";
+    bool mostrarDialogoStock = false;
+    int productoIdStock = 0;
+    int cantidadStock = 1;
+    string claveStock = "";
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? q { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
-        try
+        busqueda = q ?? "";
+        productos = await ApiService.GetProductosAsync(busqueda);
+    }
+
+    private async Task Buscar()
+    {
+        Nav.NavigateTo($"/productos?q={busqueda}", forceLoad: false);
+    }
+
+    private async Task BuscarSiEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
         {
-            productos = await ProductoService.ObtenerProductosAsync();
-            carrito = await LocalStorage.GetItemAsync<List<Producto>>("carrito") ?? new List<Producto>();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"🚨 Error al inicializar productos y carrito: {ex.Message}");
+            await Buscar();
         }
     }
 
-    private async Task AñadirAlCarrito(Producto producto)
+    private async Task<Guid> ObtenerOCrearCarritoIdAsync()
     {
-        var existente = carrito.FirstOrDefault(p => p.Id == producto.Id);
-        if (existente != null)
+        var carritoId = await LocalStorage.GetItemAsync<Guid?>("carritoId");
+        if (carritoId == null || carritoId == Guid.Empty)
         {
-            existente.Cantidad++;
+            var nuevoId = await ApiService.CrearCarritoAsync();
+            await LocalStorage.SetItemAsync("carritoId", nuevoId);
+            return nuevoId;
         }
-        else
+        return carritoId.Value;
+    }
+
+    private async Task AgregarAlCarrito(int productoId)
+    {
+        var carritoId = await ObtenerOCrearCarritoIdAsync();
+        await ApiService.AgregarAlCarritoAsync(carritoId, productoId);
+        mensaje = "Producto agregado al carrito";
+        StateHasChanged();
+        await Task.Delay(1500);
+        mensaje = "";
+        StateHasChanged();
+
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
+    }
+
+    private void MostrarDialogoStock(int productoId)
+    {
+        productoIdStock = productoId;
+        cantidadStock = 1;
+        claveStock = "";
+        errorStock = "";
+        mostrarDialogoStock = true;
+    }
+
+    private void CerrarDialogoStock()
+    {
+        mostrarDialogoStock = false;
+        errorStock = "";
+    }
+
+    private async Task ConfirmarAgregarStock()
+    {
+        if (claveStock != "jefedelprograma")
         {
-            producto.Cantidad = 1;
-            carrito.Add(producto);
+            errorStock = "Palabra clave incorrecta.";
+            return;
         }
-        await LocalStorage.SetItemAsync("carrito", carrito);
-    }
-
-    private void MostrarFormularioAgregarProducto()
-    {
-        mostrarFormularioAgregar = true;
-    }
-
-    private void CancelarAgregarProducto()
-    {
-        mostrarFormularioAgregar = false;
-    }
-
-    private async Task AgregarProducto()
-    {
-        productos?.Add(nuevoProducto);
-        nuevoProducto = new Producto();
-        mostrarFormularioAgregar = false;
+        if (cantidadStock < 1)
+        {
+            errorStock = "La cantidad debe ser mayor a 0.";
+            return;
+        }
+        await ApiService.AgregarStockAsync(productoIdStock, cantidadStock);
+        mostrarDialogoStock = false;
+        errorStock = "";
+        productos = await ApiService.GetProductosAsync(busqueda);
+        StateHasChanged();
     }
 }

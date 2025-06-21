@@ -55,6 +55,10 @@
     <div class="row">
         <div class="col-12">
             <h2>Productos destacados</h2>
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert alert-success text-center">@mensaje</div>
+            }
             @if (productos == null)
             {
                 <div class="alert alert-info">Cargando productos...</div>
@@ -105,10 +109,31 @@
                                                 <h5 class="card-title">@prod.Nombre</h5>
                                                 <p class="card-text">@prod.Descripcion</p>
                                                 <p class="card-text"><b>$@prod.Precio</b></p>
-                                                <button class="btn btn-primary"
-                                                        @onclick="() => Comprar(prod.Id)">
-                                                    Comprar
-                                                </button>
+                                                <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                                                    <button class="btn btn-primary"
+                                                            @onclick="() => Comprar(prod.Id)"
+                                                            disabled="@( (CarritoService.CarritoActual?.Items.FirstOrDefault(p => p.Producto.Id == prod.Id)?.Cantidad ?? 0) >= prod.Stock )">
+                                                        Comprar
+                                                    </button>
+                                                    @if (productoAgregadoId == prod.Id)
+                                                    {
+                                                        <span style="
+                                                            position: absolute;
+                                                            bottom: 110%;
+                                                            left: 50%;
+                                                            transform: translateX(-50%);
+                                                            background: #28a745;
+                                                            color: white;
+                                                            padding: 0.3em 0.8em;
+                                                            border-radius: 1em;
+                                                            font-size: 0.95em;
+                                                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                                            white-space: nowrap;
+                                                            z-index: 10;">
+                                                            ¡Agregado al carrito!
+                                                        </span>
+                                                    }
+                                                </div>
                                             </div>
                                         </div>
                                     }
@@ -128,13 +153,25 @@
     </div>
 </div>
 
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-success text-center">@mensaje</div>
+}
+
 @code {
     private List<Producto> productos;
     private string textoBusqueda = "";
+    private string mensaje = "";
+    private int? productoAgregadoId = null;
+    private Dictionary<int, int> stockVisible = new();
 
     protected override async Task OnInitializedAsync()
     {
         productos = await ApiService.GetProductosAsync();
+        foreach (var prod in productos)
+        {
+            stockVisible[prod.Id] = prod.Stock;
+        }
     }
 
     private void ComprarProducto(int productoId)
@@ -151,6 +188,10 @@
     private async Task Comprar(int productoId)
     {
         await CarritoService.AgregarOActualizarProductoAsync(productoId, 1);
-        // Si quieres, puedes refrescar el carrito o mostrar un mensaje
+        productoAgregadoId = productoId;
+        StateHasChanged();
+        await Task.Delay(1500); // La burbuja se oculta después de 1.5 segundos
+        productoAgregadoId = null;
+        StateHasChanged();
     }
 }

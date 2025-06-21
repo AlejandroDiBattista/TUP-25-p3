@@ -54,6 +54,14 @@ public class CarritoService
         await ActualizarCantidad();
     }
 
+    public async Task QuitarProductoTotal(int productoId)
+    {
+        if (carritoId == Guid.Empty) return;
+
+        await http.DeleteAsync($"carritos/{carritoId}/{productoId}/todo");
+        await ActualizarCantidad();
+    }
+
     public async Task<List<ItemCarritoDto>> ObtenerCarrito()
     {
         if (carritoId == Guid.Empty)

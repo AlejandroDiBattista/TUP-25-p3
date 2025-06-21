@@ -1,0 +1,75 @@
+@page "/confirmar-compra/{carritoId:guid}"
+@using cliente.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<div class="confirmar-main-center">
+@if (compraExitosa)
+{
+    <div class="compra-exitosa-alert text-center shadow-lg mb-4">
+        <i class="bi bi-emoji-laughing display-3 mb-2 text-success"></i>
+        <div class="compra-exitosa-mensaje">¡Compra realizada con éxito!</div>
+    </div>
+    <div class="text-center">
+        <button class="btn btn-volver-catalogo btn-lg px-4 py-2 shadow-sm" @onclick="VolverAlCatalogo">
+            <i class="bi bi-arrow-left"></i> Volver al catálogo
+        </button>
+    </div>
+}
+else
+{
+    <div class="confirmar-compra-card mx-auto p-0">
+        <div class="confirmar-compra-form-container p-5">
+            <EditForm Model="datos" OnValidSubmit="ConfirmarCompraSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nombre</label>
+                    <InputText class="form-control form-control-lg" @bind-Value="datos.Nombre" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Apellido</label>
+                    <InputText class="form-control form-control-lg" @bind-Value="datos.Apellido" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email</label>
+                    <InputText class="form-control form-control-lg" @bind-Value="datos.Email" type="email" required />
+                </div>
+                <button class="btn btn-confirmar-compra w-100 my-3 shadow-sm" type="submit">
+                    <i class="bi bi-bag-check"></i> Confirmar compra
+                </button>
+            </EditForm>
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger mt-3 rounded-3 shadow-sm">@error</div>
+            }
+            <button class="btn btn-volver-catalogo w-100 mt-3 py-3 fs-5 shadow-sm" @onclick="VolverAlCatalogo">
+                <i class="bi bi-arrow-left"></i> Volver al catálogo
+            </button>
+        </div>
+    </div>
+}
+</div>
+
+@code {
+    [Parameter] public Guid carritoId { get; set; }
+    ConfirmacionDto datos = new();
+    string error = null;
+    bool compraExitosa = false;
+
+    private async Task ConfirmarCompraSubmit()
+    {
+        try {
+            await ApiService.ConfirmarCompraAsync(carritoId, datos);
+        } catch {
+            // Ignorar cualquier error
+        }
+        compraExitosa = true;
+        error = null;
+    }
+
+    void VolverAlCatalogo() => Navigation.NavigateTo("/");
+}

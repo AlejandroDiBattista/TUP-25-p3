@@ -17,67 +17,40 @@
         }
         else
         {
-            <div class="table-responsive mb-4">
-                <table class="table carrito-table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Precio</th>
-                            <th>Cantidad</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in items)
-                        {
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-box-seam me-2 text-secondary"></i>
-                                        <span style="font-size:1.2rem">@item.Producto.Nombre</span>
-                                    </div>
-                                </td>
-                                <td>$@item.Producto.Precio</td>
-                                <td>@item.Cantidad</td>
-                                <td>$@(item.Producto.Precio * item.Cantidad)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <span class="carrito-total">Total: <span class="text-success fw-bold">$@total</span></span>
-                <button class="btn btn-outline-danger carrito-btn" @onclick="Limpiar">
-                    <i class="bi bi-trash"></i> Vaciar carrito
-                </button>
-            </div>
-
-            <div class="form-card">
-                <h4 class="mb-4 text-secondary text-center"><i class="bi bi-credit-card"></i> Confirmar compra</h4>
-                <EditForm Model="@formulario" OnValidSubmit="ConfirmarCompra">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
-
-                    <div class="form-group">
-                        <label class="form-label">Nombre</label>
-                        <InputText @bind-Value="formulario.Nombre" class="form-control form-control-lg" />
-                        <ValidationMessage For="@(() => formulario.Nombre)" />
+        <div class="carrito-lista">
+            @foreach (var item in items)
+            {
+                <div class="carrito-item-card">
+                    <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre" class="carrito-item-img" />
+                    <div class="carrito-item-info">
+                        <div class="carrito-item-nombre">@item.Producto.Nombre</div>
+                        <div class="carrito-item-precio">$@item.Producto.Precio</div>
+                        <div class="carrito-item-total">
+                            <span style="color: #888; font-size: 0.95rem;">
+                                Total: $@(item.Producto.Precio * item.Cantidad)
+                            </span>
+                        </div>
+                        <div class="carrito-item-cantidad">
+                            <button class="carrito-btn" @onclick="() => RestarCantidad(item.Producto.Id)">-</button>
+                            <span>@item.Cantidad</span>
+                            <button class="carrito-btn" @onclick="() => SumarCantidad(item.Producto.Id)">+</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Apellido</label>
-                        <InputText @bind-Value="formulario.Apellido" class="form-control form-control-lg" />
-                        <ValidationMessage For="@(() => formulario.Apellido)" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <InputText @bind-Value="formulario.Email" class="form-control form-control-lg" />
-                        <ValidationMessage For="@(() => formulario.Email)" />
-                    </div>
-                    <button class="btn btn-success carrito-btn w-100 mt-3" type="submit">
-                        <i class="bi bi-bag-check"></i> Confirmar compra
+                    <button class="carrito-eliminar-btn" title="Eliminar producto" @onclick="() => EliminarProducto(item.Producto.Id)">
+                        <i class="bi bi-trash"></i>
                     </button>
-                </EditForm>
-            </div>
+                </div>
+            }
+        </div>
+        @if (items.Count > 0)
+            {
+                <div class="carrito-total">
+                    <strong>Total: $@items.Sum(i => i.Producto.Precio * i.Cantidad)</strong>
+                </div>
+                    <a class="btn-confirmar-compra" href="/carrito/confirmar-compra">
+                        <i class="bi bi-bag-check"></i> Confirmar compra
+                    </a>
+            }
         }
 
         @if (!string.IsNullOrEmpty(mensaje))
@@ -91,7 +64,7 @@
 @code {
     private List<CarritoItem> items = new();
     private decimal total;
-    private FormularioCompra formulario = new();
+    @* private FormularioCompra formulario = new(); *@
     private string mensaje = "";
     private string carritoId = "";
 
@@ -128,18 +101,21 @@
         mensaje = $"Error al inicializar el carrito: {ex.Message}";
     }
 }
-    private bool EsValido()
+    void SumarCantidad(int productoId) => CarritoService.SumarCantidad(productoId);
+    void RestarCantidad(int productoId) => CarritoService.RestarCantidad(productoId);
+    void EliminarProducto(int productoId) => CarritoService.EliminarProducto(productoId);
+    @* private bool EsValido()
     {
         return !string.IsNullOrWhiteSpace(formulario.Nombre)
             && !string.IsNullOrWhiteSpace(formulario.Apellido)
             && !string.IsNullOrWhiteSpace(formulario.Email);
-    }
+    } *@
     public void Limpiar()
     {
         items.Clear();
     }
 
-    private async Task ConfirmarCompra()
+    @* private async Task ConfirmarCompra()
     {
         if (string.IsNullOrWhiteSpace(carritoId))
         {
@@ -171,7 +147,7 @@
 
         [Required, EmailAddress]
         public string Email { get; set; } = "";
-    }
+    } *@
     public class DatosCompra
     {
         public string Nombre { get; set; } = "";

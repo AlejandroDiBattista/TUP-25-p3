@@ -16,6 +16,17 @@ namespace servidor.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
+            modelBuilder.Entity("Carrito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carritos");
+                });
+
             modelBuilder.Entity("Compra", b =>
                 {
                     b.Property<int>("Id")
@@ -53,6 +64,9 @@ namespace servidor.Migrations
 
                     b.Property<int>("CompraId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("PrecioTotal")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("PrecioUnitario")
                         .HasColumnType("TEXT");
@@ -95,6 +109,30 @@ namespace servidor.Migrations
                     b.ToTable("Productos");
                 });
 
+            modelBuilder.Entity("itemsCarrito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CarritoId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarritoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("itemsCarrito");
+                });
+
             modelBuilder.Entity("Item", b =>
                 {
                     b.HasOne("Compra", "Compra")
@@ -112,6 +150,30 @@ namespace servidor.Migrations
                     b.Navigation("Compra");
 
                     b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("itemsCarrito", b =>
+                {
+                    b.HasOne("Carrito", "Carrito")
+                        .WithMany("Items")
+                        .HasForeignKey("CarritoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Carrito");
+
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("Carrito", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Compra", b =>

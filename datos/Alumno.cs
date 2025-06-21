@@ -105,8 +105,10 @@ public class Alumno {
     public string NombreCompleto => $"{Apellido}, {Nombre}".Replace("-", "").Replace("*", "").Trim();
     public string Carpeta => $"{Legajo} - {NombreCompleto}";
     public int CantidadPresentados => Practicos.Count(p => p == EstadoPractico.Aprobado);
-    public bool Abandono  => Asistencias < 4   && CantidadPresentados == 0;
-    public bool Continuan => Asistencias >= 15 && CantidadPresentados >= 3;
+    public bool Abandono  => CantidadPresentados < 3;
+    public bool Continuan => CantidadPresentados >= 3;
+    // public bool Abandono  => Asistencias < 4   && CantidadPresentados == 0;
+    // public bool Continuan => Asistencias >= 15 && CantidadPresentados >= 3;
 
     // Nueva propiedad: cuenta los prácticos no presentados, sin tomar en cuenta el último
     public int Faltantes => Practicos

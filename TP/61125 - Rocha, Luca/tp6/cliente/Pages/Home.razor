@@ -1,11 +1,9 @@
 ﻿@page "/"
-@layout Layout.MainLayout
+@inject NavigationManager Nav
 
-<h1 class="mt-4 mb-3">Bienvenido a la Tienda Online</h1>
-
-<p>Elegí lo que necesitás para tu laboratorio y gestioná tu carrito al instante.</p>
-
-<div class="d-flex flex-column flex-sm-row gap-3 mt-4">
-    <a href="/productos" class="btn btn-primary btn-lg">🧪 Ver productos</a>
-    <a href="/carrito" class="btn btn-outline-secondary btn-lg">🛒 Ir al carrito</a>
-</div>
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/productos", true);
+    }
+}

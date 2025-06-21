@@ -70,22 +70,34 @@ app.MapPut("/carritos/{id}/{productoId}", async (
         return Results.NotFound("Carrito no encontrado");
 
     var producto = await db.Productos.FindAsync(productoId);
-    if (producto == null || producto.Stock < cantidad)
-        return Results.BadRequest("Producto no válido o sin stock");
+    if (producto == null)
+        return Results.BadRequest("Producto no válido");
+
+    var totalReservado = carritos.Values
+        .SelectMany(c => c.Items)
+        .Where(i => i.ProductoId == productoId)
+        .Sum(i => i.Cantidad);
+
+    var yaReservadoEsteCarrito = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId)?.Cantidad ?? 0;
+    var totalReservadoSinEste = totalReservado - yaReservadoEsteCarrito;
+
+    if (producto.Stock < totalReservadoSinEste + cantidad)
+        return Results.BadRequest($"Stock insuficiente. Ya reservado: {totalReservadoSinEste}, disponible: {producto.Stock}");
 
     var existente = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId);
     if (existente != null)
     {
-      existente.Cantidad += cantidad;
-      existente.PrecioUnitario = producto.Precio;
+        existente.Cantidad += cantidad;
     }
     else
-    carrito.Items.Add(new CarritoItem
     {
-      ProductoId = productoId,
-      Cantidad = cantidad,
-      PrecioUnitario = producto.Precio
-    });
+        carrito.Items.Add(new CarritoItem
+        {
+            ProductoId = productoId,
+            Cantidad = cantidad,
+            PrecioUnitario = producto.Precio
+        });
+    }
 
     return Results.Ok(carrito);
 });
@@ -177,19 +189,29 @@ app.MapDelete("/carritos/{id}/{productoId}", ([FromRoute] Guid id, [FromRoute] i
 
 app.MapPost("/carrito/vaciar", ([FromQuery] Guid id) =>
 {
-  if (!carritos.TryGetValue(id, out var carrito))
-    return Results.NotFound("Carrito no encontrado");
+    if (!carritos.TryGetValue(id, out var carrito))
+        return Results.NotFound("Carrito no encontrado");
 
-  carrito.Items.Clear();
-  return Results.Ok("Carrito vaciado correctamente");
+    carrito.Items.Clear();
+    return Results.Ok("Carrito vaciado correctamente");
 });
 
-app.MapDelete("/carrito", ([FromQuery] Guid id) =>
-{
-  if (!carritos.Remove(id))
-    return Results.NotFound("Carrito no encontrado");
 
-  return Results.Ok("Carrito eliminado");
+app.MapDelete("/carrito", async ([FromQuery] Guid id, ApplicationDbContext db) =>
+{
+    if (!carritos.TryGetValue(id, out var carrito))
+        return Results.NotFound("Carrito no encontrado");
+
+    foreach (var item in carrito.Items)
+    {
+        carrito.Items.Clear();
+        return Results.Ok("Carrito vaciado correctamente");
+    }
+
+    await db.SaveChangesAsync();
+
+    carritos.Remove(id);
+    return Results.Ok("Carrito eliminado");
 });
 
 app.MapGet("/compras/{id}", async (int id, ApplicationDbContext db) =>
@@ -225,13 +247,46 @@ app.MapGet("/compras/{id}", async (int id, ApplicationDbContext db) =>
   return Results.Ok(resultado);
 });
 
-app.MapDelete("/carritos/{id}", ([FromRoute] Guid id) =>
+app.MapDelete("/carrito", ([FromQuery] Guid id) =>
 {
     if (!carritos.TryGetValue(id, out var carrito))
         return Results.NotFound("Carrito no encontrado");
 
-    carrito.Items.Clear();
-    return Results.Ok("Carrito vaciado correctamente");
+    carritos.Remove(id);
+    return Results.Ok("Carrito eliminado");
+});
+
+app.MapGet("/productos/actuales", async ([FromQuery] string? query, ApplicationDbContext db) =>
+{
+    var productos = db.Productos.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(query))
+    {
+        query = query.ToLower();
+        productos = productos.Where(p =>
+            p.Nombre.ToLower().Contains(query) ||
+            p.Descripcion.ToLower().Contains(query));
+    }
+
+    var lista = await productos.ToListAsync();
+
+    var stockReservado = carritos
+        .SelectMany(c => c.Value.Items)
+        .GroupBy(i => i.ProductoId)
+        .ToDictionary(g => g.Key, g => g.Sum(i => i.Cantidad));
+
+    var resultado = lista.Select(p => new
+    {
+        p.Id,
+        p.Nombre,
+        p.Descripcion,
+        p.Precio,
+        p.ImagenUrl,
+        
+        Stock = Math.Max(0, p.Stock - (stockReservado.ContainsKey(p.Id) ? stockReservado[p.Id] : 0))
+    });
+
+    return Results.Ok(resultado);
 });
 
 

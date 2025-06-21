@@ -2,7 +2,7 @@ namespace cliente.Services
 {
     public class BusquedaService
     {
-        private string _busqueda = "";
+        private string _busqueda;
         public string Busqueda
         {
             get => _busqueda;
@@ -11,11 +11,11 @@ namespace cliente.Services
                 if (_busqueda != value)
                 {
                     _busqueda = value;
-                    OnChange?.Invoke();
+                    OnBusquedaChanged?.Invoke();
                 }
             }
         }
 
-        public event Action OnChange;
+        public event Action OnBusquedaChanged;
     }
 }
