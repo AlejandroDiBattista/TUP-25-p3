@@ -37,4 +37,19 @@ public class ApiService
             return new List<Producto>();
         }
     }
+
+    public async Task<bool> RegistrarCompraAsync(Compra compra)
+{
+    try
+    {
+        var response = await _httpClient.PostAsJsonAsync("/compras", compra);
+        return response.IsSuccessStatusCode;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al registrar la compra: {ex.Message}");
+        return false;
+    }
+}
+
 }

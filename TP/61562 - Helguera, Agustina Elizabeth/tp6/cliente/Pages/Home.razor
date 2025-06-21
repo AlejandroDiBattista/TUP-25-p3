@@ -1,12 +1,17 @@
 ﻿@page "/"
 @using cliente.Services
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@using Microsoft.AspNetCore.Components
 @inject ApiService ApiService
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
 <PageTitle>Inicio</PageTitle>
 
 <div class="container">
 
-    <!-- Parte que dejó el profesor -->
+    
     <div class="row mb-4">
         <div class="col-12">
             <h1>Comunicación Cliente-Servidor</h1>
@@ -41,7 +46,7 @@
         </div>
     </div>
 
-    <!-- NUEVO: Catálogo de productos -->
+    
     <div class="row mb-4">
         <div class="col-12">
             <h2>Catálogo</h2>
@@ -73,7 +78,7 @@
         </div>
     </div>
 
-    <!-- NUEVO: Carrito -->
+    
     <div class="row mb-4">
         <div class="col-12">
             <h2>Carrito</h2>
@@ -98,12 +103,13 @@
 </div>
 
 @code {
-    // Para la parte que dejó el profe
+    [Inject] IJSRuntime JS { get; set; }
+
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
 
-    // Para el catálogo y carrito
+    
     List<cliente.Models.Producto> productos;
 
     class ItemCarrito
@@ -160,10 +166,34 @@
         }
     }
 
-    void FinalizarCompra()
+    async Task FinalizarCompra()
     {
-        carrito.Clear();
-        Console.WriteLine("Compra finalizada!");
-        
+      if (carrito.Count == 0)
+          return;
+
+      var compra = new cliente.Models.Compra
+      {
+          Fecha = DateTime.Now,
+          Items = carrito.Select(item => new cliente.Models.ItemCompra
+          {
+              ProductoId = item.Id,
+              Cantidad = item.Cantidad,
+              PrecioUnitario = item.Precio
+          }).ToList(),
+          Total = carrito.Sum(i => i.Precio * i.Cantidad)
+       };
+
+      var ok = await ApiService.RegistrarCompraAsync(compra);
+
+      if (ok)
+      {
+          carrito.Clear();
+          await JS.InvokeVoidAsync("alert", "¡Compra registrada con éxito!");
+      }
+      else
+      {
+          await JS.InvokeVoidAsync("alert", "Ocurrió un error al registrar la compra.");
+      }
     }
+
 }
