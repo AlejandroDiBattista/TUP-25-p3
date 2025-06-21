@@ -5,6 +5,8 @@
 <PageTitle>Inicio</PageTitle>
 
 <div class="container">
+
+    <!-- Parte que dejó el profesor -->
     <div class="row mb-4">
         <div class="col-12">
             <h1>Comunicación Cliente-Servidor</h1>
@@ -17,11 +19,12 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-12">            
             @if (cargando) {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                <div class="card" style="width: 300px;">
+            } else if (datos != null) {                
+                <div class="card" style="width: 300px;">
                     <div class="card-header">
                         Respuesta del servidor
                     </div>
@@ -37,23 +40,130 @@
             }
         </div>
     </div>
+
+    <!-- NUEVO: Catálogo de productos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Catálogo</h2>
+            @if (productos == null)
+            {
+                <p>Cargando productos...</p>
+            }
+            else if (productos.Count == 0)
+            {
+                <p>No hay productos disponibles.</p>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var producto in productos)
+                    {
+                        <div class="col-4 mb-3">
+                            <div class="card p-2">
+                                <img src="@producto.Imagen" alt="@producto.Nombre" style="max-height: 150px;" />
+                                <h5>@producto.Nombre</h5>
+                                <p>@producto.Descripcion</p>
+                                <p><strong>$@producto.Precio</strong></p>
+                                <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(producto)">Agregar al carrito</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- NUEVO: Carrito -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Carrito</h2>
+            @if (carrito.Count == 0)
+            {
+                <p>El carrito está vacío.</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var item in carrito)
+                    {
+                        <li>@item.Nombre - Cantidad: @item.Cantidad</li>
+                    }
+                </ul>
+                <p><strong>Total: $@TotalCarrito</strong></p>
+                <button class="btn btn-success" @onclick="FinalizarCompra">Finalizar Compra</button>
+            }
+        </div>
+    </div>
+
 </div>
 
 @code {
+    // Para la parte que dejó el profe
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
 
-    private async Task ObtenerDatosDelServidor() {
-        try {
+    // Para el catálogo y carrito
+    List<cliente.Models.Producto> productos;
+
+    class ItemCarrito
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public int Cantidad { get; set; }
+    }
+    List<ItemCarrito> carrito = new List<ItemCarrito>();
+
+    decimal TotalCarrito => carrito.Sum(i => i.Precio * i.Cantidad);
+
+    private async Task ObtenerDatosDelServidor()
+    {
+        try
+        {
             cargando = true;
             error = null;
             datos = await ApiService.ObtenerDatosAsync();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             error = ex.Message;
             datos = null;
-        } finally {
+        }
+        finally
+        {
             cargando = false;
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ApiService.ObtenerProductosAsync();
+    }
+
+    void AgregarAlCarrito(cliente.Models.Producto producto)
+    {
+        var item = carrito.FirstOrDefault(i => i.Id == producto.Id);
+        if (item == null)
+        {
+            carrito.Add(new ItemCarrito
+            {
+                Id = producto.Id,
+                Nombre = producto.Nombre,
+                Precio = producto.Precio,
+                Cantidad = 1
+            });
+        }
+        else
+        {
+            item.Cantidad++;
+        }
+    }
+
+    void FinalizarCompra()
+    {
+        carrito.Clear();
+        Console.WriteLine("Compra finalizada!");
+        
     }
 }
