@@ -1,4 +1,23 @@
 ﻿@inherits LayoutComponentBase
+
 <div class="page">
-    @Body
+    <div class="sidebar p-3 text-white">
+        <h4 class="mb-4">Mi Tienda</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link text-white" href="/">Inicio</a>
+            <a class="nav-link text-white" href="/catalogo">Catálogo</a>
+            <a class="nav-link text-white" href="/carrito">Carrito</a>
+        </nav>
+    </div>
+
+    <div class="main-content flex-grow-1">
+        <div class="top-row px-3">
+            <a href="/perfil" class="btn-link">Mi Perfil</a>
+            <a href="/logout" class="btn-link">Cerrar sesión</a>
+        </div>
+
+        <main class="container my-4">
+            @Body
+        </main>
+    </div>
 </div>
