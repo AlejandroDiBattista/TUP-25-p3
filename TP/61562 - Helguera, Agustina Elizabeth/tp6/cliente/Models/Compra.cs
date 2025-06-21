@@ -1,9 +1,11 @@
+using System;
+
 namespace cliente.Models
 {
-    public class ItemCompra
+    public class Compra
     {
-        public int ProductoId { get; set; }
-        public int Cantidad { get; set; }
-        public decimal PrecioUnitario { get; set; }
+        public DateTime Fecha { get; set; }
+        public List<ItemCompra> Items { get; set; }
+        public decimal Total { get; set; }
     }
 }
