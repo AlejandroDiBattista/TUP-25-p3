@@ -9,8 +9,10 @@ builder.RootComponents.Add<App>("#app");
 
 
 
+
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5184") });
 
+builder.Services.AddScoped<CarritoService>();
 
 builder.Services.AddScoped<ApiService>();
 

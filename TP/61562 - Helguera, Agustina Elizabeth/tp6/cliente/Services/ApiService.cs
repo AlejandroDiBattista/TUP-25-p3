@@ -1,56 +1,40 @@
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using cliente.Models;
 
-
-namespace cliente.Services;
-
-public class ApiService
+namespace cliente.Services
 {
-    private readonly HttpClient _httpClient;
-
-    public ApiService(HttpClient httpClient)
+    public class ApiService
     {
-        _httpClient = httpClient;
-    }
+        private readonly HttpClient http;
 
-    public async Task<DatosRespuesta> ObtenerDatosAsync()
-    {
-        try
+        public ApiService(HttpClient http)
         {
-            var response = await _httpClient.GetFromJsonAsync<DatosRespuesta>("/api/datos");
-            return response ?? new DatosRespuesta { Mensaje = "Sin datos", Fecha = DateTime.Now };
+            this.http = http;
         }
-        catch (Exception ex)
-        {
-            return new DatosRespuesta { Mensaje = $"Error: {ex.Message}", Fecha = DateTime.Now };
-        }
-    }
 
-    public async Task<List<Producto>> ObtenerProductosAsync()
-    {
-        try
-        {
-            var productos = await _httpClient.GetFromJsonAsync<List<Producto>>("/productos");
-            return productos ?? new List<Producto>();
-        }
-        catch
-        {
-            return new List<Producto>();
-        }
-    }
 
-    public async Task<bool> RegistrarCompraAsync(Compra compra)
+        public async Task<DatosRespuesta> ObtenerDatosAsync()
+        {
+            return await http.GetFromJsonAsync<DatosRespuesta>("http://localhost:5184/api/datos");
+        }
+
+
+        public async Task<List<Producto>> ObtenerProductosAsync()
+        {
+            return await http.GetFromJsonAsync<List<Producto>>("http://localhost:5184/api/productos");
+        }
+        
+       public async Task<bool> RegistrarCompraAsync(Compra compra)
 {
-    try
-    {
-        var response = await _httpClient.PostAsJsonAsync("/compras", compra);
-        return response.IsSuccessStatusCode;
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error al registrar la compra: {ex.Message}");
-        return false;
-    }
+    var response = await http.PostAsJsonAsync("http://localhost:5184/api/compras", compra);
+    return response.IsSuccessStatusCode;
 }
 
+
+
+       
+    }
 }

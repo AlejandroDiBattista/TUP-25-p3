@@ -3,28 +3,30 @@
 @using Microsoft.AspNetCore.Components.Web
 @inject ApiService ApiService
 @using cliente.Models
-
+@inject IJSRuntime JS
 
 <div class="container">
 
-    
     <div class="row mb-4">
         <div class="col-12">
             <h1>Comunicación Cliente-Servidor</h1>
         </div>
     </div>
-    
+
     <div class="row mb-4">
         <div class="col-12">
             <button class="btn btn-primary" @onclick="ObtenerDatosDelServidor">Obtener datos del servidor</button>
         </div>
     </div>
 
-      <div class="row mb-4"> 
-        <div class="col-12">            
-            @if (cargando) {
+    <div class="row mb-4">
+        <div class="col-12">
+            @if (cargando)
+            {
                 <div class="alert alert-info">Cargando datos...</div>
-            } else if (datos != null) {                
+            }
+            else if (datos != null)
+            {
                 <div class="card" style="width: 300px;">
                     <div class="card-header">
                         Respuesta del servidor
@@ -34,7 +36,9 @@
                         <p class="card-text">Fecha: @datos.Fecha.ToString("dd/MM/yyyy HH:mm:ss")</p>
                     </div>
                 </div>
-            } else if (error != null) {
+            }
+            else if (error != null)
+            {
                 <div class="alert alert-danger">
                     Error: @error
                 </div>
@@ -42,7 +46,6 @@
         </div>
     </div>
 
-    
     <div class="row mb-4">
         <div class="col-12">
             <h2>Catálogo</h2>
@@ -74,7 +77,6 @@
         </div>
     </div>
 
-    
     <div class="row mb-4">
         <div class="col-12">
             <h2>Carrito</h2>
@@ -99,14 +101,11 @@
 </div>
 
 @code {
-    [Inject] IJSRuntime JS { get; set; }
-
     private DatosRespuesta datos;
     private string error;
     private bool cargando = false;
 
-    
-    List<cliente.Models.Producto> productos;
+    List<Producto> productos;
 
     class ItemCarrito
     {
@@ -143,7 +142,7 @@
         productos = await ApiService.ObtenerProductosAsync();
     }
 
-    void AgregarAlCarrito(cliente.Models.Producto producto)
+    void AgregarAlCarrito(Producto producto)
     {
         var item = carrito.FirstOrDefault(i => i.Id == producto.Id);
         if (item == null)
@@ -164,32 +163,31 @@
 
     async Task FinalizarCompra()
     {
-      if (carrito.Count == 0)
-          return;
+        if (carrito.Count == 0)
+            return;
 
-      var compra = new cliente.Models.Compra
-      {
-          Fecha = DateTime.Now,
-          Items = carrito.Select(item => new cliente.Models.ItemCompra
-          {
-              ProductoId = item.Id,
-              Cantidad = item.Cantidad,
-              PrecioUnitario = item.Precio
-          }).ToList(),
-          Total = carrito.Sum(i => i.Precio * i.Cantidad)
-       };
+        var compra = new Compra
+        {
+            Fecha = DateTime.Now,
+            Items = carrito.Select(item => new ItemCompra
+            {
+                Producto = productos.FirstOrDefault(p => p.Id == item.Id),
+                Cantidad = item.Cantidad
+            }).ToList()
+        };
 
-      var ok = await ApiService.RegistrarCompraAsync(compra);
+        var ok = await ApiService.RegistrarCompraAsync(compra);
 
-      if (ok)
-      {
-          carrito.Clear();
-          await JS.InvokeVoidAsync("alert", "¡Compra registrada con éxito!");
-      }
-      else
-      {
-          await JS.InvokeVoidAsync("alert", "Ocurrió un error al registrar la compra.");
-      }
+        if (ok)
+        {
+            carrito.Clear();
+            await JS.InvokeVoidAsync("alert", "¡Compra registrada con éxito!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Ocurrió un error al registrar la compra.");
+        }
     }
 
+    
 }

@@ -1,29 +1,38 @@
 @page "/catalogo"
-@inject ApiService ApiService
+@using cliente.Models
 @using cliente.Services
+@inject ApiService ApiService
+@inject CarritoService CarritoService
 
-<h2>Catálogo de Productos</h2>
+
+<h2 class="text-center mb-4">Catálogo de productos</h2>
 
 @if (productos == null)
 {
-    <p>Cargando productos...</p>
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
 }
 else if (productos.Count == 0)
 {
-    <p>No hay productos disponibles.</p>
+    <div class="alert alert-warning text-center">No hay productos disponibles.</div>
 }
 else
 {
     <div class="row">
-        @foreach (var producto in productos)
+        @foreach (var prod in productos)
         {
-            <div class="col-4 mb-3">
-                <div class="card p-2">
-                    <img src="@producto.Imagen" alt="@producto.Nombre" style="max-height: 150px;" />
-                    <h5>@producto.Nombre</h5>
-                    <p>@producto.Descripcion</p>
-                    <p><strong>$@producto.Precio</strong></p>
-                    <button class="btn btn-primary">Agregar al carrito</button>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="@prod.Imagen" class="card-img-top" alt="@prod.Nombre" style="height: 200px; object-fit: cover;" />
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@prod.Nombre</h5>
+                        <p class="card-text">@prod.Descripcion</p>
+                        <p class="fw-bold text-primary">$@prod.Precio</p>
+                        <button class="btn btn-success mt-auto" @onclick="() => AgregarAlCarrito(prod)">Agregar al carrito</button>
+                    </div>
                 </div>
             </div>
         }
@@ -31,10 +40,25 @@ else
 }
 
 @code {
-    List<cliente.Models.Producto> productos;
+    private List<Producto> productos;
 
     protected override async Task OnInitializedAsync()
     {
-        productos = await ApiService.ObtenerProductosAsync();
+        try
+        {
+            productos = await ApiService.ObtenerProductosAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error al cargar productos: " + ex.Message);
+            productos = new List<Producto>();
+        }
+    }
+
+    private void AgregarAlCarrito(Producto producto)
+    {
+        
+     CarritoService.AgregarProducto(producto);
+
     }
 }
