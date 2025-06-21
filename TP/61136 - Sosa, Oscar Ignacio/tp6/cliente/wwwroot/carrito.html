@@ -94,82 +94,81 @@
     </div>
 
     <div style="text-align: center; margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="window.location.href='catalogo.html'">← Volver al catálogo</button>
+        <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Volver al catálogo</button>
     </div>
 
-<script>
-    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    <script>
+        let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
-    const carritoBody = document.getElementById('carrito-body');
-    const totalCell = document.getElementById('total');
+        const carritoBody = document.getElementById('carrito-body');
+        const totalCell = document.getElementById('total');
 
-    function renderizarCarrito() {
-        carritoBody.innerHTML = '';
-        let total = 0;
+        function renderizarCarrito() {
+            carritoBody.innerHTML = '';
+            let total = 0;
 
-        if(carrito.length === 0){
-            carritoBody.innerHTML = '<tr><td colspan="4">El carrito está vacío.</td></tr>';
-            totalCell.textContent = '$0.00';
-            return;
+            if (carrito.length === 0) {
+                carritoBody.innerHTML = '<tr><td colspan="4">El carrito está vacío.</td></tr>';
+                totalCell.textContent = '$0.00';
+                return;
+            }
+
+            carrito.forEach((item, index) => {
+                const importe = item.cantidad * item.Precio;
+                total += importe;
+
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${item.Nombre}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
+                        <span id="cantidad-${index}">${item.cantidad}</span>
+                        <button class="btn btn-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
+                    </td>
+                    <td>$${item.Precio.toFixed(2)}</td>
+                    <td id="importe-${index}">$${importe.toFixed(2)}</td>
+                `;
+                carritoBody.appendChild(fila);
+            });
+
+            totalCell.textContent = '$' + total.toFixed(2);
         }
 
-        carrito.forEach((item, index) => {
-            const importe = item.cantidad * item.Precio;
-            total += importe;
+        function cambiarCantidad(index, delta) {
+            const nuevoValor = carrito[index].cantidad + delta;
+            if (nuevoValor < 1) return; // No permitir menos de 1
+            carrito[index].cantidad = nuevoValor;
+            document.getElementById('cantidad-' + index).textContent = nuevoValor;
+            document.getElementById('importe-' + index).textContent = '$' + (nuevoValor * carrito[index].Precio).toFixed(2);
+            actualizarTotal();
+            guardarCarrito();
+        }
 
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-                <td>${item.Nombre}</td>
-                <td>
-                    <button class="btn btn-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
-                    <span id="cantidad-${index}">${item.cantidad}</span>
-                    <button class="btn btn-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
-                </td>
-                <td>$${item.Precio.toFixed(2)}</td>
-                <td id="importe-${index}">$${importe.toFixed(2)}</td>
-            `;
-            carritoBody.appendChild(fila);
-        });
+        function actualizarTotal() {
+            let total = carrito.reduce((sum, item) => sum + item.Precio * item.cantidad, 0);
+            totalCell.textContent = '$' + total.toFixed(2);
+        }
 
-        totalCell.textContent = '$' + total.toFixed(2);
-    }
+        function guardarCarrito() {
+            localStorage.setItem('carrito', JSON.stringify(carrito));
+        }
 
-    function cambiarCantidad(index, delta) {
-        const nuevoValor = carrito[index].cantidad + delta;
-        if (nuevoValor < 1) return; // No permitir menos de 1
-        carrito[index].cantidad = nuevoValor;
-        document.getElementById('cantidad-' + index).textContent = nuevoValor;
-        document.getElementById('importe-' + index).textContent = '$' + (nuevoValor * carrito[index].Precio).toFixed(2);
-        actualizarTotal();
-        guardarCarrito();
-    }
+        function vaciarCarrito() {
+            localStorage.removeItem('carrito');
+            carrito = [];
+            renderizarCarrito();
+        }
 
-    function actualizarTotal() {
-        let total = carrito.reduce((sum, item) => sum + item.Precio * item.cantidad, 0);
-        totalCell.textContent = '$' + total.toFixed(2);
-    }
+        function confirmarCompra() {
+            if (carrito.length === 0) {
+                alert('El carrito está vacío.');
+                return;
+            }
+            localStorage.setItem('carrito', JSON.stringify(carrito));
+            window.location.href = 'confirmacion.html';
+        }
 
-    function guardarCarrito() {
-        localStorage.setItem('carrito', JSON.stringify(carrito));
-    }
-
-    function vaciarCarrito() {
-        localStorage.removeItem('carrito');
-        carrito = [];
         renderizarCarrito();
-    }
-
-    function confirmarCompra() {
-        if (carrito.length === 0) {
-            alert('El carrito está vacío.');
-            return;
-        }
-        localStorage.setItem('carrito', JSON.stringify(carrito));
-        window.location.href = 'confirmacion.html';
-    }
-
-    renderizarCarrito();
-</script>
+    </script>
 </body>
 </html>
-
