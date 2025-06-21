@@ -39,7 +39,7 @@ public class CarritoService
         if (item != null && item.Producto.StockDisponible > 0)
         {
             item.Cantidad++;
-            item.Producto.StockDisponible--;
+            //item.Producto.StockDisponible--;
             RestarStock(productoId, 1);
         }
     }

@@ -97,12 +97,18 @@ else
         {
             foreach (var item in carrito)
             {
-                item.Producto.StockDisponible -= item.Cantidad;
+                
                 if (item.Producto.StockDisponible < 0)
                     item.Producto.StockDisponible = 0;
             }
 
             CarritoService.VaciarCarrito();
+            var productosActualizados = await ApiService.ObtenerProductosAsync();
+            foreach (var producto in productosActualizados)
+            {
+                CarritoService.EstablecerStock(producto.Id, producto.Stock);
+            }
+
             Navigation.NavigateTo("/", true);
         }
         else
