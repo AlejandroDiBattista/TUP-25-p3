@@ -74,15 +74,15 @@
     private async Task LoadProducts()
     {
         var url = string.IsNullOrWhiteSpace(search)
-            ? "/productos"
-            : $"/productos?search={Uri.EscapeDataString(search)}";
+            ? "https://localhost:5011/productos"
+            : $"https://localhost:5011/productos?search={Uri.EscapeDataString(search)}";
 
         productos = await Http.GetFromJsonAsync<List<Producto>>(url) ?? new List<Producto>();
     }
 
     private async Task AddToCart(int id)
     {
-        var res = await Http.PutAsync($"/carritos/{cartId}/{id}", null);
+        var res = await Http.PutAsync($"https://localhost:5011/carritos/{cartId}/{id}", null);
         if (res.IsSuccessStatusCode)
         {
             CartState.Items++;

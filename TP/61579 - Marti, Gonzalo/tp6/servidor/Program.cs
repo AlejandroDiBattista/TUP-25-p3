@@ -9,6 +9,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+    
 
 var app = builder.Build();
 using(var scope = app.Services.CreateScope())
@@ -101,5 +102,41 @@ app.MapPut("/carritos/{carritoId:int}/confirmar", async (int carritoId, Compra c
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
+
+
+app.MapPut("/carritos/{carritoId:int}/restar/{productoId:int}", async (int carritoId, int productoId, AppDbContext db) =>
+{
+    var item = await db.ItemsCompra.FirstOrDefaultAsync(i => i.CompraId == carritoId && i.ProductoId == productoId);
+    if (item == null) return Results.NotFound();
+
+    var producto = await db.Productos.FindAsync(productoId);
+    if (producto == null) return Results.NotFound();
+
+    item.Cantidad--;
+    producto.Stock++;
+
+    if (item.Cantidad <= 0)
+    {
+        db.ItemsCompra.Remove(item);
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+
+app.MapPost("/carritos/{carritoId:int}/confirmar", async (int carritoId, AppDbContext db) =>
+{
+    var compra = await db.Compras.FindAsync(carritoId);
+    if (compra == null) return Results.NotFound();
+
+    var items = await db.ItemsCompra.Where(i => i.CompraId == carritoId).ToListAsync();
+    compra.Total = items.Sum(i => i.Cantidad * i.PrecioUnitario);
+    db.ItemsCompra.RemoveRange(items);
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+});
+
 
 app.Run();
