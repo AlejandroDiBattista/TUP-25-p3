@@ -38,6 +38,7 @@
             border-radius: 4px;
             cursor: pointer;
             margin: 0 2px;
+            font-size: 14px;
         }
         .btn-secondary {
             background: #0c0a8f;
@@ -63,34 +64,6 @@
                 text-align: center;
             }
         }
-        .producto {
-            border: 1px solid #610202;
-            border-radius: 4px;
-            padding: 16px;
-            margin-bottom: 20px;
-            background: #064be0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .producto h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-            color: #ecca08;
-        }
-        .producto p {
-            margin: 5px 0;
-            color: #f3efef;
-        }
-        .producto img {
-            max-width: 100%;
-            height: auto;
-            margin: 10px 0;
-        }
-        #totalRow td {
-            font-weight: bold;
-            font-size: 1.2em;
-            background: #5c0832;
-            color: #fff;
-        }
     </style>
 </head>
 <body>
@@ -110,7 +83,7 @@
         <tfoot>
             <tr id="totalRow">
                 <td colspan="3">Total</td>
-                <td id="total">$0</td>
+                <td id="total">$0.00</td>
             </tr>
         </tfoot>
     </table>
@@ -125,7 +98,7 @@
     </div>
 
 <script>
-    const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
     const carritoBody = document.getElementById('carrito-body');
     const totalCell = document.getElementById('total');
@@ -134,40 +107,46 @@
         carritoBody.innerHTML = '';
         let total = 0;
 
+        if(carrito.length === 0){
+            carritoBody.innerHTML = '<tr><td colspan="4">El carrito está vacío.</td></tr>';
+            totalCell.textContent = '$0.00';
+            return;
+        }
+
         carrito.forEach((item, index) => {
-            const importe = item.cantidad * item.precio;
+            const importe = item.cantidad * item.Precio;
             total += importe;
 
             const fila = document.createElement('tr');
             fila.innerHTML = `
-                <td>${item.nombre}</td>
+                <td>${item.Nombre}</td>
                 <td>
-                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidad(${index}, -1)">-</button>
+                    <button class="btn btn-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
                     <span id="cantidad-${index}">${item.cantidad}</span>
-                    <button class="btn btn-secondary btn-sm" onclick="cambiarCantidad(${index}, 1)">+</button>
+                    <button class="btn btn-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
                 </td>
-                <td>$${item.precio}</td>
-                <td id="importe-${index}">$${importe}</td>
+                <td>$${item.Precio.toFixed(2)}</td>
+                <td id="importe-${index}">$${importe.toFixed(2)}</td>
             `;
             carritoBody.appendChild(fila);
         });
 
-        totalCell.innerText = '$' + total;
+        totalCell.textContent = '$' + total.toFixed(2);
     }
 
     function cambiarCantidad(index, delta) {
         const nuevoValor = carrito[index].cantidad + delta;
-        if (nuevoValor < 1) return;
+        if (nuevoValor < 1) return; // No permitir menos de 1
         carrito[index].cantidad = nuevoValor;
         document.getElementById('cantidad-' + index).textContent = nuevoValor;
-        document.getElementById('importe-' + index).textContent = '$' + (nuevoValor * carrito[index].precio);
+        document.getElementById('importe-' + index).textContent = '$' + (nuevoValor * carrito[index].Precio).toFixed(2);
         actualizarTotal();
         guardarCarrito();
     }
 
     function actualizarTotal() {
-        let total = carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
-        totalCell.textContent = '$' + total;
+        let total = carrito.reduce((sum, item) => sum + item.Precio * item.cantidad, 0);
+        totalCell.textContent = '$' + total.toFixed(2);
     }
 
     function guardarCarrito() {
@@ -176,7 +155,8 @@
 
     function vaciarCarrito() {
         localStorage.removeItem('carrito');
-        location.reload();
+        carrito = [];
+        renderizarCarrito();
     }
 
     function confirmarCompra() {
@@ -192,3 +172,4 @@
 </script>
 </body>
 </html>
+

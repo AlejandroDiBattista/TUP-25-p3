@@ -1,202 +1,179 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Confirmación de compra</title>
-    <link rel="stylesheet" href="css/app.css" />
-    <style>
-        body {
-            background: #085caf;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            color: #db1616;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #4db5cf;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(241, 125, 16, 0.05);
-        }
-        th, td {
-            padding: 12px 8px;
-            text-align: center;
-            border-bottom: 1px solid #066613;
-        }
-        th {
-            background: #f30d0d;
-            color: #f7f6f8;
-        }
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 2px;
-        }
-        .btn-secondary {
-            background: #0c0a8f;
-            color: #b8bb1c;
-        }
-        .btn-danger {
-            background: #dc3545;
-            color: #32ee19;
-        }
-        .btn-success {
-            background: #28a745;
-            color: #68b6e4;
-        }
-        .carrito-botones {
-            text-align: right;
-            margin-top: 10px;
-        }
-        @media (max-width: 600px) {
-            table, th, td {
-                font-size: 14px;
-            }
-            .carrito-botones {
-                text-align: center;
-            }
-        }
-        .resumen {
-            background: #fff;
-            padding: 16px;
-            margin: 0 auto 24px auto;
-            max-width: 400px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-        form {
-            background: #fff;
-            padding: 24px;
-            max-width: 400px;
-            margin: 0 auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        label {
-            display: flex;
-            flex-direction: column;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], input[type="email"], input[type="tel"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-top: 4px;
-            font-size: 16px;
-        }
-        button[type="submit"] {
-            background: #28a745;
-            color: #fff;
-            border: none;
-            padding: 10px 0;
-            border-radius: 4px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 12px;
-        }
-        button[type="submit"]:hover {
-            background: #218838;
-        }
-        #volver {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Confirmación de compra</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: #085caf;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #f7f7f7;
+    }
+    h1 {
+      color: #db1616;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #4db5cf;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(241, 125, 16, 0.05);
+    }
+    th, td {
+      padding: 12px 8px;
+      text-align: center;
+      border-bottom: 1px solid #066613;
+    }
+    th {
+      background: #f30d0d;
+      color: #f7f6f8;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      display: block;
+      margin: 20px auto;
+      font-size: 16px;
+      font-weight: bold;
+      max-width: 250px;
+      text-align: center;
+      text-decoration: none;
+    }
+    .formulario {
+      max-width: 400px;
+      margin: 0 auto 20px;
+      background: #4db5cf;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .formulario input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Confirmación de compra</h1>
 
-    <table id="tabla-carrito">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio unitario</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-body">
-            <!-- Se llenará por JS -->
-        </tbody>
-    </table>
+  <h1>Resumen de tu compra</h1>
 
-    <div class="resumen">
-        <p>🛒 Has comprado <strong><span id="total-items">0</span></strong> productos en total.</p>
-        <p>Importe total: <strong>$<span id="total-importe">0.00</span></strong></p>
-    </div>
+  <table id="tabla-confirmacion">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio unitario</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-body">
+      <!-- Se llenará con JS -->
+    </tbody>
+  </table>
 
-    <form id="form-confirmacion">
-        <label>
-            Nombre:
-            <input type="text" name="nombre" required>
-        </label>
-        <label>
-            Apellido:
-            <input type="text" name="apellido" required>
-        </label>
-        <label>
-            Email:
-            <input type="email" name="email" required>
-        </label>
-        <label>
-            Número de celular:
-            <input type="tel" name="celular" required pattern="[0-9]{8,15}" title="Ingrese un número de celular válido (8-15 dígitos)">
-        </label>
-        <button type="submit">Confirmar</button>
-    </form>
+  <div class="formulario">
+    <input type="text" id="nombre" placeholder="Nombre" />
+    <input type="text" id="apellido" placeholder="Apellido" />
+    <input type="email" id="email" placeholder="Correo electrónico" />
+  </div>
 
-    <div id="volver">
-        <button class="btn btn-secondary" onclick="window.location.href='carrito.html'">← Volver al carrito</button>
-    </div>
+  <button id="btn-finalizar" class="btn">Finalizar compra</button>
 
-    <script>
-        const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+  <div style="text-align: center; margin-top: 10px;">
+    <button class="btn" onclick="location.href='index.html'">← Volver al catálogo</button>
+  </div>
 
-        const tablaBody = document.getElementById('tabla-body');
-        let totalItems = 0;
-        let totalImporte = 0;
+  <script>
+    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    const tablaBody = document.getElementById('tabla-body');
+    const btnFinalizar = document.getElementById('btn-finalizar');
 
-        carrito.forEach(item => {
-            const fila = document.createElement('tr');
-            const subtotal = item.precio * item.cantidad;
-            fila.innerHTML = `
-                <td>${item.nombre}</td>
-                <td>${item.cantidad}</td>
-                <td>$${item.precio.toFixed(2)}</td>
-                <td>$${subtotal.toFixed(2)}</td>
-            `;
-            tablaBody.appendChild(fila);
-            totalItems += item.cantidad;
-            totalImporte += subtotal;
-        });
+    function renderizarResumen() {
+      tablaBody.innerHTML = '';
+      if (carrito.length === 0) {
+        tablaBody.innerHTML = '<tr><td colspan="4">No tienes productos en el carrito.</td></tr>';
+        btnFinalizar.disabled = true;
+        return;
+      }
 
-        document.getElementById('total-items').textContent = totalItems;
-        document.getElementById('total-importe').textContent = totalImporte.toLocaleString('es-AR', {
-            style: 'decimal',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+      btnFinalizar.disabled = false;
+      let totalCompra = 0;
 
-        document.getElementById('form-confirmacion').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Aquí podrías capturar datos adicionales si quieres
-            localStorage.removeItem('carrito');
-            alert('¡Compra confirmada!');
-            window.location.href = 'catalogo.html';
-        });
-    </script>
+      carrito.forEach(item => {
+        const subtotal = item.Precio * item.cantidad;
+        totalCompra += subtotal;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.Nombre}</td>
+          <td>${item.cantidad}</td>
+          <td>$${item.Precio.toFixed(2)}</td>
+          <td>$${subtotal.toFixed(2)}</td>
+        `;
+        tablaBody.appendChild(tr);
+      });
+
+      const trTotal = document.createElement('tr');
+      trTotal.innerHTML = `
+        <td colspan="3" style="font-weight:bold;">Total a pagar</td>
+        <td style="font-weight:bold;">$${totalCompra.toFixed(2)}</td>
+      `;
+      tablaBody.appendChild(trTotal);
+    }
+
+    function validarFormulario() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const apellido = document.getElementById('apellido').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if (!nombre || !apellido || !email) {
+        alert('Por favor completá todos los campos.');
+        return false;
+      }
+
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Ingresá un correo electrónico válido.');
+        return false;
+      }
+
+      return true;
+    }
+
+    btnFinalizar.addEventListener('click', () => {
+      if (!validarFormulario()) return;
+
+      const productosStock = JSON.parse(localStorage.getItem('productosStock')) || [];
+
+      carrito.forEach(item => {
+        const producto = productosStock.find(p => p.Id === item.Id);
+        if (producto) {
+          producto.Stock -= item.cantidad;
+          if (producto.Stock < 0) producto.Stock = 0;
+        }
+      });
+
+      localStorage.setItem('productosStock', JSON.stringify(productosStock));
+      localStorage.removeItem('carrito');
+
+      alert('¡Gracias por tu compra! Pronto recibirás un correo de confirmación.');
+      window.location.href = 'index.html';
+    });
+
+    renderizarResumen();
+  </script>
+
 </body>
 </html>
 
