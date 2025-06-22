@@ -27,7 +27,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       color: #000;
       text-align: left;
-      position: relative;
     }
     .producto img {
       width: 100%;
@@ -53,7 +52,7 @@
       margin-top: 10px;
     }
     .producto button:disabled {
-      background-color: #7a7a7a;
+      background-color: #777;
       cursor: not-allowed;
     }
     .producto button:hover:not(:disabled) {
@@ -72,8 +71,6 @@
       font-weight: bold;
       font-size: 16px;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
     }
     #contadorCarrito {
       background: red;
@@ -83,120 +80,105 @@
       margin-left: 8px;
       font-weight: bold;
       font-size: 14px;
-      user-select: none;
     }
   </style>
 </head>
 <body>
 
   <h1>Bienvenido a Tienda Online</h1>
-
   <div id="catalogo"></div>
 
-  <button id="btnCarrito" onclick="location.href='carrito.html'">
-    Ir al carrito
-    <span id="contadorCarrito" style="display:none;">0</span>
+  <button id="btnCarrito" onclick="window.location.href='carrito.html'">
+    Ir al carrito <span id="contadorCarrito" style="display: none;">0</span>
   </button>
 
   <script>
-    const productos = [
-      { Id: 1, Nombre: "Chocolate Milka", Descripcion: "Tableta de chocolate con leche 100g", Precio: 950, Stock: 30, ImagenUrl: "https://images.example.com/milka.jpg" },
-      { Id: 2, Nombre: "Bon o Bon", Descripcion: "Bombón de chocolate relleno", Precio: 120, Stock: 30, ImagenUrl: "https://images.example.com/bonobon.jpg" },
-      { Id: 3, Nombre: "Sugus", Descripcion: "Caramelos masticables surtidos", Precio: 80, Stock: 30, ImagenUrl: "https://images.example.com/sugus.jpg" },
-      { Id: 4, Nombre: "Rocklets", Descripcion: "Confites de chocolate 40g", Precio: 250, Stock: 30, ImagenUrl: "https://images.example.com/rocklets.jpg" },
-      { Id: 5, Nombre: "Mogul", Descripcion: "Gomitas frutales 50g", Precio: 180, Stock: 30, ImagenUrl: "https://images.example.com/mogul.jpg" },
-      { Id: 6, Nombre: "Tita", Descripcion: "Galletita bañada en chocolate", Precio: 90, Stock: 30, ImagenUrl: "https://images.example.com/tita.jpg" },
-      { Id: 7, Nombre: "Rhodesia", Descripcion: "Galletita bañada en chocolate", Precio: 90, Stock: 30, ImagenUrl: "https://images.example.com/rhodesia.jpg" },
-      { Id: 8, Nombre: "Menta Cristal", Descripcion: "Caramelos de menta", Precio: 70, Stock: 30, ImagenUrl: "https://images.example.com/mentacristal.jpg" },
-      { Id: 9, Nombre: "Caramelos Arcor", Descripcion: "Caramelos duros surtidos", Precio: 60, Stock: 30, ImagenUrl: "https://images.example.com/arcor.jpg" },
-      { Id: 10, Nombre: "Chocolinas", Descripcion: "Galletitas de chocolate 170g", Precio: 350, Stock: 30, ImagenUrl: "https://images.example.com/chocolinas.jpg" },
-      { Id: 11, Nombre: "Alfajor Jorgito", Descripcion: "Alfajor de dulce de leche", Precio: 180, Stock: 30, ImagenUrl: "https://images.example.com/jorgito.jpg" },
-      { Id: 12, Nombre: "Bananita Dolca", Descripcion: "Dulce de banana bañado en chocolate", Precio: 100, Stock: 30, ImagenUrl: "https://images.example.com/bananita.jpg" },
-      { Id: 13, Nombre: "Kinder Bueno", Descripcion: "Barra de chocolate con leche y avellanas", Precio: 400, Stock: 30, ImagenUrl: "https://images.example.com/kinderbueno.jpg" },
-      { Id: 14, Nombre: "KitKat", Descripcion: "Barra de chocolate con obleas", Precio: 350, Stock: 30, ImagenUrl: "https://images.example.com/kitkat.jpg" },
-      { Id: 15, Nombre: "M&M's", Descripcion: "Confites de chocolate 45g", Precio: 300, Stock: 30, ImagenUrl: "https://images.example.com/mms.jpg" }
-    ];
+    const productosIniciales = [
+  { Id: 1, Nombre: "Chocolate Milka", Descripcion: "Chocolate con leche 100g", Precio: 950, Stock: 30, ImagenUrl: "Imagenes/milka.jpg" },
+  { Id: 2, Nombre: "Bon o Bon", Descripcion: "Bombón relleno", Precio: 120, Stock: 30, ImagenUrl: "Imagenes/bonobon.jpg" },
+  { Id: 3, Nombre: "Sugus", Descripcion: "Caramelos masticables", Precio: 80, Stock: 30, ImagenUrl: "Imagenes/sugus.jpg" },
+  { Id: 4, Nombre: "Rocklets", Descripcion: "Confites chocolate 40g", Precio: 250, Stock: 30, ImagenUrl: "Imagenes/rocklets_01.jpg" },
+  { Id: 5, Nombre: "Mogul", Descripcion: "Gomitas frutales 50g", Precio: 180, Stock: 30, ImagenUrl: "Imagenes/mogul_01.jpg" },
+  { Id: 6, Nombre: "Tita", Descripcion: "Galletita bañada en chocolate", Precio: 90, Stock: 30, ImagenUrl: "Imagenes/tita_01.jpg" },
+  { Id: 7, Nombre: "Rhodesia", Descripcion: "Galletita bañada en chocolate", Precio: 90, Stock: 30, ImagenUrl: "Imagenes/rhodesia_01.jpg" },
+  { Id: 8, Nombre: "Menta Cristal", Descripcion: "Caramelos de menta", Precio: 70, Stock: 30, ImagenUrl: "Imagenes/menta_cristal.jpg" },
+  { Id: 9, Nombre: "Caramelos Arcor", Descripcion: "Caramelos duros surtidos", Precio: 60, Stock: 30, ImagenUrl: "Imagenes/caramelos_arcor.jpg" },
+  { Id: 10, Nombre: "Chocolinas", Descripcion: "Galletitas de chocolate 170g", Precio: 350, Stock: 30, ImagenUrl: "Imagenes/chocolinas.jpg" },
+  { Id: 11, Nombre: "Alfajor Jorgito", Descripcion: "Alfajor dulce de leche", Precio: 180, Stock: 30, ImagenUrl: "Imagenes/alfajor.jpg" },
+  { Id: 12, Nombre: "Bananita Dolca", Descripcion: "Banana en chocolate", Precio: 100, Stock: 30, ImagenUrl: "Imagenes/bananita_dolca.jpg" },
+  { Id: 13, Nombre: "Kinder Bueno", Descripcion: "Chocolate con leche y avellanas", Precio: 400, Stock: 30, ImagenUrl: "Imagenes/kinder_bueno.jpg" },
+  { Id: 14, Nombre: "KitKat", Descripcion: "Chocolate con obleas", Precio: 350, Stock: 30, ImagenUrl: "Imagenes/kitkat.jpg" },
+  { Id: 15, Nombre: "M&M's", Descripcion: "Confites chocolate 45g", Precio: 300, Stock: 30, ImagenUrl: "Imagenes/mms.jpg" }
+];
 
-    // ✅ Guardar productos solo si no existen ya
+
+    // Inicializar productos si no están en localStorage
     if (!localStorage.getItem('productosStock')) {
-      localStorage.setItem('productosStock', JSON.stringify(productos));
+      localStorage.setItem('productosStock', JSON.stringify(productosIniciales));
     }
 
+    let productos = JSON.parse(localStorage.getItem('productosStock'));
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
-    const catalogoDiv = document.getElementById('catalogo');
-    const contadorCarrito = document.getElementById('contadorCarrito');
+    const catalogo = document.getElementById('catalogo');
+    const contador = document.getElementById('contadorCarrito');
 
     function actualizarContador() {
-      const totalCantidad = carrito.reduce((sum, item) => sum + item.cantidad, 0);
-      if (totalCantidad > 0) {
-        contadorCarrito.style.display = 'inline-block';
-        contadorCarrito.textContent = totalCantidad;
-      } else {
-        contadorCarrito.style.display = 'none';
-      }
+      const total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+      contador.textContent = total;
+      contador.style.display = total > 0 ? 'inline-block' : 'none';
     }
 
     function guardarCarrito() {
       localStorage.setItem('carrito', JSON.stringify(carrito));
-      actualizarContador();
     }
 
     function agregarAlCarrito(id) {
-      const productosStock = JSON.parse(localStorage.getItem('productosStock')) || [];
-      const productoStock = productosStock.find(p => p.Id === id);
-      if (!productoStock) return;
+      let prod = productos.find(p => p.Id === id);
+      if (!prod || prod.Stock <= 0) return;
 
-      const productoEnCarrito = carrito.find(item => item.Id === id);
-      const cantidadNueva = (productoEnCarrito ? productoEnCarrito.cantidad : 0) + 1;
-
-      if (cantidadNueva > productoStock.Stock) return;
-
-      if (productoEnCarrito) {
-        productoEnCarrito.cantidad = cantidadNueva;
+      const enCarrito = carrito.find(p => p.Id === id);
+      if (enCarrito) {
+        if (enCarrito.cantidad < prod.Stock) {
+          enCarrito.cantidad++;
+        }
       } else {
-        carrito.push({
-          Id: productoStock.Id,
-          Nombre: productoStock.Nombre,
-          Precio: productoStock.Precio,
-          cantidad: 1
-        });
+        carrito.push({ Id: prod.Id, Nombre: prod.Nombre, Precio: prod.Precio, cantidad: 1 });
       }
 
+      prod.Stock--;
+      localStorage.setItem('productosStock', JSON.stringify(productos));
       guardarCarrito();
       renderCatalogo();
+      actualizarContador();
     }
 
     function renderCatalogo() {
-      const productosStock = JSON.parse(localStorage.getItem('productosStock')) || [];
-      catalogoDiv.innerHTML = '';
-
-      productosStock.forEach(producto => {
-        const enCarrito = carrito.find(item => item.Id === producto.Id);
-        const cantidadEnCarrito = enCarrito ? enCarrito.cantidad : 0;
-        const stockDisponible = producto.Stock - cantidadEnCarrito;
+      catalogo.innerHTML = '';
+      productos.forEach(prod => {
+        const enCarrito = carrito.find(p => p.Id === prod.Id);
+        const cantidadCarrito = enCarrito ? enCarrito.cantidad : 0;
+        const stockDisponible = prod.Stock;
 
         const div = document.createElement('div');
         div.className = 'producto';
         div.innerHTML = `
-          <img src="${producto.ImagenUrl}" alt="${producto.Nombre}" />
-          <h3>${producto.Nombre}</h3>
-          <p>${producto.Descripcion}</p>
-          <p><strong>Precio:</strong> $${producto.Precio.toFixed(2)}</p>
+          <img src="${prod.ImagenUrl}" alt="${prod.Nombre}" />
+          <h3>${prod.Nombre}</h3>
+          <p>${prod.Descripcion}</p>
+          <p><strong>Precio:</strong> $${prod.Precio}</p>
           <p><strong>Stock disponible:</strong> ${stockDisponible}</p>
-          <button ${stockDisponible === 0 ? 'disabled' : ''} onclick="agregarAlCarrito(${producto.Id})">
-            Añadir al carrito
-            ${cantidadEnCarrito > 0 ? `(Ya en carrito: ${cantidadEnCarrito})` : ''}
+          <button ${stockDisponible === 0 ? 'disabled' : ''} onclick="agregarAlCarrito(${prod.Id})">
+            Agregar al carrito
+            ${cantidadCarrito > 0 ? `(Ya en carrito: ${cantidadCarrito})` : ''}
           </button>
         `;
-        catalogoDiv.appendChild(div);
+        catalogo.appendChild(div);
       });
     }
 
-    window.agregarAlCarrito = agregarAlCarrito;
-
-    actualizarContador();
     renderCatalogo();
+    actualizarContador();
   </script>
 
 </body>
