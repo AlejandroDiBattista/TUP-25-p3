@@ -21,12 +21,41 @@
         const { useState, useEffect } = React;
 
         function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
-        }
+            const [display, setDisplay] = useState("0");
+            const [operacion, setOperador] = useState(null);
+            const [acumulado, setAcumulado] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
 
+            const inputNum = (num) => {
+                if (display.length > 8) return
+                if (display === "0" || esperandoNuevo) {
+                    setDisplay(num);
+                    setEsperandoNuevo(false);
+                  } else {
+                    setDisplay(display + num);
+                  }
+           
+            };
+
+            const inputDot = () => {
+                if (esperandoNuevo) {
+                    setDisplay("0.");
+                 } else if (!display.includes(".")) {
+                    setDisplay(display + ".");
+            }
+        };
+
+        const clear = () => {
+            setDisplay("0");
+            setAcumulado(null);
+            setOperador(null);
+            setEsperandoNuevo(false);
+        };
+        
+        
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
+        root.render(<Calculadora />); 
+        return <h1><center>1+2=?</center></h1>;
     </script>
 </body>
 </html>
