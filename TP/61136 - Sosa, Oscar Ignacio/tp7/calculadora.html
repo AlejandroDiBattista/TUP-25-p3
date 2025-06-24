@@ -6,31 +6,75 @@
     <title>Calculadora React</title>
 
     <style>
-        body {
-            background: black;
+                body {
+            background: gold;
             display: flex;
-            
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
+        .calc-container {
+            background: #cf0707;
+            border-radius: 40px;
+            width: 320px;
+            padding: 30px 15px 15px 15px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        .display {
+            color: #061a8d;
+            font-size: 60px;
+            text-align: right;
+            min-height: 70px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            overflow-x: auto;
+        }
+        .button-row {
+            display: flex;
+            margin-bottom: 12px;
+        }
+        .btn {
+            flex: 1;
+            margin: 4px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.2s ease; /* <--- Cambiado aquí */
+        }
+        .btn.gray { background: #a5a5a5; color: #000; }
+        .btn.orange { background: #ff9500; color: #fff; }
+        .btn.dark { background: #333; color: #fff; }
+        .btn.zero {
+            flex: 2.2;
+            border-radius: 30px;
+            text-align: left;
+            padding-left: 28px;
+        }
+
     </style>
 </head>
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
+    <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
+    <!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-               function CalculadoraIOS() {
+        function CalculadoraIOS() {
             const [display, setDisplay] = useState('0');
             const [operador, setOperador] = useState(null);
             const [acumulado, setAcumulado] = useState(null);
             const [esperandoNuevo, setEsperandoNuevo] = useState(false);
 
-                        const inputNum = (num) => {
+            const inputNum = (num) => {
                 if (display.length > 8) return;
                 if (display === '0' || esperandoNuevo) {
                     setDisplay(num);
@@ -40,7 +84,7 @@
                 }
             };
 
-                        const inputDot = () => {
+            const inputDot = () => {
                 if (esperandoNuevo) {
                     setDisplay('0.');
                     setEsperandoNuevo(false);
@@ -56,28 +100,28 @@
                 setEsperandoNuevo(false);
             };
 
-                        const porcentaje = () => {
+            const porcentaje = () => {
                 setDisplay((parseFloat(display) / 100).toString());
                 setAcumulado(null);
                 setOperador(null);
-                setEsperandoNuevo(false);
-            };
-
-            const cambiarSigno = () => {
-               setDisplay((parseFloat(display) * -1).toString());
-                };
-
-                            const operar = (op) => {
-                if (operador && !esperandoNuevo) {
-                    calcular();
-                    } else {
-                    setAcumulado(parseFloat(display));
-                }
-                setOperador
                 setEsperandoNuevo(true);
             };
 
-           const calcular = () => {
+            const cambiarSigno = () => {
+                setDisplay((parseFloat(display) * -1).toString());
+            };
+
+            const operar = (op) => {
+                if (operador && !esperandoNuevo) {
+                    calcular();
+                } else {
+                    setAcumulado(parseFloat(display));
+                }
+                setOperador(op);
+                setEsperandoNuevo(true);
+            };
+
+            const calcular = () => {
                 if (operador && acumulado !== null) {
                     let res = acumulado;
                     const actual = parseFloat(display);
@@ -95,35 +139,35 @@
                 }
             };
 
-             return(
+            return (
                 <div className="calc-container">
                     <div className="display">{display}</div>
                     <div className="button-row">
-<button className="btn gray" onClick={clear}>AC</button>
+                        <button className="btn gray" onClick={clear}>AC</button>
                         <button className="btn gray" onClick={cambiarSigno}>±</button>
                         <button className="btn gray" onClick={porcentaje}>%</button>
                         <button className="btn orange" onClick={() => operar('/')}>÷</button>
                     </div>
                     <div className="button-row">
-                        <button className="btn" onClick={() => inputNum('7')}>7</button>
-                        <button className="btn" onClick={() => inputNum('8')}>8</button>
-                        <button className="btn" onClick={() => inputNum('9')}>9</button>
+                        <button className="btn dark" onClick={() => inputNum('7')}>7</button>
+                        <button className="btn dark" onClick={() => inputNum('8')}>8</button>
+                        <button className="btn dark" onClick={() => inputNum('9')}>9</button>
                         <button className="btn orange" onClick={() => operar('*')}>×</button>
                     </div>
                     <div className="button-row">
-                        <button className="btn" onClick={() => inputNum('4')}>4</button>
-                        <button className="btn" onClick={() => inputNum('5')}>5</button>
-                        <button className="btn" onClick={() => inputNum('6')}>6</button>
+                        <button className="btn dark" onClick={() => inputNum('4')}>4</button>
+                        <button className="btn dark" onClick={() => inputNum('5')}>5</button>
+                        <button className="btn dark" onClick={() => inputNum('6')}>6</button>
                         <button className="btn orange" onClick={() => operar('-')}>−</button>
                     </div>
                     <div className="button-row">
-                        <button className="btn" onClick={() => inputNum('1')}>1</button>
-                        <button className="btn" onClick={() => inputNum('2')}>2</button>
-                        <button className="btn" onClick={() => inputNum('3')}>3</button>
+                        <button className="btn dark" onClick={() => inputNum('1')}>1</button>
+                        <button className="btn dark" onClick={() => inputNum('2')}>2</button>
+                        <button className="btn dark" onClick={() => inputNum('3')}>3</button>
                         <button className="btn orange" onClick={() => operar('+')}>+</button>
                     </div>
                     <div className="button-row">
-                                                <button className="btn dark zero" onClick={() => inputNum('0')}>0</button>
+                        <button className="btn dark zero" onClick={() => inputNum('0')}>0</button>
                         <button className="btn dark" onClick={inputDot}>.</button>
                         <button className="btn orange" onClick={calcular}>=</button>
                     </div>
@@ -131,14 +175,9 @@
             );
         }
 
-
-
-
-
-        
-        const root = root = ReactDOM.createRoot(document.getElementById('root'));
+        const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<CalculadoraIOS />);
-
     </script>
 </body>
 </html>
+
