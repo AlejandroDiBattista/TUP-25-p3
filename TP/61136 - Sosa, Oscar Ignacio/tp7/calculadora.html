@@ -55,7 +55,77 @@
                         const porcentaje = () => {
                 setDisplay((parseFloat(display) / 100).toString());
                 setAcumulado(null);
-                
+                setOperador(null);
+                setEsperandoNuevo(false);
+            };
+
+            const cambiarSigno = () => {
+               setDisplay((parseFloat(display) * -1).toString());
+                };
+
+                            const operar = (op) => {
+                if (operador && !esperandoNuevo) {
+                    calcular();
+                    } else {
+                    setAcumulado(parseFloat(display));
+                }
+                setOperador
+                setEsperandoNuevo(true);
+            };
+
+           const calcular = () => {
+                if (operador && acumulado !== null) {
+                    let res = acumulado;
+                    const actual = parseFloat(display);
+                    switch (operador) {
+                        case '+': res += actual; break;
+                        case '-': res -= actual; break;
+                        case '*': res *= actual; break;
+                        case '/': res = actual === 0 ? 'Error' : res / actual; break;
+                        default: break;
+                    }
+                    setDisplay(res.toString().slice(0,9));
+                    setAcumulado(res === 'Error' ? null : res);
+                    setOperador(null);
+                    setEsperandoNuevo(true);
+                }
+            };
+
+             return(
+                <div className="calc-container">
+                    <div className="display">{display}</div>
+                    <div className="button-row">
+<button className="btn gray" onClick={clear}>AC</button>
+                        <button className="btn gray" onClick={cambiarSigno}>±</button>
+                        <button className="btn gray" onClick={porcentaje}>%</button>
+                        <button className="btn orange" onClick={() => operar('/')}>÷</button>
+                    </div>
+                    <div className="button-row">
+                        <button className="btn" onClick={() => inputNum('7')}>7</button>
+                        <button className="btn" onClick={() => inputNum('8')}>8</button>
+                        <button className="btn" onClick={() => inputNum('9')}>9</button>
+                        <button className="btn orange" onClick={() => operar('*')}>×</button>
+                    </div>
+                    <div className="button-row">
+                        <button className="btn" onClick={() => inputNum('4')}>4</button>
+                        <button className="btn" onClick={() => inputNum('5')}>5</button>
+                        <button className="btn" onClick={() => inputNum('6')}>6</button>
+                        <button className="btn orange" onClick={() => operar('-')}>−</button>
+                    </div>
+                    <div className="button-row">
+                        <button className="btn" onClick={() => inputNum('1')}>1</button>
+                        <button className="btn" onClick={() => inputNum('2')}>2</button>
+                        <button className="btn" onClick={() => inputNum('3')}>3</button>
+                        <button className="btn orange" onClick={() => operar('+')}>+</button>
+                    </div>
+                    <div className="button-row">
+                                                <button className="btn dark zero" onClick={() => inputNum('0')}>0</button>
+                        <button className="btn dark" onClick={inputDot}>.</button>
+                        <button className="btn orange" onClick={calcular}>=</button>
+                    </div>
+                </div>
+            );
+        }
 
 
 
