@@ -1,32 +1,233 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora iPhone 16</title>
+  <style>
+    body {
+      background-color: #f9d7a0;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    .iphone16 {
+     width: 390px;
+     height: 800px;
+     background-color: #fff;
+     border-radius: 60px;
+     padding: 12px;
+     box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     position: relative;
+     overflow: hidden;
+    }
+
+    .pantalla {
+     background-color: #000;
+     width: 100%;
+     height: 100%;
+     border-radius: 48px;
+     display: flex;
+     flex-direction: column;
+     align-items: stretch;
+     box-sizing: border-box;
+     position: relative;
+     padding: 220px 0 0 0;
+    }
+
+    .isla {
+     position: absolute;
+     top: 24px;
+     left: 50%;
+     transform: translateX(-50%);
+     width: 130px;
+     height: 32px;
+     background-color: #ffffff;
+     border-radius: 40px;
+     box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+     z-index: 10;
+    }
+
+    .calculadora {
+     flex: 1 1 auto;
+     width: 100%;
+     display: flex;
+     flex-direction: column;
+     justify-content: flex-end;
+     padding: 0 16px 24px 16px;
+     box-sizing: border-box;
+     height: 100%;
+    }
+
+    .display {
+     color: white;
+     font-size: 48px;
+     text-align: right;
+     margin-bottom: 18px;
+     height: 80px;
+     width: 100%;
+     overflow-x: auto;
+     flex-shrink: 0;
+     background: transparent;
+     border: none;
+     outline: none;
+     display: flex;
+     align-items: flex-end;
+     justify-content: flex-end;
+    }
+
+    .botones {
+     display: grid;
+     grid-template-columns: repeat(4, 1fr);
+     grid-template-rows: repeat(5, 1fr);
+     gap: 10px;
+      flex-grow: 1;
+     align-items: stretch;
+    }
+
+    button {
+     font-size: 22px;
+     border-radius: 50%;
+     background-color: #333;
+     border: none;
+     color: white;
+     aspect-ratio: 1 / 1;
+     width: 100%;
+     height: 100%;
+     transition: 0.2s;
+     cursor: pointer;
+     min-height: 0;
+     min-width: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+    }
+
+    .gris {
+     background-color: #a5a5a5;
+     color: black;
+     font-weight: bold;
+    }
+
+    .naranja {
+     background-color: #f1a33c;
+     color: white;
+    }
+
+    .cero {
+     grid-column: span 2;
+     border-radius: 40px;
+     text-align: left;
+     padding-left: 26px;
+     aspect-ratio: auto;
+     height: 100%;
+     justify-content: flex-start;
+     display: flex;
+     align-items: center;
+    }
+
+    button:hover {
+     opacity: 0.85;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div class="iphone16">
+    <div class="pantalla">
+      <div class="isla"></div>
+      <div id="root"></div>
+    </div>
+  </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <!-- React y ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel para JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [input, setInput] = useState("0");
+      const [operadorPresionado, setOperadorPresionado] = useState(false);
+
+      const operadores = ['+', '-', '*', '/'];
+
+      const handleClick = (valor) => {
+        if (input === "0" && valor !== ".") {
+          setInput(valor);
+        } else if (operadores.includes(valor)) {
+          const lastChar = input[input.length - 1];
+          if (operadores.includes(lastChar)) {
+            setInput(input.slice(0, -1) + valor);
+          } else {
+            setInput(input + valor);
+          }
+          setOperadorPresionado(true);
+        } else {
+          if (operadorPresionado && valor === ".") {
+            setInput(input + "0.");
+          } else {
+            setInput(input + valor);
+          }
+          setOperadorPresionado(false);
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      const limpiar = () => setInput("0");
+
+      const calcular = () => {
+        try {
+          const resultado = eval(input);
+          setInput(resultado.toString());
+        } catch {
+          setInput("Error");
+        }
+      };
+
+      return (
+        <div className="calculadora">
+          <div className="display">{input}</div>
+          <div className="botones">
+            <button className="gris" onClick={limpiar}>AC</button>
+            <button className="gris" onClick={() => handleClick("+/-")}>±</button>
+            <button className="gris" onClick={() => handleClick("%")}>%</button>
+            <button className="naranja" onClick={() => handleClick("/")}>÷</button>
+
+            <button onClick={() => handleClick("7")}>7</button>
+            <button onClick={() => handleClick("8")}>8</button>
+            <button onClick={() => handleClick("9")}>9</button>
+            <button className="naranja" onClick={() => handleClick("*")}>×</button>
+
+            <button onClick={() => handleClick("4")}>4</button>
+            <button onClick={() => handleClick("5")}>5</button>
+            <button onClick={() => handleClick("6")}>6</button>
+            <button className="naranja" onClick={() => handleClick("-")}>−</button>
+
+            <button onClick={() => handleClick("1")}>1</button>
+            <button onClick={() => handleClick("2")}>2</button>
+            <button onClick={() => handleClick("3")}>3</button>
+            <button className="naranja" onClick={() => handleClick("+")}>+</button>
+
+            <button className="cero" onClick={() => handleClick("0")}>0</button>
+            <button onClick={() => handleClick(".")}>.</button>
+            <button className="naranja" onClick={calcular}>=</button>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
