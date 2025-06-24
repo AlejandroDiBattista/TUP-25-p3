@@ -1,0 +1,236 @@
+@page "/carrito"
+@using Microsoft.JSInterop
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using global::cliente.Services
+@using global::cliente.Modelos
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject ServicioProductos productoService
+@inject ServicioCarrito carritoo
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="carrito-container">
+    <div class="carrito-titulo">Resumen del carrito</div>
+
+    @if (carritoo.Items.Count == 0)
+    {
+        <p>El carritoo está vacío.</p>
+    }
+    else
+    {
+        <table class="carrito-tabla">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Talle</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in carritoo.Items)
+                {
+                    <tr>
+                        <td>
+                            <img src="ROPA/@item.Producto.ImagenUrl"
+                                 alt="@item.Producto.Nombre"
+                                 class="carrito-img" />
+                        </td>
+                        <td class="carrito-nombre">@item.Producto.Nombre</td>
+                        <td>
+                            <select @bind="item.TalleSeleccionado"
+                                    class="carrito-talle-select @(string.IsNullOrWhiteSpace(item.TalleSeleccionado) ? "carrito-talle-error" : "")">
+                                <option value="">Seleccionar talla</option>
+                                @foreach (var talle in item.Producto.Talle.Split(','))
+                                {
+                                    <option value="@talle.Trim()">@talle.Trim()</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <div class="carrito-cantidad-group">
+                                <button class="carrito-cantidad-btn" @onclick="() => RestarCantidad(item.Producto)">-</button>
+                                <span class="carrito-cantidad-num">@item.Cantidad</span>
+                                <button class="carrito-cantidad-btn" @onclick="() => SumarCantidad(item.Producto)" disabled="@(item.Cantidad >= item.Producto.Stock)">+</button>
+                            </div>
+                        </td>
+                        <td>$@item.Producto.Precio</td>
+                        <td>$@(item.Producto.Precio * item.Cantidad)</td>
+                        <td>
+                            <button class="carrito-quitar-btn" @onclick="() => RemoverItemDelCarrito(item)">Quitar producto</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="carrito-total">Total: $@carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad)</div>
+        <button class="carrito-vaciar-btn" @onclick="Vaciarcarritoo">Vaciar carrito</button>
+    }
+
+    @if (mensajeCompra != null)
+    {
+        <p>@mensajeCompra</p>
+        <button @onclick="PreguntarRedireccion">Volver a productos</button>
+    }
+
+    @if (mensajeVaciado != null)
+    {
+        <p>@mensajeVaciado</p>
+        <button @onclick="RedireccionarAProductos">Volver a productos</button>
+    }
+
+    @if (carritoo.Items.Any())
+    {
+        <EditForm Model="datosCliente" OnValidSubmit="ConfirmarCompra" class="carrito-form">
+            <DataAnnotationsValidator />
+            <div>
+                <InputText @bind-Value="datosCliente.Nombre" placeholder="Nombre" />
+                <ValidationMessage For="@(() => datosCliente.Nombre)" />
+            </div>
+            <div>
+                <InputText @bind-Value="datosCliente.Apellido" placeholder="Apellido" />
+                <ValidationMessage For="@(() => datosCliente.Apellido)" />
+            </div>
+            <div>
+                <InputText @bind-Value="datosCliente.Email" placeholder="Email" />
+                <ValidationMessage For="@(() => datosCliente.Email)" />
+            </div>
+            <button type="submit">Confirmar compra</button>
+        </EditForm>
+    }
+
+    @if (!string.IsNullOrEmpty(mensajeStock))
+    {
+        <p style="color:red">@mensajeStock</p>
+    }
+</div>
+
+@code {
+    class DatosCliente
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string Apellido { get; set; }
+
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no es válido")]
+        public string Email { get; set; }
+    }
+
+    DatosCliente datosCliente = new();
+
+    string mensajeCompra = null;
+    string mensajeVaciado = null;
+    string mensajeStock = null;
+
+    protected override void OnInitialized()
+    {
+        carritoo.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        carritoo.OnChange -= StateHasChanged;
+    }
+
+    void QuitarDelcarritoo(Producto producto)
+    {
+        carritoo.QuitarDelCarrito(producto);
+    }
+
+    async Task Vaciarcarritoo()
+    {
+        await carritoo.VaciarCarritoAsync(Http);
+        mensajeVaciado = "El carrito fue vaciado correctamente.";
+    }
+
+    async Task ConfirmarCompra()
+    {
+        // Validar que todos los productos tengan un talle seleccionado
+        if (carritoo.Items.Any(i => string.IsNullOrWhiteSpace(i.TalleSeleccionado)))
+        {
+            mensajeStock = "Debes seleccionar un talle para cada producto antes de confirmar la compra.";
+            return;
+        }
+
+        var compra = new
+        {
+            Items = carritoo.Items.Select(i => new {
+                productoId = i.Producto.Id,
+                cantidad = i.Cantidad
+            }).ToList(),
+            nombreCliente = datosCliente.Nombre,
+            apellidoCliente = datosCliente.Apellido,
+            emailCliente = datosCliente.Email
+        };
+
+        var respuesta = await Http.PostAsJsonAsync("compras", compra);
+
+        if (respuesta.IsSuccessStatusCode)
+        {
+            mensajeCompra = "¡Compra realizada con éxito!";
+            var total = carritoo.Items.Sum(i => i.Producto.Precio * i.Cantidad);
+            carritoo.VaciarCarrito();
+            Nav.NavigateTo($"/comprobante?Nombre={datosCliente.Nombre}&Apellido={datosCliente.Apellido}&Email={datosCliente.Email}&Total={total.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+        }
+        else
+        {
+            mensajeCompra = "Hubo un error al procesar la compra.";
+        }
+    }
+
+    async Task PreguntarRedireccion()
+    {
+        bool ok = await JS.InvokeAsync<bool>("confirm", "¿Desea volver al menú principal de productos?");
+        if (ok)
+        {
+            Nav.NavigateTo("/productos");
+        }
+    }
+
+    void RedireccionarAProductos()
+    {
+        Nav.NavigateTo("/productos");
+    }
+
+    async Task SumarCantidad(Producto producto)
+    {
+        var ok = await carritoo.SumarCantidadAsync(producto, Http);
+        if (ok)
+        {
+            StateHasChanged();
+        }
+    }
+
+    async Task RestarCantidad(Producto producto)
+    {
+        var ok = await carritoo.RestarCantidadAsync(producto, Http);
+        if (ok)
+        {
+            StateHasChanged();
+        }
+    }
+
+    async Task RemoverItemDelCarrito(ItemCarrito item)
+    {
+        var ok = await carritoo.RemoverItemDelCarritoAsync(item.Producto, Http);
+        if (ok)
+        {
+            await ActualizarProductos();
+        }
+    }
+
+    async Task ActualizarProductos()
+    {
+        // Aquí puedes actualizar el estado del carrito o recargar productos si tienes otro método disponible.
+        // Por ejemplo, si tienes un método llamado ObtenerProductosAsync:
+        await productoService.ObtenerProductosAsync();
+        StateHasChanged();
+    }
+}

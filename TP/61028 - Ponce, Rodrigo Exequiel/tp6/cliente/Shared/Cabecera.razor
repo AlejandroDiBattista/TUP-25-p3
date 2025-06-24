@@ -1,0 +1,50 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using cliente.Services
+@using cliente.Modelos
+@inject NavigationManager Nav
+@inject ServicioCarrito Carrito
+@inject BusquedaService BusquedaService
+
+<header class="main-header">
+    <div class="header-busqueda">
+        @if (Nav.Uri.Contains("/productos"))
+        {
+            <input type="text" placeholder="¿Que estas buscando?" @bind="BusquedaService.Busqueda" />
+        }
+    </div>
+    <div class="header-logo" @onclick='() => Nav.NavigateTo("/productos")'>
+        <img src="img/ADDRIPS-COLOR.png" alt="Logo" />
+    </div>
+    <div class="header-carrito">
+        @if (Nav.Uri.Contains("/productos"))
+        {
+            <div style="cursor:pointer;" @onclick='() => Nav.NavigateTo("/carrito")'>
+                <span style="font-size:1.5rem;">🛒</span>
+                @if (Carrito.Items.Sum(i => i.Cantidad) > 0)
+                {
+                    <span style="font-weight:bold; color:#fff">@Carrito.Items.Sum(i => i.Cantidad)</span>
+                }
+            </div>
+        }
+    </div>
+</header>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+        Carrito.OnChange += StateHasChanged;
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        Carrito.OnChange -= StateHasChanged;
+    }
+}
+@implements IDisposable

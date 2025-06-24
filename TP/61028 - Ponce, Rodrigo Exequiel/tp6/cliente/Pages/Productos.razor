@@ -1,0 +1,93 @@
+@page "/productos"
+@using cliente.Modelos
+@using cliente.Services
+@using cliente.Shared
+@inject ServicioProductos Services
+@inject ServicioCarrito Carritoo
+@inject NavigationManager Nav
+@inject BusquedaService BusquedaService
+@inject HttpClient Http
+
+<div class="productos-catalogo">
+    <div class="titulo-catalogo">Catálogo</div>
+    <div class="productos-grid">
+        @if (productos == null)
+        {
+            <p>Cargando productos...</p>
+        }
+        else if (!productos.Any())
+        {
+            <p>No hay productos disponibles.</p>
+        }
+        else
+        {
+            @foreach (var producto in productos.Where(p =>
+                string.IsNullOrWhiteSpace(BusquedaService.Busqueda) ||
+                p.Nombre.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase) ||
+                p.Talle.Contains(BusquedaService.Busqueda, StringComparison.OrdinalIgnoreCase)))
+            {
+                <div class="producto-card">
+                    <img src="ROPA/@producto.ImagenUrl"
+                         alt="@producto.Nombre"
+                         onerror="this.onerror=null;this.src='img/default.jpg';" />
+                    <div class="producto-nombre">@producto.Nombre</div>
+                    <div class="producto-talle">Talla: @producto.Talle</div>
+                    <div class="producto-precio">$@producto.Precio</div>
+                    <div class="producto-stock">(Existencias: @producto.Stock)</div>
+                    <button @onclick="() => AgregarAlCarrito(producto)" disabled="@(producto.Stock == 0)">
+                        Agregar al carrito
+                    </button>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(mensajeStock))
+{
+    <p style="color:red">@mensajeStock</p>
+}
+
+@code {
+    List<Producto> productos;
+    string mensajeStock = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    protected override void OnInitialized()
+    {
+        Carritoo.OnChange += StateHasChanged;
+        BusquedaService.OnBusquedaChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Carritoo.OnChange -= StateHasChanged;
+        BusquedaService.OnBusquedaChanged -= StateHasChanged;
+    }
+
+    async Task AgregarAlCarrito(Producto producto)
+    {
+        var ok = await Carritoo.AgregarAlCarritoAsync(producto, Http);
+        if (ok)
+        {
+            await CargarProductos(); // Recarga productos para actualizar stock
+        }
+    }
+
+    async Task CargarProductos()
+    {
+        productos = await Http.GetFromJsonAsync<List<Producto>>("productos");
+        StateHasChanged();
+    }
+
+    void IrAlCarrito()
+    {
+        Nav.NavigateTo("/carrito");
+    }
+
+}
+@implements IDisposable
