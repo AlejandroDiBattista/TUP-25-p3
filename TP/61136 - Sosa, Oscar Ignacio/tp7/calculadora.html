@@ -20,38 +20,47 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            const [display, setDisplay] = useState("0");
-            const [operacion, setOperador] = useState(null);
+               function CalculadoraIOS() {
+            const [display, setDisplay] = useState('0');
+            const [operador, setOperador] = useState(null);
             const [acumulado, setAcumulado] = useState(null);
             const [esperandoNuevo, setEsperandoNuevo] = useState(false);
 
-            const inputNum = (num) => {
-                if (display.length > 8) return
-                if (display === "0" || esperandoNuevo) {
+                        const inputNum = (num) => {
+                if (display.length > 8) return;
+                if (display === '0' || esperandoNuevo) {
                     setDisplay(num);
                     setEsperandoNuevo(false);
-                  } else {
+                } else {
                     setDisplay(display + num);
-                  }
-           
+                }
             };
 
-            const inputDot = () => {
+                        const inputDot = () => {
                 if (esperandoNuevo) {
-                    setDisplay("0.");
-                 } else if (!display.includes(".")) {
-                    setDisplay(display + ".");
-            }
-        };
+                    setDisplay('0.');
+                    setEsperandoNuevo(false);
+                } else if (!display.includes('.')) {
+                    setDisplay(display + '.');
+                }
+            };
 
-        const clear = () => {
-            setDisplay("0");
-            setAcumulado(null);
-            setOperador(null);
-            setEsperandoNuevo(false);
-        };
-        
+            const clear = () => {
+                setDisplay('0');
+                setAcumulado(null);
+                setOperador(null);
+                setEsperandoNuevo(false);
+            };
+
+                        const porcentaje = () => {
+                setDisplay((parseFloat(display) / 100).toString());
+                setAcumulado(null);
+                
+
+
+
+
+
         
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<Calculadora />); 
