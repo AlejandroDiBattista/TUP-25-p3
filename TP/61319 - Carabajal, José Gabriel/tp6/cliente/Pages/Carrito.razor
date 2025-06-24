@@ -1,88 +1,104 @@
 @page "/carrito"
-@inject cliente.Services.TiendaService Tienda
+@using cliente.Models
+@using cliente.Componentes
+@inject CarritoService carritoService
+@inject NavigationManager NavManager
+@implements IDisposable
 
-<h3>Carrito de Compras</h3>
+<h3>Tu Carrito</h3>
 
 @if (items == null)
 {
-    <p>Cargando…</p>
+    <p>Cargando carrito...</p>
 }
 else if (!items.Any())
 {
-    <p>El carrito está vacío.</p>
-    <button @onclick="Vaciar">Vaciar</button>
+    <p>Tu carrito está vacío.</p>
 }
 else
 {
-    <table class="tabla-carrito">
+    <table class="table">
         <thead>
             <tr>
-                <th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th></th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var i in items)
+            @foreach (var item in items)
             {
                 <tr>
-                    <td>@i.Producto.Nombre</td>
+                    <td>@item.Producto.Nombre</td>
                     <td>
-                        <input type="number" min="1" 
-                            value="@i.Cantidad" 
-                            @onchange="async e => await Cambiar(i.ProductoId, int.Parse(e.Value.ToString()))" />
+                        <div class="input-group" style="width:120px;">
+                            <button class="btn btn-outline-secondary"
+                                    @onclick="() => CambiarCantidad(item, item.Cantidad - 1)"
+                                    disabled="@(item.Cantidad <= 1)">-</button>
+                            <input type="text" class="form-control text-center" value="@item.Cantidad" readonly />
+                            <button class="btn btn-outline-secondary"
+                                    @onclick="() => CambiarCantidad(item, item.Cantidad + 1)"
+                                    disabled="@(item.Cantidad + 1 > item.Producto.Stock)">+</button>
+                        </div>
                     </td>
-                    <td>@i.PrecioUnitario</td>
-                    <td>@(i.Cantidad * i.PrecioUnitario)</td>
+                    <td>@item.PrecioUnitario:C</td>
+                    <td>@(item.PrecioUnitario * item.Cantidad):C</td>
                     <td>
-                        <button @onclick="() => Eliminar(i.ProductoId)">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => Eliminar(item)">Eliminar</button>
                     </td>
                 </tr>
             }
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Total:</strong></td>
+                <td colspan="2"><strong>@items.Sum(i => i.PrecioUnitario * i.Cantidad):C</strong></td>
+            </tr>
+        </tfoot>
     </table>
 
-    <p>
-        <strong>Total: </strong>@items.Sum(i => i.Cantidad * i.PrecioUnitario)
-    </p>
-
-    <button @onclick="Vaciar">Vaciar carrito</button>
-    <button @onclick="Confirmar">Confirmar compra</button>
+    <div class="d-flex justify-content-between">
+        <button class="btn btn-warning" 
+            @onclick="VaciarCarrito">
+            Vaciar carrito
+        </button>
+        <button class="btn btn-success" 
+            @onclick='() => NavManager.NavigateTo("/confirmacion")'>
+            Confirmar Compra
+        </button>
+    </div>
 }
 
 @code {
     private List<ItemCompra>? items;
-    private string nombre = "";
-    private string apellido = "";
-    private string email = "";
 
     protected override async Task OnInitializedAsync()
     {
-        items = await Tienda.GetCarritoAsync();
+        items = await carritoService.LoadItemsAsync();
+        carritoService.OnChange += Recargar;
     }
 
-    private async Task Cambiar(int prodId, int cantidad)
+    private async void Recargar()
     {
-        await Tienda.AgregarItemAsync(prodId, cantidad);
-        items = await Tienda.GetCarritoAsync();
+        items = await carritoService.LoadItemsAsync();
+        StateHasChanged();
     }
 
-    private async Task Eliminar(int prodId)
+    private async Task CambiarCantidad(ItemCompra item, int nuevaCantidad)
     {
-        await Tienda.EliminarItemAsync(prodId);
-        items = await Tienda.GetCarritoAsync();
+        if (nuevaCantidad <= 0)
+            await carritoService.RemoveItemAsync(item.ProductoId);
+        else
+            await carritoService.AddOrUpdateItemAsync(item.ProductoId, nuevaCantidad);
     }
 
-    private async Task Vaciar()
-    {
-        await Tienda.VaciarCarritoAsync();
-        items = new();
-    }
+    private async Task Eliminar(ItemCompra item) =>
+        await carritoService.RemoveItemAsync(item.ProductoId);
 
-    private async Task Confirmar()
-    {
-        // aquí podrías mostrar un formulario con inputs, 
-        // pero si ya lo tenés en otra página, redirige a ella
-        await Tienda.ConfirmarCompraAsync(nombre, apellido, email);
-        items = new();
-        // opcional: navegación a “/confirmacion”
-    }
+    private async Task VaciarCarrito() =>
+        await carritoService.ClearCartAsync();
+
+    public void Dispose() => carritoService.OnChange -= Recargar;
 }

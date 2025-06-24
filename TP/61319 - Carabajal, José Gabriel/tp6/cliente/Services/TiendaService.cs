@@ -18,7 +18,7 @@ namespace cliente.Services
         {
             var url = string.IsNullOrWhiteSpace(busqueda)
                 ? "productos"
-                : $"productos?busqueda={Uri.EscapeDataString(busqueda)}";
+                : $"productos?q={Uri.EscapeDataString(busqueda)}";
             return await _http.GetFromJsonAsync<List<Producto>>(url)
                 ?? new List<Producto>();
         }

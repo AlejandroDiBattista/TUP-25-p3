@@ -1,21 +1,80 @@
-﻿@inherits LayoutComponentBase
+﻿@namespace cliente.Layout
 
-<div class="header-container">
-    <header class="top-header">
-        <NavLink href="/" class="logo-link">
-            <img src="img/ssLogo.png" alt="Logo" class="logo" />
-        </NavLink>
-        
-        <input type="text" placeholder="Buscar..." class="search-input" />
-        
-        <NavLink href="/carrito" class="cart-link">
-            <img src="img/carritoCompras.png" alt="Carrito" class="cart-icon" />
-        </NavLink>
-    </header>
+@using cliente.Services
+@inject NavigationManager NavManager
+@inject CarritoService Carrito
 
-    <NavMenu />
-</div>
+@inherits LayoutComponentBase
+@implements IDisposable
 
-<main class="main-content">
-    @Body
+<header class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+  <div class="container d-flex align-items-center">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="img/logo.png" alt="Logo" width="40" class="me-2" />
+      <strong>iSeven Store</strong>
+    </a>
+
+    <div class="input-group ms-auto" style="width: 300px;">
+      <input
+        @bind="termino"
+        @bind:event="oninput"
+        @onkeydown="OnEnterBusqueda"
+        class="form-control"
+        placeholder="Buscar…" />
+      <button class="btn btn-outline-secondary" @onclick="OnBuscar">
+        🔍
+      </button>
+    </div>
+
+    <button class="btn btn-outline-primary position-relative ms-3" @onclick="GoToCarrito">
+      🛒
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        @totalItems
+      </span>
+    </button>
+  </div>
+</header>
+
+<main class="container">
+  @Body
 </main>
+
+@code {
+  private string termino = string.Empty;
+  private int totalItems;
+
+  protected override void OnInitialized()
+  {
+    Carrito.OnChange += UpdateCount;
+    _ = Carrito.LoadItemsAsync();
+  }
+
+  private void UpdateCount()
+  {
+    totalItems = Carrito.TotalItems;
+    StateHasChanged();
+  }
+
+  private void OnBuscar()
+  {
+    // Construir la ruta: "/" o "/?busqueda=..."
+    var ruta = string.IsNullOrWhiteSpace(termino)
+      ? "/"
+      : $"/?q={Uri.EscapeDataString(termino)}";
+
+    NavManager.NavigateTo(ruta);
+  }
+
+  private void GoToCarrito()
+  {
+    NavManager.NavigateTo("/carrito");
+  }
+
+  private void OnEnterBusqueda(KeyboardEventArgs e)
+  {
+    if (e.Key == "Enter")
+      OnBuscar();
+  }
+
+  public void Dispose() => Carrito.OnChange -= UpdateCount;
+}

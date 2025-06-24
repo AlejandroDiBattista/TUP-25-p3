@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using servidor.ModelosServidor; // El namespace de TiendaContext
+using servidor.ModelosServidor; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +11,9 @@ builder.Services.AddDbContext<TiendaContext>(options =>
 // CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowClientApp", policy => {
-        policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
+        policy.WithOrigins( "http://localhost:5177",
+                            "https://localhost:7221",
+                            "http://localhost:5184" )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -41,13 +43,14 @@ app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha 
 // ====== endpoints =======
 
 // 1) Listar Productos (opcion para buscar por nombre)
-app.MapGet("/productos", async (TiendaContext db, string? busqueda) =>
+app.MapGet("/productos", async (TiendaContext db, string? q) =>
 {
     var query = db.Productos.AsQueryable();
-    if (!string.IsNullOrWhiteSpace(busqueda))
-        query = query.Where(p => p.Nombre.Contains(busqueda));
+    if (!string.IsNullOrWhiteSpace(q))
+        query = query.Where(p => p.Nombre.Contains(q));
     return await query.ToListAsync();
 });
+
 
 // 2) Crear un carrito nuevo (inicia con compra vacia)
 app.MapPost("/carritos", async (TiendaContext db) =>
@@ -73,11 +76,9 @@ app.MapGet("/carritos/{id:int}", async (int id, TiendaContext db) =>
         .Include(ic => ic.Producto)
         .Where(ic => ic.CompraId == id)
         .ToListAsync();
-
-    return items.Any()
-        ? Results.Ok(items)
-        : Results.NotFound($"Carrito {id} no encontrado o vacío.");
+    return Results.Ok(items);
 });
+
 
 // 4) Vaciar un carrito (eliminar los items)
 app.MapDelete("/carritos/{id:int}", async (int id, TiendaContext db) =>
@@ -89,7 +90,7 @@ app.MapDelete("/carritos/{id:int}", async (int id, TiendaContext db) =>
 });
 
 // 5) Confirmar compra (registrar cliente y calcular el total)
-app.MapPut("/carritos/{id:int}/confirmar", async (int id, Compra datos, TiendaContext db) =>
+app.MapPut("/carritos/{id:int}/confirmar", async (int id, CheckoutDto datos, TiendaContext db) =>
 {
     var compra = await db.Compras.Include(c => c.Items).FirstOrDefaultAsync(c => c.Id == id);
     if (compra == null)

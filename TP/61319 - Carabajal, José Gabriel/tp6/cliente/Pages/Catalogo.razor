@@ -1,44 +1,52 @@
 @page "/"
-@inject cliente.Services.TiendaService Tienda
+@using cliente.Models
+@using cliente.Componentes
+@inject TiendaService Tienda
+@inject NavigationManager NavigationManager
 
-<h3>Catalogo de Productos</h3>
+<h3>Catálogo de Productos</h3>
 
-<input @bind="busqueda" placeholder="Buscar…" />
-<button @onclick="Buscar">Buscar</button>
-
-<div class="productos-grid">
-    @foreach (var p in productos)
-    {
-        <div class="tarjeta-producto">
-            <img src="@p.ImagenUrl" alt="@p.Nombre" />
-            <h4>@p.Nombre</h4>
-            <p>@p.Descripcion</p>
-            <p>Stock: @p.Stock</p>
-            <p>Precio: @p.Precio</p>
-            <button @onclick="() => Añadir(p.Id)" disabled="@(p.Stock == 0)">
-                Agregar al carrito
-            </button>
-        </div>
-    }
-</div>
+@if (productos is null)
+{
+    <p>Cargando productos…</p>
+}
+else if (!productos.Any())
+{
+    <p>No se encontraron productos.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var prod in productos)
+        {
+            <div class="col-md-4 mb-4">
+                <ProductoCard Producto="prod" />
+            </div>
+        }
+    </div>
+}
 
 @code {
-    private List<Producto> productos = new();
-    private string busqueda = "";
+    private List<Producto>? productos;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        productos = await Tienda.GetProductosAsync();
-    }
+        // 1) Leer la URI actual
+        var uri = new Uri(NavigationManager.Uri);
 
-    private async Task Buscar()
-    {
-        productos = await Tienda.GetProductosAsync(busqueda);
-    }
+        // 2) Extraer el query string (incluye el '?')
+        var qs = uri.Query; // e.g. "?q=zapato"
+        string? termino = null;
 
-    private async Task Añadir(int prodId)
-    {
-        await Tienda.AgregarItemAsync(prodId, 1);
-        // opcional: mostrar toast o actualización de ícono de carrito
+        if (!string.IsNullOrEmpty(qs) && qs.StartsWith("?q="))
+        {
+            // Saltar "?q=" (3 caracteres) y decodificar
+            termino = Uri.UnescapeDataString(qs.Substring(3));
+        }
+
+        // 3) Llamar al servicio con el término (o sin filtro si es null/empty)
+        productos = await Tienda.GetProductosAsync(termino);
     }
 }
+
+

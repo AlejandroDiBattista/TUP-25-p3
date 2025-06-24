@@ -36,9 +36,9 @@ namespace servidor.ModelosServidor
                     Id = 1,
                     Nombre = "iPhone 16",
                     Descripcion = "Color: Ultramarine",
-                    Precio = 650000m,
+                    Precio = 950000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone16.jpg"
+                    ImagenUrl = "img/iPhone16.jpg"
                 },
                 
                 new Producto
@@ -46,81 +46,81 @@ namespace servidor.ModelosServidor
                     Id = 2,
                     Nombre = "iPhone 15",
                     Descripcion = "Color: Pink",
-                    Precio = 420000m,
+                    Precio = 720000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone15.jpg"
+                    ImagenUrl = "img/iPhone15.jpg"
                 },
                 new Producto
                 {
                     Id = 3,
                     Nombre = "iPhone 14 Pro",
                     Descripcion = "Color: Gold",
-                    Precio = 420000m,
+                    Precio = 620000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone14Pro.jpg"
+                    ImagenUrl = "img/iPhone14Pro.jpg"
                 },
                 new Producto
                 {
                     Id = 4,
                     Nombre = "iPhone 13 Pro",
                     Descripcion = "Color: Graphite",
-                    Precio = 420000m,
+                    Precio = 520000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone13Pro.jpg"
+                    ImagenUrl = "img/iPhone13Pro.jpg"
                 },
                 new Producto
                 {
                     Id = 5,
                     Nombre = "iPhone 12",
                     Descripcion = "Color: Red",
-                    Precio = 420000m,
+                    Precio = 320000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone12.jpg"
+                    ImagenUrl = "img/iPhone12.jpg"
                 },
                 new Producto
                 {
                     Id = 6,
                     Nombre = "iPhone 11",
                     Descripcion = "Color: White",
-                    Precio = 420000m,
+                    Precio = 220000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone11.jpg"
+                    ImagenUrl = "img/iPhone11.jpg"
                 },
                 new Producto
                 {
                     Id = 7,
                     Nombre = "iPhone XR",
                     Descripcion = "Color: Blue",
-                    Precio = 420000m,
+                    Precio = 120000m,
                     Stock = 20,
-                    ImagenUrl = "iPhone16.jpg"
+                    ImagenUrl = "img/iPhoneXR.jpg"
                 },
                 new Producto
                 {
                     Id = 8,
                     Nombre = "Funda Silicona iPhone 12",
                     Descripcion = "Color: Red",
-                    Precio = 420000m,
+                    Precio = 10000m,
                     Stock = 20,
-                    ImagenUrl = "FundaSilicona.jpg"
+                    ImagenUrl = "img/FundaSilicona.jpg"
                 },
                 new Producto
                 {
                     Id = 9,
                     Nombre = "iPad Air 5",
                     Descripcion = "Color: Gray",
-                    Precio = 420000m,
+                    Precio = 720000m,
                     Stock = 20,
-                    ImagenUrl = "iPadAir5.jpg"
+                    ImagenUrl = "img/iPadAir5.jpg"
                 },
                 new Producto
                 {
                     Id = 10,
                     Nombre = "Cargador Original Apple",
                     Descripcion = "Cargador 20w más cable Lightning",
-                    Precio = 420000m,
+                    Precio = 20000m,
                     Stock = 20,
-                    ImagenUrl = "CargadorConCable.jpg"
+                    ImagenUrl = "img/CargadorConCable.jpg"
                 }
 
             );

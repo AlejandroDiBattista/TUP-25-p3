@@ -1,1 +1,33 @@
 @using cliente.Models
+@using cliente.Services
+@inject CarritoService carritoService
+
+<div class="card h-100">
+    <img src="@Producto.ImagenUrl"
+        class="card-img-top"
+        alt="@Producto.Nombre"
+        style="object-fit: cover; height: 180px;" />
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title">@Producto.Nombre</h5>
+        <p class="card-text text-truncate">@Producto.Descripcion</p>
+        <div class="mt-auto">
+            <p class="mb-1"><strong>Precio:</strong> @Producto.Precio:C</p>
+            <p class="mb-2"><strong>Stock:</strong> @Producto.Stock</p>
+            <button class="btn btn-primary w-100"
+                @onclick="AgregarAlCarrito"
+                disabled="@(Producto.Stock == 0)">
+                @(Producto.Stock == 0 ? "SIN STOCK" : "Agregar al carrito")
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Producto Producto { get; set; } = default!;
+
+    private async Task AgregarAlCarrito()
+    {
+        carritoService.AddOrUpdateItemAsync(Producto.Id, 1);
+    }
+}
