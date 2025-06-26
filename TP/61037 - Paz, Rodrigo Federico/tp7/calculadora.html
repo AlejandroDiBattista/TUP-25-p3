@@ -6,24 +6,125 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        body {
+      background: #ffd89b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    .calculadora {
+      background: black;
+      border-radius: 40px;
+      padding: 20px;
+      width: 320px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .pantalla {
+      color: white;
+      text-align: right;
+      font-size: 3em;
+      padding: 10px;
+      min-height: 70px;
+      margin-bottom: 10px;
+    }
+
+    .botones {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      height: 60px;
+      font-size: 1.5em;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: white;
+    }
+
+    .gris { background: #a5a5a5; color: black; }
+    .oscuro { background: #333; }
+    .naranja { background: #f1a33c; }
+    .cero {
+      grid-column: span 2;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 28px;
+    }
     </style>
 </head>
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
+
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+ const { useState } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+    function Calculadora() {
+      const [valor, setValor] = useState("0");
+
+      const manejarClick = (contenido) => {
+        if (contenido === "AC") {
+          setValor("0");
+        } else if (contenido === "=") {
+          try {
+            setValor(eval(valor).toString());
+          } catch {
+            setValor("Error");
+          }
+        } else if (contenido === "+/-") {
+          setValor((parseFloat(valor) * -1).toString());
+        } else if (contenido === "%") {
+          setValor((parseFloat(valor) / 100).toString());
+        } else {
+          setValor(valor === "0" ? contenido : valor + contenido);
         }
+      };
+
+      const botones = [
+        { texto: "AC", clase: "gris" },
+        { texto: "+/-", clase: "gris" },
+        { texto: "%", clase: "gris" },
+        { texto: "/", clase: "naranja" },
+        { texto: "7", clase: "oscuro" },
+        { texto: "8", clase: "oscuro" },
+        { texto: "9", clase: "oscuro" },
+        { texto: "*", clase: "naranja" },
+        { texto: "4", clase: "oscuro" },
+        { texto: "5", clase: "oscuro" },
+        { texto: "6", clase: "oscuro" },
+        { texto: "-", clase: "naranja" },
+        { texto: "1", clase: "oscuro" },
+        { texto: "2", clase: "oscuro" },
+        { texto: "3", clase: "oscuro" },
+        { texto: "+", clase: "naranja" },
+        { texto: "0", clase: "oscuro cero" },
+        { texto: ".", clase: "oscuro" },
+        { texto: "=", clase: "naranja" },
+      ];
+
+      return (
+        <div className="calculadora">
+          <div className="pantalla">{valor}</div>
+          <div className="botones">
+            {botones.map((b, i) => (
+              <button key={i} className={b.clase} onClick={() => manejarClick(b.texto)}>
+                {b.texto}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<Calculadora />);
