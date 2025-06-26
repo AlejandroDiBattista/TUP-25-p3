@@ -6,7 +6,121 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        /*Poner aca el CSS de la calculadora*/
+        body {
+            background: #e5e5e5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calc-container {
+            background: #fff;
+            border-radius: 40px;
+            padding: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            width: 310px;
+            height: 550px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            position: relative;
+        }
+        .calc-inner {
+            background: #000;
+            border-radius: 28px;
+            padding: 0 2.5px 18px 2.5px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            height: calc(100% - 16px); /* alto del bloque negro igual al ancho del padding (8px arriba y abajo) */
+            margin-top: 8px; /* igual al padding superior */
+            justify-content: flex-end;
+            position: relative;
+            z-index: 2;
+        }
+        .calc-notch {
+            position: absolute;
+            top: 8px; /* igual al nuevo margin-top del bloque negro */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px; /* notch un poco más ancho */
+            height: 20px;
+            background: #fff;
+            border-radius: 10px 10px 20px 20px;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .calc-display {
+            color: #fff;
+            font-size: 44px;
+            font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+            text-align: right;
+            min-height: 60px;
+            margin-bottom: 18px;
+            padding: 0 24px 8px 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            word-break: break-all;
+            max-width: 256px;
+            margin-left: auto;
+            margin-right: 0;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+        }
+        .calc-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .calc-row {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: filter 0.1s, box-shadow 0.1s;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .btn:active {
+            filter: brightness(0.92);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+        .btn-func {
+            background: #e0e0e0;
+            color: #222;
+            font-weight: bold;
+        }
+        .btn-num {
+            background: #333;
+            color: #fff;
+        }
+        .btn-op {
+            background: #ff9500;
+            color: #fff;
+        }
+        .btn-zero {
+            width: 120px;
+            border-radius: 28px;
+            justify-content: flex-start;
+            padding-left: 18px;
+        }
     </style>
 </head>
 <body>
