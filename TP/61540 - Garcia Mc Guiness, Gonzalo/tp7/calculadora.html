@@ -6,7 +6,154 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        body {
+            background: linear-gradient(160deg, #fbe3b1 0%, #f5d6a1 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Marco del teléfono */
+        .phone-frame {
+            background: #fff;
+            border-radius: 48px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            padding: 0;
+            width: 400px;
+            height: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            border: 0;
+            box-sizing: border-box;
+            justify-content: flex-start;
+        }
+
+        /* Notch */
+        .notch {
+            width: 180px;
+            height: 32px;
+            background: #fff;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        /* Calculadora interna: centrada y ocupando casi todo el alto */
+        .calculadora-container {
+            background: #000;
+            border-radius: 48px;
+            box-shadow: none;
+            padding: 0;
+            width: 370px;
+            height: 760px;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            box-sizing: border-box;
+            bottom: 0;
+            margin-bottom: 0px;
+        }
+
+        /* Pantalla */
+        .calculadora-pantalla {
+            background: #000;
+            color: #fff;
+            border-radius: 32px 32px 0 0;
+            min-height: 160px;
+            font-size: 80px;
+            text-align: right;
+            padding: 56px 16px 0 16px;
+            letter-spacing: 2px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            border: none;
+        }
+
+        /* Operacion */
+        .calculadora-operacion {
+            color: #bbb;
+            font-size: 2rem;
+            text-align: right;
+            padding: 12px 16px 0 16px;
+            min-height: 36px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            user-select: none;
+        }
+
+        /* Botones */
+        .calculadora-botones {
+            display: grid;
+            grid-template-columns: repeat(4, 72px);
+            grid-gap: 16px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .boton {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2.2rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .boton-operador {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .boton-operador.activo {
+            background: #fff;
+            color: #ff9800;
+            border: 2px solid #ff9800;
+        }
+
+        .boton-funcion {
+            background: #a5a5a5;
+            color: #000;
+        }
+
+        .boton-numero {
+            background: #333;
+            color: #fff;
+        }
+
+        .boton-cero {
+            grid-column: span 2;
+            width: 164px;
+            border-radius: 32px;
+            justify-content: flex-start;
+            padding-left: 28px;
+        }
+
+        .boton:active {
+            transform: scale(0.96);
+            filter: brightness(0.9);
+        }
     </style>
 </head>
 <body>
@@ -20,9 +167,120 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [pantalla, setPantalla] = React.useState("0");
+            const [operador, setOperador] = React.useState(null);
+            const [valorAnterior, setValorAnterior] = React.useState(null);
+            const [esperandoNuevoNumero, setEsperandoNuevoNumero] = React.useState(false);
+            const [operacion, setOperacion] = React.useState("");
+
+            function manejarNumero(num)
+            {
+                if (pantalla === "0" || esperandoNuevoNumero){
+                    setPantalla(num);
+                    setEsperandoNuevoNumero(false);
+                } else{
+                    setPantalla(pantalla + num);
+                }
+            }
+
+            function manejarPunto()
+            {
+                if (!pantalla.includes(".")) {
+                    setPantalla(pantalla + ".");
+                    setEsperandoNuevoNumero(false);
+                }
+            }
+
+            function manejarOperador(op)
+            {
+                if (operador && !esperandoNuevoNumero) {
+                    calcularResultado();
+                } else{
+                    setValorAnterior(pantalla);
+                }
+                setOperador(op);
+                setEsperandoNuevoNumero(true);
+                setOperacion(pantalla + " " + op);
+            }
+
+            function calcularResultado()
+            {
+                if (!operador || valorAnterior === null) return;
+                const actual = parseFloat(pantalla);
+                const anterior = parseFloat(valorAnterior);
+                let resultado = 0;
+                switch (operador)
+                {
+                    case "+": resultado = anterior + actual; break;
+                    case "-": resultado = anterior - actual; break;
+                    case "x": resultado = anterior * actual; break;
+                    case "÷": resultado = actual !== 0? anterior / actual : "Math Error"; break;
+                    default: return;
+                }
+                setPantalla(resultado.toString());
+                setValorAnterior(null);
+                setOperador(null);
+                setEsperandoNuevoNumero(true);
+                setOperacion("");
+            }
+
+            function limpiar()
+            {
+                setPantalla("0");
+                setOperador(null);
+                setValorAnterior(null);
+                setEsperandoNuevoNumero(false);
+            }
+
+            function cambiarSigno()
+            {
+                setPantalla((parseFloat(pantalla) * -1).toString());
+            }
+
+            function porcentaje()
+            {
+                setPantalla((parseFloat(pantalla) /100).toString());
+            }
+
+            return (
+                <div className="phone-frame">
+                    <div className="notch"></div>
+                    <div className="calculadora-container">
+                        <div className="calculadora-operacion">
+                          {valorAnterior && operador
+                            ? `${valorAnterior} ${operador} ${!esperandoNuevoNumero ? pantalla : ""}`
+                            : ""}
+                        </div>
+                        <div className="calculadora-pantalla">{pantalla}</div>
+                        <div className="calculadora-botones">
+                            <button className="boton boton-funcion" onClick={limpiar}>AC</button>
+                            <button className="boton boton-funcion" onClick={cambiarSigno}>±</button>
+                            <button className="boton boton-funcion" onClick={porcentaje}>%</button>
+                            <button className="boton boton-operador" onClick={() => manejarOperador("÷")}>÷</button>
+
+                            <button className="boton boton-numero" onClick={() => manejarNumero("7")}>7</button>
+                            <button className="boton boton-numero" onClick={() => manejarNumero("8")}>8</button>
+                            <button className="boton boton-numero" onClick={() => manejarNumero("9")}>9</button>
+                            <button className="boton boton-operador" onClick={() => manejarOperador("x")}>x</button>
+
+                            <button className="boton boton-numero" onClick={() => manejarNumero("4")}>4</button>
+                            <button className="boton boton-numero" onClick={() => manejarNumero("5")}>5</button>
+                            <button className="boton boton-numero" onClick={() => manejarNumero("6")}>6</button>
+                            <button className="boton boton-operador" onClick={() => manejarOperador("-")}>-</button>
+
+                            <button className="boton boton-numero" onClick={() => manejarNumero("1")}>1</button>
+                            <button className="boton boton-numero" onClick={() => manejarNumero("2")}>2</button>
+                            <button className="boton boton-numero" onClick={() => manejarNumero("3")}>3</button>
+                            <button className="boton boton-operador" onClick={() => manejarOperador("+")}>+</button>
+
+                            <button className="boton boton-numero boton-cero" onClick={() => manejarNumero("0")}>0</button>
+                            <button className="boton boton-numero" onClick={manejarPunto}>.</button>
+                            <button className="boton boton-operador" onClick={calcularResultado}>=</button>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
