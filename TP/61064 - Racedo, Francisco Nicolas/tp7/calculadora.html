@@ -134,9 +134,51 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        // Poner aca el JavaScript
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [waitingForOperand, setWaitingForOperand] = useState(false);
+            const [operator, setOperator] = useState(null);
+            const [value, setValue] = useState(null);
+
+            // Ingresamos el manejo de teclas
+            // para que la calculadora responda a las teclas del teclado
+            useEffect(() => {
+                const keyMap = {
+                    '+': '+',
+                    '-': '-',
+                    '*': '×',
+                    'x': '×',
+                    'X': '×',
+                    '/': '÷',
+                    ',': '.',
+                    '.': '.',
+                    '%': '%',
+                    'Enter': '=',
+                    '=': '=',
+                    'Delete': 'AC', // Solo la tecla Delete borra todo
+                };
+                function handleKeyDown(e) {
+                    if (e.ctrlKey || e.altKey || e.metaKey) return;
+                    let key = e.key;
+                    if (key >= '0' && key <= '9') {
+                        handleClick(key);
+                        e.preventDefault();
+                    } else if (keyMap[key]) {
+                        handleClick(keyMap[key]);
+                        e.preventDefault();
+                    } else if (key === '+/-' || key === 'F9') {
+                        handleClick('±');
+                        e.preventDefault();
+                    } else if (key === 'Backspace') {
+                        handleBackspace();
+                        e.preventDefault();
+                    }
+                }
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [display, waitingForOperand, operator, value]);
+
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
