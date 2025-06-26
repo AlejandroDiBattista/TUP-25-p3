@@ -233,6 +233,18 @@
                 }
             };
 
+            function calculate(left, right, op) {
+                const a = Number(left);
+                const b = Number(right);
+                switch (op) {
+                    case '+': return a + b;
+                    case '-': return a - b;
+                    case '×': return a * b;
+                    case '÷': return b === 0 ? 'Error' : a / b;
+                    default: return b;
+                }
+            }
+
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
