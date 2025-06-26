@@ -1,14 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+using TiendaOnline.Datos;
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClientApp", policy => {
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp", policy =>
+    {
         policy.WithOrigins("http://localhost:5177", "https://localhost:7221")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
+// Registrar el DbContext con SQLite 
+builder.Services.AddDbContext<TiendaDbContext>(options =>
+    options.UseSqlite("Data Source=tiendaonline.db"));
+    
 // Agregar controladores si es necesario
 builder.Services.AddControllers();
 

@@ -1,3 +1,4 @@
+namespace TiendaOnline.Modelos;
 public class Producto
 {
     public int Id { get; set; }
