@@ -6,7 +6,83 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;700&display=swap');
+        body {
+            background: #f9e0b0;
+            font-family: 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
+        }
+        .calc-container {
+            width: 350px;
+            height: 590px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 48px;
+            box-shadow: 0 0 0 8px #fff, 0 4px 32px 0 #0002;
+            padding: 24px 0 0 0;
+            position: relative;
+        }
+        .calc-inner {
+            background: #000;
+            border-radius: 36px;
+            padding: 32px 24px 24px 24px;
+            box-shadow: 0 2px 8px #0002;
+        }
+        .calc-display {
+            color: #fff;
+            font-size: 72px;
+            text-align: right;
+            min-height: 90px;
+            font-family: Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .calc-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            font-weight: 500;
+            font-family: sans-serif;
+            margin: 0 4px;
+            background: #222;
+            color: #fff;
+            cursor: pointer;
+            transition: filter 0.1s;
+            outline: none;
+            box-shadow: 0 2px 8px #0002;
+        }
+        .calc-btn:active {
+            filter: brightness(1.2);
+        }
+        .btn-func {
+            background: #a5a5a5;
+            color: #000;
+        }
+        .btn-op {
+            background: #ff9f0a;
+            color: #fff;
+        }
+        .btn-zero {
+            width: 140px;
+            border-radius: 32px;
+            text-align: left;
+            padding-left: 28px;
+        }
+        @media (max-width: 400px) {
+            .calc-container { width: 100vw; min-width: 0; }
+            .calc-inner { padding: 16px 4px 4px 4px; }
+            .calc-btn, .btn-zero { width: 48px; height: 48px; font-size: 1.2rem; }
+            .btn-zero { width: 100px; }
+            .calc-display { font-size: 2.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -20,9 +96,126 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [operando, setOperando] = useState(null);
+            const [operador, setOperador] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+
+            // Botones
+            const botones = [
+                [
+                    { label: 'AC', className: 'btn-func', onClick: () => limpiar() },
+                    { label: '+/-', className: 'btn-func', onClick: () => cambiarSigno() },
+                    { label: '%', className: 'btn-func', onClick: () => porcentaje() },
+                    { label: '÷', className: 'btn-op', onClick: () => operar('/') },
+                ],
+                [
+                    { label: '7', onClick: () => ingresar('7') },
+                    { label: '8', onClick: () => ingresar('8') },
+                    { label: '9', onClick: () => ingresar('9') },
+                    { label: '×', className: 'btn-op', onClick: () => operar('*') },
+                ],
+                [
+                    { label: '4', onClick: () => ingresar('4') },
+                    { label: '5', onClick: () => ingresar('5') },
+                    { label: '6', onClick: () => ingresar('6') },
+                    { label: '-', className: 'btn-op', onClick: () => operar('-') },
+                ],
+                [
+                    { label: '1', onClick: () => ingresar('1') },
+                    { label: '2', onClick: () => ingresar('2') },
+                    { label: '3', onClick: () => ingresar('3') },
+                    { label: '+', className: 'btn-op', onClick: () => operar('+') },
+                ],
+                [
+                    { label: '0', className: 'btn-zero', onClick: () => ingresar('0') },
+                    { label: '.', onClick: () => ingresar('.') },
+                    { label: '=', className: 'btn-op', onClick: () => calcular() },
+                ],
+            ];
+
+            function limpiar() {
+                setDisplay('0');
+                setOperando(null);
+                setOperador(null);
+                setEsperandoNuevo(false);
+            }
+
+            function ingresar(valor) {
+                if (display.length > 9 && !esperandoNuevo) return; // Limitar a 10 dígitos
+                if (esperandoNuevo) {
+                    setDisplay(valor === '.' ? '0.' : valor);
+                    setEsperandoNuevo(false);
+                } else {
+                    if (valor === '.' && display.includes('.')) return;
+                    setDisplay(display === '0' && valor !== '.' ? valor : display + valor);
+                }
+            }
+
+            function operar(op) {
+                if (operador && !esperandoNuevo) {
+                    calcular();
+                    setOperador(op);
+                    setEsperandoNuevo(true);
+                } else {
+                    setOperando(parseFloat(display));
+                    setOperador(op);
+                    setEsperandoNuevo(true);
+                }
+            }
+
+            function calcular() {
+                if (operador && operando !== null) {
+                    let resultado = 0;
+                    const actual = parseFloat(display);
+                    switch (operador) {
+                        case '+': resultado = operando + actual; break;
+                        case '-': resultado = operando - actual; break;
+                        case '*': resultado = operando * actual; break;
+                        case '/': resultado = actual === 0 ? 'Error' : operando / actual; break;
+                        default: resultado = actual;
+                    }
+                    setDisplay(resultado.toString().length > 10 ? resultado.toExponential(6) : resultado.toString());
+                    setOperando(null);
+                    setOperador(null);
+                    setEsperandoNuevo(true);
+                }
+            }
+
+            function cambiarSigno() {
+                if (display !== '0') {
+                    setDisplay(display.startsWith('-') ? display.slice(1) : '-' + display);
+                }
+            }
+
+            function porcentaje() {
+                setDisplay((parseFloat(display) / 100).toString());
+            }
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-inner">
+                        <div className="calc-display">{display}</div>
+                        {botones.map((fila, i) => (
+                            <div className="calc-row" key={i}>
+                                {fila.map((btn, j) => (
+                                    <button
+                                        key={btn.label}
+                                        className={
+                                            'calc-btn' +
+                                            (btn.className ? ' ' + btn.className : '')
+                                        }
+                                        onClick={btn.onClick}
+                                    >
+                                        {btn.label}
+                                    </button>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
