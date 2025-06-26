@@ -1,0 +1,85 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject cliente.Services.ApiService ApiService
+@inject NavigationManager Nav
+@using cliente.Services
+
+<nav class="navbar navbar-expand-lg urban-navbar shadow-sm mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center urban-brand" href="" @onclick="IrHome" style="cursor:pointer;">
+            <img src="logo nickz sticker.png" alt="Logo" style="height:60px; margin-right:12px; border-radius:12px; box-shadow:0 2px 12px #fff1;" />
+            <span class="urban-logo-title">Nickz Store</span>
+        </a>
+
+        <button class="navbar-toggler urban-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon urban-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <div class="navbar-nav urban-nav mx-auto">
+                <button class="urban-menu-btn" @onclick="IrHome">Inicio</button>
+                <button class="urban-menu-btn" @onclick="IrProductos">Productos</button>
+                <button class="urban-menu-btn" @onclick="IrCarrito">Carrito</button>
+                <button class="urban-menu-btn" @onclick="IrConfirmar">Confirmar compra</button>
+            
+            </div>
+
+            <form class="d-flex urban-search" @onsubmit="Buscar">
+                <input class="form-control urban-search-input" type="search" placeholder="Buscar producto..." aria-label="Buscar" @bind="busqueda" />
+                <button class="btn urban-btn-search" type="submit"><span class="oi oi-magnifying-glass"></span></button>
+            </form>
+
+            <button class="btn urban-cart-btn ms-3" @onclick="IrCarrito">
+                <span class="oi oi-cart me-1"></span>
+                <span>Carrito</span>
+                <span class="urban-badge badge">@contador</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+@code {
+    int contador = 0;
+    string busqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarContador();
+    }
+
+    public async Task ActualizarContador()
+    {
+        var carritoIdStr = await LocalStorage.GetItemAsync<string>("carritoId");
+
+        if (!Guid.TryParse(carritoIdStr, out var carritoId) || carritoId == Guid.Empty)
+        {
+            carritoId = await ApiService.CrearCarritoAsync();
+            await LocalStorage.SetItemAsync("carritoId", carritoId.ToString());
+        }
+
+        try
+        {
+            var items = await ApiService.ObtenerCarritoAsync(carritoId);
+            contador = items.Sum(i => i.Cantidad);
+        }
+        catch
+        {
+            contador = 0;
+        }
+
+        StateHasChanged();
+    }
+
+    private void IrCarrito() => Nav.NavigateTo("/carrito");
+    private void IrHome() => Nav.NavigateTo("/");
+    private void IrProductos() => Nav.NavigateTo("/productos");
+    private void IrConfirmar() => Nav.NavigateTo("/confirmar");
+   
+
+    private void Buscar()
+    {
+        if (!string.IsNullOrWhiteSpace(busqueda))
+            Nav.NavigateTo($"/productos?q={Uri.EscapeDataString(busqueda)}");
+        else
+            Nav.NavigateTo("/productos");
+    }
+}
