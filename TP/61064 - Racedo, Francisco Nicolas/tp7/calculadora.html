@@ -189,6 +189,50 @@
                 }
             };
 
+            const handleClick = (content) => {
+                if (content >= '0' && content <= '9') {
+                    if (display.length > 14) return; // Establecemos un maximo de 15 dígitos
+                    if (display === '0' || waitingForOperand) {
+                        setDisplay(content);
+                        setWaitingForOperand(false);
+                    } else {
+                        setDisplay(display + content);
+                    }
+                } else if (content === '.') {
+                    if (!display.includes('.')) {
+                        setDisplay(display + '.');
+                        setWaitingForOperand(false);
+                    }
+                } else if (['+', '-', '×', '÷'].includes(content)) {
+                    if (operator && !waitingForOperand) {
+                        const result = calculate(value, display, operator);
+                        setValue(result);
+                        setDisplay(String(result));
+                    } else {
+                        setValue(Number(display));
+                    }
+                    setOperator(content);
+                    setWaitingForOperand(true);
+                } else if (content === '=') {
+                    if (operator) {
+                        const result = calculate(value, display, operator);
+                        setDisplay(String(result));
+                        setValue(null);
+                        setOperator(null);
+                        setWaitingForOperand(true);
+                    }
+                } else if (content === 'AC') {
+                    setDisplay('0');
+                    setValue(null);
+                    setOperator(null);
+                    setWaitingForOperand(false);
+                } else if (content === '+/-') {
+                    setDisplay(display.charAt(0) === '-' ? display.slice(1) : '-' + display);
+                } else if (content === '%') {
+                    setDisplay(String(Number(display) / 100));
+                }
+            };
+
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
