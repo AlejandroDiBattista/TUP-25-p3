@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <header class="header">
+        <div class="nav">
+            <div class="logo">
+                <i class="fa-solid fa-shoe-prints"></i> BellaPies
+            </div>
+
+            <div class="search-container">
+                <input class="search-input" placeholder="Buscar calzado..." />
+                <button class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+
+            <div class="cart-icon">
+                <i class="fa-solid fa-shopping-bag fa-lg"></i>
+                <span class="cart-counter">3</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        @Body
+    </main>
+
+    <footer style="text-align:center; font-size: 0.9rem; color:#aaa; padding: 2rem 0;">
+        © 2025 BellaPies - Todos los derechos reservados
+    </footer>
+</div>
