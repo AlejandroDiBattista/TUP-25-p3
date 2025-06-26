@@ -253,6 +253,36 @@
                 ['0', '.', '=']
             ];
 
+            return (
+                <div className="calc-container">
+                    <div className="calc-notch"></div>
+                    <div className="calc-inner">
+                        <div className="calc-display">{display}</div>
+                        <div className="calc-buttons">
+                            {buttons.map((row, i) => (
+                                <div className="calc-row" key={i}>
+                                    {row.map((btn, j) => {
+                                        let className = 'btn ';
+                                        if (btn === 'AC' || btn === '+/-' || btn === '%') className += 'btn-func';
+                                        else if (['÷', '×', '-', '+', '='].includes(btn)) className += 'btn-op';
+                                        else className += 'btn-num';
+                                        if (btn === '0') className += ' btn-zero';
+                                        return (
+                                            <button
+                                                key={btn}
+                                                className={className}
+                                                onClick={() => handleClick(btn)}
+                                            >
+                                                {btn}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
