@@ -179,6 +179,16 @@
                 return () => window.removeEventListener('keydown', handleKeyDown);
             }, [display, waitingForOperand, operator, value]);
 
+            // Agregamos una nueva función para manejar la tecla Backspace (Deshacer)
+            const handleBackspace = () => {
+                if (waitingForOperand) return; // No borrar si espera nuevo operando
+                if (display.length > 1) {
+                    setDisplay(display.slice(0, -1));
+                } else {
+                    setDisplay('0');
+                }
+            };
+
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
