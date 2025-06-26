@@ -22,8 +22,15 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TiendaDbContext>();
+    DbInitializer.Inicializar(db);
+}
+
 // Configurar el pipeline de solicitudes HTTP
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
 }
 
