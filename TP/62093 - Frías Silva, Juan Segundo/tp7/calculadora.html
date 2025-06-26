@@ -1,32 +1,140 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      background-color: #000;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    #root {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <!-- React y ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel para JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <!-- Código JSX -->
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [input, setInput] = useState("");
+
+      const botones = [
+        ["AC", "±", "%", "÷"],
+        ["7", "8", "9", "×"],
+        ["4", "5", "6", "−"],
+        ["1", "2", "3", "+"],
+        ["0", ".", "="]
+      ];
+
+      const agregarValor = (valor) => {
+        if (valor === "AC") return setInput("");
+        if (valor === "=") return calcular();
+        if (valor === "±") return setInput(input.startsWith("-") ? input.slice(1) : "-" + input);
+        if (valor === "%") return setInput((parseFloat(input) / 100).toString());
+
+        const simbolos = { "÷": "/", "×": "*", "−": "-" };
+        setInput(input + (simbolos[valor] || valor));
+      };
+
+      const calcular = () => {
+        try {
+          const resultado = eval(input);
+          setInput(resultado.toString());
+        } catch {
+          setInput("Error");
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      return (
+        <div style={estilos.contenedor}>
+          <div style={estilos.display}>{input || "0"}</div>
+          <div style={estilos.botones}>
+            {botones.flat().map((btn, i) => (
+              <button
+                key={i}
+                onClick={() => agregarValor(btn)}
+                style={{
+                  ...estilos.boton,
+                  ...(btn === "=" ? estilos.igual : {}),
+                  ...(["÷", "×", "−", "+", "="].includes(btn) ? estilos.operador : {}),
+                  ...(btn === "0" ? estilos.cero : {})
+                }}
+              >
+                {btn}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const estilos = {
+      contenedor: {
+        width: "300px",
+        background: "#fdd9a0",
+        borderRadius: "30px",
+        padding: "20px",
+        boxShadow: "0 0 30px rgba(0,0,0,0.2)"
+      },
+      display: {
+        background: "#000",
+        color: "#fff",
+        fontSize: "40px",
+        textAlign: "right",
+        padding: "20px",
+        borderRadius: "20px",
+        marginBottom: "10px"
+      },
+      botones: {
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: "10px"
+      },
+      boton: {
+        fontSize: "24px",
+        padding: "20px",
+        borderRadius: "50%",
+        border: "none",
+        background: "#333",
+        color: "#fff",
+        cursor: "pointer"
+      },
+      operador: {
+        background: "#f90",
+        color: "#fff"
+      },
+      igual: {
+        background: "#f90",
+        color: "#fff"
+      },
+      cero: {
+        gridColumn: "span 2",
+        borderRadius: "50px",
+        textAlign: "left",
+        paddingLeft: "28px"
+      }
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
