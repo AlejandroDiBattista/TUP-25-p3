@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Usa el mismo .NET 8.0 que el servidor -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Para GetFromJsonAsync -->
+    <PackageReference Include="System.Net.Http.Json" Version="9.0.6" />
+  </ItemGroup>
+
+</Project>
+
