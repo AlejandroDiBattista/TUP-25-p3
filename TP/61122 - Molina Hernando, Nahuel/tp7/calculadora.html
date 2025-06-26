@@ -4,29 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
-
     <style>
-        /* Poner aca el CSS */
+        body {
+            background: #222;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .contenedor-calculadora {
+            background: #111;
+            width: 320px;
+            margin: 40px auto;
+            border-radius: 40px;
+            box-shadow: 0 8px 32px #000a;
+            padding: 24px 16px 32px 16px;
+        }
+        .pantalla-calculadora {
+            background: #222;
+            color: #fff;
+            font-size: 2.5rem;
+            text-align: right;
+            border-radius: 20px;
+            padding: 24px 16px 12px 16px;
+            min-height: 48px;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+            overflow-x: auto;
+        }
+        .botones-calculadora {
+            display: grid;
+            grid-template-columns: repeat(4, 64px);
+            grid-gap: 12px;
+        }
+        .boton {
+            height: 64px;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.6rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: #333;
+            color: #fff;
+            transition: background 0.15s;
+            outline: none;
+            box-shadow: 0 2px 8px #0003;
+        }
+        .boton:active {
+            background: #444;
+        }
+        .boton.operacion {
+            background: #ff9500;
+            color: #fff;
+        }
+        .boton.operacion:active {
+            background: #ffa733;
+        }
+        .boton.gris {
+            background: #a5a5a5;
+            color: #111;
+        }
+        .boton.cero {
+            grid-column: span 2;
+            border-radius: 32px;
+            text-align: left;
+            padding-left: 28px;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
+    <div id="raiz"></div>
+    <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
+    <!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState("0");
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [operacion, setOperacion] = useState(null);
+            const [esperandoNuevoValor, setEsperandoNuevoValor] = useState(false);
+
+            const manejarNumero = (num) => {
+                if (pantalla.length > 12) return;
+                if (esperandoNuevoValor) {
+                    setPantalla(num);
+                    setEsperandoNuevoValor(false);
+                } else {
+                    if (pantalla === "0" && num !== ".") setPantalla(num);
+                    else if (num === "." && pantalla.includes(".")) return;
+                    else setPantalla(pantalla + num);
+                }
+            };
+
+            const manejarOperacion = (op) => {
+                if (operacion && !esperandoNuevoValor) {
+                    manejarIgual();
+                    setOperacion(op);
+                } else {
+                    setValorAnterior(parseFloat(pantalla));
+                    setOperacion(op);
+                    setEsperandoNuevoValor(true);
+                }
+            };
+
+            const manejarIgual = () => {
+                if (operacion && valorAnterior !== null) {
+                    let resultado = 0;
+                    const actual = parseFloat(pantalla);
+                    switch (operacion) {
+                        case "+": resultado = valorAnterior + actual; break;
+                        case "-": resultado = valorAnterior - actual; break;
+                        case "×": resultado = valorAnterior * actual; break;
+                        case "÷": resultado = actual === 0 ? "Error" : valorAnterior / actual; break;
+                        default: resultado = actual;
+                    }
+                    setPantalla(
+                        typeof resultado === "number"
+                            ? (Math.round(resultado * 100000000) / 100000000).toString()
+                            : resultado
+                    );
+                    setValorAnterior(null);
+                    setOperacion(null);
+                    setEsperandoNuevoValor(true);
+                }
+            };
+
+            const manejarAC = () => {
+                setPantalla("0");
+                setValorAnterior(null);
+                setOperacion(null);
+                setEsperandoNuevoValor(false);
+            };
+
+            const manejarSigno = () => {
+                if (pantalla !== "0" && pantalla !== "Error") {
+                    setPantalla(pantalla.startsWith("-") ? pantalla.slice(1) : "-" + pantalla);
+                }
+            };
+
+            const manejarPorcentaje = () => {
+                if (pantalla !== "Error") {
+                    setPantalla((parseFloat(pantalla) / 100).toString());
+                }
+            };
+
+            return (
+                <div className="contenedor-calculadora">
+                    <div className="pantalla-calculadora">{pantalla}</div>
+                    <div className="botones-calculadora">
+                        <button className="boton gris" onClick={manejarAC}>AC</button>
+                        <button className="boton gris" onClick={manejarSigno}>±</button>
+                        <button className="boton gris" onClick={manejarPorcentaje}>%</button>
+                        <button className="boton operacion" onClick={() => manejarOperacion("÷")}>÷</button>
+
+                        <button className="boton" onClick={() => manejarNumero("7")}>7</button>
+                        <button className="boton" onClick={() => manejarNumero("8")}>8</button>
+                        <button className="boton" onClick={() => manejarNumero("9")}>9</button>
+                        <button className="boton operacion" onClick={() => manejarOperacion("×")}>×</button>
+
+                        <button className="boton" onClick={() => manejarNumero("4")}>4</button>
+                        <button className="boton" onClick={() => manejarNumero("5")}>5</button>
+                        <button className="boton" onClick={() => manejarNumero("6")}>6</button>
+                        <button className="boton operacion" onClick={() => manejarOperacion("-")}>-</button>
+
+                        <button className="boton" onClick={() => manejarNumero("1")}>1</button>
+                        <button className="boton" onClick={() => manejarNumero("2")}>2</button>
+                        <button className="boton" onClick={() => manejarNumero("3")}>3</button>
+                        <button className="boton operacion" onClick={() => manejarOperacion("+")}>+</button>
+
+                        <button className="boton cero" onClick={() => manejarNumero("0")}>0</button>
+                        <button className="boton" onClick={() => manejarNumero(".")}>.</button>
+                        <button className="boton operacion" onClick={manejarIgual}>=</button>
+                    </div>
+                </div>
+            );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
+        const raiz = ReactDOM.createRoot(document.getElementById('raiz'));
+        raiz.render(<Calculadora />);
     </script>
 </body>
 </html>
