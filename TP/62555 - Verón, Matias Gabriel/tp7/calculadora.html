@@ -1,32 +1,288 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #fbd3a0;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    .iphone-frame {
+      background: #fff;
+      border-radius: 50px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      padding: 18px 8px;
+      width: 350px;
+      height: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 28px;
+      background: #fff;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      z-index: 2;
+    }
+
+    .iphone {
+      background-color: #000;
+      width: 100%;
+      height: 100%;
+      border-radius: 40px;
+      padding: 30px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 1;
+      box-sizing: border-box;
+    }
+
+    .display {
+      color: white;
+      text-align: right;
+      padding-right: 10px;
+      margin-bottom: 18px;
+      height: 80px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    button {
+      font-size: 28px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      color: white;
+      background-color: #222;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:active {
+      opacity: 0.7;
+    }
+
+    .btn-gray { background-color: #a5a5a5; color: black; }
+    .btn-orange { background-color: #f1a33c; }
+    .btn-zero {
+      grid-column: span 2;
+      border-radius: 40px;
+      text-align: left;
+      padding-left: 36px;
+      width: 144px;
+      justify-content: flex-start;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [pantalla, setPantalla] = useState("0");
+      const [operacion, setOperacion] = useState(null);
+      const [anterior, setAnterior] = useState(null);
+      const [esperandoNuevoNumero, setEsperandoNuevoNumero] = useState(false);
+      const [mostrarAC, setMostrarAC] = useState(true);
+      const [ultimoOperador, setUltimoOperador] = useState(null);
+      const [ultimoValor, setUltimoValor] = useState(null);
+
+      const agregarNumero = (num) => {
+        if (pantalla === "0" || esperandoNuevoNumero) {
+          setPantalla(num);
+          setEsperandoNuevoNumero(false);
+        } else {
+          setPantalla(pantalla + num);
+        }
+        setMostrarAC(false);
+      };
+
+      const agregarPunto = () => {
+        if (!pantalla.includes(".")) {
+          setPantalla(pantalla + ".");
+          setMostrarAC(false);
+        }
+      };
+
+      const limpiar = () => {
+        if (mostrarAC) {
+          setPantalla("0");
+          setOperacion(null);
+          setAnterior(null);
+          setEsperandoNuevoNumero(false);
+          setUltimoOperador(null);
+          setUltimoValor(null);
+        } else {
+          setPantalla("0");
+          setMostrarAC(true);
+        }
+      };
+
+      const cambiarSigno = () => {
+        if (pantalla !== "0") {
+          setPantalla(pantalla.startsWith("-") ? pantalla.slice(1) : "-" + pantalla);
+        }
+      };
+
+      const porcentaje = () => {
+        if (operacion && anterior !== null) {
+          const porcentajeCalculado = (parseFloat(anterior) * parseFloat(pantalla)) / 100;
+          setPantalla(porcentajeCalculado.toString());
+        } else {
+          setPantalla((parseFloat(pantalla) / 100).toString());
+        }
+      };
+
+      const manejarOperacion = (op) => {
+        if (operacion && !esperandoNuevoNumero) {
+          calcularResultado();
+        } else {
+          setAnterior(pantalla);
+        }
+        setOperacion(op);
+        setEsperandoNuevoNumero(true);
+        setUltimoOperador(null);
+        setUltimoValor(null);
+      };
+
+      const calcularResultado = () => {
+        let actual = parseFloat(pantalla);
+        let prev = parseFloat(anterior);
+
+        if (!operacion && ultimoOperador && ultimoValor !== null) {
+          prev = parseFloat(pantalla);
+          actual = ultimoValor;
+          realizarCalculo(prev, actual, ultimoOperador);
+          return;
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+        if (!operacion || anterior == null) return;
+
+        realizarCalculo(prev, actual, operacion);
+        setUltimoOperador(operacion);
+        setUltimoValor(actual);
+      };
+
+      
+      const formatearPantalla = (valor) => {
+        if (valor === "Error") return valor;
+        let num = Number(valor);
+        if (isNaN(num)) return valor;
+        
+        if (Number.isInteger(num) && num.toString().length <= 9) {
+          return num.toString();
+        }
+        
+        let str = num.toFixed(6).replace(/\.0+$/, '').replace(/(\.[0-9]*[1-9])0+$/, '$1');
+       
+        if (str.length > 9) {
+          str = num.toExponential(5).replace(/e\+?/, 'e');
+        }
+        return str.length > 9 ? str.slice(0, 9) : str;
+      };
+
+      const realizarCalculo = (a, b, operador) => {
+        let resultado;
+        switch (operador) {
+          case "+": resultado = a + b; break;
+          case "-": resultado = a - b; break;
+          case "×": resultado = a * b; break;
+          case "÷": resultado = b !== 0 ? a / b : "Error"; break;
+          default: return;
+        }
+        setPantalla(formatearPantalla(resultado));
+        setAnterior(null);
+        setOperacion(null);
+        setEsperandoNuevoNumero(true);
+      };
+
+     
+    
+      const calcularFontSize = () => {
+        const baseSize = 60;
+        const extra = pantalla.length > 8 ? (pantalla.length - 8) * 2 : 0;
+        return `${Math.max(30, baseSize - extra)}px`;
+      };
+
+      return (
+        <div className="iphone-frame">
+          <div className="notch"></div>
+          <div className="iphone">
+            <div className="display" style={{ fontSize: calcularFontSize() }}>
+              {pantalla.startsWith('-') ? `(${pantalla})` : pantalla}
+            </div>
+            <div className="buttons">
+              <button className="btn-gray" onClick={limpiar}>
+                {mostrarAC ? "AC" : "C"}
+              </button>
+              <button className="btn-gray" onClick={cambiarSigno}>+/-</button>
+              <button className="btn-gray" onClick={porcentaje}>%</button>
+              <button className="btn-orange" onClick={() => manejarOperacion("÷")}>÷</button>
+
+              <button onClick={() => agregarNumero("7")}>7</button>
+              <button onClick={() => agregarNumero("8")}>8</button>
+              <button onClick={() => agregarNumero("9")}>9</button>
+              <button className="btn-orange" onClick={() => manejarOperacion("×")}>×</button>
+
+              <button onClick={() => agregarNumero("4")}>4</button>
+              <button onClick={() => agregarNumero("5")}>5</button>
+              <button onClick={() => agregarNumero("6")}>6</button>
+              <button className="btn-orange" onClick={() => manejarOperacion("-")}>−</button>
+
+              <button onClick={() => agregarNumero("1")}>1</button>
+              <button onClick={() => agregarNumero("2")}>2</button>
+              <button onClick={() => agregarNumero("3")}>3</button>
+              <button className="btn-orange" onClick={() => manejarOperacion("+")}>+</button>
+
+              <button className="btn-zero" onClick={() => agregarNumero("0")}>0</button>
+              <button onClick={agregarPunto}>.</button>
+              <button className="btn-orange" onClick={calcularResultado}>=</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
