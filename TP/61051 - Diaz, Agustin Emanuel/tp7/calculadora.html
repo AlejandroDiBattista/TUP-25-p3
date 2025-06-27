@@ -6,7 +6,66 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        body {
+          margin: 0;
+          background: #fcd9a0;
+          font-family: sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
+
+        .phone {
+          background: black;
+          border-radius: 40px;
+          padding: 20px;
+          width: 300px;
+          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .screen {
+          color: white;
+          text-align: right;
+          font-size: 48px;
+          padding: 20px 10px;
+          min-height: 60px;
+        }
+
+        .buttons {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+        }
+
+        .btn {
+          font-size: 24px;
+          border: none;
+          border-radius: 50%;
+          padding: 20px;
+          cursor: pointer;
+          color: white;
+        }
+
+        .gray {
+          background: #a5a5a5;
+          color: black;
+        }
+
+        .dark {
+          background: #333;
+        }
+
+        .orange {
+          background: #ff9500;
+        }
+
+        .btn.zero {
+          grid-column: span 2;
+          border-radius: 40px;
+          text-align: left;
+          padding-left: 30px;
+        }
     </style>
 </head>
 <body>
