@@ -5,28 +5,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #3a0ca3, #7209b7);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .calculadora {
+      background: #1e003e;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      width: 320px;
+    }
+
+    .barra {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .barra div {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    .rojo { background: #ff5f57; }
+    .amarillo { background: #febc2e; }
+    .verde { background: #28c840; }
+
+    .expresion {
+      font-size: 18px;
+      color: #ccc;
+      margin-bottom: 5px;
+      text-align: right;
+      word-wrap: break-word;
+    }
+
+    .pantalla {
+      background: transparent;
+      color: #fff;
+      font-size: 50px;
+      text-align: right;
+      padding: 10px 0;
+      word-wrap: break-word;
+      overflow-x: auto;
+    }
+
+    .botones {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 20px;
+      font-size: 20px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .boton-operador {
+      background: #a259ff;
+    }
+
+    .boton-operador:hover {
+      background: #9152e5;
+    }
+
+    .boton-igual {
+      background: #00f5d4;
+      color: #222;
+    }
+
+    .boton-igual:hover {
+      background: #00d3b0;
+    }
+
+    .boton-ac {
+      background: #ff5f57;
+    }
+
+    .boton-ac:hover {
+      background: #d94f4f;
+    }
+
+    .boton-cero {
+      grid-column: span 2;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <!-- React y ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [pantalla, setPantalla] = useState("");
+      const [resultado, setResultado] = useState("");
+
+      const agregarValor = (valor) => {
+        setPantalla(pantalla + valor);
+        setResultado("");
+      };
+
+      const borrar = () => {
+        setPantalla("");
+        setResultado("");
+      };
+
+      const calcular = () => {
+        try {
+          const res = eval(pantalla);
+          setResultado(res);
+        } catch (error) {
+          setResultado("Error");
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      return (
+        <div className="calculadora">
+          <div className="expresion">{pantalla || "0"}</div>
+          <div className="pantalla">{resultado !== "" ? resultado : "0"}</div>
+          <div className="botones">
+            <button onClick={borrar} className="boton-ac">AC</button>
+            <button onClick={() => agregarValor("%")} className="boton-operador">%</button>
+            <button onClick={() => agregarValor("/")} className="boton-operador">÷</button>
+            <button onClick={() => agregarValor("*")} className="boton-operador">×</button>
+
+            <button onClick={() => agregarValor("7")}>7</button>
+            <button onClick={() => agregarValor("8")}>8</button>
+            <button onClick={() => agregarValor("9")}>9</button>
+            <button onClick={() => agregarValor("-")} className="boton-operador">−</button>
+
+            <button onClick={() => agregarValor("4")}>4</button>
+            <button onClick={() => agregarValor("5")}>5</button>
+            <button onClick={() => agregarValor("6")}>6</button>
+            <button onClick={() => agregarValor("+")} className="boton-operador">+</button>
+
+            <button onClick={() => agregarValor("1")}>1</button>
+            <button onClick={() => agregarValor("2")}>2</button>
+            <button onClick={() => agregarValor("3")}>3</button>
+            <button onClick={calcular} className="boton-igual">=</button>
+
+            <button onClick={() => agregarValor("0")} className="boton-cero">0</button>
+            <button onClick={() => agregarValor(".")}>.</button>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
