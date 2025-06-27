@@ -1,0 +1,97 @@
+body {
+  margin: 0;
+  background: #ffedcc;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.calculator {
+  background: #000;
+  border-radius: 30px;
+  padding-top: 100px;
+  padding: 20px;
+  width: 320px;
+  height: 600px;
+}
+
+
+
+.display {
+  height: 200px; /* o más según lo que necesites */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem;
+  font-size: 2.5rem;
+  color: white;
+  word-break: break-word;
+  text-align: right;
+}
+
+.display.normal {
+  font-size: 50px;
+}
+
+.display.small {
+  font-size: 30px;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.btn {
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  padding: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn:hover {
+  background: #444;
+}
+
+.operator {
+  background-color: orange;
+}
+
+.function {
+  background-color: gray;
+}
+
+.zero {
+  grid-column: span 2;
+  border-radius: 999px;
+  text-align: left;
+  padding-left: 28px;
+}
+
+.app-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.floating-error {
+  position: absolute;
+  top: 10px;
+  background-color: #ffdddd;
+  color: #b20000;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 10;
+}
