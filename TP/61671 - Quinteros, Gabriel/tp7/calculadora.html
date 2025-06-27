@@ -4,13 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
-
     <style>
-        /* Poner aca el CSS */
+        body {
+            background: #f9d9aa;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .celular-fondo {
+            background: #fff;
+            border-radius: 45px;
+            box-shadow: 0 4px 40px #0004;
+            width: 360px;
+            height: 780px;
+            padding: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 36px;
+            background: #fff;
+            border-bottom-left-radius: 28px;
+            border-bottom-right-radius: 28px;
+            z-index: 2;
+        }
+        .calculadora-fondo {
+            background: #000;
+            border-radius: 45px;
+            width: 340px;
+            height: 760px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: stretch;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .calculadora-pantalla {
+            color: #fff;
+            font-size: 80px;
+            text-align: right;
+            min-height: 110px;
+            margin: 0 28px 0 28px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            letter-spacing: 2px;
+            overflow-x: auto;
+            background: transparent;
+            border: none;
+            outline: none;
+            width: calc(100% - 56px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+        .calculadora-botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            padding: 24px;
+            padding-top: 18px;
+            padding-bottom: 32px;
+        }
+        .boton {
+            height: 62px;
+            width: 62px;
+            border-radius: 50%;
+            border: none;
+            font-size: 28px;
+            font-family: inherit;
+            cursor: pointer;
+            background: #333;
+            color: #fff;
+            transition: filter 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            outline: none;
+        }
+        .boton:active {
+            filter: brightness(1.2);
+        }
+        .boton.gris {
+            background: #a5a5a5;
+            color: #000;
+        }
+        .boton.naranja {
+            background: #ff9f0a;
+            color: #fff;
+        }
+        .boton.cero {
+            grid-column: span 2;
+            border-radius: 31px;
+            width: 140px;
+            justify-content: flex-start;
+            padding-left: 28px;
+        }
+        @media (max-width: 420px) {
+            .celular-fondo {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .calculadora-fondo {
+                border-radius: 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="celular-fondo">
+        <div class="notch"></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
+            <div id="root" style="width:auto;height:auto;"></div>
+        </div>
+    </div>
 <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -18,11 +140,85 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState("0");
+            const [operador, setOperador] = useState(null);
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+
+            const accion = (valor) => {
+                if (!isNaN(valor)) {
+                    if (pantalla === "0" || esperandoNuevo) {
+                        setPantalla(valor);
+                        setEsperandoNuevo(false);
+                    } else {
+                        setPantalla(pantalla + valor);
+                    }
+                } else if (valor === ".") {
+                    if (!pantalla.includes(".")) {
+                        setPantalla(pantalla + ".");
+                    }
+                } else if (["+", "-", "×", "÷"].includes(valor)) {
+                    setOperador(valor);
+                    setValorAnterior(parseFloat(pantalla));
+                    setEsperandoNuevo(true);
+                } else if (valor === "=") {
+                    if (operador && valorAnterior !== null) {
+                        const actual = parseFloat(pantalla);
+                        let resultado = 0;
+                        switch (operador) {
+                            case "+": resultado = valorAnterior + actual; break;
+                            case "-": resultado = valorAnterior - actual; break;
+                            case "×": resultado = valorAnterior * actual; break;
+                            case "÷": resultado = actual === 0 ? "Error" : valorAnterior / actual; break;
+                            default: break;
+                        }
+                        setPantalla(resultado.toString().length > 10 ? resultado.toPrecision(10) : resultado.toString());
+                        setOperador(null);
+                        setValorAnterior(null);
+                        setEsperandoNuevo(true);
+                    }
+                } else if (valor === "AC" || valor === "C") {
+                    setPantalla("0");
+                    setOperador(null);
+                    setValorAnterior(null);
+                    setEsperandoNuevo(false);
+                } else if (valor === "+/-" || valor === "±") {
+                    setPantalla((parseFloat(pantalla) * -1).toString());
+                } else if (valor === "%") {
+                    setPantalla((parseFloat(pantalla) / 100).toString());
+                }
+            };
+            const textoAC = pantalla !== "0" ? "C" : "AC";
+
+            return (
+                <div className="calculadora-fondo">
+                    <div className="calculadora-pantalla">{pantalla}</div>
+                    <div className="calculadora-botones">
+                        <button className="boton gris" onClick={() => accion(textoAC)}>{textoAC}</button>
+                        <button className="boton gris" onClick={() => accion("±")}>±</button>
+                        <button className="boton gris" onClick={() => accion("%")}>%</button>
+                        <button className="boton naranja" onClick={() => accion("÷")}>÷</button>
+                        <button className="boton" onClick={() => accion("7")}>7</button>
+                        <button className="boton" onClick={() => accion("8")}>8</button>
+                        <button className="boton" onClick={() => accion("9")}>9</button>
+                        <button className="boton naranja" onClick={() => accion("×")}>×</button>
+                        <button className="boton" onClick={() => accion("4")}>4</button>
+                        <button className="boton" onClick={() => accion("5")}>5</button>
+                        <button className="boton" onClick={() => accion("6")}>6</button>
+                        <button className="boton naranja" onClick={() => accion("-")}>-</button>
+                        <button className="boton" onClick={() => accion("1")}>1</button>
+                        <button className="boton" onClick={() => accion("2")}>2</button>
+                        <button className="boton" onClick={() => accion("3")}>3</button>
+                        <button className="boton naranja" onClick={() => accion("+")}>+</button>
+                        <button className="boton cero" onClick={() => accion("0")}>0</button>
+                        <button className="boton" onClick={() => accion(".")}>.</button>
+                        <button className="boton naranja" onClick={() => accion("=")}>=</button>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
