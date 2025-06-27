@@ -1,32 +1,186 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #fcd8a9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    .calculator {
+      width: 320px;
+      background: black;
+      border-radius: 30px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .display {
+      color: white;
+      font-size: 48px;
+      text-align: right;
+      margin-bottom: 20px;
+      word-wrap: break-word;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      height: 60px;
+      font-size: 24px;
+      border: none;
+      border-radius: 30px;
+      color: white;
+      background: #333;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.operator {
+      background: orange;
+    }
+
+    button.function {
+      background: #a5a5a5;
+      color: black;
+    }
+
+    button.zero {
+      grid-column: span 2;
+    }
+
+    button:active {
+      opacity: 0.7;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <!-- React -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+<script type="text/babel">
+  const { useState } = React;
+
+  function Calculadora() {
+    const [input, setInput] = useState("");      
+    const [resultado, setResultado] = useState("0"); 
+    const [mostrarResultado, setMostrarResultado] = useState(false);
+
+    const operadores = ["+", "-", "×", "÷"];
+
+    const agregarValor = (valor) => {
+      if (mostrarResultado) {
+        setInput(valor.match(/[0-9.]/) ? valor : resultado + valor);
+        setMostrarResultado(false);
+        setResultado("0");
+      } else {
+        const ultimo = input.slice(-1);
+        if (operadores.includes(ultimo) && operadores.includes(valor)) return;
+        setInput(input + valor);
+      }
+    };
+
+    const calcular = () => {
+      if (!input) return;
+
+      let expresion = input.replace(/×/g, "*").replace(/÷/g, "/");
+      try {
+        const evalResult = eval(expresion); // ⚠️ Eval usado controladamente
+        setResultado(String(evalResult));
+        setMostrarResultado(true);
+      } catch (e) {
+        setResultado("Error");
+        setMostrarResultado(true);
+      }
+    };
+
+    const reset = () => {
+      setInput("");
+      setResultado("0");
+      setMostrarResultado(false);
+    };
+
+    const cambiarSigno = () => {
+      if (mostrarResultado) {
+        setResultado(String(-parseFloat(resultado)));
+      } else {
+        try {
+          const numeros = input.match(/-?\d+\.?\d*$/);
+          if (numeros) {
+            const num = numeros[0];
+            const negado = num.startsWith("-") ? num.slice(1) : "-" + num;
+            setInput(input.replace(/-?\d+\.?\d*$/, negado));
+          }
+        } catch {}
+      }
+    };
+
+    const porcentaje = () => {
+      if (mostrarResultado) {
+        setResultado(String(parseFloat(resultado) / 100));
+      } else {
+        const match = input.match(/(\d+\.?\d*)$/);
+        if (match) {
+          const num = parseFloat(match[0]);
+          const reemplazo = String(num / 100);
+          setInput(input.replace(/(\d+\.?\d*)$/, reemplazo));
         }
+      }
+    };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+    return (
+      <div className="calculator">
+        <div className="display">
+          {mostrarResultado ? resultado : input || "0"}
+        </div>
+        <div className="buttons">
+          <button className="function" onClick={reset}>AC</button>
+          <button className="function" onClick={cambiarSigno}>±</button>
+          <button className="function" onClick={porcentaje}>%</button>
+          <button className="operator" onClick={() => agregarValor("÷")}>÷</button>
+
+          <button onClick={() => agregarValor("7")}>7</button>
+          <button onClick={() => agregarValor("8")}>8</button>
+          <button onClick={() => agregarValor("9")}>9</button>
+          <button className="operator" onClick={() => agregarValor("×")}>×</button>
+
+          <button onClick={() => agregarValor("4")}>4</button>
+          <button onClick={() => agregarValor("5")}>5</button>
+          <button onClick={() => agregarValor("6")}>6</button>
+          <button className="operator" onClick={() => agregarValor("-")}>−</button>
+
+          <button onClick={() => agregarValor("1")}>1</button>
+          <button onClick={() => agregarValor("2")}>2</button>
+          <button onClick={() => agregarValor("3")}>3</button>
+          <button className="operator" onClick={() => agregarValor("+")}>+</button>
+
+          <button className="zero" onClick={() => agregarValor("0")}>0</button>
+          <button onClick={() => agregarValor(".")}>.</button>
+          <button className="operator" onClick={calcular}>=</button>
+        </div>
+      </div>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<Calculadora />);
+</script>
 </body>
 </html>
