@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TiendaOnline.Datos;
 using TiendaOnline.Modelos; 
+using TiendaOnline.DTOs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -207,6 +208,36 @@ app.MapDelete("/api/carritos/{carritoId:int}", async (int carritoId, TiendaDbCon
 
     return Results.Ok("¡Carrito vaciado correctamente! :D");
 });
+
+// Endpoint para confirmar la compra
+app.MapPut("/api/carritos/{carritoId:int}/confirmar", async (
+    int carritoId,
+    ConfirmacionDTO datosCliente,
+    TiendaDbContext db) =>
+{
+    var carrito = await db.Compras
+        .Include(c => c.ItemsDeCompra)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito is null)
+        return Results.NotFound("Carrito no encontrado :(");
+
+    if (!carrito.ItemsDeCompra.Any())
+        return Results.BadRequest("El carrito está vacío :(");
+
+    // Acá se completan los datos del cliente
+    carrito.NombreCliente = datosCliente.Nombre;
+    carrito.ApellidoCliente = datosCliente.Apellido;
+    carrito.EmailCliente = datosCliente.Email;
+    carrito.Fecha = DateTime.Now;
+    carrito.Total = carrito.ItemsDeCompra.Sum(i => i.Cantidad * i.PrecioUnitario);
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok("Compra confirmada correctamente. ¡Muchas gracias! :D");
+});
+
 
 
 
