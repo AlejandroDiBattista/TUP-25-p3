@@ -6,7 +6,179 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400&display=swap');
+
+        body {
+            background-color: #f0e2d1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #root {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .iphone-frame {
+            width: 390px;
+            height: 844px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #333;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .iphone-side-button {
+            position: absolute;
+            background: #fff;
+        }
+        .ringer-switch {
+            left: -4px;
+            top: 110px;
+            height: 28px;
+            width: 4px;
+            border-radius: 2px 0 0 2px;
+        }
+        .volume-up {
+            left: -4px;
+            top: 155px;
+            height: 60px;
+            width: 4px;
+            border-radius: 2px 0 0 2px;
+        }
+        .volume-down {
+            left: -4px;
+            top: 225px;
+            height: 60px;
+            width: 4px;
+            border-radius: 2px 0 0 2px;
+        }
+        .side-button-right {
+            right: -4px;
+            top: 190px;
+            height: 95px;
+            width: 4px;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .iphone-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            border: 10px solid #fff;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .iphone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 210px;
+            height: 32px;
+            background: #fff;
+            border-radius: 0 0 36px 36px / 0 0 24px 24px;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .calculator-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+            padding-top: 180px;
+            box-sizing: border-box;
+        }
+
+        .display {
+            color: white;
+            text-align: right;
+            height: 150px;
+            padding-right: 25px;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            box-sizing: border-box;
+        }
+
+        .display-text {
+            font-size: 96px;
+            font-weight: 300;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .button-grid {
+            padding: 25px 0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 14px;
+            flex-grow: 1;
+        }
+
+        .calc-button {
+            border: none;
+            border-radius: 50%;
+            font-size: 30px;
+            cursor: pointer;
+            max-height: 72px;;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        
+        .calc-button:active {
+            filter: brightness(1.5);
+        }
+
+        .function {
+            background-color: #a5a5a5;
+            color: black;
+        }
+
+        .operator, .equals {
+            background-color: #f1a33c;
+            font-size: 46px;
+        }
+        
+        .operator.active, .equals.active {
+            background-color: #fff;
+            color: #f1a33c;
+        }
+
+        .number {
+            background-color: #333333;
+        }
+        
+        .zero {
+            grid-column: span 2;
+            border-radius: 50px;
+            justify-content: flex-start;
+            padding-left: 35px;
+        }
     </style>
 </head>
 <body>
@@ -18,15 +190,255 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
-        }
+        // --- Componente Botón (Reutilizable) ---
+        function Button({ value, type, onClick, activeOperator }) {
+            const isZero = value === '0';
+            const isActive = activeOperator === value;
+            const className = `calc-button ${type} ${isZero ? 'zero' : ''} ${isActive ? 'active' : ''}`;
+            
+            return (
+                <button className={className} onClick={() => onClick(value, type)}>
+                    {value === '*' ? '×' : value === '/' ? '÷' : value}
+                </button>
+            );
+        };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
+        // --- Componente Display (Pantalla) ---
+        function Display({ value }) {
+            const displayRef = useRef(null);
+            const textRef = useRef(null);
+
+            useEffect(() => {
+                if (displayRef.current && textRef.current) {
+                    const containerHeight = displayRef.current.clientHeight;
+                    const textWidth = textRef.current.scrollWidth;
+                    textRef.current.style.fontSize = '96px';
+                    
+                    if (textWidth > containerHeight) {
+                        const newFontSize = Math.max(40, (96 * containerHeight) / textWidth);
+                        textRef.current.style.fontSize = `${newFontSize}px`;
+                    }
+                }
+            }, [value]);
+
+            return (
+                <div className="display" ref={displayRef}>
+                    <span className="display-text" ref={textRef}>
+                        {value}
+                    </span>
+                </div>
+            );
+        };
+
+        // --- Componente Calculadora Principal ---
+        function Calculadora() {
+            const [currentValue, setCurrentValue] = useState('0');
+            const [prevValue, setPrevValue] = useState(null);
+            const [operator, setOperator] = useState(null);
+            const [waitingForOperand, setWaitingForOperand] = useState(true);
+
+            const formatNumber = (num) => {
+                // Si el usuario está escribiendo un decimal (coma presente), mostrar tal cual
+                if (typeof num === 'string' && (num.includes(',') || num.endsWith(','))) return num;
+
+                let number = typeof num === 'string' ? parseFloat(num.replace(',', '.')) : num;
+
+                if (isNaN(number)) return '0';
+
+                // Mostrar en notación científica si es muy grande o muy pequeño (excepto 0)
+                if ((Math.abs(number) >= 1e10 || (Math.abs(number) > 0 && Math.abs(number) < 1e-6))) {
+                    return number.toExponential(6).replace('.', ',').replace('e', 'e');
+                }
+
+                // Redondear a 9 decimales y eliminar ceros sobrantes
+                let rounded = roundTo9(number);
+                // Convertir a string con máximo 9 decimales, usando coma
+                let str = rounded.toLocaleString('es-ES', { maximumFractionDigits: 9 });
+                return str;
+            };
+
+            function roundTo9(num) { // Redondea a 9 decimales
+                return Math.round(num * 1e9) / 1e9;
+            }
+            
+            const handleButtonClick = (value, type) => {
+                switch (type) {
+                    case 'number':
+                        handleNumber(value);
+                        break;
+                    case 'operator':
+                        handleOperator(value);
+                        break;
+                    case 'function':
+                        handleFunction(value);
+                        break;
+                    case 'equals':
+                        handleEquals();
+                        break;
+                }
+            };
+            
+            const handleNumber = (num) => {
+                if (waitingForOperand) {
+                    // Si es coma, mostrar "0,"
+                    if (num === ',' || num === '.') {
+                        setCurrentValue('0,');
+                    } else {
+                        setCurrentValue(String(num));
+                    }
+                    setWaitingForOperand(false);
+                } else {
+                    // Si ya hay coma, no permitir otra
+                    if ((num === ',' || num === '.') && currentValue.includes(',')) {
+                        return;
+                    }
+                    // Si es coma, agregarla
+                    if (num === ',' || num === '.') {
+                        setCurrentValue(currentValue + ',');
+                    } else {
+                        // Limitar la longitud máxima (sin contar coma)
+                        if (currentValue.replace(/[,.]/g, '').length < 9) {
+                            setCurrentValue(currentValue + String(num));
+                        }
+                    }
+                }
+            };
+
+            const handleOperator = (nextOperator) => {
+                const inputValue = parseFloat(currentValue.replace(',', '.'));
+
+                if (prevValue === null) {
+                    setPrevValue(inputValue);
+                } else if (operator) {
+                    const result = calculate(prevValue, inputValue, operator);
+                    setCurrentValue(result === 'Error' ? 'Error' : String(result).replace('.', ','));
+                    setPrevValue(result === 'Error' ? null : result);
+                }
+
+                setWaitingForOperand(true);
+                setOperator(nextOperator);
+            };
+
+            const calculate = (val1, val2, op) => {
+                let result;
+                switch (op) {
+                    case '+': result = val1 + val2; break;
+                    case '-': result = val1 - val2; break;
+                    case '*': result = val1 * val2; break;
+                    case '/': result = val2 === 0 ? 'Error' : val1 / val2; break;
+                    default: result = val2;
+                }
+                if (result === 'Error') return result;
+                return roundTo9(result);
+            };
+
+            const handleFunction = (func) => {
+                if (currentValue === 'Error') {
+                    if(func === 'AC') { /* Resetear */ } 
+                    else return;
+                }
+
+                 const numericValue = parseFloat(currentValue.replace(',', '.'));
+                 let newValue;
+
+                 switch(func) {
+                    case 'AC':
+                    case 'C':
+                        setCurrentValue('0');
+                        setPrevValue(null);
+                        setOperator(null);
+                        setWaitingForOperand(true);
+                        return;
+                    case '+/-':
+                        newValue = numericValue * -1;
+                        break;
+                    case '%':
+                        newValue = numericValue / 100;
+                        break;
+                 }
+                 setCurrentValue(String(newValue).replace('.', ','));
+            };
+            
+            const handleEquals = () => {
+                if (!operator || prevValue === null || currentValue === 'Error') return;
+                
+                const inputValue = parseFloat(currentValue.replace(',', '.'));
+                const result = calculate(prevValue, inputValue, operator);
+
+                setCurrentValue(result === 'Error' ? 'Error' : String(result).replace('.', ','));
+                setPrevValue(null);
+                setOperator(null);
+                setWaitingForOperand(true);
+            };
+            
+            const displayValue = currentValue === 'Error' ? 'Error' : formatNumber(currentValue);
+            
+            // Lógica para cambiar entre AC y C
+            const clearButtonLabel = (currentValue === '0' && waitingForOperand) || currentValue === 'Error' ? 'AC' : 'C';
+
+            return (
+                <div className="calculator-container">
+                    <Display value={displayValue} />
+                    <div className="button-grid">
+                        <Button value={clearButtonLabel} type="function" onClick={handleFunction} />
+                        <Button value="+/-" type="function" onClick={handleFunction} />
+                        <Button value="%" type="function" onClick={handleFunction} />
+                        <Button value="/" type="operator" onClick={handleOperator} activeOperator={operator} />
+                        
+                        <Button value="7" type="number" onClick={handleNumber} />
+                        <Button value="8" type="number" onClick={handleNumber} />
+                        <Button value="9" type="number" onClick={handleNumber} />
+                        <Button value="*" type="operator" onClick={handleOperator} activeOperator={operator} />
+
+                        <Button value="4" type="number" onClick={handleNumber} />
+                        <Button value="5" type="number" onClick={handleNumber} />
+                        <Button value="6" type="number" onClick={handleNumber} />
+                        <Button value="-" type="operator" onClick={handleOperator} activeOperator={operator} />
+
+                        <Button value="1" type="number" onClick={handleNumber} />
+                        <Button value="2" type="number" onClick={handleNumber} />
+                        <Button value="3" type="number" onClick={handleNumber} />
+                        <Button value="+" type="operator" onClick={handleOperator} activeOperator={operator} />
+                        
+                        <Button value="0" type="number" onClick={handleNumber} />
+                        <Button value="," type="number" onClick={handleNumber} /> {/* Cambiado a coma para la UI */}
+                        <Button value="=" type="equals" onClick={handleEquals} />
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- Componente Marco del Teléfono ---
+        function IphoneFrame({ children }) {
+            return (
+                <div className="iphone-frame">
+                    <div className="iphone-side-button ringer-switch"></div>
+                    <div className="iphone-side-button volume-up"></div>
+                    <div className="iphone-side-button volume-down"></div>
+                    <div className="iphone-side-button side-button-right"></div>
+                    
+                    <div className="iphone-screen">
+                        <div className="iphone-notch"></div>
+                        {children}
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- Componente Principal de la App ---
+        function App() {
+            return (
+                <IphoneFrame>
+                    <Calculadora />
+                </IphoneFrame>
+            );
+        };
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
     </script>
 </body>
 </html>
