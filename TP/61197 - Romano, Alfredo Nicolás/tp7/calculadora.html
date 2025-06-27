@@ -12,7 +12,7 @@
         }
         .calc-container {
             background: #000;
-            width: 320px;
+            height: 700px;
             margin: 40px auto;
             border-radius: 40px;
             box-shadow: 0 0 30px #d2b48c;
@@ -25,21 +25,21 @@
             font-size: 3em;
             text-align: right;
             padding: 30px 10px 20px 10px;
-            border-radius: 10px;
-            min-height: 60px;
-            margin-bottom: 10px;
-            word-break: break-all;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            justify-content: flex-end;
         }
         .calc-buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            gap: 16px;
+            padding-top: 60px;
         }
         .calc-btn {
-            height: 60px;
-            width: 60px;
+            height: 90px;
             border-radius: 50%;
-            font-size: 1.7em;
+            font-size: 2em;
             border: none;
             background: #333;
             color: #fff;
@@ -52,10 +52,9 @@
         }
         .calc-btn.zero {
             grid-column: span 2;
-            width: 132px;
-            border-radius: 35px;
+            border-radius: 50px;
             justify-content: flex-start;
-            padding-left: 28px;
+            padding-left: 40px;
         }
         .calc-btn.func {
             background: #a5a5a5;
