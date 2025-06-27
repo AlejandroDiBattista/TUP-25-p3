@@ -8,69 +8,177 @@
     <style>
       body {
         margin: 0;
-        background: #fcd9a0;
-        font-family: sans-serif;
+        background: #f4d5a0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
       }
 
+      .iphone {
+        position: relative;
+        background: white;
+        border-radius: 50px;
+        padding: 10px;
+        width: 380px;
+        height: 740px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+          0 8px 25px rgba(0, 0, 0, 0.2),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      .notch-white {
+        width: 140px;
+        height: 32px;
+        background: white;
+        border-bottom-left-radius: 18px;
+        border-bottom-right-radius: 18px;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
       .phone {
         background: black;
-        border-radius: 40px;
+        border-radius: 42px;
         padding: 20px;
-        width: 300px;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        width: 320px;
+        height: 724px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        margin-top: 0;
       }
 
       .screen {
         color: white;
         text-align: right;
-        font-size: 48px;
-        padding: 20px 10px;
-        min-height: 60px;
+        font-size: 64px;
+        font-weight: 200;
+        padding: 60px 30px 20px 30px;
+        min-height: 120px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        letter-spacing: -2px;
       }
 
       .buttons {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 12px;
+        padding: 0 12px 20px 12px;
       }
 
       .btn {
-        font-size: 24px;
+        font-size: 32px;
+        font-weight: 400;
         border: none;
         border-radius: 50%;
-        padding: 20px;
+        padding: 0;
         cursor: pointer;
         color: white;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        transition: all 0.1s ease;
+      }
+
+      .btn:active {
+        transform: scale(0.95);
       }
 
       .gray {
-        background: #a5a5a5;
+        background: #a6a6a6;
         color: black;
+        font-weight: 500;
       }
 
       .dark {
-        background: #333;
+        background: #333333;
+        color: white;
       }
 
       .orange {
-        background: #ff9500;
+        background: #ff9f0a;
+        color: white;
+        font-weight: 500;
       }
 
       .btn.zero {
         grid-column: span 2;
-        border-radius: 40px;
-        text-align: left;
-        padding-left: 30px;
+        border-radius: 35px;
+        width: 152px;
+        justify-content: flex-start;
+        padding-left: 25px;
+      }
+
+      .btn-power {
+        position: absolute;
+        right: -3px;
+        top: 140px;
+        width: 4px;
+        height: 80px;
+        background: #7a7a7a;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-vol-up {
+        position: absolute;
+        left: -3px;
+        top: 120px;
+        width: 4px;
+        height: 50px;
+        background: #7a7a7a;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-vol-down {
+        position: absolute;
+        left: -3px;
+        top: 180px;
+        width: 4px;
+        height: 50px;
+        background: #7a7a7a;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
       }
     </style>
   </head>
   <body>
-    <div class="phone">
-      <div id="root"></div>
+    <div class="iphone">
+      <div class="notch-white"></div>
+      <div class="btn-power"></div>
+      <div class="btn-vol-up"></div>
+      <div class="btn-vol-down"></div>
+
+      <div class="phone">
+        <div id="root"></div>
+      </div>
     </div>
     <script
       crossorigin
