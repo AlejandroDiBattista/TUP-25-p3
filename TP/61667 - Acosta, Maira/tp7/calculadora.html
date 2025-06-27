@@ -1,32 +1,243 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+body {
+  background-color: #f5d7b3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+.iphone-frame {
+  background: #fff;
+  border-radius: 60px;
+  box-shadow: 0 8px 32px #0002;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.volumen {
+  position: absolute;
+  left: -3px;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 3;
+}
+
+.vol-btn {
+  width: 8px;
+  height: 48px;
+  background: #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0002;
+}
+
+.vol-btn.short {
+  height: 32px;
+}
+
+.power {
+  position: absolute;
+  right: -1px;
+  top: 115px;
+  width: 8px;
+  height: 64px;
+  background: #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0002;
+  z-index: 3;
+}
+
+.notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 38px;
+  background: #fff;
+  border-bottom-left-radius: 28px 18px;
+  border-bottom-right-radius: 28px 18px;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.calculadora {
+  width: 300px;
+  height: 640px; 
+  background-color: black;
+  border-radius: 40px;
+  padding: 20px;
+  font-family: "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.pantalla {
+  color: white;
+  font-size: 64px;
+  text-align: right;
+  height: 110px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.fila {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 24px;
+  border: none;
+  color: white;
+  background-color: #333;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn.operador {
+  background-color: orange;
+}
+
+.btn.cero {
+  width: 130px;
+  border-radius: 35px;
+  text-align: left;
+  padding-left: 24px;
+  justify-content: flex-start;
+}
+
+.btn.otros {
+  background-color: #a5a5a5;
+  color: black;
+}
+
+.icono-signo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 18px;
+}
+
+  </style>
 </head>
 <body>
+  <div class="iphone-frame">
+    <div class="volumen">
+      <div class="vol-btn short"></div>
+      <div class="vol-btn"></div>
+      <div class="vol-btn"></div>
+    </div>
+    <div class="power"></div>
+    <div class="notch"></div>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+  function Calculadora() {
+    const [input, setInput] = useState("");
+
+    const handleClick = (valor) => {
+      if (valor === "=") {
+        try {
+          
+          const expresion = input.replace(/x/g, "*").replace(/÷/g, "/");
+          setInput(eval(expresion).toString());
+        } catch {
+          setInput("Error");
         }
+      } else if (valor === "AC") {
+        setInput("");
+      } else if (valor === "+/-") {
+        if (input) {
+          if (input.startsWith("-")) {
+            setInput(input.slice(1));
+          } else {
+            setInput("-" + input);
+          }
+        }
+      } else if (valor === "%") {
+        if (input) {
+          setInput((parseFloat(input) / 100).toString());
+        }
+      } else {
+        setInput(input + valor);
+      }
+    };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+    const botones = [
+      ["AC", "+/-", "%", "÷"],
+      ["7", "8", "9", "x"],
+      ["4", "5", "6", "-"],
+      ["1", "2", "3", "+"],
+      ["0", ".", "="],
+    ];
+
+    return (
+      <div className="calculadora">
+        <div className="pantalla">{input || "0"}</div>
+        {botones.map((fila, i) => (
+          <div className="fila" key={i}>
+            {fila.map((btn) => (
+              <button
+                key={btn}
+                className={
+                  "btn " +
+                  (["÷", "x", "-", "+", "="].includes(btn) ? "operador" : "") +
+                  (["AC", "+/-", "%"].includes(btn) ? "otros" : "") +
+                  (btn === "0" ? "cero" : "")
+                }
+                onClick={() => handleClick(btn)}
+              >
+                {btn === "+/-" ? (
+                  <span className="icono-signo">
+                    <span>+</span>
+                    <span>−</span>
+                  </span>
+                ) : (
+                  btn
+                )}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(<Calculadora />);
+  </script>
 </body>
 </html>
