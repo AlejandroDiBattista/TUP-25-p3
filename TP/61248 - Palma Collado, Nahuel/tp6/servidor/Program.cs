@@ -183,6 +183,31 @@ app.MapDelete("/api/carritos/{carritoId:int}/{productoId:int}", async (
     return Results.Ok("Producto eliminado :)");
 });
 
+// Endpoint para vaciar el carrito
+app.MapDelete("/api/carritos/{carritoId:int}", async (int carritoId, TiendaDbContext db) =>
+{
+    var carrito = await db.Compras
+        .Include(c => c.ItemsDeCompra)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito is null)
+        return Results.NotFound("Carrito no encontrado :(");
+
+    foreach (var item in carrito.ItemsDeCompra)
+    {
+        if (item.Producto is not null)
+        {
+            item.Producto.Stock += item.Cantidad;
+        }
+    }
+
+    carrito.ItemsDeCompra.Clear();
+    await db.SaveChangesAsync();
+
+    return Results.Ok("¡Carrito vaciado correctamente! :D");
+});
+
 
 
 app.Run();
