@@ -1,32 +1,214 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
 
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora</title>
     <style>
-        /* Poner aca el CSS */
+        body {
+            margin: 0;
+            background: black;
+            font-family: 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .calculadora {
+            width: 320px;
+            padding: 20px;
+        }
+
+        .display {
+            color: white;
+            text-align: right;
+            font-size: 4rem;
+            padding: 0 10px;
+            margin-bottom: 20px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .display::-webkit-scrollbar {
+            display: none;
+        }
+
+        .teclado {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            height: 70px;
+            font-size: 1.8rem;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            background: #333;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .btn:hover {
+            filter: brightness(1.2);
+        }
+
+        .btn.gris-claro {
+            background: #a5a5a5;
+            color: black;
+        }
+
+        .btn.naranja {
+            background: #f09a36;
+        }
+
+        .btn.cero {
+            grid-column: span 2;
+            border-radius: 35px;
+            text-align: left;
+            padding-left: 28px;
+        }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
+
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
+    <script crossorigin
+        src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [valor, setValor] = useState("0");
+            const [nuevaOperacion, setNuevaOperacion] = useState(false);
+
+            // Efecto para hacer scroll hacia la derecha cuando el valor cambia
+            useEffect(() => {
+                const display = document.querySelector('.display');
+                if (display) {
+                    display.scrollLeft = display.scrollWidth;
+                }
+            }, [valor]);
+
+            const presionar = (tecla) => {
+                if (tecla === "AC") {
+                    setValor("0");
+                    setNuevaOperacion(false);
+                } else if (tecla === "+/-") {
+                    setValor((parseFloat(valor) * -1).toString());
+                } else if (tecla === "%") {
+                    setValor((parseFloat(valor) / 100).toString());
+                } else if (tecla === "=") {
+                    try {
+                        const resultado = eval(valor.replace("÷", "/").replace("×", "*"));
+                        setValor(resultado.toString());
+                        setNuevaOperacion(true); // Marcar que se acaba de realizar una operación
+                    } catch {
+                        setValor("Error");
+                        setNuevaOperacion(true);
+                    }
+                } else {
+                    const operadores = ["+", "-", "×", "÷"];
+                    const ultimoCaracter = valor[valor.length - 1];
+                    const esNumero = !isNaN(tecla) && tecla !== ".";
+
+                    // Si acabamos de hacer una operación y presionamos un número, empezar de nuevo
+                    if (nuevaOperacion && esNumero) {
+                        setValor(tecla);
+                        setNuevaOperacion(false);
+                    }
+                    // Si acabamos de hacer una operación y presionamos un operador, continuar con el resultado
+                    else if (nuevaOperacion && operadores.includes(tecla)) {
+                        setValor(valor + tecla);
+                        setNuevaOperacion(false);
+                    }
+                    // Si la tecla es un operador y el último carácter también es un operador, reemplazarlo
+                    else if (operadores.includes(tecla) && operadores.includes(ultimoCaracter)) {
+                        setValor(valor.slice(0, -1) + tecla);
+                    } else if (valor === "0" && !["+", "-", "×", "÷", "."].includes(tecla)) {
+                        setValor(tecla);
+                    } else {
+                        setValor(valor + tecla);
+                    }
+                }
+            };
+
+            // Función para mapear teclas del teclado a teclas de la calculadora
+            const mapearTecla = (key) => {
+                const mapa = {
+                    '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
+                    '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
+                    '+': '+', '-': '-', '*': '×', '/': '÷',
+                    'Enter': '=', '=': '=', '.': '.',
+                    'Escape': 'AC', 'Delete': 'AC', 'Backspace': 'AC',
+                    '%': '%'
+                };
+                return mapa[key] || null;
+            };
+
+            // Event listener para el teclado
+            useEffect(() => {
+                const manejarTeclado = (event) => {
+                    event.preventDefault(); // Prevenir comportamiento por defecto
+                    const teclaCalculadora = mapearTecla(event.key);
+                    if (teclaCalculadora) {
+                        presionar(teclaCalculadora);
+                    }
+                };
+
+                document.addEventListener('keydown', manejarTeclado);
+
+                // Cleanup: remover el event listener cuando el componente se desmonte
+                return () => {
+                    document.removeEventListener('keydown', manejarTeclado);
+                };
+            }, [valor, nuevaOperacion]); // Dependencias para que el useEffect se actualice
+
+            const botones = [
+                { texto: "AC", clase: "gris-claro" },
+                { texto: "+/-", clase: "gris-claro" },
+                { texto: "%", clase: "gris-claro" },
+                { texto: "÷", clase: "naranja" },
+                { texto: "7" }, { texto: "8" }, { texto: "9" }, { texto: "×", clase: "naranja" },
+                { texto: "4" }, { texto: "5" }, { texto: "6" }, { texto: "-", clase: "naranja" },
+                { texto: "1" }, { texto: "2" }, { texto: "3" }, { texto: "+", clase: "naranja" },
+                { texto: "0", clase: "cero" }, { texto: "." }, { texto: "=", clase: "naranja" }
+            ];
+
+            return (
+                <div className="calculadora">
+                    <div className="display">{valor}</div>
+                    <div className="teclado">
+                        {botones.map((btn, i) => (
+                            <button
+                                key={i}
+                                className={`btn ${btn.clase || ""}`}
+                                onClick={() => presionar(btn.texto)}
+                            >
+                                {btn.texto}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
+        const root = ReactDOM.createRoot(document.getElementById("root"));
         root.render(<Calculadora />);
     </script>
 </body>
+
 </html>
