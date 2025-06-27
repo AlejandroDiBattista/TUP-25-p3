@@ -6,6 +6,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
 
+    <style>
+        body {
+    background: #f0f0f0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#root {
+    width: 100vw;
+}
+
+.calculadora {
+    background: #222;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    padding: 32px 24px 24px 24px;
+    width: 290px;
+    margin: auto;
+}
+
+.pantalla {
+    background: #111;
+    color: #0f0;
+    font-size: 2.2rem;
+    border-radius: 8px;
+    padding: 18px 12px;
+    margin-bottom: 18px;
+    text-align: right;
+    min-height: 48px;
+    box-shadow: 0 2px 8px #0002;
+    letter-spacing: 1px;
+    overflow-x: auto;
+}
+
+.teclado {
+    display: grid;
+    grid-template-columns: repeat(4, 60px);
+    gap: 12px;
+}
+
+button {
+    background: #333;
+    color: #fff;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 8px;
+    padding: 18px 0;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 2px 4px #0002;
+}
+
+button:hover {
+    background: #444;
+    transform: scale(1.05);
+}
+
+button:active {
+    background: #555;
+}
+
+button[value="="] {
+    background: #0a7;
+    color: #fff;
+    grid-column: span 4;
+    font-weight: bold;
+}
+
+button[value="C"] {
+    background: #c00;
+    color: #fff;
+}
+
+@media (max-width: 400px) {
+    .calculadora {
+        width: 98vw;
+        padding: 10px;
+    }
+
+    .teclado {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+    }
+}
+    </style>
 </head>
 
 <body>
