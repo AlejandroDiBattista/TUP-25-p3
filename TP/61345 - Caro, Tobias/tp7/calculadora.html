@@ -1,32 +1,193 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
-
-    <style>
-        /* Poner aca el CSS */
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      background: #f9deb3;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .calc-container {
+      background: #000;
+      border-radius: 50px;
+      box-shadow: 0 4px 32px #0002;
+      width: 375px;
+      padding: 80px 22px 40px 22px;
+      box-sizing: border-box;
+    }
+    .calc-display {
+      color: #fff;
+      font-size: 48px;
+      font-weight: 300;
+      text-align: right;
+      min-height: 60px;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+      overflow-x: auto;
+      padding-right: 10px;
+    }
+    .calc-result {
+      color: #fff;
+      font-size: 96px;
+      font-weight: 300;
+      text-align: right;
+      min-height: 100px;
+      letter-spacing: -2px;
+      font-variant-numeric: tabular-nums;
+      overflow-x: auto;
+      padding-right: 10px;
+      margin-bottom: 20px;
+    }
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 72px); 
+      grid-gap: 14px; 
+      justify-content: center;
+    }
+    .btn {
+      width: 72px;
+      height: 72px;
+      border: none;
+      border-radius: 36px;
+      font-size: 32px;
+      font-weight: 400;
+      cursor: pointer;
+      outline: none;
+      transition: filter 0.1s;
+    }
+    .btn:active {
+      filter: brightness(1.2);
+    }
+    .btn.gray {
+      background: #a5a5a5;
+      color: #000;
+    }
+    .btn.orange {
+      background: #ff9f0a;
+      color: #fff;
+    }
+    .btn.dark {
+      background: #333;
+      color: #fff;
+    }
+    .btn.zero {
+      grid-column: span 2;
+      width: auto;
+      text-align: left;
+      padding-left: 30px;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [display, setDisplay] = useState('0');
+      const [displayExpression, setDisplayExpression] = useState('');
+      const [prevValue, setPrevValue] = useState(null);
+      const [operator, setOperator] = useState(null);
+      const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+      const calculate = (primer, segundo, op) => {
+        if (op === '+') return primer + segundo;
+        if (op === '-') return primer - segundo;
+        if (op === '×') return primer * segundo;
+        if (op === '÷') return primer / segundo;
+        if (op === '%') return (primer / 100) * segundo; // x% de y = (x/100) * y
+        return segundo;
+      };
+
+      const handleClick = (valor) => {
+        if (!isNaN(valor) || valor === '.') {
+          let input = valor;
+
+          if (waitingForOperand) {
+            if (valor === '.') {
+              input = '0.';
+            }
+            setDisplay(input);
+            setDisplayExpression(prev => prev + input);
+            setWaitingForOperand(false);
+          } else {
+            if (valor === '.' && display.includes('.')) return;
+            const newDisplay = display === '0' && valor !== '.' ? valor : display + valor;
+            setDisplay(newDisplay);
+            setDisplayExpression(prev => prev.endsWith('=') ? newDisplay : prev + valor);
+          }
+
+        } else if (valor === 'AC') {
+          setDisplay('0');
+          setDisplayExpression('');
+          setPrevValue(null);
+          setOperator(null);
+          setWaitingForOperand(false);
+        } else if (['+', '-', '×', '÷', '%'].includes(valor)) {
+          const currentValue = parseFloat(display);
+          if (prevValue !== null && operator && !waitingForOperand) {
+            const result = calculate(prevValue, currentValue, operator);
+            setDisplay(result.toString());
+            setPrevValue(result);
+            setDisplayExpression(result + ' ' + valor);
+          } else {
+            setPrevValue(currentValue);
+            setDisplayExpression(currentValue + ' ' + valor);
+          }
+          setWaitingForOperand(true);
+          setOperator(valor);
+        } else if (valor === '=') {
+          if (operator && prevValue !== null) {
+            const currentValue = parseFloat(display);
+            const result = calculate(prevValue, currentValue, operator);
+            setDisplay(result.toString());
+            setDisplayExpression(prevValue + ' ' + operator + ' ' + currentValue + ' =');
+            setPrevValue(null);
+            setOperator(null);
+            setWaitingForOperand(true);
+          }
+        } else if (valor === '+/-') {
+          const newValue = (parseFloat(display) * -1).toString();
+          setDisplay(newValue);
+          setDisplayExpression(prev => prev.replace(display, newValue));
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      return (
+        <div className="calc-container">
+          <div className="calc-display">{displayExpression}</div>
+          <div className="calc-result">{display}</div>
+          <div className="calc-buttons">
+            {
+              ['AC', '+/-', '%', '÷', '7', '8', '9', '×', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='].map((b) => {
+                let clase = 'btn ';
+                if (['AC', '+/-', '%'].includes(b)) clase += 'gray';
+                else if (['÷', '×', '-', '+', '='].includes(b)) clase += 'orange';
+                else clase += 'dark';
+                if (b === '0') clase += ' zero';
+                return <button key={b} className={clase} onClick={() => handleClick(b)}>{b}</button>;
+              })
+            }
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
