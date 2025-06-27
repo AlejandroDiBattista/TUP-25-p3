@@ -89,22 +89,54 @@
       function Calculadora() {
         const [input, setInput] = useState("");
 
+        const operadores = ["+", "-", "*", "/", "%"];
+
         const handleClick = (value) => {
           if (value === "AC") {
             setInput("");
-          } else if (value === "=") {
+            return;
+          }
+
+          if (value === "+/-") {
+            if (!input) return;
+            const evalValue = eval(input);
+            setInput((-1 * evalValue).toString());
+            return;
+          }
+
+          if (value === "=") {
             try {
-              setInput(eval(input).toString());
+              if (input.includes("/0")) {
+                const partes = input.split(/([+\-*/])/);
+                for (let i = 0; i < partes.length; i++) {
+                  if (partes[i] === "0" && partes[i - 1] === "/") {
+                    setInput("Error");
+                    return;
+                  }
+                }
+              }
+
+              const resultado = eval(input);
+              setInput(resultado.toString());
             } catch {
               setInput("Error");
             }
-          } else if (value === "+/-") {
-            if (input) {
-              setInput((parseFloat(input) * -1).toString());
-            }
-          } else {
-            setInput((prev) => prev + value);
+            return;
           }
+
+          if (operadores.includes(value)) {
+            const ultimo = input.slice(-1);
+            if (input === "" && value !== "-") return;
+            if (operadores.includes(ultimo)) return;
+          }
+
+          if (value === ".") {
+            const partes = input.split(/[\+\-\*\/]/);
+            const ultimaParte = partes[partes.length - 1];
+            if (ultimaParte.includes(".")) return;
+          }
+
+          setInput((prev) => prev + value);
         };
 
         const botones = [
