@@ -271,6 +271,17 @@
                 ['0', '.', '=']
             ];
 
+            // Calcular el pre-resultado (resultado parcial) solo si la expresión es válida y no termina en operador
+            let preResultado = '';
+            if (expresion && !mostrandoResultado && !['+', '-', '*', '/', '.'].includes(expresion.slice(-1))) {
+                try {
+                    let r = eval(expresion.replace(/%/g, '/100'));
+                    if (typeof r === 'number' && !isNaN(r) && isFinite(r)) {
+                        preResultado = r;
+                    }
+                } catch {}
+            }
+
             return (
                 <div className="calc-container">
                     <div className="calc-notch"></div>
