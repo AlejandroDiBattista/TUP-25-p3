@@ -1,32 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
 </head>
+
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
+    <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
+    <script crossorigin
+        src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
+    <link rel="stylesheet" href="style.css">
     <script type="text/babel">
         const { useState, useEffect } = React;
+        const botones = [
+            "7", "8", "9", "/",
+            "4", "5", "6", "*",
+            "1", "2", "3", "-",
+            "0", ".", "C", "+",
+            "="
+        ];
+        // function Calculadora() {
+        //     // Poner aca el JavaScript
+        //     return <h1><center>1+2=?</center></h1>;
+        // }
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Boton({ valor, manejarClick }) {
+            // Se agrega value para estilos CSS
+            return <button value={valor} onClick={() => manejarClick(valor)}>{valor}</button>;
         }
+
+        function Calculadora() {
+            const [input, setInput] = useState("");
+
+            const manejarClick = (valor) => {
+                if (valor === "C") return setInput("");
+                if (valor === "=") {
+                    try {
+                        setInput(eval(input));
+                    } catch {
+                        setInput("Error");
+                    }
+                    return;
+                }
+                setInput((prev) => prev + valor);
+            };
+
+            return (
+                <div className="calculadora">
+                    <div className="pantalla">{input || "0"}</div>
+                    <div className="teclado">
+                        {botones.map((valor, i) => (
+                            <Boton key={i} valor={valor} manejarClick={manejarClick} />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<Calculadora />);
     </script>
 </body>
+
 </html>
