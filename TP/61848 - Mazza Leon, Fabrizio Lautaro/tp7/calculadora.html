@@ -3,14 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+    <title>Calculadora en React</title>
 
     <style>
-        /* Poner aca el CSS */
+        body {
+            background: #f8e1bb;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .notch {
+            position: absolute;
+            top: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 230px;
+            height: 38px;
+            background: #fff;
+            border-bottom-left-radius: 100px 100px;
+            border-bottom-right-radius: 100px 100px;
+            border-top-left-radius: 10px 10px;
+            border-top-right-radius: 38px 38px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        #root-wrapper {
+            position: relative;
+            width: 414px;
+            height: 896px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #root {
+            position: relative;
+            width: 414px;
+            height: 896px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .calc-container {
+            background: #fff;
+            border-radius: 60px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.15);
+            padding: 0;
+            width: 375px;
+            height: 812px;
+            margin: 0;
+            position: relative;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            border: 12px solid #fff;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .calc-inner {
+            background: #111;
+            border-radius: 48px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 20px 32px 20px;
+            box-sizing: border-box;
+        }
+        .calc-display {
+            color: #fff;
+            font-size: 84px;
+            text-align: right;
+            padding: 56px 8px 32px 8px;
+            min-height: 120px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-weight: 600;
+            letter-spacing: 2px;
+            overflow-x: auto;
+        }
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .btn {
+            height: 76px;
+            font-size: 2.2rem;
+            border: none;
+            border-radius: 50%;
+            background: #353434;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            outline: none;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn:active {
+            background: #333;
+        }
+        .btn.gray {
+            background: #a5a5a5;
+            color: #111;
+            font-weight: 700;
+        }
+        .btn.orange {
+            background: #ff9f0a;
+            color: #fff;
+            font-weight: 700;
+        }
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 38px;
+            text-align: left;
+            padding-left: 38px;
+            justify-content: flex-start;
+        }
+        @media (max-width: 400px) {
+            .calc-container {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+        <div id="root-wrapper">
+            <div class="notch"></div>
+            <div id="root"></div>
+        </div>
 <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -20,9 +151,188 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [operando, setOperando] = useState(null);
+            const [operador, setOperador] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+            const [expresion, setExpresion] = useState('');
+            const [modoPorcentaje, setModoPorcentaje] = useState(false);
+            const [porcentajeValor, setPorcentajeValor] = useState(null);
+
+            const operadorAMostrar = {
+                '+': '+',
+                '-': '-',
+                '*': '×',
+                '/': '÷'
+            };
+
+            const botones = [
+                { label: 'AC', type: 'gray', onClick: () => limpiar() },
+                { label: '+/-', type: 'gray', onClick: () => cambiarSigno() },
+                { label: '%', type: 'gray', onClick: () => porcentaje() },
+                { label: '÷', type: 'orange', onClick: () => clickOperador('/') },
+                { label: '7', onClick: () => clickNumero('7') },
+                { label: '8', onClick: () => clickNumero('8') },
+                { label: '9', onClick: () => clickNumero('9') },
+                { label: '×', type: 'orange', onClick: () => clickOperador('*') },
+                { label: '4', onClick: () => clickNumero('4') },
+                { label: '5', onClick: () => clickNumero('5') },
+                { label: '6', onClick: () => clickNumero('6') },
+                { label: '-', type: 'orange', onClick: () => clickOperador('-') },
+                { label: '1', onClick: () => clickNumero('1') },
+                { label: '2', onClick: () => clickNumero('2') },
+                { label: '3', onClick: () => clickNumero('3') },
+                { label: '+', type: 'orange', onClick: () => clickOperador('+') },
+                { label: '0', className: 'zero', onClick: () => clickNumero('0') },
+                { label: '.', onClick: () => clickPunto() },
+                { label: '=', type: 'orange', onClick: () => calcular() },
+            ];
+
+            function clickNumero(num) {
+                if (display.length > 10) return;
+                if (esperandoNuevo) {
+                    setDisplay(num);
+                    setEsperandoNuevo(false);
+                    if (modoPorcentaje) {
+                        setExpresion((porcentajeValor !== null ? String(porcentajeValor) : '') + '%' + num);
+                    } else if (operador) {
+                        setExpresion((operando !== null ? String(operando) : '') + (operadorAMostrar[operador] || '') + num);
+                    } else {
+                        setExpresion(num);
+                    }
+                } else if (modoPorcentaje) {
+                    setDisplay(display === '0' ? num : display + num);
+                    setExpresion((porcentajeValor !== null ? String(porcentajeValor) : '') + '%' + (display === '0' ? num : display + num));
+                } else {
+                    setDisplay(display === '0' ? num : display + num);
+                    if (operador && operando !== null) {
+                        setExpresion((operando !== null ? String(operando) : '') + (operadorAMostrar[operador] || '') + (display === '0' ? num : display + num));
+                    } else {
+                        setExpresion(display === '0' ? num : display + num);
+                    }
+                }
+            }
+
+            function clickPunto() {
+                if (esperandoNuevo) {
+                    setDisplay('0.');
+                    setEsperandoNuevo(false);
+                    if (modoPorcentaje) {
+                        setExpresion((porcentajeValor !== null ? String(porcentajeValor) : '') + '%' + '0.');
+                    } else if (operador) {
+                        setExpresion((operando !== null ? String(operando) : '') + (operadorAMostrar[operador] || '') + '0.');
+                    } else {
+                        setExpresion('0.');
+                    }
+                } else if (modoPorcentaje) {
+                    if (!display.includes('.')) {
+                        setDisplay(display + '.');
+                        setExpresion((porcentajeValor !== null ? String(porcentajeValor) : '') + '%' + display + '.');
+                    }
+                } else if (!display.includes('.')) {
+                    setDisplay(display + '.');
+                    if (operador && operando !== null) {
+                        setExpresion((operando !== null ? String(operando) : '') + (operadorAMostrar[operador] || '') + display + '.');
+                    } else {
+                        setExpresion(display + '.');
+                    }
+                }
+            }
+
+            function limpiar() {
+                setDisplay('0');
+                setOperando(null);
+                setOperador(null);
+                setEsperandoNuevo(false);
+                setExpresion('');
+                setModoPorcentaje(false);
+                setPorcentajeValor(null);
+            }
+
+            function cambiarSigno() {
+                setDisplay((prev) =>
+                    prev === '0' ? '0' : prev.startsWith('-') ? prev.slice(1) : '-' + prev
+                );
+                setExpresion((prev) =>
+                    prev === '0' ? '0' : prev && prev.startsWith('-') ? prev.slice(1) : '-' + prev
+                );
+            }
+
+            function porcentaje() {
+                setPorcentajeValor(parseFloat(display));
+                setModoPorcentaje(true);
+                setEsperandoNuevo(true);
+                setExpresion(display + '%');
+            }
+
+            function clickOperador(op) {
+                if (modoPorcentaje) {
+                    return;
+                }
+                if (operador && !esperandoNuevo) {
+                    calcular(true, op);
+                } else {
+                    setOperando(parseFloat(display));
+                    setOperador(op);
+                    setEsperandoNuevo(true);
+                    setExpresion(display + (operadorAMostrar[op] || op));
+                }
+            }
+
+            function calcular(keepOp = false, nextOp = null) {
+                if (modoPorcentaje && porcentajeValor !== null && !esperandoNuevo) {
+                    const base = parseFloat(display);
+                    const resultado = base * (porcentajeValor / 100);
+                    setDisplay(String(resultado).length > 10 ? String(resultado).slice(0, 10) : String(resultado));
+                    setOperando(null);
+                    setOperador(null);
+                    setEsperandoNuevo(true);
+                    setExpresion('');
+                    setModoPorcentaje(false);
+                    setPorcentajeValor(null);
+                } else if (operador && operando !== null && !esperandoNuevo) {
+                    let resultado = 0;
+                    const actual = parseFloat(display);
+                    switch (operador) {
+                        case '+': resultado = operando + actual; break;
+                        case '-': resultado = operando - actual; break;
+                        case '*': resultado = operando * actual; break;
+                        case '/': resultado = actual === 0 ? 'Error' : operando / actual; break;
+                        default: resultado = actual;
+                    }
+                    setDisplay(String(resultado).length > 10 ? String(resultado).slice(0, 10) : String(resultado));
+                    setOperando(null);
+                    setOperador(null);
+                    setEsperandoNuevo(true);
+                    setExpresion('');
+                    if (keepOp && nextOp) {
+                        setOperando(resultado);
+                        setOperador(nextOp);
+                        setEsperandoNuevo(true);
+                        setExpresion(String(resultado) + (operadorAMostrar[nextOp] || nextOp));
+                    }
+                }
+            }
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-inner">
+                        <div className="calc-display">{expresion || display}</div>
+                        <div className="calc-buttons">
+                            {botones.map((btn, i) => (
+                                <button
+                                    key={i}
+                                    className={`btn${btn.type ? ' ' + btn.type : ''}${btn.className ? ' ' + btn.className : ''}`}
+                                    onClick={btn.onClick}
+                                >
+                                    {btn.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
