@@ -7,10 +7,165 @@
 
     <style>
         /* Poner aca el CSS */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .phone-frame {
+            width: 280px;
+            height: 540px;
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            border-radius: 45px;
+            padding: 8px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .phone-inner {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 37px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-inner::before {
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #ffffff;
+            border-radius: 0 0 15px 15px;
+            z-index: 10;
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #ffffff;
+            border-radius: 0 0 15px 15px;
+            z-index: 15;
+        }
+
+        .calculator {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding-top: 70px;
+            position: relative;
+        }
+
+        .display {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 15px 20px 20px 15px;
+            color: white;
+            font-size: 60px;
+            font-weight: 300;
+            overflow: hidden;
+            word-break: keep-all;
+            white-space: nowrap;
+            text-align: right;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .buttons {
+            height: 320px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 18px 18px 15px 18px;
+            place-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-gray {
+            background: #a6a6a6;
+            color: #000;
+        }
+
+        .btn-gray:hover {
+            background: #bfbfbf;
+        }
+
+        .btn-dark {
+            background: #333;
+            color: white;
+        }
+
+        .btn-dark:hover {
+            background: #4d4d4d;
+        }
+
+        .btn-orange {
+            background: #ff9500;
+            color: white;
+        }
+
+        .btn-orange:hover {
+            background: #ffad33;
+        }
+
+        .btn-orange.active {
+            background: white;
+            color: #ff9500;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+            width: 112px;
+            height: 50px;
+            border-radius: 25px;
+            text-align: left;
+            padding-left: 20px;
+            display: flex;
+            align-items: center;
+            justify-self: start;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="phone-frame">
+        <div class="phone-inner">
+            <div class="notch"></div>
+            <div id="root"></div>
+        </div>
+    </div>
 <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -22,7 +177,121 @@
 
         function Calculadora(){
             // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+            const [display, setDisplay] = useState('0');
+            const [previousValue, setPreviousValue] = useState(null);
+            const [operation, setOperation] = useState(null);
+            const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+            const inputNumber = (num) => {
+                if (waitingForOperand) {
+                    setDisplay(String(num));
+                    setWaitingForOperand(false);
+                } else {
+                    setDisplay(display === '0' ? String(num) : display + num);
+                }
+            };
+
+            const inputDecimal = () => {
+                if (waitingForOperand) {
+                    setDisplay('0.');
+                    setWaitingForOperand(false);
+                } else if (display.indexOf('.') === -1) {
+                    setDisplay(display + '.');
+                }
+            };
+
+            const clear = () => {
+                setDisplay('0');
+                setPreviousValue(null);
+                setOperation(null);
+                setWaitingForOperand(false);
+            };
+
+            const performOperation = (nextOperation) => {
+                const inputValue = parseFloat(display);
+
+                if (previousValue === null) {
+                    setPreviousValue(inputValue);
+                } else if (operation) {
+                    const currentValue = previousValue || 0;
+                    const newValue = calculate(currentValue, inputValue, operation);
+
+                    setDisplay(String(newValue));
+                    setPreviousValue(newValue);
+                }
+
+                setWaitingForOperand(true);
+                setOperation(nextOperation);
+            };
+
+            const calculate = (firstValue, secondValue, operation) => {
+                switch (operation) {
+                    case '+':
+                        return firstValue + secondValue;
+                    case '-':
+                        return firstValue - secondValue;
+                    case '×':
+                        return firstValue * secondValue;
+                    case '÷':
+                        return firstValue / secondValue;
+                    case '=':
+                        return secondValue;
+                    default:
+                        return secondValue;
+                }
+            };
+
+            const percentage = () => {
+                const value = parseFloat(display);
+                setDisplay(String(value / 100));
+            };
+
+            const toggleSign = () => {
+                const value = parseFloat(display);
+                setDisplay(String(value * -1));
+            };
+
+            const getFontSize = () => {
+                if (display.length > 10) return '25px';
+                if (display.length > 9) return '30px';
+                if (display.length > 8) return '35px';
+                if (display.length > 7) return '40px';
+                if (display.length > 6) return '50px';
+                return '60px';
+            };
+
+            return (
+                <div className="calculator">
+                    <div className="display" style={{ fontSize: getFontSize() }}>
+                        {display}
+                    </div>
+                    <div className="buttons">
+                        <button className="btn btn-gray" onClick={clear}>AC</button>
+                        <button className="btn btn-gray" onClick={toggleSign}>+/-</button>
+                        <button className="btn btn-gray" onClick={percentage}>%</button>
+                        <button className={`btn btn-orange ${operation === '÷' ? 'active' : ''}`} onClick={() => performOperation('÷')}>÷</button>
+                        
+                        <button className="btn btn-dark" onClick={() => inputNumber(7)}>7</button>
+                        <button className="btn btn-dark" onClick={() => inputNumber(8)}>8</button>
+                        <button className="btn btn-dark" onClick={() => inputNumber(9)}>9</button>
+                        <button className={`btn btn-orange ${operation === '×' ? 'active' : ''}`} onClick={() => performOperation('×')}>×</button>
+                        
+                        <button className="btn btn-dark" onClick={() => inputNumber(4)}>4</button>
+                        <button className="btn btn-dark" onClick={() => inputNumber(5)}>5</button>
+                        <button className="btn btn-dark" onClick={() => inputNumber(6)}>6</button>
+                        <button className={`btn btn-orange ${operation === '-' ? 'active' : ''}`} onClick={() => performOperation('-')}>−</button>
+                        
+                        <button className="btn btn-dark" onClick={() => inputNumber(1)}>1</button>
+                        <button className="btn btn-dark" onClick={() => inputNumber(2)}>2</button>
+                        <button className="btn btn-dark" onClick={() => inputNumber(3)}>3</button>
+                        <button className={`btn btn-orange ${operation === '+' ? 'active' : ''}`} onClick={() => performOperation('+')}>+</button>
+                        
+                        <button className="btn btn-dark btn-zero" onClick={() => inputNumber(0)}>0</button>
+                        <button className="btn btn-dark" onClick={inputDecimal}>.</button>
+                        <button className="btn btn-orange" onClick={() => performOperation('=')}>=</button>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
