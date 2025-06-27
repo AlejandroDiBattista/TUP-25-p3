@@ -1,32 +1,201 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
-
-    <style>
-        /* Poner aca el CSS */
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora React - Estilo iOS</title>
+  <!-- React y ReactDOM via CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel para JSX en el navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f5d29a;
+      font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    /* Simulación de teléfono con notch y bordes redondeados */
+    .phone {
+      position: relative;
+      width: 320px;
+      height: 640px;
+      background: #fff;
+      border-radius: 50px;
+      padding: 12px;
+      box-shadow: inset 0 0 0 8px #fff, 0 10px 40px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      z-index: 2;
+    }
+    /* Área de la calculadora */
+    .calculator {
+      background: #000;
+      flex: 1;
+      border-radius: 30px;
+      margin-top: 20px;
+      padding: 20px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Display numérico */
+    .display {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      font-size: 72px;
+      padding-right: 16px;
+      line-height: 1;
+      word-break: break-all;
+    }
+    /* Rejilla de botones */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 68px;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    /* Botones */
+    .btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      border: none;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn:active {
+      transform: scale(0.95);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+    }
+    /* Tipos de botón */
+    .btn.digit {
+      background: #333;
+      color: #fff;
+      border-radius: 34px;
+      box-shadow: 0 4px 0 rgb(0 0 0 / 20%);
+    }
+    .btn.zero {
+      grid-column: span 2;
+      background: #333;
+      color: #fff;
+      border-radius: 34px;
+      justify-content: flex-start;
+      padding-left: 30px;
+      box-shadow: 0 4px 0 rgb(0 0 0 / 20%);
+    }
+    .btn.gray {
+      background: #a5a5a5;
+      color: #000;
+      border-radius: 34px;
+      box-shadow: 0 4px 0 rgb(0 0 0 / 20%);
+    }
+    .btn.orange {
+      background: #ff9500;
+      color: #fff;
+      border-radius: 34px;
+      box-shadow: 0 4px 0 rgb(0 0 0 / 20%);
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+    const BUTTONS = [
+      ['AC', '+/-', '%', '÷'],
+      ['7', '8', '9', '×'],
+      ['4', '5', '6', '-'],
+      ['1', '2', '3', '+'],
+      ['0', '.', '='],
+    ];
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    function Calculator() {
+      const [display, setDisplay] = useState('0');
+      const [prev, setPrev] = useState(null);
+      const [op, setOp] = useState(null);
+      const [overwrite, setOverwrite] = useState(true);
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+      const handleNumber = val => {
+        if (overwrite) {
+          setDisplay(val === '.' ? '0.' : val);
+          setOverwrite(false);
+        } else if (!(val === '.' && display.includes('.'))) {
+          setDisplay(display + val);
         }
+      };
+      const compute = () => {
+        const curr = parseFloat(display);
+        switch (op) {
+          case '+': return prev + curr;
+          case '-': return prev - curr;
+          case '×': return prev * curr;
+          case '÷': return prev / curr;
+          default: return curr;
+        }
+      };
+      const handleOperator = operator => {
+        if (operator === 'AC') {
+          setDisplay('0'); setPrev(null); setOp(null); setOverwrite(true); return;
+        }
+        if (operator === '+/-') { setDisplay((parseFloat(display) * -1).toString()); return; }
+        if (operator === '%') { setDisplay((parseFloat(display) / 100).toString()); return; }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+        if (prev == null) setPrev(parseFloat(display));
+        else if (op) {
+          const res = compute();
+          setDisplay(res.toString()); setPrev(res);
+        }
+        setOp(operator === '=' ? null : operator);
+        setOverwrite(true);
+      };
+      const onClick = txt => ['AC','+/-','%','÷','×','-','+','='].includes(txt)
+        ? handleOperator(txt) : handleNumber(txt);
+
+      return (
+        <div className="calculator">
+          <div className="display">{display}</div>
+          <div className="buttons">
+            {BUTTONS.flat().map((txt, i) => {
+              const isZero = txt === '0';
+              const type = ['÷','×','-','+','='].includes(txt)
+                ? 'orange' : ['AC','+/-','%'].includes(txt)
+                ? 'gray' : 'digit';
+              return (
+                <button
+                  key={i}
+                  className={`btn ${type} ${isZero ? 'zero' : ''}`}
+                  onClick={() => onClick(txt)}
+                >{txt}</button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<div className="phone"><Calculator /></div>);
+  </script>
 </body>
 </html>
