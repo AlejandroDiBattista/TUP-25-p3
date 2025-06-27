@@ -1,32 +1,155 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      background-color: #000;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    .calculadora {
+      width: 300px;
+    }
+
+    .pantalla {
+      background-color: #000;
+      color: #fff;
+      text-align: right;
+      padding: 20px;
+      font-size: 2em;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .teclas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      font-size: 1.5em;
+      padding: 20px;
+      border: none;
+      border-radius: 50%;
+      background-color: #333;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .gris { background-color: #a5a5a5; color: #000; }
+    .naranja { background-color: #f69906; }
+    .cero { grid-column: span 2; border-radius: 30px; text-align: left; padding-left: 30px; }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [pantalla, setPantalla] = useState("0");
+      const [operador, setOperador] = useState("");
+      const [acumulador, setAcumulador] = useState(null);
+      const [reiniciar, setReiniciar] = useState(false);
+
+      const escribir = (valor) => {
+        if (pantalla === "0" || reiniciar) {
+          setPantalla(valor);
+          setReiniciar(false);
+        } else {
+          setPantalla(pantalla + valor);
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      const operar = (op) => {
+        setAcumulador(parseFloat(pantalla));
+        setOperador(op);
+        setReiniciar(true);
+      };
+
+      const calcular = () => {
+        if (operador && acumulador != null) {
+          const actual = parseFloat(pantalla);
+          let resultado = 0;
+
+          switch (operador) {
+            case "+": resultado = acumulador + actual; break;
+            case "-": resultado = acumulador - actual; break;
+            case "*": resultado = acumulador * actual; break;
+            case "/": resultado = actual !== 0 ? acumulador / actual : "Error"; break;
+            default: break;
+          }
+
+          setPantalla(resultado.toString());
+          setOperador("");
+          setAcumulador(null);
+          setReiniciar(true);
+        }
+      };
+
+      const limpiar = () => {
+        setPantalla("0");
+        setOperador("");
+        setAcumulador(null);
+      };
+
+      const borrar = () => {
+        setPantalla(pantalla.length > 1 ? pantalla.slice(0, -1) : "0");
+      };
+
+      const porcentaje = () => {
+        setPantalla((parseFloat(pantalla) / 100).toString());
+      };
+
+      return (
+        <div className="calculadora">
+          <input className="pantalla" value={pantalla} disabled />
+          <div className="teclas">
+            <button className="gris" onClick={limpiar}>AC</button>
+            <button className="gris" onClick={porcentaje}>%</button>
+            <button className="gris" onClick={borrar}>⌫</button>
+            <button className="naranja" onClick={() => operar("/")}>÷</button>
+
+            <button onClick={() => escribir("7")}>7</button>
+            <button onClick={() => escribir("8")}>8</button>
+            <button onClick={() => escribir("9")}>9</button>
+            <button className="naranja" onClick={() => operar("*")}>×</button>
+
+            <button onClick={() => escribir("4")}>4</button>
+            <button onClick={() => escribir("5")}>5</button>
+            <button onClick={() => escribir("6")}>6</button>
+            <button className="naranja" onClick={() => operar("-")}>−</button>
+
+            <button onClick={() => escribir("1")}>1</button>
+            <button onClick={() => escribir("2")}>2</button>
+            <button onClick={() => escribir("3")}>3</button>
+            <button className="naranja" onClick={() => operar("+")}>+</button>
+
+            <button className="cero" onClick={() => escribir("0")}>0</button>
+            <button onClick={() => escribir(".")}>.</button>
+            <button className="naranja" onClick={calcular}>=</button>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
