@@ -44,6 +44,7 @@ app.MapGet("/", () => "Servidor API está en funcionamiento");
 // Ejemplo de endpoint de API
 app.MapGet("/api/datos", () => new { Mensaje = "Datos desde el servidor", Fecha = DateTime.Now });
 
+// Endpoint para productos con búsqueda 
 app.MapGet("/api/productos", async (TiendaDbContext db, string? busqueda) =>
 {
     var query = db.Productos.AsQueryable();
@@ -58,6 +59,7 @@ app.MapGet("/api/productos", async (TiendaDbContext db, string? busqueda) =>
     return Results.Ok(productos);
 });
 
+// Endpoint para crear un nuevo carrito
 app.MapPost("/api/carritos", async (TiendaDbContext db) =>
 {
     var nuevaCompra = new Compra
@@ -71,6 +73,7 @@ app.MapPost("/api/carritos", async (TiendaDbContext db) =>
     return Results.Ok(new { CarritoId = nuevaCompra.Id });
 });
 
+// Endpoint para obtener el contenido de un carrito
 app.MapGet("/api/carritos/{carritoId}", async (int carritoId, TiendaDbContext db) =>
 {
     var compra = await db.Compras
@@ -79,7 +82,7 @@ app.MapGet("/api/carritos/{carritoId}", async (int carritoId, TiendaDbContext db
         .FirstOrDefaultAsync(c => c.Id == carritoId);
 
     if (compra is null)
-        return Results.NotFound("Carrito no encontrado.");
+        return Results.NotFound("Carrito no encontrado :(");
 
     var resultado = compra.ItemsDeCompra.Select(item => new
     {
@@ -91,6 +94,53 @@ app.MapGet("/api/carritos/{carritoId}", async (int carritoId, TiendaDbContext db
     });
 
     return Results.Ok(resultado);
+});
+
+// Endpoint para interactuar con los productos del carrito
+app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}", async (
+    int carritoId,
+    int productoId,
+    TiendaDbContext db) =>
+{
+    var carrito = await db.Compras
+        .Include(c => c.ItemsDeCompra)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito is null)
+        return Results.NotFound("Carrito no encontrado :(");
+
+    var producto = await db.Productos.FindAsync(productoId);
+
+    if (producto is null)
+        return Results.NotFound("Producto no encontrado :(");
+
+    if (producto.Stock < 1)
+        return Results.BadRequest("No hay stock disponible :(");
+
+    var itemExistente = carrito.ItemsDeCompra.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (itemExistente is not null)
+    {
+        if (producto.Stock < itemExistente.Cantidad + 1)
+            return Results.BadRequest("¡No hay más stock!");
+
+        itemExistente.Cantidad += 1;
+    }
+    else
+    {
+        carrito.ItemsDeCompra.Add(new ItemDeCompra
+        {
+            ProductoId = productoId,
+            Cantidad = 1,
+            PrecioUnitario = producto.Precio
+        });
+    }
+
+    producto.Stock -= 1;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok("Producto agregado al carrito :D");
 });
 
 
