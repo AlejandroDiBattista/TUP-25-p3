@@ -6,23 +6,206 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap');
+
+        body {
+            background-color: #333; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .calculator {
+            width: 320px;
+            border-radius: 40px;
+            background-color: #000;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .display {
+            color: white;
+            font-size: 80px;
+            font-weight: 300;
+            text-align: right;
+            padding: 20px 10px;
+            height: 100px;
+            box-sizing: border-box;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            background-color: #333;
+            color: white;
+            font-size: 32px;
+            border: none;
+            border-radius: 50%;
+            height: 70px;
+            width: 70px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .btn:active {
+            filter: brightness(1.5);
+        }
+
+        .btn.operator {
+            background-color: #f1a33c;
+        }
+
+        .btn.special {
+            background-color: #a5a5a5;
+            color: black;
+        }
+
+        .btn.zero {
+            grid-column: span 2;
+            width: 152px; /* (70 * 2) + 12 */
+            border-radius: 35px;
+            justify-content: flex-start;
+            padding-left: 28px;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            
+            // 1. ESTADO: Variables para guardar la información
+            const [displayValue, setDisplayValue] = useState('0'); 
+            const [firstOperand, setFirstOperand] = useState( null); 
+            const [operator, setOperator] = useState(null); 
+            const [waitingForSecondOperand, setWaitingForSecondOperand] = useState(false);
+
+            const inputDigit = (digit) => {
+                if (waitingForSecondOperand) {
+                    setDisplayValue(String(digit));
+                    setWaitingForSecondOperand(false);
+                } else {
+                    setDisplayValue(displayValue === '0' ? String(digit) : displayValue + digit);
+                }
+            };
+
+            const inputDecimal = () => {
+                if (!displayValue.includes('.')) {
+                    setDisplayValue(displayValue + '.');
+                }
+            };
+
+            const handleOperator = (nextOperator) => {
+                const inputValue = parseFloat(displayValue);
+                console.log("El valor que agarramos es: ", inputValue);
+                if (operator && waitingForSecondOperand)  {
+                    setOperator(nextOperator);
+                    return;
+                }else{
+                    
+                }
+                        
+                if (firstOperand === null) {
+                    setFirstOperand(inputValue);
+                } else if (operator) {
+                    const result = performCalculation();
+                    setDisplayValue(String(result));
+                    setFirstOperand(result);
+                }
+
+                setWaitingForSecondOperand(true);
+                setOperator(nextOperator);
+            };
+
+            const performCalculation = () => {
+                if (firstOperand == null || operator == null) return parseFloat(displayValue);
+                
+                const secondOperand = parseFloat(displayValue);
+                let result = 0;
+                switch (operator) {
+                    case '+': result = firstOperand + secondOperand; break;
+                    case '-': result = firstOperand - secondOperand; break;
+                    case '*': result = firstOperand * secondOperand; break;
+                    case '/': result = firstOperand / secondOperand; break;
+                    default: result = secondOperand;
+                }
+                
+
+
+
+                return Number(result.toPrecision(15));
+            };
+
+            const resetCalculator = () => {
+                setDisplayValue('0');
+                setFirstOperand(null);
+                setOperator(null);
+                setWaitingForSecondOperand(false);
+            };
+            
+            const toggleSign = () => {
+                setDisplayValue(String(parseFloat(displayValue) * -1));
+            }
+
+            const inputPercent = () => {
+                 setDisplayValue(String(parseFloat(displayValue) / 100));
+            }
+
+
+            return (
+                <div className="calculator">
+                    <div className="display">{displayValue}</div>
+                    <div className="buttons">
+                        {/* Fila 1 */}
+                        <button className="btn special" onClick={resetCalculator}>AC</button>
+                        <button className="btn special" onClick={toggleSign}>+/-</button>
+                        <button className="btn special" onClick={inputPercent}>%</button>
+                        <button className="btn operator" onClick={() => handleOperator('/')}>÷</button>
+
+                        {/* Fila 2 */}
+                        <button className="btn" onClick={() => inputDigit(7)}>7</button>
+                        <button className="btn" onClick={() => inputDigit(8)}>8</button>
+                        <button className="btn" onClick={() => inputDigit(9)}>9</button>
+                        <button className="btn operator" onClick={() => handleOperator('*')}>×</button>
+
+                        {/* Fila 3 */}
+                        <button className="btn" onClick={() => inputDigit(4)}>4</button>
+                        <button className="btn" onClick={() => inputDigit(5)}>5</button>
+                        <button className="btn" onClick={() => inputDigit(6)}>6</button>
+                        <button className="btn operator" onClick={() => handleOperator('-')}>−</button>
+
+                        {/* Fila 4 */}
+                        <button className="btn" onClick={() => inputDigit(1)}>1</button>
+                        <button className="btn" onClick={() => inputDigit(2)}>2</button>
+                        <button className="btn" onClick={() => inputDigit(3)}>3</button>
+                        <button className="btn operator" onClick={() => handleOperator('+')}>+</button>
+
+                        {/* Fila 5 */}
+                        <button className="btn zero" onClick={() => inputDigit(0)}>0</button>
+                        <button className="btn" onClick={inputDecimal}>.</button>
+                        <button className="btn operator" onClick={() => handleOperator('=')}>=</button>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
