@@ -143,5 +143,46 @@ app.MapPut("/api/carritos/{carritoId:int}/{productoId:int}", async (
     return Results.Ok("Producto agregado al carrito :D");
 });
 
+// Endpoint para eliminar un producto del carrito o reducir su cantidad
+app.MapDelete("/api/carritos/{carritoId:int}/{productoId:int}", async (
+    int carritoId,
+    int productoId,
+    TiendaDbContext db) =>
+{
+    var carrito = await db.Compras
+        .Include(c => c.ItemsDeCompra)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (carrito is null)
+        return Results.NotFound("Carrito no encontrado :(");
+
+    var item = carrito.ItemsDeCompra.FirstOrDefault(i => i.ProductoId == productoId);
+
+    if (item is null)
+        return Results.NotFound("El producto no está en el carrito :(");
+
+    var producto = await db.Productos.FindAsync(productoId);
+
+    if (producto is null)
+        return Results.NotFound("Producto no encontrado en el inventario.");
+
+    // Aumento en el stock porque vuelve al inventario
+    producto.Stock += 1;
+
+    if (item.Cantidad > 1)
+    {
+        item.Cantidad -= 1;
+    }
+    else
+    {
+        carrito.ItemsDeCompra.Remove(item);
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok("Producto eliminado :)");
+});
+
+
 
 app.Run();
