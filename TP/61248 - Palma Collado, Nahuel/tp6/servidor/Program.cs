@@ -68,7 +68,30 @@ app.MapPost("/api/carritos", async (TiendaDbContext db) =>
     db.Compras.Add(nuevaCompra);
     await db.SaveChangesAsync();
 
-    return Results.Ok(new {CarritoId = nuevaCompra.Id});
+    return Results.Ok(new { CarritoId = nuevaCompra.Id });
 });
+
+app.MapGet("/api/carritos/{carritoId}", async (int carritoId, TiendaDbContext db) =>
+{
+    var compra = await db.Compras
+        .Include(c => c.ItemsDeCompra)
+        .ThenInclude(i => i.Producto)
+        .FirstOrDefaultAsync(c => c.Id == carritoId);
+
+    if (compra is null)
+        return Results.NotFound("Carrito no encontrado.");
+
+    var resultado = compra.ItemsDeCompra.Select(item => new
+    {
+        item.ProductoId,
+        Nombre = item.Producto!.Nombre,
+        PrecioUnitario = item.PrecioUnitario,
+        Cantidad = item.Cantidad,
+        Importe = item.PrecioUnitario * item.Cantidad
+    });
+
+    return Results.Ok(resultado);
+});
+
 
 app.Run();
