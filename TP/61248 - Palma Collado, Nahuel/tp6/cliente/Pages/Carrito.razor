@@ -1,0 +1,155 @@
+@page "/carrito"
+@inject cliente.Services.CarritoService CarritoService
+
+<div class="text-center py-3 mb-4" style="background: linear-gradient(90deg, #2ecc40, #27ae60); border-radius: 1rem;">
+    <h1 style="color: #fff; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px 8px #1a4d1a;">
+        🛒 Tu Carrito
+    </h1>
+</div>
+
+@if (cargando)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-success" role="status"></div>
+        <p class="mt-3">Cargando carrito...</p>
+    </div>
+}
+else if (items is null || !items.Any())
+{
+    <div class="alert alert-warning text-center mt-5">No hay productos en tu carrito.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle shadow-sm rounded-4 overflow-hidden border border-success bg-white">
+            <thead class="table-success">
+                <tr>
+                    <th class="text-success">Producto</th>
+                    <th class="text-success">Precio</th>
+                    <th class="text-success">Cantidad</th>
+                    <th class="text-success">Subtotal</th>
+                    <th class="text-success text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td class="fw-bold">@item.Nombre</td>
+                        <td><span class="text-success fw-bold">$@item.PrecioUnitario</span></td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <button class="btn btn-outline-success btn-sm rounded-circle fw-bold fs-5 px-2"
+                                        @onclick="() => CambiarCantidad(item.ProductoId, -1)" disabled="@(item.Cantidad == 1)">-</button>
+                                <span class="fw-bold">@item.Cantidad</span>
+                                <button class="btn btn-outline-success btn-sm rounded-circle fw-bold fs-5 px-2"
+                                        @onclick="() => CambiarCantidad(item.ProductoId, 1)">+</button>
+                            </div>
+                        </td>
+                        <td><span class="fw-bold">$@(item.PrecioUnitario * item.Cantidad)</span></td>
+                        <td class="text-center">
+                            <button class="btn btn-outline-danger btn-sm px-3 fw-bold" @onclick="() => QuitarItem(item.ProductoId)">
+                                Quitar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-end fs-4 fw-bold">Total:</td>
+                    <td colspan="2" class="fs-4 text-success fw-bolder">$@items.Sum(i => i.Importe)</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+        <button class="btn btn-warning btn-lg fw-bold px-4 shadow-sm" @onclick="VaciarCarrito">
+            Vaciar carrito
+        </button>
+        <button class="btn btn-success btn-lg fw-bold px-4 shadow-sm" @onclick="NavToConfirmacion">
+            Confirmar compra
+        </button>
+    </div>
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #e0ffe0 0%, #b2f7c1 40%, #7be495 100%) !important;
+    }
+    .table-success th, .table-success {
+        background: #d9f9e5 !important;
+    }
+    .table td, .table th {
+        vertical-align: middle !important;
+    }
+    .btn-outline-success {
+        border-color: #2ecc40 !important;
+        color: #27ae60 !important;
+    }
+    .btn-outline-success:hover {
+        background: #2ecc40 !important;
+        color: #fff !important;
+    }
+    .btn-success, .btn-success:active {
+        background: #2ecc40 !important;
+        border-color: #27ae60 !important;
+    }
+    .btn-warning {
+        background: #ffecb3 !important;
+        color: #8d6e22 !important;
+        border-color: #ffe082 !important;
+    }
+    .btn-warning:hover {
+        background: #ffd740 !important;
+        color: #645200 !important;
+    }
+</style>
+
+@code {
+    List<cliente.Modelos.CarritoItem>? items;
+    bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    async Task CargarCarrito()
+    {
+        cargando = true;
+        items = await CarritoService.ObtenerItemsAsync();
+        cargando = false;
+        StateHasChanged();
+    }
+
+    async Task CambiarCantidad(int productoId, int delta)
+    {
+        if (delta == 1)
+            await CarritoService.AgregarProductoAsync(productoId);
+        else if (delta == -1)
+            await CarritoService.QuitarUnidadAsync(productoId);
+
+        await CargarCarrito();
+    }
+
+    async Task QuitarItem(int productoId)
+    {
+        await CarritoService.QuitarTodoAsync(productoId);
+        await CargarCarrito();
+    }
+
+    async Task VaciarCarrito()
+    {
+        await CarritoService.VaciarCarritoAsync();
+        await CargarCarrito();
+    }
+
+    [Inject] NavigationManager Nav { get; set; }
+    void NavToConfirmacion()
+    {
+        Nav.NavigateTo("/confirmacion");
+    }
+}
+
+

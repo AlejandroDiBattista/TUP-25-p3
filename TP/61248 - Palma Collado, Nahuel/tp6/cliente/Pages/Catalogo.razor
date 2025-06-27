@@ -1,0 +1,183 @@
+@page "/catalogo"
+@inject cliente.Services.ProductoService ProductoService
+@inject cliente.Services.CarritoService CarritoService
+
+<!-- Encabezado vistoso -->
+<div class="text-center py-3 mb-4" style="background: linear-gradient(90deg, #2ecc40, #27ae60); border-radius: 1rem;">
+    <h1 style="color: #fff; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px 8px #1a4d1a;">
+        Catálogo de Productos 🪴
+    </h1>
+</div>
+
+<!-- Buscador centrado, grande y con sombra -->
+<div class="d-flex justify-content-center mb-5">
+    <input 
+        value="@busqueda"
+        @oninput="OnInputChanged"
+        placeholder="Buscar producto..." 
+        class="form-control form-control-lg shadow rounded-pill border-success"
+        style="max-width: 450px; border-width: 3px;" />
+</div>
+
+@if (productos is null)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-success" role="status"></div>
+        <p class="mt-3">Cargando productos...</p>
+    </div>
+}
+else if (!productos.Any())
+{
+    <div class="alert alert-warning text-center mt-5">No hay productos para mostrar.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
+        @foreach (var prod in productos)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-lg border-0 rounded-4 p-2 product-card">
+                    <img src="@prod.ImagenUrl"
+                            class="card-img-top rounded-4 product-img"
+                            alt="@prod.Nombre"
+                            style="height: 150px; object-fit: contain; background: #e8f5e9; padding: 10px;" 
+                            @onclick="() => VerImagen(prod.ImagenUrl)" />
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold text-success-emphasis">@prod.Nombre</h5>
+                        <p class="card-text text-secondary small">@prod.Descripcion</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-light"><strong>Precio:</strong> <span class="text-success fw-bold">$@prod.Precio</span></li>
+                        <li class="list-group-item bg-light"><strong>Stock:</strong> <span class="fw-bold">@prod.Stock</span></li>
+                    </ul>
+                    <div class="p-3 pt-2">
+                        <button class="btn btn-success w-100 fw-bold shadow-sm"
+                                @onclick="() => AgregarAlCarrito(prod)"
+                                disabled="@((prod.Stock == 0) || cargando)">
+                            @if (cargandoId == prod.Id)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                <span> Agregando...</span>
+                            }
+                            else
+                            {
+                                <span class="oi oi-cart"></span>
+                                <span> Agregar al carrito</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #e0ffe0 0%, #b2f7c1 40%, #7be495 100%) !important;
+    }
+
+    .product-img {
+        transition: transform 0.3s cubic-bezier(.18,.89,.32,1.28), box-shadow 0.2s, background 0.2s;
+        cursor: zoom-in;
+    }
+
+    .product-img:hover {
+        transform: scale(1.35);
+        z-index: 10;
+        box-shadow: 0 0 25px 4px #a5d6a7bb;
+        background: #e0ffe0;
+    }
+
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover {
+        transform: translateY(-7px) scale(1.025);
+        box-shadow: 0 0.5rem 2rem rgba(39, 174, 96, 0.12), 0 0 0.5rem #2ecc4033;
+        border: 2px solid #2ecc40;
+    }
+</style>
+
+@code {
+    private List<cliente.Modelos.Producto>? productos;
+    private string? busqueda = "";
+    private bool cargando = false;
+    private int? cargandoId = null;
+    private string? imagenGrande = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await ProductoService.ObtenerProductosAsync();
+    }
+
+    private async Task OnBusquedaChanged(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString();
+        await BuscarProductos();
+    }
+
+    private async Task BuscarProductos()
+    {
+        productos = await ProductoService.ObtenerProductosAsync(busqueda);
+    }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? "";
+        productos = await ProductoService.ObtenerProductosAsync(busqueda);
+        StateHasChanged();
+    }
+
+    private async Task AgregarAlCarrito(cliente.Modelos.Producto prod)
+    {
+        try
+        {
+            cargando = true;
+            cargandoId = prod.Id;
+
+            var ok = await CarritoService.AgregarProductoAsync(prod.Id);
+
+            if (ok)
+            {
+                prod.Stock -= 1;
+                StateHasChanged();
+            }
+        }
+        finally
+        {
+            cargando = false;
+            cargandoId = null;
+        }
+    }
+
+    private void VerImagen(string? url)
+    {
+        if (!string.IsNullOrEmpty(url))
+            imagenGrande = url;
+    }
+
+    private void CerrarImagen()
+    {
+        imagenGrande = null;
+    }
+}
+@if (!string.IsNullOrEmpty(imagenGrande))
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background:transparent; border:none; box-shadow:none;">
+                <div class="modal-body text-center p-0">
+                    <img src="@imagenGrande" style="max-width:90vw; max-height:80vh; border-radius:1rem; box-shadow: 0 0 32px #2226;" />
+                </div>
+                <button type="button" class="btn btn-light fw-bold mt-3"
+                        style="position:absolute;top:15px;right:20px;z-index:20;"
+                        @onclick="CerrarImagen">
+                    Cerrar ✕
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
