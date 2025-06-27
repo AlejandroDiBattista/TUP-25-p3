@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TiendaOnline.Datos;
+using TiendaOnline.Modelos; 
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios CORS para permitir solicitudes desde el cliente
@@ -55,6 +56,19 @@ app.MapGet("/api/productos", async (TiendaDbContext db, string? busqueda) =>
     
     var productos = await query.ToListAsync();
     return Results.Ok(productos);
+});
+
+app.MapPost("/api/carritos", async (TiendaDbContext db) =>
+{
+    var nuevaCompra = new Compra
+    {
+        Total = 0,
+    };
+
+    db.Compras.Add(nuevaCompra);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new {CarritoId = nuevaCompra.Id});
 });
 
 app.Run();
