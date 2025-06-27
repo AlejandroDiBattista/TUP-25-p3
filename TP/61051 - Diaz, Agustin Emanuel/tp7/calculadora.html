@@ -84,12 +84,59 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState } = React;
 
       function Calculadora() {
         const [input, setInput] = useState("");
 
         const operadores = ["+", "-", "*", "/", "%"];
+
+        function evaluarExpresion(expresion) {
+          try {
+            const tokens = expresion.match(/(\d+(\.\d+)?|[+\-*/%])/g);
+            if (!tokens) return "Error";
+
+            const toNumber = (val) => parseFloat(val);
+
+            for (let i = 0; i < tokens.length; i++) {
+              if (["*", "/", "%"].includes(tokens[i])) {
+                const op = tokens[i];
+                const a = toNumber(tokens[i - 1]);
+                const b = toNumber(tokens[i + 1]);
+
+                if (op === "/" && b === 0) return "Error";
+
+                let res;
+                switch (op) {
+                  case "*":
+                    res = a * b;
+                    break;
+                  case "/":
+                    res = a / b;
+                    break;
+                  case "%":
+                    res = a % b;
+                    break;
+                }
+
+                tokens.splice(i - 1, 3, res.toString());
+                i -= 1;
+              }
+            }
+
+            let resultado = toNumber(tokens[0]);
+            for (let i = 1; i < tokens.length; i += 2) {
+              const op = tokens[i];
+              const num = toNumber(tokens[i + 1]);
+              if (op === "+") resultado += num;
+              if (op === "-") resultado -= num;
+            }
+
+            return resultado.toString();
+          } catch {
+            return "Error";
+          }
+        }
 
         const handleClick = (value) => {
           if (value === "AC") {
@@ -99,28 +146,16 @@
 
           if (value === "+/-") {
             if (!input) return;
-            const evalValue = eval(input);
-            setInput((-1 * evalValue).toString());
+            const resultado = evaluarExpresion(input);
+            if (resultado !== "Error") {
+              setInput((-1 * parseFloat(resultado)).toString());
+            }
             return;
           }
 
           if (value === "=") {
-            try {
-              if (input.includes("/0")) {
-                const partes = input.split(/([+\-*/])/);
-                for (let i = 0; i < partes.length; i++) {
-                  if (partes[i] === "0" && partes[i - 1] === "/") {
-                    setInput("Error");
-                    return;
-                  }
-                }
-              }
-
-              const resultado = eval(input);
-              setInput(resultado.toString());
-            } catch {
-              setInput("Error");
-            }
+            const resultado = evaluarExpresion(input);
+            setInput(resultado);
             return;
           }
 
