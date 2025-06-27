@@ -286,23 +286,28 @@
                 <div className="calc-container">
                     <div className="calc-notch"></div>
                     <div className="calc-inner">
-                        <div className="calc-display">{display}</div>
+                        <div className="calc-display" style={{fontSize: '38px', minHeight: '44px', color: '#fff', padding: '0 24px 0 0', marginBottom: '0', alignItems: 'flex-end', opacity: 1, fontWeight: 500, letterSpacing: '1px'}}>
+                            {mostrandoResultado ? pantalla : (expresion || '0')}
+                        </div>
+                        <div className="calc-display" style={{marginTop: '0', fontSize: '24px', minHeight: '28px', color: '#b3b3b3', padding: '0 24px 8px 0', alignItems: 'flex-end', opacity: 0.7, fontWeight: 400}}>
+                            {mostrandoResultado ? '' : (preResultado !== '' ? preResultado : '')}
+                        </div>
                         <div className="calc-buttons">
-                            {buttons.map((row, i) => (
+                            {botones.map((fila, i) => (
                                 <div className="calc-row" key={i}>
-                                    {row.map((btn, j) => {
-                                        let className = 'btn ';
-                                        if (btn === 'AC' || btn === '+/-' || btn === '%') className += 'btn-func';
-                                        else if (['÷', '×', '-', '+', '='].includes(btn)) className += 'btn-op';
-                                        else className += 'btn-num';
-                                        if (btn === '0') className += ' btn-zero';
+                                    {fila.map((boton, j) => {
+                                        let clase = 'btn ';
+                                        if (boton === 'AC' || boton === '+/-' || boton === '%') clase += 'btn-func';
+                                        else if (['/', '*', '-', '+', '='].includes(boton)) clase += 'btn-op';
+                                        else clase += 'btn-num';
+                                        if (boton === '0') clase += ' btn-zero';
                                         return (
                                             <button
-                                                key={btn}
-                                                className={className}
-                                                onClick={() => handleClick(btn)}
+                                                key={boton}
+                                                className={clase}
+                                                onClick={() => manejarClic(boton)}
                                             >
-                                                {btn}
+                                                {boton}
                                             </button>
                                         );
                                     })}
