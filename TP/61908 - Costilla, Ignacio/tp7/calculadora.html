@@ -1,32 +1,266 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora React</title>
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+<style>
+:root{
+  --peach-bg:#f2d2a3;
+  --gray-btn:#a5a5a5;
+  --dark-btn:#323232;
+  --orange-btn:#ff9f0a;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+body{
+  background:var(--peach-bg);
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+
+.phone{
+  position:relative;
+  width:360px;
+  height:760px;
+  background:#fff;
+  border-radius:48px;
+  box-shadow:0 22px 50px rgba(0,0,0,.25);
+}
+
+
+.phone::before{
+  content:"";
+  position:absolute;
+  top:0; left:50%;
+  transform:translateX(-50%);
+  width:60%;  height:54px;
+  background:#fff;
+  border-bottom-left-radius:24px;
+  border-bottom-right-radius:24px;
+  z-index:3;
+}
+
+
+.screen{
+  position:absolute;
+  inset:18px;
+  background:#000;
+  border-radius:32px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:90px 22px 28px;   
+  overflow:hidden;
+}
+
+.display{
+  color:#fff;
+  font-size:82px;
+  font-weight:300;
+  line-height:1;
+  text-align:right;
+  word-break:break-all;
+  min-height:92px;
+  margin-bottom:32px;
+}
+
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.btn{
+  border:none;
+  font-size:32px;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  aspect-ratio:1/1;
+  cursor:pointer;
+  transition:filter .15s;
+}
+.btn:active{filter:brightness(1.25);}
+.gray  {background:var(--gray-btn);color:#000;}
+.dark  {background:var(--dark-btn);}
+.orange{background:var(--orange-btn);}
+.zero{
+  grid-column:span 2;
+  border-radius:46px;
+  aspect-ratio:auto;
+  justify-content:flex-start;
+  padding-left:30px;
+}
+</style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div class="phone">
+    <div class="screen">
+      <div id="root"></div>
+    </div>
+  </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+<script type="text/babel">
+const { useState } = React;
+
+function Calculadora() {
+    
+    const [display, setDisplay] = useState("0");         
+    const [prevValue, setPrevValue] = useState(null);    
+    const [operator, setOperator] = useState(null);     
+    const [waitingForNewNumber, setWaitingForNewNumber] = useState(false); 
+
+ 
+
+  
+    const handleNumberPress = (number) => {
+       
+        if (waitingForNewNumber) {
+            setDisplay(number);
+            setWaitingForNewNumber(false);
+        } else {
+           
+            setDisplay(display === "0" ? number : display + number);
         }
+    };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+  
+    const handleDecimalPress = () => {
+        
+        if (waitingForNewNumber) {
+            setDisplay("0.");
+            setWaitingForNewNumber(false);
+            return;
+        }
+      
+        if (!display.includes(".")) {
+            setDisplay(display + ".");
+        }
+    };
+
+    const handleOperatorPress = (nextOperator) => {
+        const currentValue = parseFloat(display);
+
+      
+        if (operator && prevValue !== null && !waitingForNewNumber) {
+            const result = calculate(prevValue, currentValue, operator);
+            setDisplay(String(result));
+            setPrevValue(result);
+        } else {
+            
+            setPrevValue(currentValue);
+        }
+        
+        setWaitingForNewNumber(true);
+        setOperator(nextOperator);
+    };
+
+  
+    const handleEqualsPress = () => {
+        const currentValue = parseFloat(display);
+      
+        if (prevValue !== null && operator && !waitingForNewNumber) {
+            const result = calculate(prevValue, currentValue, operator);
+            setDisplay(String(result));
+            
+            setPrevValue(null);
+            setOperator(null);
+            setWaitingForNewNumber(true);
+        }
+    };
+
+ 
+    const handleSpecialPress = (key) => {
+        switch (key) {
+            case "AC":
+                
+                setDisplay("0");
+                setPrevValue(null);
+                setOperator(null);
+                setWaitingForNewNumber(false);
+                break;
+            case "+/-":
+                
+                setDisplay(String(parseFloat(display) * -1));
+                break;
+            case "%":
+                
+                setDisplay(String(parseFloat(display) / 100));
+                break;
+        }
+    };
+
+    const calculate = (num1, num2, op) => {
+        switch (op) {
+            case "+":
+                return num1 + num2;
+            case "-":
+                return num1 - num2;
+            case "×":
+                return num1 * num2;
+            case "÷":
+                
+                return num2 === 0 ? "Error" : num1 / num2;
+            default:
+                return num2; 
+        }
+    };
+
+    
+    
+    const keys = [
+        ["AC", "+/-", "%", "÷"], ["7", "8", "9", "×"],
+        ["4", "5", "6", "-"], ["1", "2", "3", "+"],
+        ["0", ".", "="]
+    ];
+
+    
+    const handlePress = (b) => {
+        if (!isNaN(b)) handleNumberPress(b);
+        else if (b === ".") handleDecimalPress(b);
+        else if (["+", "-", "×", "÷"].includes(b)) handleOperatorPress(b);
+        else if (b === "=") handleEqualsPress(b);
+        else if (["AC", "+/-", "%"].includes(b)) handleSpecialPress(b);
+    };
+    
+    return (
+        <>
+            <div className="display">{display}</div>
+            <div className="keypad">
+                {keys.flat().map((b, i) => (
+                    <button key={i}
+                        className={`btn
+                            ${b === "0" ? "zero " : ""}
+                            ${["AC", "+/-", "%"].includes(b) ? "gray " : ""}
+                            ${["÷", "×", "-", "+", "="].includes(b) ? "orange " : ""}
+                            ${(!isNaN(b) || b === ".") ? "dark" : ""}`
+                        }
+                        onClick={() => handlePress(b)}
+                    >{b}</button>
+                ))}
+            </div>
+        </>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Calculadora />);
+</script>
 </body>
 </html>
