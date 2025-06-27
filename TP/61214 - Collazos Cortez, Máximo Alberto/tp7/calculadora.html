@@ -7,6 +7,169 @@
 
     <style>
         /* Poner aca el CSS */
+      * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5e9; /* Fondo crema claro */
+        }
+        
+        .contenedor-calculadora {
+            background-color: white;
+            padding: 25px;
+            border-radius: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculadora {
+            width: 350px;
+            background-color: #000;
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .pantalla {
+            min-height: 150px;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            color: white;
+            background-color: #000; /* Fondo negro solo para la pantalla */
+        }
+        
+        .operacion-actual {
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.9);
+            min-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+            text-align: right;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        
+        .resultado {
+            font-size: 64px;
+            font-weight: 300;
+            min-height: 70px;
+        }
+        
+        .error {
+            color: #ff3b30;
+        }
+        
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 20px;
+            background-color: #000; /* Fondo negro para los botones */
+        }
+        
+        button {
+            height: 70px;
+            border: none;
+            border-radius: 35px;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .numero {
+            background-color: #333;
+            color: white;
+        }
+        
+        .numero:active {
+            background-color: #737373;
+        }
+        
+        .operador {
+            background-color: #ff9500;
+            color: white;
+        }
+        
+        .operador:active, .operador.activo {
+            background-color: white;
+            color: #ff9500;
+        }
+        
+        .funcion {
+            background-color: #a5a5a5;
+            color: black;
+        }
+        
+        .funcion:active {
+            background-color: #d9d9d9;
+        }
+        
+        .historial-btn {
+            background-color: #a5a5a5;
+            color: black;
+        }
+        
+        .cero {
+            grid-column: span 2;
+        }
+        
+        .igual {
+            background-color: #ff9500;
+            color: white;
+        }
+        
+        .historial-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
+            z-index: 10;
+        }
+        
+        .historial-item {
+            font-size: 24px;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .cerrar-historial {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff9500;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 18px;
+        }
+
     </style>
 </head>
 <body>
@@ -22,7 +185,189 @@
 
         function Calculadora(){
             // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        
+            const [valor, setValor] = useState('0');
+            const [operacion, setOperacion] = useState(null);
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [operacionActual, setOperacionActual] = useState('');
+            const [error, setError] = useState(false);
+            const [mostrarHistorial, setMostrarHistorial] = useState(false);
+            const [operacionesAnteriores, setOperacionesAnteriores] = useState([]);
+
+            const agregarNumero = (num) => {
+                if (error) limpiarTodo();
+                if (esperandoOperando) {
+                    setValor(String(num));
+                    setEsperandoOperando(false);
+                    setOperacionActual(prev => prev + ' ' + num);
+                } else {
+                    setValor(prev => prev === '0' ? String(num) : prev + num);
+                    setOperacionActual(prev => prev + num);
+                }
+            };
+
+            const agregarDecimal = () => {
+                if (error) limpiarTodo();
+                if (esperandoOperando) {
+                    setValor('0.');
+                    setOperacionActual(prev => prev + ' 0.');
+                    setEsperandoOperando(false);
+                    return;
+                }
+
+                if (!valor.includes('.')) {
+                    setValor(prev => prev + '.');
+                    setOperacionActual(prev => prev + '.');
+                }
+            };
+
+            const limpiarTodo = () => {
+                setValor('0');
+                setOperacion(null);
+                setValorAnterior(null);
+                setEsperandoOperando(false);
+                setOperacionActual('');
+                setError(false);
+            };
+
+            const calcularPorcentaje = () => {
+                if (error) limpiarTodo();
+                try {
+                    const valorActual = parseFloat(valor);
+                    setValor(String(valorActual / 100));
+                    setOperacionActual(prev => prev + '%');
+                } catch {
+                    mostrarError();
+                }
+            };
+
+            const realizarOperacion = (op) => {
+                if (error) limpiarTodo();
+                if (esperandoOperando && operacion) {
+                    setOperacionActual(prev => prev.slice(0, -1) + op);
+                    setOperacion(op);
+                    return;
+                }
+
+                if (valorAnterior === null) {
+                    setValorAnterior(valor);
+                    setOperacionActual(prev => prev + ' ' + op);
+                } else if (operacion) {
+                    try {
+                        const resultado = calcular();
+                        setValor(String(resultado));
+                        setValorAnterior(String(resultado));
+                        setOperacionActual(String(resultado) + ' ' + op);
+                    } catch {
+                        mostrarError();
+                        return;
+                    }
+                } else {
+                    setOperacionActual(prev => prev + ' ' + op);
+                }
+                
+                setEsperandoOperando(true);
+                setOperacion(op);
+            };
+
+            const calcular = () => {
+                try {
+                    const expresion = operacionActual.replace(/×/g, '*').replace(/÷/g, '/');
+                    const calcularExpresion = new Function(`return ${expresion}`);
+                    const resultado = calcularExpresion();
+                    
+                    if (!isFinite(resultado)) {
+                        throw new Error("Resultado infinito");
+                    }
+                    
+                    return resultado;
+                } catch (e) {
+                    mostrarError();
+                    throw e;
+                }
+            };
+
+            const mostrarError = () => {
+                setValor('Error');
+                setError(true);
+            };
+
+            const manejarIgual = () => {
+                if (error) limpiarTodo();
+                if (operacion === null || esperandoOperando) return;
+
+                try {
+                    const resultado = calcular();
+                    if (error) return;
+                    
+                    const operacionCompleta = operacionActual + ' = ' + resultado;
+                    
+                    setOperacionesAnteriores(prev => [operacionCompleta, ...prev].slice(0, 3));
+                    
+                    setValor(String(resultado));
+                    setValorAnterior(null);
+                    setOperacion(null);
+                    setEsperandoOperando(true);
+                    setOperacionActual(prev => prev + ' = ' + resultado);
+                } catch {
+                    mostrarError();
+                }
+            };
+
+            const toggleHistorial = () => {
+                setMostrarHistorial(!mostrarHistorial);
+            };
+
+            return (
+                <div className="contenedor-calculadora">
+                    <div className="calculadora">
+                        {mostrarHistorial && (
+                            <div className="historial-modal">
+                                <h2>Historial</h2>
+                                {operacionesAnteriores.length > 0 ? (
+                                    operacionesAnteriores.map((op, index) => (
+                                        <div key={index} className="historial-item">{op}</div>
+                                    ))
+                                ) : (
+                                    <div className="historial-item">No hay operaciones recientes</div>
+                                )}
+                                <button className="cerrar-historial" onClick={toggleHistorial}>Cerrar</button>
+                            </div>
+                        )}
+                        
+                        <div className="pantalla">
+                            <div className="operacion-actual">{operacionActual}</div>
+                            <div className={`resultado ${error ? 'error' : ''}`}>{valor}</div>
+                        </div>
+                        <div className="botones">
+                            <button className="historial-btn" onClick={toggleHistorial}>H</button>
+                            <button className="funcion" onClick={limpiarTodo}>AC</button>
+                            <button className="funcion" onClick={calcularPorcentaje}>%</button>
+                            <button className="operador" onClick={() => realizarOperacion('÷')}>÷</button>
+                            
+                            <button className="numero" onClick={() => agregarNumero(7)}>7</button>
+                            <button className="numero" onClick={() => agregarNumero(8)}>8</button>
+                            <button className="numero" onClick={() => agregarNumero(9)}>9</button>
+                            <button className="operador" onClick={() => realizarOperacion('×')}>×</button>
+                            
+                            <button className="numero" onClick={() => agregarNumero(4)}>4</button>
+                            <button className="numero" onClick={() => agregarNumero(5)}>5</button>
+                            <button className="numero" onClick={() => agregarNumero(6)}>6</button>
+                            <button className="operador" onClick={() => realizarOperacion('-')}>-</button>
+                            
+                            <button className="numero" onClick={() => agregarNumero(1)}>1</button>
+                            <button className="numero" onClick={() => agregarNumero(2)}>2</button>
+                            <button className="numero" onClick={() => agregarNumero(3)}>3</button>
+                            <button className="operador" onClick={() => realizarOperacion('+')}>+</button>
+                            
+                            <button className="numero" onClick={agregarDecimal}>.</button>
+                            <button className="numero cero" onClick={() => agregarNumero(0)}>0</button>
+                            <button className="operador igual" onClick={manejarIgual}>=</button>
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
