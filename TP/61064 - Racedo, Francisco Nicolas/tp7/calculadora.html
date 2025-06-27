@@ -136,21 +136,21 @@
 
         // Poner aca el JavaScript
         function Calculadora() {
-            const [display, setDisplay] = useState('0');
-            const [waitingForOperand, setWaitingForOperand] = useState(false);
-            const [operator, setOperator] = useState(null);
-            const [value, setValue] = useState(null);
+            const [pantalla, setPantalla] = useState('0');
+            const [expresion, setExpresion] = useState('');
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [mostrandoResultado, setMostrandoResultado] = useState(false); // Nuevo estado
 
             // Ingresamos el manejo de teclas
             // para que la calculadora responda a las teclas del teclado
             useEffect(() => {
-                const keyMap = {
+                const mapaTeclas = {
                     '+': '+',
                     '-': '-',
-                    '*': '×',
-                    'x': '×',
-                    'X': '×',
-                    '/': '÷',
+                    '*': '*',
+                    'x': '*',
+                    'X': '*',
+                    '/': '/',
                     ',': '.',
                     '.': '.',
                     '%': '%',
@@ -158,96 +158,114 @@
                     '=': '=',
                     'Delete': 'AC', // Solo la tecla Delete borra todo
                 };
-                function handleKeyDown(e) {
+                function manejarTecla(e) {
                     if (e.ctrlKey || e.altKey || e.metaKey) return;
-                    let key = e.key;
-                    if (key >= '0' && key <= '9') {
-                        handleClick(key);
+                    let tecla = e.key;
+                    if (tecla >= '0' && tecla <= '9') {
+                        manejarClic(tecla);
                         e.preventDefault();
-                    } else if (keyMap[key]) {
-                        handleClick(keyMap[key]);
+                    } else if (mapaTeclas[tecla]) {
+                        manejarClic(mapaTeclas[tecla]);
                         e.preventDefault();
-                    } else if (key === '+/-' || key === 'F9') {
-                        handleClick('±');
+                    } else if (tecla === '+/-' || tecla === 'F9') {
+                        manejarClic('+/-');
                         e.preventDefault();
-                    } else if (key === 'Backspace') {
-                        handleBackspace();
+                    } else if (tecla === 'Backspace') {
+                        manejarRetroceso();
                         e.preventDefault();
                     }
                 }
-                window.addEventListener('keydown', handleKeyDown);
-                return () => window.removeEventListener('keydown', handleKeyDown);
-            }, [display, waitingForOperand, operator, value]);
+                window.addEventListener('keydown', manejarTecla);
+                return () => window.removeEventListener('keydown', manejarTecla);
+            }, [pantalla, expresion, esperandoOperando]);
 
             // Agregamos una nueva función para manejar la tecla Backspace (Deshacer)
-            const handleBackspace = () => {
-                if (waitingForOperand) return; // No borrar si espera nuevo operando
-                if (display.length > 1) {
-                    setDisplay(display.slice(0, -1));
+            const manejarRetroceso = () => {
+                if (pantalla.length > 1) {
+                    setPantalla(pantalla.slice(0, -1));
+                    setExpresion(expresion.slice(0, -1));
                 } else {
-                    setDisplay('0');
+                    setPantalla('0');
+                    setExpresion('');
+                }
+                setMostrandoResultado(false);
+            };
+
+            const manejarClic = (contenido) => {
+                if (contenido >= '0' && contenido <= '9') {
+                    if (pantalla.length > 14) return;
+                    if (pantalla === '0' || esperandoOperando || mostrandoResultado) {
+                        setPantalla(contenido);
+                        setEsperandoOperando(false);
+                        setExpresion(mostrandoResultado ? contenido : expresion + contenido);
+                        setMostrandoResultado(false);
+                    } else {
+                        setPantalla(pantalla + contenido);
+                        setExpresion(expresion + contenido);
+                    }
+                } else if (contenido === '.') {
+                    if (!pantalla.includes('.')) {
+                        setPantalla(pantalla + '.');
+                        setEsperandoOperando(false);
+                        setExpresion(expresion + '.');
+                        setMostrandoResultado(false);
+                    }
+                } else if (["+", "-", "*", "/"].includes(contenido)) {
+                    if (expresion === '' && contenido === '-') {
+                        setPantalla('-');
+                        setExpresion('-');
+                        setEsperandoOperando(false);
+                        setMostrandoResultado(false);
+                        return;
+                    }
+                    if (expresion.length > 0 && !['+', '-', '*', '/'].includes(expresion.slice(-1))) {
+                        setPantalla(contenido);
+                        setExpresion(expresion + contenido);
+                        setEsperandoOperando(false);
+                        setMostrandoResultado(false);
+                    }
+                } else if (contenido === '=') {
+                    try {
+                        let resultado = eval(expresion.replace(/%/g, '/100'));
+                        if (typeof resultado === 'number' && !isNaN(resultado) && isFinite(resultado)) {
+                            setPantalla(String(resultado));
+                            setExpresion(String(resultado));
+                            setMostrandoResultado(true);
+                        } else {
+                            setPantalla('Error');
+                            setExpresion('');
+                            setMostrandoResultado(false);
+                        }
+                    } catch {
+                        setPantalla('Error');
+                        setExpresion('');
+                        setMostrandoResultado(false);
+                    }
+                    setEsperandoOperando(true);
+                } else if (contenido === 'AC') {
+                    setPantalla('0');
+                    setExpresion('');
+                    setEsperandoOperando(false);
+                    setMostrandoResultado(false);
+                } else if (contenido === '+/-') {
+                    if (pantalla.charAt(0) === '-') {
+                        setPantalla(pantalla.slice(1));
+                        setExpresion(expresion.slice(0, -pantalla.length) + pantalla.slice(1));
+                    } else {
+                        setPantalla('-' + pantalla);
+                        setExpresion(expresion.slice(0, -pantalla.length) + '-' + pantalla);
+                    }
+                    setMostrandoResultado(false);
+                } else if (contenido === '%') {
+                    setPantalla(pantalla + '%');
+                    setExpresion(expresion + '%');
+                    setMostrandoResultado(false);
                 }
             };
 
-            const handleClick = (content) => {
-                if (content >= '0' && content <= '9') {
-                    if (display.length > 14) return; // Establecemos un maximo de 15 dígitos
-                    if (display === '0' || waitingForOperand) {
-                        setDisplay(content);
-                        setWaitingForOperand(false);
-                    } else {
-                        setDisplay(display + content);
-                    }
-                } else if (content === '.') {
-                    if (!display.includes('.')) {
-                        setDisplay(display + '.');
-                        setWaitingForOperand(false);
-                    }
-                } else if (['+', '-', '×', '÷'].includes(content)) {
-                    if (operator && !waitingForOperand) {
-                        const result = calculate(value, display, operator);
-                        setValue(result);
-                        setDisplay(String(result));
-                    } else {
-                        setValue(Number(display));
-                    }
-                    setOperator(content);
-                    setWaitingForOperand(true);
-                } else if (content === '=') {
-                    if (operator) {
-                        const result = calculate(value, display, operator);
-                        setDisplay(String(result));
-                        setValue(null);
-                        setOperator(null);
-                        setWaitingForOperand(true);
-                    }
-                } else if (content === 'AC') {
-                    setDisplay('0');
-                    setValue(null);
-                    setOperator(null);
-                    setWaitingForOperand(false);
-                } else if (content === '+/-') {
-                    setDisplay(display.charAt(0) === '-' ? display.slice(1) : '-' + display);
-                } else if (content === '%') {
-                    setDisplay(String(Number(display) / 100));
-                }
-            };
-
-            function calculate(left, right, op) {
-                const a = Number(left);
-                const b = Number(right);
-                switch (op) {
-                    case '+': return a + b;
-                    case '-': return a - b;
-                    case '×': return a * b;
-                    case '÷': return b === 0 ? 'Error' : a / b;
-                    default: return b;
-                }
-            }
-
-            const buttons = [
-                ['AC', '+/-', '%', '÷'],
-                ['7', '8', '9', '×'],
+            const botones = [
+                ['AC', '+/-', '%', '/'],
+                ['7', '8', '9', '*'],
                 ['4', '5', '6', '-'],
                 ['1', '2', '3', '+'],
                 ['0', '.', '=']
