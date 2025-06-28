@@ -5,6 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
     <link rel="stylesheet" href="estilos/calculadora.css">
+
+    <style>
+        body {
+    background: #f9deb5;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.phone {
+    background: #fff;
+    border-radius: 50px;
+    box-shadow: 0 0 20px #e0cfa7;
+    width: 370px;
+    height: 760px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border: 8px solid #fff;
+}
+.screen {
+    background: #000;
+    color: #fff;
+    font-size: 90px;
+    text-align: right;
+    border-radius: 35px;
+    width: 90%;
+    height: 140px;
+    margin: 40px 0 25px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 30px 10px 0;
+    box-sizing: border-box;
+    letter-spacing: 2px;
+}
+.buttons {
+    width: 90%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+.btn {
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    font-size: 30px;
+    font-family: inherit;
+    cursor: pointer;
+    background: #222;
+    color: #fff;
+    transition: background 0.2s;
+    box-shadow: 0 2px 4px #0002;
+}
+.btn:active {
+    background: #444;
+}
+.btn.gray {
+    background: #a5a5a5;
+    color: #000;
+}
+.btn.orange {
+    background: #ff9f0a;
+    color: #fff;
+}
+.btn.zero {
+    grid-column: span 2;
+    border-radius: 35px;
+    text-align: left;
+    padding-left: 35px;
+    width: 100%;
+}
+
+    </style>
 </head>
 <body>
     <div id="root"></div>
