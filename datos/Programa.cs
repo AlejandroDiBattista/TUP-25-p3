@@ -391,25 +391,29 @@ class Program {
         }
     }
 
-    static void Main(string[] args) {
+
+    static void Main(string[] args)
+    {
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
         var clase = Clase.Cargar();
 
         // Si hay argumentos, ejecutar función específica
-        if (args.Length > 0 && args[0] == "test" && args.Length > 1) {
+        if (args.Length > 0 && args[0] == "test" && args.Length > 1)
+        {
             int legajo = int.Parse(args[1]);
             var alumno = clase.Buscar(legajo);
-            if (alumno == null) {
+            if (alumno == null)
+            {
                 Console.WriteLine($"No se encontró el alumno con legajo {legajo}");
                 return;
             }
-            
+
             Console.WriteLine($"=== Probando sistema para alumno {legajo} ===");
             Console.WriteLine($"Alumno: {alumno.NombreCompleto}");
             Console.WriteLine($"Ejecutando sistema...");
-            
+
             var resultado = clase.EjecutarSistema(alumno.Legajo);
             Console.WriteLine($"Resultado: {resultado}");
             Console.WriteLine("=== Prueba completada ===");
@@ -431,13 +435,82 @@ class Program {
         // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
         menu.Agregar("  P2: Generar informe", () => InformePractico(clase));
         menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
-        menu.Agregar("Traer TP7", () => {
+        menu.Agregar("Traer TP7", () =>
+        {
             clase.VerificaPresentacionPractico(7);
-            clase.ListarTP7();
+            var local = clase.Presentaron(7).Select(a => a.Legajo).ToList();
+            var remoto = ExtraerCalculadorasRemoto();
+            CompletarTP7(local, remoto);
         });
 
         menu.Ejecutar();
 
         Consola.Escribir("Saliendo del programa...", ConsoleColor.DarkGray);
+    }
+
+    static void CompletarTP7(List<int> local, List<int> remoto) {
+            try {
+                string[] lineasResultados = File.ReadAllLines("../RESULTADOS.md");
+                List<string> lineasModificadas = new List<string>();
+
+                foreach (string linea in lineasResultados) {
+                    string lineaModificada = ProcesarLineaTP7(linea, local, remoto);
+                    lineasModificadas.Add(lineaModificada);
+                }
+
+                File.WriteAllLines("RESULTADOS-TP7.md", lineasModificadas);
+
+            } catch (Exception ex) {
+                Consola.Escribir($"Error al procesar archivos: {ex.Message}", ConsoleColor.Red);
+            }
+        }
+    
+    static List<int> ExtraerCalculadorasRemoto() {
+        List<int> legajos = new();
+        if (!File.Exists("calculadoras.md")) {
+            throw new FileNotFoundException("No se encontró el archivo calculadoras.md");
+        }
+        string[] lineas = File.ReadAllLines("calculadoras.md");
+        Regex regexLegajo = new(@"^(\d{5})");
+        foreach (string linea in lineas) {
+            Match match = regexLegajo.Match(linea.Trim());
+            if (match.Success) {
+                if (int.TryParse(match.Groups[1].Value, out int legajo)) {
+                    legajos.Add(legajo);
+                }
+            }
+        }
+        return legajos;
+    }
+    
+    static string ProcesarLineaTP7(string linea, List<int> local, List<int> remota) {
+        Regex regexLineaAlumno = new Regex(@"^(\d{5})(\s+.*)$");
+        Match match = regexLineaAlumno.Match(linea);
+
+        if (match.Success) {
+            int legajo = int.Parse(match.Groups[1].Value);
+            string circulo;
+            bool enLocal  = local.Contains(legajo);
+            bool enRemoto = remota.Contains(legajo);
+
+            if (enLocal && enRemoto) {
+                circulo = "🟢";
+            } else if (enLocal && !enRemoto) {
+                circulo = "⚫";
+            } else if (!enLocal && enRemoto) {
+                circulo = "🟡";
+            } else {
+                circulo = "🔴";
+            }
+            return $"{linea.Trim()} {circulo}";
+        }
+
+        // Si no es una línea de alumno, devolver sin modificar
+        return linea;
+    }
+
+    static List<int> LegajosPresentaronTP7(Clase clase) {
+        // Devuelve una lista de legajos de alumnos que presentaron el TP7
+        return clase.Presentaron(7).Select(a => a.Legajo).ToList();
     }
 }
