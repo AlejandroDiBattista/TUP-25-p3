@@ -6,7 +6,104 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        body {
+  margin: 0;
+  background: #ffedcc;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.calculator {
+  background: #000;
+  border-radius: 30px;
+  padding-top: 100px;
+  padding: 20px;
+  width: 320px;
+  height: 600px;
+}
+
+
+
+.display {
+  height: 200px; /* o más según lo que necesites */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem;
+  font-size: 2.5rem;
+  color: white;
+  word-break: break-word;
+  text-align: right;
+}
+
+.display.normal {
+  font-size: 50px;
+}
+
+.display.small {
+  font-size: 30px;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.btn {
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  padding: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn:hover {
+  background: #444;
+}
+
+.operator {
+  background-color: orange;
+}
+
+.function {
+  background-color: gray;
+}
+
+.zero {
+  grid-column: span 2;
+  border-radius: 999px;
+  text-align: left;
+  padding-left: 28px;
+}
+
+.app-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.floating-error {
+  position: absolute;
+  top: 10px;
+  background-color: #ffdddd;
+  color: #b20000;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
     </style>
 </head>
 <body>
@@ -18,15 +115,126 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+const { useState } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
-        }
+const buttons = [
+  ['AC', '+/-', '%', '÷'],
+  ['7', '8', '9', '×'],
+  ['4', '5', '6', '-'],
+  ['1', '2', '3', '+'],
+  ['0', '.', '=']
+];
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
+function Calculadora() {
+  const [input, setInput] = useState('0');
+  const [error, setError] = useState('');
+
+  // Función para formatear números con coma cada 3 dígitos
+  const formatNumberWithCommas = (str) => {
+    const [integerPart, decimalPart] = str.split('.');
+    const sign = integerPart.startsWith('-') ? '-' : '';
+    const num = sign ? integerPart.slice(1) : integerPart;
+
+    const formattedInteger = num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    return decimalPart !== undefined
+      ? sign + formattedInteger + '.' + decimalPart
+      : sign + formattedInteger;
+  };
+
+  const handleClick = (value) => {
+    setError('');
+
+    if (value === 'AC') {
+      setInput('0');
+      return;
+    }
+
+    if (value === '=') {
+      try {
+        const replaced = input.replace(/×/g, '*').replace(/÷/g, '/');
+        let result = eval(replaced).toString();
+
+        if (result.length > 15) result = result.slice(0, 15);
+        setInput(result);
+      } catch {
+        setInput('Error');
+      }
+      return;
+    }
+
+    if (value === '+/-') {
+      setInput((prev) =>
+        prev.startsWith('-') ? prev.slice(1) : '-' + prev
+      );
+      return;
+    }
+
+    setInput((prev) => {
+      if (prev === 'Error') return value;
+
+      const operators = ['+', '-', '×', '÷'];
+      const lastChar = prev[prev.length - 1];
+
+      if (operators.includes(value) && operators.includes(lastChar)) {
+        return prev.slice(0, -1) + value;
+      }
+
+      if (value === '.') {
+        const lastNumber = prev.split(/[\+\-\×\÷]/).pop();
+        if (lastNumber.includes('.')) return prev;
+      }
+
+      const newInput = prev === '0' && !['.', '+', '-', '×', '÷'].includes(value)
+        ? value
+        : prev + value;
+
+      const lastNumber = newInput.split(/[\+\-\×\÷]/).pop();
+      const digitCount = lastNumber.replace(/\D/g, '');
+      if (digitCount.length > 15) {
+        setError('No es posible introducir más de 15 dígitos por número');
+        return prev;
+      }
+
+      return newInput;
+    });
+  };
+
+  // Para mostrar el input formateado con comas, excepto cuando sea "Error"
+  const displayValue = input === 'Error' ? input : formatNumberWithCommas(input);
+
+  const getFontSizeClass = () => {
+    const digits = input.replace(/[^0-9]/g, '').length;
+    if (digits >= 10) return 'display small';
+    return 'display normal';
+  };
+
+  return (
+    <div className="app-wrapper">
+      {error && <span className="floating-error">{error}</span>}
+
+      <div className="calculator">
+        <div className={getFontSizeClass()}>{displayValue}</div>
+        <div className="buttons">
+          {buttons.flat().map((btn, i) => (
+            <button
+              key={i}
+              onClick={() => handleClick(btn)}
+              className={`btn ${btn === '0' ? 'zero' : ''} ${
+                ['÷', '×', '-', '+', '='].includes(btn) ? 'operator' : ''
+              } ${['AC', '+/-', '%'].includes(btn) ? 'function' : ''}`}
+            >
+              {btn}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Calculadora />);
     </script>
 </body>
 </html>
