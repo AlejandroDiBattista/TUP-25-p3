@@ -16,38 +16,38 @@
         height: 100vh;
     }
 
-    /* Contenedor del iPhone */
+   
     .iphone-frame {
         background: white;
         border-radius: 60px;
-        padding: 20px; /* Padding blanco del frame */
+        padding: 20px; 
         width: 360px;
         height: 720px;
         box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
         display: flex;
         justify-content: center;
-        align-items: center; /* Centra la calculadora dentro del frame */
+        align-items: center; 
         position: relative;
-        box-sizing: border-box; /* Importante para que el padding no añada tamaño */
-        overflow: hidden; /* Oculta lo que se salga del frame */
+        box-sizing: border-box; 
+        overflow: hidden; 
     }
 
-    /* El notch superior del iPhone */
+  
     .iphone-frame::before {
         content: "";
         position: absolute;
-        top: 0px; /* Ajustado a 0px para que el notch empiece en el borde superior del padding */
+        top: 0px; 
         left: 50%;
         transform: translateX(-50%);
         width: 210px;
-        height: 40px; /* Reducida la altura para que parezca más un notch */
+        height: 40px; 
         background: white;
         border-bottom-left-radius: 30px;
         border-bottom-right-radius: 30px;
         z-index: 2;
     }
-    /* Botones laterales (si quieres que se vean) */
-    .iphone-frame .side-button-left { /* Nuevo: botón lateral izquierdo */
+    
+    .iphone-frame .side-button-left { 
         position: absolute;
         width: 5px;
         height: 40px;
@@ -57,7 +57,7 @@
         top: 120px;
         z-index: 1;
     }
-    .iphone-frame .side-button-right { /* Nuevo: botón lateral derecho */
+    .iphone-frame .side-button-right { 
         position: absolute;
         width: 5px;
         height: 40px;
@@ -69,17 +69,15 @@
     }
 
 
-    /* Contenedor de la Calculadora (la parte negra) */
     .calculadora {
         background: black;
         border-radius: 40px;
-        padding: 20px; /* Padding interno de la calculadora */
-        width: 100%; /* Ocupa el 100% del ancho disponible dentro del iphone-frame (menos el padding de éste) */
-        height: 100%; /* Ahora ocupa el 100% de la altura disponible dentro del iphone-frame (menos el padding de éste) */
+        padding: 20px; 
+        width: 100%; 
         display: flex;
-        flex-direction: column; /* Apila el display y el teclado verticalmente */
-        justify-content: flex-end; /* Alinea el contenido (display, teclado) al final */
-        box-sizing: border-box; /* Crucial para que el padding no expanda el tamaño de .calculadora */
+        flex-direction: column; 
+        justify-content: flex-end; 
+        box-sizing: border-box; 
     }
 
     /* Área de visualización del número */
@@ -89,15 +87,14 @@
         text-align: right;
         padding: 20px 10px;
         min-height: 60px;
-        /* Asegúrate de que tenga espacio flexible para crecer, pero sin empujar la caja negra */
-        flex-grow: 1; /* Permite que el display ocupe el espacio restante, pero limitado por el tamaño del padre */
-        display: flex; /* Añade flex para centrar verticalmente el texto si hay espacio extra */
-        align-items: flex-end; /* Alinea el texto al fondo del display */
-        justify-content: flex-end; /* Alinea el texto a la derecha del display */
+        flex-grow: 1; 
+        display: flex; 
+        align-items: flex-end; 
+        justify-content: flex-end; 
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        box-sizing: border-box; /* Asegura que el padding no cause desbordamiento interno */
+        box-sizing: border-box; 
     }
 
     /* Contenedor del teclado */
@@ -105,14 +102,14 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        /* No necesitamos flex-grow aquí si el display lo tiene */
+       
     }
 
     /* Filas de botones */
     .fila {
         display: flex;
-        justify-content: space-between; /* Distribuye los botones equitativamente */
-        gap: 10px; /* Espacio entre botones en la fila */
+        justify-content: space-between; 
+        gap: 10px; 
     }
 
     /* Botones individuales */
@@ -128,7 +125,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0; /* Evita que los botones se encojan si hay poco espacio */
+        flex-shrink: 0; 
     }
 
     .boton-cero {
