@@ -4,27 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
-
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    <link rel="stylesheet" href="estilos/calculadora.css">
 </head>
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        function Calculadora() {
+            const [valor, setValor] = React.useState("0");
+            const [operador, setOperador] = React.useState(null);
+            const [esperando, setEsperando] = React.useState(false);
+            const [acumulado, setAcumulado] = React.useState(null);
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+            function clickNumero(n) {
+                if (valor === "0" || esperando) {
+                    setValor(n);
+                    setEsperando(false);
+                } else {
+                    setValor(valor + n);
+                }
+            }
+            function clickAC() {
+                setValor("0");
+                setOperador(null);
+                setAcumulado(null);
+                setEsperando(false);
+            }
+            function clickPorcentaje() {
+                setValor((parseFloat(valor) / 100).toString());
+            }
+            function clickSigno() {
+                setValor((parseFloat(valor) * -1).toString());
+            }
+            function clickOperador(op) {
+                setOperador(op);
+                setAcumulado(parseFloat(valor));
+                setEsperando(true);
+            }
+            function clickIgual() {
+                if (operador && acumulado !== null) {
+                    let resultado = 0;
+                    if (operador === "+") resultado = acumulado + parseFloat(valor);
+                    if (operador === "-") resultado = acumulado - parseFloat(valor);
+                    if (operador === "×") resultado = acumulado * parseFloat(valor);
+                    if (operador === "÷") resultado = acumulado / parseFloat(valor);
+                    setValor(resultado.toString());
+                    setOperador(null);
+                    setAcumulado(null);
+                    setEsperando(true);
+                }
+            }
+            function clickPunto() {
+                if (!valor.includes(".")) setValor(valor + ".");
+            }
+            return (
+                <div className="phone">
+                    <div className="screen">{valor}</div>
+                    <div className="buttons">
+                        <button className="btn gray" onClick={clickAC}>AC</button>
+                        <button className="btn gray" onClick={clickSigno}>±</button>
+                        <button className="btn gray" onClick={clickPorcentaje}>%</button>
+                        <button className="btn orange" onClick={() => clickOperador("÷")}>÷</button>
+                        <button className="btn" onClick={() => clickNumero("7")}>7</button>
+                        <button className="btn" onClick={() => clickNumero("8")}>8</button>
+                        <button className="btn" onClick={() => clickNumero("9")}>9</button>
+                        <button className="btn orange" onClick={() => clickOperador("×")}>×</button>
+                        <button className="btn" onClick={() => clickNumero("4")}>4</button>
+                        <button className="btn" onClick={() => clickNumero("5")}>5</button>
+                        <button className="btn" onClick={() => clickNumero("6")}>6</button>
+                        <button className="btn orange" onClick={() => clickOperador("-")}>-</button>
+                        <button className="btn" onClick={() => clickNumero("1")}>1</button>
+                        <button className="btn" onClick={() => clickNumero("2")}>2</button>
+                        <button className="btn" onClick={() => clickNumero("3")}>3</button>
+                        <button className="btn orange" onClick={() => clickOperador("+")}>+</button>
+                        <button className="btn zero" onClick={() => clickNumero("0")}>0</button>
+                        <button className="btn" onClick={clickPunto}>.</button>
+                        <button className="btn orange" onClick={clickIgual}>=</button>
+                    </div>
+                </div>
+            );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<Calculadora />);
     </script>
