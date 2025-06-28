@@ -8,7 +8,7 @@
 61032 Moya, Mariano                  24   ✅✅🟢✅✅🟢
 61037 Paz, Rodrigo Federico          30   ✅✅🟢✅✅🟢
 61059 Palavecino, Fabricio Gaston    27   ✅✅🟢✅✅🟢
-61096 Suarez Vece, Leandro Andres    31   ✅✅🟢✅✅🟢 :)
+61096 Suarez Vece, Leandro Andres    :)   ✅✅🟢✅✅🟢
 61113 Oriz Caballero, Juan José      31   ✅✅🟢✅✅🟢
 61129 Tello, Abril María Agostina    33   ✅✅🟢✅✅🟢
 61197 Romano, Alfredo Nicolás        33   ✅✅🟢✅✅🟢
@@ -20,7 +20,7 @@
 61450 Jiménez Paz, Patricio Agustín  33   ✅✅🟢✅✅🟢
 61473 Lagoria García, Tomás Gustavo  30   ✅✅🟢✅✅🟢
 61478 Soto, Antonella                29   ✅✅🟢✅✅🟢
-61572 Parrado Navarrete, Alex Daniel      ✅✅🟢✅✅🟢 xx
+61572 Parrado Navarrete, Alex Daniel XX   ✅✅🟢✅✅🟢
 61624 Godoy, Alan                    30   ✅✅🟢✅✅🟢
 61626 Diaz Londero, Sergio Gonzalo   27   ✅✅🟢✅✅🟢
 61627 Juárez Fernández, Lourdes Abril35   ✅✅🟢✅✅🟢
@@ -38,14 +38,14 @@
 61200 Gauna Serrano, Martín Javier   32   ✅✅🟢✅🟢🟢
 61139 Gallo, María Matilde           20   ✅✅🟢✅✅🟢
 61214 Collazos Cortez, Máximo Albert 28   ✅✅🟢✅✅🟢
-61136 Sosa, Oscar Ignacio                 ✅✅🟢✅✅❓ <- revisar html
+61136 Sosa, Oscar Ignacio            YY   ✅✅🟢✅✅🟢
 61141 Di Clemente, María Antonela    25   ✅✅🟢✅✅🟢
 
 ```
 
 ## Alumnos que deben completar practicos
 ```
-61579 Marti, Gonzalo                 27   ✅✅🟢✅❓🟢 xx
+61579 Marti, Gonzalo                 XX   ✅✅🟢✅❓🟢
 61956 Leglisé, Laureano              28   ✅✅🟢✅❓🟢
 ```
 
@@ -120,7 +120,6 @@
 61252 Aguirre Rojas, Lourdes Valenti 24   ✅✅🟢✅✅❓
 61914 Robles, Leandro Gonzalo        17   ✅✅🟢✅✅❓
 ```
-
 
 ### Referencias.
 

@@ -1,32 +1,210 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora</title>
+  <style>
+    body {
+      background: #ffddaa;/* Fondo de la página */
+      font-family: 'Arial', sans-serif;/* Fuente de la página */
+      display: flex;/* Flexbox para centrar el contenido */
+      align-items: center;/* Alineación vertical */
+      justify-content: center;/* Alineación horizontal */
+      height: 100vh;/* Altura completa de la ventana */
+      margin: 0;/* Sin margen */
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    .phone {/* Contenedor del teléfono */
+      background: #000;
+      width: 300px;/* Ancho del teléfono */
+      border-radius: 40px;/* Bordes redondeados */
+      padding: 20px 10px 30px;/* Espacio interno */
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);/* Sombra para dar efecto de profundidad */
+    }
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    .pantalla {/* Pantalla de la calculadora */
+      color: white;
+      font-size: 48px;/* Tamaño de fuente grande */
+      text-align: right;/* Alineación del texto a la derecha */
+      padding: 0 20px;/* Espacio interno */
+      margin-bottom: 20px;/* Margen inferior */
+      min-height: 60px;/* Altura mínima para la pantalla */
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+      white-space: nowrap;       /* Que no se vaya a una nueva línea */
+     overflow: hidden;          /* Que lo que sobra se oculte */
+     text-overflow: ellipsis;   /* Muestra "..." al final si es necesario */
+     direction: ltr;            /* Texto de izquierda a derecha */
+    }
+        .contenido {
+        display: inline-block;
+        max-width: 100%;
+        transform-origin: right;
+        transition: transform 0.2s ease-out;
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+        /* Tamaños según longitud del número */
+        .normal {
+        transform: scaleX(1);
+        }
+        .medio {
+        transform: scaleX(0.9);
+        }
+        .largo {
+        transform: scaleX(0.8);
+        }
+        .muylargo {
+        transform: scaleX(0.7);
+        }
+
+
+    .fila {/* Fila de botones */
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 10px;
+    }
+
+    .boton { /* Botón base */
+      flex: 1;
+      margin: 5px;/* Margen entre botones */
+      height: 60px;/* Altura del botón */
+      border-radius: 50%;/* Bordes redondeados */
+      font-size: 24px;/* Tamaño de fuente */
+      border: none;/* Sin borde */
+      color: white;
+      background: #333;
+      cursor: pointer;/* Cursor de mano al pasar por encima */
+      transition: background 0.2s;/* Transición suave al cambiar el fondo */
+    }
+
+    .boton.operador {
+      background: orange;
+    }
+
+    .boton.gris {/* Boton gris  */
+      background: #a5a5a5;
+      color: black;
+    }
+    .boton.cero { /* Botón 0 más ancho */
+      flex: 2;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 25px;
+    }
+
+    .boton:hover {
+      filter: brightness(1.2); /* Efecto brillo en hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div id="root"></div>
+  </div>
+
+<!-- React y ReactDOM desde CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+  <!-- crossorigin permite que el navegador cargue los scripts de React desde un CDN sin problemas de CORS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+    
+  <!-- Babel para poder usar JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">// Código de la calculadora en React
+    // Importamos React y ReactDOM
+    const { useState } = React;
+
+    function Boton({ texto, clase, onClick }) {// Componente Boton
+      // Recibe texto, clase y onClick como props
+      return (
+        <button className={`boton ${clase}`} onClick={() => onClick(texto)}>
+          {texto}
+        </button>
+      );
+    }
+
+    function Calculadora() {
+      const [valor, setValor] = useState("0");
+
+      const manejarClick = (input) => {
+        if (input === "AC") return setValor("0"); // Reinicia la calculadora
+        if (input === "+/-") return setValor((prev) => String(parseFloat(prev) * -1));// Cambia el signo
+        if (input === "%") return setValor((prev) => String(parseFloat(prev) / 100)); // Porcentaje
+        if (input === "=") return calcularResultado();
+        setValor((prev) => {
+          if (prev === "0" && "0123456789".includes(input)) return input; // Si es 0 y se presiona un número, lo reemplaza
+          if (prev === "Error") return input; // Si hay un error, reinicia
+          return prev + input;
+        });
+      };
+
+      const calcularResultado = () => {
+        try {
+          const resultado = eval(valor.replace("×", "*").replace("÷", "/"));
+          setValor(String(resultado));
+        } catch {
+          setValor("Error");
+        }
+      };
+
+      const botones = [ // Filas de botones
+        ["AC", "+/-", "%", "÷"],
+        ["7", "8", "9", "×"],
+        ["4", "5", "6", "-"],
+        ["1", "2", "3", "+"],
+        ["0", ".", "="],
+      ];
+      const formatearValor = (val) => {
+  // Si hay operadores o punto decimal, no formateamos (para no romper la operación)
+  if (/[÷×+\-*/.%]/.test(val)) return val;
+  if (isNaN(val)) return val; // Si no es número, no formatea
+
+  return Number(val).toLocaleString('de-DE'); // Usa punto como separador: 9.999
+};
+
+      return (
+        <div>
+           <div className="pantalla">
+           <span className={
+            "contenido " +
+            (valor.length > 16
+              ? "muylargo"
+              : valor.length > 12
+              ? "largo"
+              : valor.length > 8
+              ? "medio"
+              : "normal")
+          }>
+            {formatearValor(valor)}
+          </span>
+          </div>
+          {botones.map((fila, i) => (
+            <div className="fila" key={i}>
+              {fila.map((b, j) => (
+                <Boton
+                  key={j}
+                  texto={b}
+                  clase={
+                    b === "0"
+                      ? "cero"
+                      : ["÷", "×", "-", "+", "="].includes(b)
+                      ? "operador"
+                      : ["AC", "+/-", "%"].includes(b) // Botones de función .includes es una forma de verificar si un elemento está en un array
+                      ? "gris"
+                      : ""
+                  }
+                  onClick={manejarClick} // Maneja los clics en los botones
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    } 
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>

@@ -431,18 +431,9 @@ class Program {
         // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
         menu.Agregar("  P2: Generar informe", () => InformePractico(clase));
         menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
-        menu.Agregar("Traer TP7", () =>
-        {
-            VerificarPresentacion(clase, practico, false);
-            var noPresentaronTP7 = clase.NoPresentaron(7);
-            Consola.Escribir("=== Alumnos que NO presentaron TP7 ===", ConsoleColor.Cyan);
-            noPresentaronTP7.ListarAlumnos();
-            // RegistrarNotas(clase);
-            
-            var presentaronTP7 = clase.Presentaron(7);
-            Consola.Escribir("=== Alumnos que presentaron TP7 ===", ConsoleColor.Cyan);
-            presentaronTP7.ListarAlumnos();
-            
+        menu.Agregar("Traer TP7", () => {
+            clase.VerificaPresentacionPractico(7);
+            clase.ListarTP7();
         });
 
         menu.Ejecutar();

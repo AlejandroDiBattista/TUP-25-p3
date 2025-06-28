@@ -413,7 +413,8 @@ class Clase : IEnumerable<Alumno>
         foreach (var comision in Comisiones)
         {
             Consola.Escribir($"\n=== Comisión {comision} ===", ConsoleColor.Blue);
-            foreach (var alumno in EnComision(comision).OrdenandoPorNombre())
+            var lista = EnComision(comision).ConAbandono(false).OrdenandoPorNombre();
+            foreach (var alumno in lista)
             {
                 var emojis = alumno.Practicos.Select(p => p.Emoji).ToList();
                 if (alumno.Resultado < 0)
@@ -430,10 +431,21 @@ class Clase : IEnumerable<Alumno>
         }
         Consola.Escribir($"\nTotal general de alumnos: {alumnos.Count}", ConsoleColor.Green);
     }
+    
+
+    public void ListarTP7() {
+        var lista = ConAbandono(false).OrdenandoPorLegajo();
+        foreach (var alumno in lista)
+            if (alumno.ObtenerPractico(7) == EstadoPractico.Aprobado)
+                Consola.Escribir($"{alumno.Legajo} 🟢");
+            else
+                Consola.Escribir($"{alumno.Legajo} 🔴");
+    }
+
 
     public void Informar(string titulo, bool conObservacion = true)
     {
-        if(!alumnos.Any()) return;
+        if (!alumnos.Any()) return;
         Consola.Escribir($"\n## {titulo}");
         Consola.Escribir("```");
         bool primero = true;
@@ -441,7 +453,8 @@ class Clase : IEnumerable<Alumno>
         {
             var emojis = string.Join("", alumno.Practicos.Select(p => p.Emoji).ToList());
             string linea = $"{alumno.Legajo} {alumno.NombreCompleto,-35}   {alumno.Asistencias,2}   {emojis}";
-            if (conObservacion && (alumno.Estado == EstadoMateria.Recuperar || alumno.Estado == EstadoMateria.Corregir) && alumno.Observaciones != ""){
+            if (conObservacion && (alumno.Estado == EstadoMateria.Recuperar || alumno.Estado == EstadoMateria.Corregir) && alumno.Observaciones != "")
+            {
                 linea += $"\n      {alumno.Observaciones}";
                 if (!primero) linea = "\n" + linea;
             }
