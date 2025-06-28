@@ -1,32 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, Helvetica, Arial, sans-serif;
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
+        body {
+            background: #f9dcae;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .celular {
+            width: 320px;
+            background: #000;
+            border-radius: 20px;
+            padding: 24px 16px 32px;
+            box-shadow: 0 4px 25px #00000040;
+        }
+
+        .display {
+            color: #fff;
+            font-size: 64px;
+            text-align: right;
+            min-height: 72px;
+            overflow: hidden;
+            word-wrap: break-word;
+            margin-bottom: 16px;
+            white-space: nowrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        button {
+            border: none;
+            border-radius: 50%;
+            padding: 20px 0;
+            font-size: 28px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: filter .12s;
+        }
+
+        button:active {
+            filter: brightness(1.2);
+        }
+
+        .btn-fn {
+            background: #9e9e9e;
+            color: #000;
+        }
+
+        .btn-op {
+            background: #fe9f0c;
+            color: #fff;
+        }
+
+        .btn-num {
+            background: #323232;
+            color: #fff;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+            border-radius: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin
+        src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <style>
+        .display {
+            white-space: nowrap;
+            overflow: hidden;/
+        }
+    </style>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        function Calculadora() {
+
+            const [input, setInput] = useState("0");
+            const [expr, setExpr] = useState("");
+            const [fSize, setFSize] = useState(64);
+            const dispRef = useRef(null);
+
+
+            useEffect(() => {
+                const el = dispRef.current;
+                if (!el) return;
+                let size = 64;
+                el.style.fontSize = size + "px";
+
+                while (el.scrollWidth > el.clientWidth && size > 20) {
+                    size -= 2;
+                    el.style.fontSize = size + "px";
+                }
+                setFSize(size);
+            }, [input]);
+
+            const opToJs = { "÷": "/", "×": "*", "+": "+", "−": "-" };
+            const evaluar = c => {
+                try { return Function("return " + c)(); }
+                catch { return "Error"; }
+            };
+
+            const handleClick = val => {
+                if (input === "Error" && val !== "AC") { setInput("0"); setExpr(""); }
+
+                if (!isNaN(val) || val === ".") {
+                    setInput(i => (i === "0" ? val : i === "-0" ? "-" + val : i + val));
+                    return;
+                }
+                switch (val) {
+                    case "AC": setInput("0"); setExpr(""); break;
+                    case "±": if (input !== "Error") setInput(String(-parseFloat(input))); break;
+                    case "%": if (input !== "Error") setInput(String(parseFloat(input) / 100)); break;
+                    case "=": {
+                        const res = evaluar((expr + input).replace(/[÷×]/g, m => opToJs[m]));
+                        setInput(String(res)); setExpr(""); break;
+                    }
+                    case "÷": case "×": case "+": case "−": {
+                        if (expr === "" && input === "0" && val === "−") { setInput("-"); return; }
+                        setExpr(e => e + input + opToJs[val]); setInput("0"); break;
+                    }
+                    default: break;
+                }
+            };
+
+            const buttons = [
+                { label: "AC", cls: "btn-fn" }, { label: "±", cls: "btn-fn" }, { label: "%", cls: "btn-fn" }, { label: "÷", cls: "btn-op" },
+                { label: "7", cls: "btn-num" }, { label: "8", cls: "btn-num" }, { label: "9", cls: "btn-num" }, { label: "×", cls: "btn-op" },
+                { label: "4", cls: "btn-num" }, { label: "5", cls: "btn-num" }, { label: "6", cls: "btn-num" }, { label: "−", cls: "btn-op" },
+                { label: "1", cls: "btn-num" }, { label: "2", cls: "btn-num" }, { label: "3", cls: "btn-num" }, { label: "+", cls: "btn-op" },
+                { label: "0", cls: "btn-num btn-zero" }, { label: ".", cls: "btn-num" }, { label: "=", cls: "btn-op" },
+            ];
+
+            return (
+                <div className="celular">
+                    <div ref={dispRef} className="display" style={{ fontSize: fSize }}>
+                        {input}
+                    </div>
+                    <div className="grid">
+                        {buttons.map(({ label, cls }) => (
+                            <button key={label} className={cls} onClick={() => handleClick(label)}>
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<Calculadora />);
     </script>
+
 </body>
+
 </html>
