@@ -6,7 +6,64 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        /* Estilo inspirado en la calculadora de iPhone */
+        body {
+            background: #222;
+            font-family: 'SF Pro Display', Arial, sans-serif;
+        }
+        .calc-container {
+            width: 320px;
+            margin: 40px auto;
+            background: #111;
+            border-radius: 40px;
+            box-shadow: 0 8px 32px #000a;
+            padding: 20px 16px 32px 16px;
+        }
+        .calc-display {
+            background: #222;
+            color: #fff;
+            font-size: 2.5rem;
+            text-align: right;
+            border-radius: 20px;
+            padding: 24px 16px 12px 16px;
+            min-height: 60px;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+            overflow-x: auto;
+        }
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .btn {
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #0004;
+        }
+        .btn:active {
+            background: #444;
+        }
+        .btn.orange {
+            background: #ff9500;
+            color: #fff;
+        }
+        .btn.gray {
+            background: #a5a5a5;
+            color: #111;
+        }
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 32px;
+            width: 140px;
+        }
     </style>
 </head>
 <body>
@@ -20,9 +77,82 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [operando, setOperando] = useState(null);
+            const [operador, setOperador] = useState(null);
+            const [esperaNuevo, setEsperaNuevo] = useState(false);
+
+            const handleClick = (valor) => {
+                if (valor >= '0' && valor <= '9') {
+                    if (display === '0' || esperaNuevo) {
+                        setDisplay(valor);
+                        setEsperaNuevo(false);
+                    } else {
+                        setDisplay(display + valor);
+                    }
+                } else if (valor === '.') {
+                    if (!display.includes('.')) setDisplay(display + '.');
+                } else if (["+", "-", "×", "÷"].includes(valor)) {
+                    setOperando(parseFloat(display));
+                    setOperador(valor);
+                    setEsperaNuevo(true);
+                } else if (valor === '=') {
+                    if (operador && operando !== null) {
+                        const actual = parseFloat(display);
+                        let resultado = 0;
+                        switch (operador) {
+                            case '+': resultado = operando + actual; break;
+                            case '-': resultado = operando - actual; break;
+                            case '×': resultado = operando * actual; break;
+                            case '÷': resultado = actual === 0 ? 'Error' : operando / actual; break;
+                        }
+                        setDisplay(resultado.toString());
+                        setOperando(null);
+                        setOperador(null);
+                        setEsperaNuevo(true);
+                    }
+                } else if (valor === 'AC') {
+                    setDisplay('0');
+                    setOperando(null);
+                    setOperador(null);
+                    setEsperaNuevo(false);
+                } else if (valor === '+/-') {
+                    if (display !== '0') setDisplay((parseFloat(display) * -1).toString());
+                } else if (valor === '%') {
+                    setDisplay((parseFloat(display) / 100).toString());
+                }
+            };
+
+            const botones = [
+                ['AC', '+/-', '%', '÷'],
+                ['7', '8', '9', '×'],
+                ['4', '5', '6', '-'],
+                ['1', '2', '3', '+'],
+                ['0', '.', '=']
+            ];
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-display">{display}</div>
+                    <div className="calc-buttons">
+                        {botones.flat().map((b, i) => (
+                            <button
+                                key={b + i}
+                                className={
+                                    'btn ' +
+                                    (b === '0' ? 'zero ' : '') +
+                                    (["+", "-", "×", "÷", "="] .includes(b) ? 'orange ' : '') +
+                                    (["AC", "+/-", "%"].includes(b) ? 'gray ' : '')
+                                }
+                                onClick={() => handleClick(b)}
+                            >
+                                {b}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));

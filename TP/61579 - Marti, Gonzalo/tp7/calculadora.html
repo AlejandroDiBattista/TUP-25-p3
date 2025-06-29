@@ -1,32 +1,181 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
-
-    <style>
-        /* Poner aca el CSS */
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora React</title>
+  <!-- React y ReactDOM via CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel para JSX en el navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Estilos generales */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #f5d29a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .phone {
+      width: 300px;
+      height: 600px;
+      background: #000;
+      border-radius: 40px;
+      padding: 20px;
+      box-sizing: border-box;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .display {
+      color: #fff;
+      font-size: 48px;
+      text-align: right;
+      margin-bottom: 20px;
+      padding: 0 10px;
+      min-height: 60px;
+      word-wrap: break-word;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+    }
+    .btn {
+      border: none;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      outline: none;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .btn.top { background: #a5a5a5; color: #000; }
+    .btn.number { background: #333; color: #fff; }
+    .btn.operator { background: #ff9f0a; color: #fff; }
+    .btn.zero {
+      grid-column: span 2;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 28px;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <script type="text/babel">
+    function Calculator() {
+      const [value, setValue] = React.useState('0');
+      const [operator, setOperator] = React.useState(null);
+      const [prevValue, setPrevValue] = React.useState(null);
+      const [overwrite, setOverwrite] = React.useState(false);
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+      const handleNumber = (digit) => {
+        if (overwrite) {
+          setValue(digit);
+          setOverwrite(false);
+        } else {
+          setValue(value === '0' ? digit : value + digit);
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      const handleOperator = (op) => {
+        if (operator && !overwrite) {
+          const result = compute();
+          setValue(String(result));
+          setPrevValue(result);
+        } else {
+          setPrevValue(parseFloat(value));
+        }
+        setOperator(op);
+        setOverwrite(true);
+      };
+
+      const compute = () => {
+        const current = parseFloat(value);
+        const previous = prevValue;
+        if (operator === '+') return previous + current;
+        if (operator === '-') return previous - current;
+        if (operator === '×') return previous * current;
+        if (operator === '÷') return previous / current;
+        return current;
+      };
+
+      const handleEqual = () => {
+        if (!operator) return;
+        const result = compute();
+        setValue(String(result));
+        setPrevValue(null);
+        setOperator(null);
+        setOverwrite(true);
+      };
+
+      const handleClear = () => {
+        setValue('0');
+        setPrevValue(null);
+        setOperator(null);
+        setOverwrite(false);
+      };
+
+      const handlePlusMinus = () => {
+        setValue(String(parseFloat(value) * -1));
+      };
+
+      const handlePercent = () => {
+        setValue(String(parseFloat(value) / 100));
+      };
+
+      const handleDot = () => {
+        if (overwrite) {
+          setValue('0.');
+          setOverwrite(false);
+        } else if (!value.includes('.')) {
+          setValue(value + '.');
+        }
+      };
+
+      return (
+        <div className="phone">
+          <div className="display">{value}</div>
+          <div className="buttons">
+            <button className="btn top" onClick={handleClear}>AC</button>
+            <button className="btn top" onClick={handlePlusMinus}>±</button>
+            <button className="btn top" onClick={handlePercent}>%</button>
+            <button className="btn operator" onClick={() => handleOperator('÷')}>÷</button>
+
+            {[7,8,9].map(n => (
+              <button key={n} className="btn number" onClick={() => handleNumber(String(n))}>{n}</button>
+            ))}
+            <button className="btn operator" onClick={() => handleOperator('×')}>×</button>
+
+            {[4,5,6].map(n => (
+              <button key={n} className="btn number" onClick={() => handleNumber(String(n))}>{n}</button>
+            ))}
+            <button className="btn operator" onClick={() => handleOperator('-')}>-</button>
+
+            {[1,2,3].map(n => (
+              <button key={n} className="btn number" onClick={() => handleNumber(String(n))}>{n}</button>
+            ))}
+            <button className="btn operator" onClick={() => handleOperator('+')}>+</button>
+
+            <button className="btn number zero" onClick={() => handleNumber('0')}>0</button>
+            <button className="btn number" onClick={handleDot}>.</button>
+            <button className="btn operator" onClick={handleEqual}>=</button>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<Calculator/>);
+  </script>
 </body>
 </html>

@@ -4,25 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora React</title>
-
     <style>
-        /* Poner aca el CSS */
+        body {
+            background: #f9d9aa;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calc-container {
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 0 0 10px #fff, 0 8px 40px #0002;
+            width: 340px;
+            padding: 24px 0 24px 0;
+            position: relative;
+        }
+        .calc-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 32px;
+            background: #fff;
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
+            z-index: 2;
+        }
+        .calc-screen {
+            background: #111;
+            color: #fff;
+            font-size: 60px;
+            text-align: right;
+            padding: 40px 24px 24px 24px;
+            border-radius: 32px 32px 0 0;
+            min-height: 90px;
+            letter-spacing: 2px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow-x: auto;
+        }
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            padding: 24px;
+            background: #111;
+            border-radius: 0 0 32px 32px;
+        }
+        .btn {
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 28px;
+            font-family: inherit;
+            cursor: pointer;
+            background: #222;
+            color: #fff;
+            transition: background 0.1s;
+        }
+        .btn:active {
+            background: #444;
+        }
+        .btn.gray {
+            background: #a5a5a5;
+            color: #111;
+        }
+        .btn.orange {
+            background: #ff9f0a;
+            color: #fff;
+        }
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 30px;
+            text-align: left;
+            padding-left: 32px;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
+    <!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
+    <!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState('0');
+            const [operador, setOperador] = useState(null);
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+
+            const handleClick = (valor) => {
+                if (/\d/.test(valor)) {
+                    if (pantalla.length > 8) return;
+                    if (pantalla === '0' || esperandoNuevo) {
+                        setPantalla(valor);
+                        setEsperandoNuevo(false);
+                    } else {
+                        setPantalla(pantalla + valor);
+                    }
+                } else if (valor === '.') {
+                    if (!pantalla.includes('.')) {
+                        setPantalla(pantalla + '.');
+                    }
+                } else if (['+', '-', '×', '÷'].includes(valor)) {
+                    setOperador(valor);
+                    setValorAnterior(parseFloat(pantalla));
+                    setEsperandoNuevo(true);
+                } else if (valor === '=') {
+                    if (operador && valorAnterior !== null) {
+                        let resultado = 0;
+                        const actual = parseFloat(pantalla);
+                        switch (operador) {
+                            case '+': resultado = valorAnterior + actual; break;
+                            case '-': resultado = valorAnterior - actual; break;
+                            case '×': resultado = valorAnterior * actual; break;
+                            case '÷': resultado = actual === 0 ? 'Error' : valorAnterior / actual; break;
+                            default: break;
+                        }
+                        setPantalla(resultado.toString().length > 8 ? resultado.toExponential(4) : resultado.toString());
+                        setOperador(null);
+                        setValorAnterior(null);
+                        setEsperandoNuevo(true);
+                    }
+                } else if (valor === 'AC') {
+                    setPantalla('0');
+                    setOperador(null);
+                    setValorAnterior(null);
+                    setEsperandoNuevo(false);
+                } else if (valor === '+/-') {
+                    if (pantalla !== '0') {
+                        setPantalla(
+                            pantalla.charAt(0) === '-' ? pantalla.slice(1) : '-' + pantalla
+                        );
+                    }
+                } else if (valor === '%') {
+                    setPantalla((parseFloat(pantalla) / 100).toString());
+                }
+            };
+
+            const botones = [
+                { label: 'AC', clase: 'gray' },
+                { label: '+/-', clase: 'gray' },
+                { label: '%', clase: 'gray' },
+                { label: '÷', clase: 'orange' },
+                { label: '7' },
+                { label: '8' },
+                { label: '9' },
+                { label: '×', clase: 'orange' },
+                { label: '4' },
+                { label: '5' },
+                { label: '6' },
+                { label: '-', clase: 'orange' },
+                { label: '1' },
+                { label: '2' },
+                { label: '3' },
+                { label: '+', clase: 'orange' },
+                { label: '0', clase: 'zero' },
+                { label: '.', },
+                { label: '=', clase: 'orange' },
+            ];
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    const key = e.key;
+                    if (/\d/.test(key)) handleClick(key);
+                    if (key === '.') handleClick('.');
+                    if (key === '+' || key === '-') handleClick(key);
+                    if (key === '*' || key === 'x') handleClick('×');
+                    if (key === '/') handleClick('÷');
+                    if (key === 'Enter' || key === '=') handleClick('=');
+                    if (key === '%') handleClick('%');
+                    if (key === 'Escape' || key === 'Delete') handleClick('AC');
+                    if (key === 'F9') handleClick('+/-');
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [pantalla, operador, valorAnterior, esperandoNuevo]);
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-notch"></div>
+                    <div className="calc-screen">{pantalla}</div>
+                    <div className="calc-buttons">
+                        {botones.map((btn, i) => (
+                            <button
+                                key={i}
+                                className={`btn${btn.clase ? ' ' + btn.clase : ''}${btn.label === '0' ? ' zero' : ''}`}
+                                onClick={() => handleClick(btn.label)}
+                            >
+                                {btn.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));

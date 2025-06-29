@@ -6,7 +6,137 @@
     <title>Calculadora React</title>
 
     <style>
-        /* Poner aca el CSS */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5deb3, #deb887);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .calculadora {
+            width: 320px;
+            height: 640px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 8px solid #f5f5f5;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calculadora::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #f5f5f5;
+            border-radius: 0 0 15px 15px;
+            z-index: 10;
+        }
+
+        .pantalla {
+            background: #000;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .operacion-display {
+            color: #888;
+            font-size: 20px;
+            font-weight: 300;
+            text-align: right;
+            margin-bottom: 5px;
+            min-height: 25px;
+        }
+
+        .display {
+            color: white;
+            font-size: 48px;
+            font-weight: 300;
+            text-align: right;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .boton {
+            border: none;
+            border-radius: 50%;
+            width: 65px;
+            height: 65px;
+            font-size: 28px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .boton:active {
+            transform: scale(0.95);
+        }
+
+        .numero, .punto {
+            background: #333;
+            color: white;
+        }
+
+        .numero:hover, .punto:hover {
+            background: #555;
+        }
+
+        .operacion {
+            background: #ff9500;
+            color: white;
+        }
+
+        .operacion:hover {
+            background: #ffb143;
+        }
+
+        .operacion.activo {
+            background: white;
+            color: #ff9500;
+        }
+
+        .funcion {
+            background: #a6a6a6;
+            color: black;
+        }
+
+        .funcion:hover {
+            background: #d4d4d4;
+        }
+
+        .cero {
+            grid-column: span 2;
+            border-radius: 35px;
+            width: 145px;
+            justify-content: flex-start;
+            padding-left: 25px;
+        }
     </style>
 </head>
 <body>
@@ -21,8 +151,177 @@
         const { useState, useEffect } = React;
 
         function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+            const [display, setDisplay] = useState('0');
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [operacion, setOperacion] = useState(null);
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [operacionActiva, setOperacionActiva] = useState(null);
+            const [mostrarOperacion, setMostrarOperacion] = useState('');
+
+            const inputNumero = (numero) => {
+                if (esperandoOperando) {
+                    setDisplay(String(numero));
+                    setEsperandoOperando(false);
+                } else {
+                    setDisplay(display === '0' ? String(numero) : display + numero);
+                }
+                setOperacionActiva(null);
+            };
+
+            const inputPunto = () => {
+                if (esperandoOperando) {
+                    setDisplay('0.');
+                    setEsperandoOperando(false);
+                } else if (display.indexOf('.') === -1) {
+                    setDisplay(display + '.');
+                }
+                setOperacionActiva(null);
+            };
+
+            const limpiar = () => {
+                setDisplay('0');
+                setValorAnterior(null);
+                setOperacion(null);
+                setEsperandoOperando(false);
+                setOperacionActiva(null);
+                setMostrarOperacion('');
+            };
+
+            const cambiarSigno = () => {
+                if (display !== '0') {
+                    setDisplay(display.startsWith('-') ? display.slice(1) : '-' + display);
+                }
+            };
+
+            const porcentaje = () => {
+                const valor = parseFloat(display);
+                setDisplay(String(valor / 100));
+            };
+
+            const realizarOperacion = (siguienteOperacion) => {
+                const valorActual = parseFloat(display);
+
+                if (valorAnterior === null) {
+                    setValorAnterior(valorActual);
+                    setMostrarOperacion(`${valorActual} ${siguienteOperacion}`);
+                } else if (operacion) {
+                    const valorPrevio = valorAnterior || 0;
+                    let resultado;
+
+                    switch (operacion) {
+                        case '+':
+                            resultado = valorPrevio + valorActual;
+                            break;
+                        case '-':
+                            resultado = valorPrevio - valorActual;
+                            break;
+                        case '×':
+                            resultado = valorPrevio * valorActual;
+                            break;
+                        case '÷':
+                            resultado = valorActual !== 0 ? valorPrevio / valorActual : 0;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    const resultadoStr = String(resultado);
+                    setDisplay(resultadoStr.length > 9 ? resultado.toExponential(3) : resultadoStr);
+                    setValorAnterior(resultado);
+                    setMostrarOperacion(`${resultado} ${siguienteOperacion}`);
+                }
+
+                setEsperandoOperando(true);
+                setOperacion(siguienteOperacion);
+                setOperacionActiva(siguienteOperacion);
+            };
+
+            const calcular = () => {
+                if (operacion && valorAnterior !== null) {
+                    const valorActual = parseFloat(display);
+                    const valorPrevio = valorAnterior || 0;
+                    let resultado;
+
+                    // Mostrar la operación completa antes de calcular
+                    setMostrarOperacion(`${valorPrevio} ${operacion} ${valorActual} =`);
+
+                    switch (operacion) {
+                        case '+':
+                            resultado = valorPrevio + valorActual;
+                            break;
+                        case '-':
+                            resultado = valorPrevio - valorActual;
+                            break;
+                        case '×':
+                            resultado = valorPrevio * valorActual;
+                            break;
+                        case '÷':
+                            resultado = valorActual !== 0 ? valorPrevio / valorActual : 0;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    const resultadoStr = String(resultado);
+                    setDisplay(resultadoStr.length > 9 ? resultado.toExponential(3) : resultadoStr);
+                    
+                    setOperacion(null);
+                    setValorAnterior(null);
+                    setEsperandoOperando(true);
+                    setOperacionActiva(null);
+                    
+                    // Limpiar la operación después de un breve momento
+                    setTimeout(() => {
+                        setMostrarOperacion('');
+                    }, 1500);
+                }
+            };
+
+            return (
+                <div className="calculadora">
+                    <div className="pantalla">
+                        <div className="operacion-display">{mostrarOperacion}</div>
+                        <div className="display">{display}</div>
+                    </div>
+                    <div className="botones">
+                        <button className="boton funcion" onClick={limpiar}>AC</button>
+                        <button className="boton funcion" onClick={cambiarSigno}>+/-</button>
+                        <button className="boton funcion" onClick={porcentaje}>%</button>
+                        <button 
+                            className={`boton operacion ${operacionActiva === '÷' ? 'activo' : ''}`}
+                            onClick={() => realizarOperacion('÷')}
+                        >÷</button>
+
+                        <button className="boton numero" onClick={() => inputNumero(7)}>7</button>
+                        <button className="boton numero" onClick={() => inputNumero(8)}>8</button>
+                        <button className="boton numero" onClick={() => inputNumero(9)}>9</button>
+                        <button 
+                            className={`boton operacion ${operacionActiva === '×' ? 'activo' : ''}`}
+                            onClick={() => realizarOperacion('×')}
+                        >×</button>
+
+                        <button className="boton numero" onClick={() => inputNumero(4)}>4</button>
+                        <button className="boton numero" onClick={() => inputNumero(5)}>5</button>
+                        <button className="boton numero" onClick={() => inputNumero(6)}>6</button>
+                        <button 
+                            className={`boton operacion ${operacionActiva === '-' ? 'activo' : ''}`}
+                            onClick={() => realizarOperacion('-')}
+                        >-</button>
+
+                        <button className="boton numero" onClick={() => inputNumero(1)}>1</button>
+                        <button className="boton numero" onClick={() => inputNumero(2)}>2</button>
+                        <button className="boton numero" onClick={() => inputNumero(3)}>3</button>
+                        <button 
+                            className={`boton operacion ${operacionActiva === '+' ? 'activo' : ''}`}
+                            onClick={() => realizarOperacion('+')}
+                        >+</button>
+
+                        <button className="boton numero cero" onClick={() => inputNumero(0)}>0</button>
+                        <button className="boton punto" onClick={inputPunto}>.</button>
+                        <button className="boton operacion" onClick={calcular}>=</button>
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));

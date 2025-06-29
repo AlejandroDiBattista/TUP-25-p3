@@ -2,11 +2,117 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calculadora React</title>
-
     <style>
-        /* Poner aca el CSS */
+        body {
+            background: #222;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .calculator {
+            background: #111;
+            border-radius: 40px;
+            box-shadow: 0 4px 24px #000a;
+            padding: 24px 16px 16px 16px;
+            width: 100vw;
+            max-width: 390px; /* iPhone 13 width */
+            height: 90vh;
+            max-height: 820px; /* iPhone 13 available height minus status bar */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .display {
+            color: white;
+            background: none;
+            font-size: 3.5rem;
+            text-align: right;
+            padding: 32px 10px 18px 10px;
+            border-radius: 16px;
+            min-height: 70px;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+            overflow-x: auto;
+            user-select: text;
+        }
+        .buttons {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .button-row {
+            display: flex;
+            margin-bottom: 14px;
+        }
+        .btn {
+            flex: 1;
+            margin: 4px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: filter 0.2s;
+            outline: none;
+            box-shadow: 0 1px 2px #0005;
+        }
+        .btn:active {
+            filter: brightness(1.2);
+        }
+        .btn.number {
+            background: #333;
+            color: white;
+        }
+        .btn.zero {
+            flex: 2.25;
+            border-radius: 32px;
+            text-align: left;
+            padding-left: 38px;
+        }
+        .btn.function {
+            background: #a5a5a5;
+            color: #111;
+        }
+        .btn.operator {
+            background: #f1a33c;
+            color: white;
+        }
+
+        /* iPhone notch mockup (opcional, solo visual) */
+        .notch {
+            width: 120px;
+            height: 30px;
+            background: #222;
+            border-radius: 0 0 30px 30px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        @media (max-width: 450px) {
+            .calculator {
+                max-width: 100vw;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -18,11 +124,159 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [prev, setPrev] = useState(null);
+            const [operator, setOperator] = useState(null);
+            const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+            // Formatea el número con puntos de miles y coma decimal
+            function formatNumber(numStr) {
+                if (numStr === 'Error') return numStr;
+                if (numStr === '' || numStr === '-') return numStr;
+                let [ent, dec] = numStr.split('.');
+                let negative = ent.startsWith('-');
+                if (negative) ent = ent.slice(1);
+                ent = ent.replace(/^0+(?!$)/, ''); // Quitar ceros a la izquierda
+                ent = Number(ent || '0').toLocaleString('es-AR');
+                let result = (negative ? '-' : '') + ent;
+                if (dec !== undefined) result += ',' + dec;
+                return result;
+            }
+
+            // Manejar click en números y punto
+            const inputNumber = (num) => {
+                if (waitingForOperand) {
+                    setDisplay(num === '.' ? '0.' : num);
+                    setWaitingForOperand(false);
+                } else {
+                    if (num === '.' && display.includes('.')) return;
+                    setDisplay(display === '0' && num !== '.' ? num : display + num);
+                }
+            };
+
+            // Manejar funciones AC, +/-, %
+            const handleFunction = (func) => {
+                if (func === 'AC') {
+                    setDisplay('0');
+                    setPrev(null);
+                    setOperator(null);
+                    setWaitingForOperand(false);
+                } else if (func === '+/-') {
+                    setDisplay(
+                        display.charAt(0) === '-' ? display.slice(1) : (display !== '0' ? '-' + display : display)
+                    );
+                } else if (func === '%') {
+                    setDisplay((parseFloat(display) / 100).toString());
+                }
+            };
+
+            // Manejar operadores
+            const handleOperator = (op) => {
+                if (operator && !waitingForOperand) {
+                    const result = calculate(prev, display, operator);
+                    setPrev(result);
+                    setDisplay(result);
+                } else {
+                    setPrev(display);
+                }
+                setOperator(op);
+                setWaitingForOperand(true);
+            };
+
+            // Calcular resultado
+            const handleEqual = () => {
+                if (!operator || prev === null) return;
+                const result = calculate(prev, display, operator);
+                setDisplay(result);
+                setPrev(null);
+                setOperator(null);
+                setWaitingForOperand(true);
+            };
+
+            // Lógica de operaciones
+            function calculate(a, b, op) {
+                const x = parseFloat(a.replace(',', '.'));
+                const y = parseFloat(b.replace(',', '.'));
+                let res = 0;
+                switch (op) {
+                    case '+': res = x + y; break;
+                    case '-': res = x - y; break;
+                    case '×': res = x * y; break;
+                    case '÷': res = y === 0 ? 'Error' : x / y; break;
+                    default: return b;
+                }
+                // Manejar decimales largos
+                return String(Number.isFinite(res) ? parseFloat(res.toFixed(8)) : res);
+            }
+
+            // Botones en orden de filas
+            const buttons = [
+                [
+                    { label: 'AC', type: 'function' },
+                    { label: '+/-', type: 'function' },
+                    { label: '%', type: 'function' },
+                    { label: '÷', type: 'operator' },
+                ],
+                [
+                    { label: '7', type: 'number' },
+                    { label: '8', type: 'number' },
+                    { label: '9', type: 'number' },
+                    { label: '×', type: 'operator' },
+                ],
+                [
+                    { label: '4', type: 'number' },
+                    { label: '5', type: 'number' },
+                    { label: '6', type: 'number' },
+                    { label: '-', type: 'operator' },
+                ],
+                [
+                    { label: '1', type: 'number' },
+                    { label: '2', type: 'number' },
+                    { label: '3', type: 'number' },
+                    { label: '+', type: 'operator' },
+                ],
+                [
+                    { label: '0', type: 'number', className: 'zero' },
+                    { label: '.', type: 'number' },
+                    { label: '=', type: 'operator' },
+                ],
+            ];
+
+            // Renderizar botones
+            return (
+                <div className="calculator">
+                    <div className="notch" />
+                    <div className="display">{formatNumber(display)}</div>
+                    <div className="buttons">
+                        {buttons.map((row, i) => (
+                            <div className="button-row" key={i}>
+                                {row.map((btn, j) => {
+                                    let classNames = "btn ";
+                                    classNames += btn.type;
+                                    if (btn.className) classNames += " " + btn.className;
+                                    return (
+                                        <button
+                                            key={btn.label}
+                                            className={classNames}
+                                            onClick={() => {
+                                                if (btn.type === 'number') inputNumber(btn.label);
+                                                else if (btn.type === 'function') handleFunction(btn.label);
+                                                else if (btn.label === '=') handleEqual();
+                                                else handleOperator(btn.label);
+                                            }}
+                                        >
+                                            {btn.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));

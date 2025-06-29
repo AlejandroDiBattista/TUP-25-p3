@@ -1,32 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #fad9a0;
+    }
 
-    <style>
-        /* Poner aca el CSS */
-    </style>
+    .phone {
+      width: 300px;
+      height: 600px;
+      background: #000;
+      border-radius: 40px;
+      padding: 20px;
+      box-sizing: border-box;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 10px solid white; 
+      position: relative;
+    }
+
+    .notch {
+      position: absolute;
+      top: -10px; 
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #fff;
+      border-radius: 0 0 20px 20px;
+      z-index: 2;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+
+    .display {
+      font-size: 48px;
+      text-align: right;
+      padding: 20px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: break-all;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      font-size: 24px;
+      border: none;
+      border-radius: 50px;
+      height: 60px;
+      color: white;
+      background: #333;
+      cursor: pointer;
+    }
+
+    .gray {
+      background: #a5a5a5;
+      color: black;
+    }
+
+    .orange {
+      background: #ff9500;
+    }
+
+    .zero {
+      grid-column: span 2;
+      text-align: left;
+      padding-left: 30px;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-<!-- React y ReactDOM desde CDN -->
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
-        function Calculadora(){
-            // Poner aca el JavaScript
-            return <h1><center>1+2=?</center></h1>;
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [input, setInput] = useState("0");
+
+      const handleClick = (value) => {
+        if (value === "AC") {
+          setInput("0");
+        } else if (value === "±") {
+          if (input !== "0" && input !== "Error") {
+            if (input.startsWith("-")) {
+              setInput(input.slice(1));
+            } else {
+              setInput("-" + input);
+            }
+          }
+        } else if (value === "%") {
+          if (input !== "Error") {
+            setInput(input + "%");
+          }
+        } else if (value === "=") {
+          try {
+            let expression = input.replace(/÷/g, "/").replace(/×/g, "*");
+            // Reemplaza todos los % por /100
+            expression = expression.replace(/(\d+(\.\d+)?)%/g, "($1/100)");
+            const result = eval(expression);
+            setInput(result.toString());
+          } catch {
+            setInput("Error");
+          }
+        } else {
+          if (input === "0" && !isNaN(value)) {
+            setInput(value);
+          } else {
+            setInput(input + value);
+          }
         }
+      };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
-    </script>
+      const botones = [
+        ["AC", "±", "%", "÷"],
+        ["7", "8", "9", "×"],
+        ["4", "5", "6", "-"],
+        ["1", "2", "3", "+"],
+        ["0", ".", "="],
+      ];
+
+      return (
+        <div className="phone">
+          <div className="notch"></div>
+          <div className="display">{input}</div>
+          <div className="buttons">
+            {botones.flat().map((btn, i) => (
+              <button
+                key={i}
+                className={
+                  btn === "AC" || btn === "±" || btn === "%" ? "gray" :
+                  btn === "÷" || btn === "×" || btn === "-" || btn === "+" || btn === "=" ? "orange" :
+                  btn === "0" ? "zero" : ""
+                }
+                onClick={() => handleClick(btn)}
+              >
+                {btn}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Calculadora />);
+  </script>
 </body>
 </html>
