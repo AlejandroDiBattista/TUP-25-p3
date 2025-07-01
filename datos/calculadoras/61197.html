@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        body {
+            background: #ffe4b5;
+            font-family: 'SF Pro Display', Arial, sans-serif;
+        }
+        .calc-container {
+            background: #000;
+            height: 700px;
+            margin: 40px auto;
+            border-radius: 40px;
+            box-shadow: 0 0 30px #d2b48c;
+            padding: 30px 15px 20px 15px;
+            border: 8px solid #fff; 
+        }
+        .calc-screen {
+            background: transparent;
+            color: #fff;
+            font-size: 3em;
+            text-align: right;
+            padding: 30px 10px 20px 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            padding-top: 60px;
+        }
+        .calc-btn {
+            height: 90px;
+            border-radius: 50%;
+            font-size: 2em;
+            border: none;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px #0002;
+        }
+        .calc-btn.zero {
+            grid-column: span 2;
+            border-radius: 50px;
+            justify-content: flex-start;
+            padding-left: 40px;
+        }
+        .calc-btn.func {
+            background: #a5a5a5;
+            color: #000;
+        }
+        .calc-btn.func:hover {
+            background: #bdbdbd;
+        }
+        .calc-btn.op {
+            background: #ff9500;
+            color: #fff;
+        }
+        .calc-btn.op:hover {
+            background: #ffa733;
+        }
+        .calc-btn.num {
+            background: #222;
+            color: #fff;
+        }
+        .calc-btn.num:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora(){
+            const [pantalla, setPantalla] = useState("");
+            const [resultado, setResultado] = useState("");
+
+            const handleClick = (valor) => {
+                if (resultado && /[0-9.]/.test(valor)) {
+                    setPantalla(valor);
+                    setResultado("");
+                } else {
+                    setPantalla(pantalla + valor);
+                }
+            };
+
+            const handleClear = () => {
+                setPantalla("");
+                setResultado("");
+            };
+
+            const handleSign = () => {
+                if (pantalla) {
+                    if (pantalla[0] === '-') setPantalla(pantalla.slice(1));
+                    else setPantalla('-' + pantalla);
+                }
+            };
+
+            const handlePercent = () => {
+                if (pantalla) {
+                    setPantalla((parseFloat(pantalla) / 100).toString());
+                }
+            };
+
+            const handleEqual = () => {
+                try {
+                    let res = eval(pantalla);
+                    setResultado(res);
+                } catch {
+                    setResultado("Error");
+                }
+            };
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-screen">{resultado !== "" ? resultado : pantalla || 0}</div>
+                    <div className="calc-buttons">
+                        <button className="calc-btn func" onClick={handleClear}>AC</button>
+                        <button className="calc-btn func" onClick={handleSign}>±</button>
+                        <button className="calc-btn func" onClick={handlePercent}>%</button>
+                        <button className="calc-btn op" onClick={() => handleClick("/")}>÷</button>
+                        <button className="calc-btn num" onClick={() => handleClick("7")}>7</button>
+                        <button className="calc-btn num" onClick={() => handleClick("8")}>8</button>
+                        <button className="calc-btn num" onClick={() => handleClick("9")}>9</button>
+                        <button className="calc-btn op" onClick={() => handleClick("*")}>×</button>
+                        <button className="calc-btn num" onClick={() => handleClick("4")}>4</button>
+                        <button className="calc-btn num" onClick={() => handleClick("5")}>5</button>
+                        <button className="calc-btn num" onClick={() => handleClick("6")}>6</button>
+                        <button className="calc-btn op" onClick={() => handleClick("-")}>-</button>
+                        <button className="calc-btn num" onClick={() => handleClick("1")}>1</button>
+                        <button className="calc-btn num" onClick={() => handleClick("2")}>2</button>
+                        <button className="calc-btn num" onClick={() => handleClick("3")}>3</button>
+                        <button className="calc-btn op" onClick={() => handleClick("+")}>+</button>
+                        <button className="calc-btn num zero" onClick={() => handleClick("0")}>0</button>
+                        <button className="calc-btn num" onClick={() => handleClick(".")}>.</button>
+                        <button className="calc-btn op" onClick={handleEqual}>=</button>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

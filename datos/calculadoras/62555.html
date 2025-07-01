@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        body {
+            background: #f9deb5;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .iphone-frame {
+            background: #fff;
+            border-radius: 60px;
+            box-shadow: 0 8px 32px #0002;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+     
+        .volumen {
+            position: absolute;
+            left: -3px;
+            top: 90px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 3;
+        }
+        .vol-btn {
+            width: 8px;
+            height: 48px;
+            background: #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px #0002;
+        }
+        .vol-btn.short {
+            height: 32px;
+            margin-left: 0;
+        }
+        .power {
+            position: absolute;
+            right: -1px;
+            top: 115px;
+            width: 8px;
+            height: 64px;
+            background: #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px #0002;
+            z-index: 3;
+        }
+        
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 38px;
+            background: #fff;
+            border-bottom-left-radius: 28px 18px;
+            border-bottom-right-radius: 28px 18px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .phone {
+            background: #111;
+            border-radius: 48px;
+            width: 370px;
+            height: 760px;
+            padding: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        .screen {
+            background: #111;
+            color: #fff;
+            border-radius: 40px 40px 0 0;
+            width: 100%;
+            height: 320px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            font-size: 90px;
+            padding: 0 32px 16px 32px;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+        .buttons {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            padding: 0 24px 24px 24px;
+            box-sizing: border-box;
+        }
+        .btn {
+            height: 72px;
+            border-radius: 50%;
+            border: none;
+            font-size: 32px;
+            font-family: 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
+            background: #222;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px #0001;
+        }
+        .btn:active {
+            background: #444;
+        }
+        .btn.gray {
+            background: #a5a5a5;
+            color: #222;
+        }
+        .btn.orange {
+            background: #ff9f0a;
+            color: #fff;
+        }
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 36px;
+            justify-content: flex-start;
+            padding-left: 32px;
+            width: 100%;
+        }
+        @media (max-width: 400px) {
+            .phone { width: 100vw; height: 100vh; border-radius: 0; }
+            .screen { font-size: 10vw; }
+        }
+    </style>
+</head>
+<body>
+        <div class="iphone-frame">
+            <div class="volumen">
+                <div class="vol-btn short"></div>
+                <div class="vol-btn"></div>
+                <div class="vol-btn"></div>
+            </div>
+            <div class="power"></div>
+            <div id="root"></div>
+        </div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [operador, setOperador] = useState(null);
+            const [esperando, setEsperando] = useState(false);
+            const [acumulador, setAcumulador] = useState(null);
+
+            const botones = [
+                { label: 'AC', type: 'gray' },
+                { label: '+/-', type: 'gray' },
+                { label: '%', type: 'gray' },
+                { label: '÷', type: 'orange' },
+                { label: '7' },
+                { label: '8' },
+                { label: '9' },
+                { label: '×', type: 'orange' },
+                { label: '4' },
+                { label: '5' },
+                { label: '6' },
+                { label: '-', type: 'orange' },
+                { label: '1' },
+                { label: '2' },
+                { label: '3' },
+                { label: '+', type: 'orange' },
+                { label: '0', className: 'zero' },
+                { label: '.', },
+                { label: '=', type: 'orange' },
+            ];
+
+            function handleClick(label) {
+                if (/\d/.test(label)) {
+                    if (display === '0' || esperando) {
+                        setDisplay(label);
+                        setEsperando(false);
+                    } else {
+                        setDisplay(display + label);
+                    }
+                } else if (label === '.') {
+                    if (!display.includes('.')) {
+                        setDisplay(display + '.');
+                    }
+                } else if (label === 'AC') {
+                    setDisplay('0');
+                    setOperador(null);
+                    setAcumulador(null);
+                    setEsperando(false);
+                } else if (label === '+/-') {
+                    setDisplay((parseFloat(display) * -1).toString());
+                } else if (label === '%') {
+                    setDisplay((parseFloat(display) / 100).toString());
+                } else if (['+', '-', '×', '÷'].includes(label)) {
+                    if (acumulador !== null && !esperando) {
+                        const resultado = calcular(acumulador, display, operador);
+                        setAcumulador(resultado);
+                        setDisplay(resultado.toString());
+                    } else {
+                        setAcumulador(display);
+                    }
+                    setOperador(label);
+                    setEsperando(true);
+                } else if (label === '=') {
+                    if (operador && acumulador !== null) {
+                        const resultado = calcular(acumulador, display, operador);
+                        setDisplay(resultado.toString());
+                        setAcumulador(null);
+                        setOperador(null);
+                        setEsperando(true);
+                    }
+                }
+            }
+
+            function calcular(a, b, op) {
+                const x = parseFloat(a);
+                const y = parseFloat(b);
+                switch (op) {
+                    case '+': return x + y;
+                    case '-': return x - y;
+                    case '×': return x * y;
+                    case '÷': return y === 0 ? 'Error' : x / y;
+                    default: return y;
+                }
+            }
+
+            return (
+                <div className="phone">
+                    <div className="notch"></div>
+                    <div className="screen">{display.length > 8 ? parseFloat(display).toExponential(4) : display}</div>
+                    <div className="buttons">
+                        {botones.map((btn, i) => (
+                            <button
+                                key={btn.label}
+                                className={
+                                    'btn' +
+                                    (btn.type ? ' ' + btn.type : '') +
+                                    (btn.className ? ' ' + btn.className : '')
+                                }
+                                onClick={() => handleClick(btn.label)}
+                            >
+                                {btn.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

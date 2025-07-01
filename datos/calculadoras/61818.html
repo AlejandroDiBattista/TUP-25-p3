@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora TP7</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 320px;
+            height: 600px;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 
+                20px 20px 60px #1a252f,
+                -20px -20px 60px #3e5869,
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .phone-container::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 5px;
+            background: #34495e;
+            border-radius: 3px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .display {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            box-shadow: 
+                inset 8px 8px 16px rgba(0, 0, 0, 0.6),
+                inset -8px -8px 16px rgba(40, 40, 40, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .display-operation {
+            color: #888;
+            font-size: 14px;
+            text-align: right;
+            margin-bottom: 8px;
+            min-height: 18px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-style: italic;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .display-result {
+            color: #fff;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            flex: 1;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            min-height: 60px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-number {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-number:hover {
+            background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-operator {
+            background: linear-gradient(145deg, #ff6b35, #f7931e);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-operator:hover {
+            background: linear-gradient(145deg, #ff7b45, #f8a31e);
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-operator.active {
+            background: linear-gradient(145deg, #fff, #f0f0f0);
+            color: #ff6b35;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+        }
+
+        .btn-clear {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-clear:hover {
+            background: linear-gradient(145deg, #f75c4c, #d0493b);
+            box-shadow: 0 8px 16px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-equals {
+            background: linear-gradient(145deg, #27ae60, #2ecc71);
+            color: #fff;
+            grid-row: span 2;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            font-size: 24px;
+        }
+
+        .btn-equals:hover {
+            background: linear-gradient(145deg, #37be70, #3edc81);
+            box-shadow: 0 8px 16px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 480px) {
+            .phone-container {
+                width: 90vw;
+                height: 70vh;
+                max-width: 350px;
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.4); }
+        }
+
+        .btn:focus {
+            outline: none;
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .btn:active::before {
+            width: 100px;
+            height: 100px;
+        }
+
+        .phone-container::after {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background: #3e5869;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.03) 0%,
+                transparent 100%
+            );
+            border-radius: 20px 20px 0 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora(){
+            const [display, setDisplay] = useState('0');
+            const [previousValue, setPreviousValue] = useState(null);
+            const [operation, setOperation] = useState(null);
+            const [waitingForNumber, setWaitingForNumber] = useState(false);
+            const [history, setHistory] = useState('');
+
+            const formatDisplay = (value) => {
+                const str = String(value);
+                if (str.length > 12) {
+                    const num = parseFloat(value);
+                    if (num > 999999999999) {
+                        return num.toExponential(5);
+                    } else {
+                        return num.toFixed(8).replace(/\.?0+$/, '');
+                    }
+                }
+                return str;
+            };
+
+            const inputNumber = (num) => {
+                if (waitingForNumber) {
+                    setDisplay(String(num));
+                    setWaitingForNumber(false);
+                } else {
+                    setDisplay(display === '0' ? String(num) : display + num);
+                }
+            };
+
+            const inputDecimal = () => {
+                if (waitingForNumber) {
+                    setDisplay('0.');
+                    setWaitingForNumber(false);
+                } else if (display.indexOf('.') === -1) {
+                    setDisplay(display + '.');
+                }
+            };
+
+            const clear = () => {
+                setDisplay('0');
+                setPreviousValue(null);
+                setOperation(null);
+                setWaitingForNumber(false);
+                setHistory('');
+            };
+
+            const performOperation = (nextOperation) => {
+                const inputValue = parseFloat(display);
+
+                if (previousValue === null) {
+                    setPreviousValue(inputValue);
+                    setHistory(`${inputValue} ${nextOperation}`);
+                } else if (operation) {
+                    const currentValue = previousValue || 0;
+                    const newValue = calculate(currentValue, inputValue, operation);
+
+                    setDisplay(formatDisplay(newValue));
+                    setPreviousValue(newValue);
+                    setHistory(`${newValue} ${nextOperation}`);
+                }
+
+                setWaitingForNumber(true);
+                setOperation(nextOperation);
+            };
+
+            const calculate = (firstValue, secondValue, operation) => {
+                switch (operation) {
+                    case '+':
+                        return firstValue + secondValue;
+                    case '-':
+                        return firstValue - secondValue;
+                    case '×':
+                        return firstValue * secondValue;
+                    case '÷':
+                        return secondValue !== 0 ? firstValue / secondValue : 0;
+                    default:
+                        return secondValue;
+                }
+            };
+
+            const handleEquals = () => {
+                const inputValue = parseFloat(display);
+
+                if (previousValue !== null && operation) {
+                    const newValue = calculate(previousValue, inputValue, operation);
+                    setDisplay(formatDisplay(newValue));
+                    setHistory('');
+                    setPreviousValue(null);
+                    setOperation(null);
+                    setWaitingForNumber(true);
+                }
+            };
+
+            return (
+                <div className="phone-container">
+                    <div className="screen">
+                        <div className="display">
+                            <div className="display-operation">{history}</div>
+                            <div className="display-result">{display}</div>
+                        </div>
+                        
+                        <div className="buttons-container">
+                            <button className="btn btn-clear" onClick={clear}>C</button>
+                            <button className="btn btn-clear" onClick={() => setDisplay(display.slice(0, -1) || '0')}>⌫</button>
+                            <button className="btn btn-operator" onClick={() => performOperation('÷')}>÷</button>
+                            <button className="btn btn-operator" onClick={() => performOperation('×')}>×</button>
+                            
+                            <button className="btn btn-number" onClick={() => inputNumber(7)}>7</button>
+                            <button className="btn btn-number" onClick={() => inputNumber(8)}>8</button>
+                            <button className="btn btn-number" onClick={() => inputNumber(9)}>9</button>
+                            <button className="btn btn-operator" onClick={() => performOperation('-')}>-</button>
+                            
+                            <button className="btn btn-number" onClick={() => inputNumber(4)}>4</button>
+                            <button className="btn btn-number" onClick={() => inputNumber(5)}>5</button>
+                            <button className="btn btn-number" onClick={() => inputNumber(6)}>6</button>
+                            <button className="btn btn-operator" onClick={() => performOperation('+')}>+</button>
+                            
+                            <button className="btn btn-number" onClick={() => inputNumber(1)}>1</button>
+                            <button className="btn btn-number" onClick={() => inputNumber(2)}>2</button>
+                            <button className="btn btn-number" onClick={() => inputNumber(3)}>3</button>
+                            <button className="btn btn-equals" onClick={handleEquals}>=</button>
+                            
+                            <button className="btn btn-number btn-zero" onClick={() => inputNumber(0)}>0</button>
+                            <button className="btn btn-number" onClick={inputDecimal}>.</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

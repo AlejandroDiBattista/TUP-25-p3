@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        /*Poner aca el CSS de la calculadora*/
+        body {
+            background: #dddd80;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calc-container {
+            background: #fff;
+            border-radius: 40px;
+            padding: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            width: 310px;
+            height: 550px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            position: relative;
+        }
+        .calc-inner {
+            background: #000;
+            border-radius: 28px;
+            padding: 0 2.5px 18px 2.5px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            height: calc(100% - 16px); /* alto del bloque negro igual al ancho del padding (8px arriba y abajo) */
+            margin-top: 8px; /* igual al padding superior */
+            justify-content: flex-end;
+            position: relative;
+            z-index: 2;
+        }
+        .calc-notch {
+            position: absolute;
+            top: 8px; /* igual al nuevo margin-top del bloque negro */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px; /* notch un poco más ancho */
+            height: 20px;
+            background: #fff;
+            border-radius: 10px 10px 20px 20px;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .calc-display {
+            color: #fff;
+            font-size: 44px;
+            font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+            text-align: right;
+            min-height: 60px;
+            margin-bottom: 18px;
+            padding: 0 24px 8px 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            word-break: break-all;
+            max-width: 256px;
+            margin-left: auto;
+            margin-right: 0;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+        }
+        .calc-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .calc-row {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: filter 0.1s, box-shadow 0.1s;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .btn:active {
+            filter: brightness(0.92);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+        .btn-func {
+            background: #e0e0e0;
+            color: #222;
+            font-weight: bold;
+        }
+        .btn-num {
+            background: #333;
+            color: #fff;
+        }
+        .btn-op {
+            background: #ff9500;
+            color: #fff;
+        }
+        .btn-zero {
+            width: 120px;
+            border-radius: 28px;
+            justify-content: flex-start;
+            padding-left: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Poner aca el JavaScript
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState('0');
+            const [expresion, setExpresion] = useState('');
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [mostrandoResultado, setMostrandoResultado] = useState(false); // Nuevo estado
+
+            // Ingresamos el manejo de teclas
+            // para que la calculadora responda a las teclas del teclado
+            useEffect(() => {
+                const mapaTeclas = {
+                    '+': '+',
+                    '-': '-',
+                    '*': '*',
+                    'x': '*',
+                    'X': '*',
+                    '/': '/',
+                    ',': '.',
+                    '.': '.',
+                    '%': '%',
+                    'Enter': '=',
+                    '=': '=',
+                    'Delete': 'AC', // Solo la tecla Delete borra todo
+                };
+                function manejarTecla(e) {
+                    if (e.ctrlKey || e.altKey || e.metaKey) return;
+                    let tecla = e.key;
+                    if (tecla >= '0' && tecla <= '9') {
+                        manejarClic(tecla);
+                        e.preventDefault();
+                    } else if (mapaTeclas[tecla]) {
+                        manejarClic(mapaTeclas[tecla]);
+                        e.preventDefault();
+                    } else if (tecla === '+/-' || tecla === 'F9') {
+                        manejarClic('+/-');
+                        e.preventDefault();
+                    } else if (tecla === 'Backspace') {
+                        manejarRetroceso();
+                        e.preventDefault();
+                    }
+                }
+                window.addEventListener('keydown', manejarTecla);
+                return () => window.removeEventListener('keydown', manejarTecla);
+            }, [pantalla, expresion, esperandoOperando]);
+
+            // Agregamos una nueva función para manejar la tecla Backspace (Deshacer)
+            const manejarRetroceso = () => {
+                if (pantalla.length > 1) {
+                    setPantalla(pantalla.slice(0, -1));
+                    setExpresion(expresion.slice(0, -1));
+                } else {
+                    setPantalla('0');
+                    setExpresion('');
+                }
+                setMostrandoResultado(false);
+            };
+
+            const manejarClic = (contenido) => {
+                if (contenido >= '0' && contenido <= '9') {
+                    if (pantalla.length > 14) return;
+                    if (pantalla === '0' || esperandoOperando || mostrandoResultado) {
+                        setPantalla(contenido);
+                        setEsperandoOperando(false);
+                        setExpresion(mostrandoResultado ? contenido : expresion + contenido);
+                        setMostrandoResultado(false);
+                    } else {
+                        setPantalla(pantalla + contenido);
+                        setExpresion(expresion + contenido);
+                    }
+                } else if (contenido === '.') {
+                    if (!pantalla.includes('.')) {
+                        setPantalla(pantalla + '.');
+                        setEsperandoOperando(false);
+                        setExpresion(expresion + '.');
+                        setMostrandoResultado(false);
+                    }
+                } else if (["+", "-", "*", "/"].includes(contenido)) {
+                    if (expresion === '' && contenido === '-') {
+                        setPantalla('-');
+                        setExpresion('-');
+                        setEsperandoOperando(false);
+                        setMostrandoResultado(false);
+                        return;
+                    }
+                    if (expresion.length > 0 && !['+', '-', '*', '/'].includes(expresion.slice(-1))) {
+                        setPantalla(contenido);
+                        setExpresion(expresion + contenido);
+                        setEsperandoOperando(false);
+                        setMostrandoResultado(false);
+                    }
+                } else if (contenido === '=') {
+                    try {
+                        let resultado = eval(expresion.replace(/%/g, '/100'));
+                        if (typeof resultado === 'number' && !isNaN(resultado) && isFinite(resultado)) {
+                            setPantalla(String(resultado));
+                            setExpresion(String(resultado));
+                            setMostrandoResultado(true);
+                        } else {
+                            setPantalla('Error');
+                            setExpresion('');
+                            setMostrandoResultado(false);
+                        }
+                    } catch {
+                        setPantalla('Error');
+                        setExpresion('');
+                        setMostrandoResultado(false);
+                    }
+                    setEsperandoOperando(true);
+                } else if (contenido === 'AC') {
+                    setPantalla('0');
+                    setExpresion('');
+                    setEsperandoOperando(false);
+                    setMostrandoResultado(false);
+                } else if (contenido === '+/-') {
+                    if (pantalla.charAt(0) === '-') {
+                        setPantalla(pantalla.slice(1));
+                        setExpresion(expresion.slice(0, -pantalla.length) + pantalla.slice(1));
+                    } else {
+                        setPantalla('-' + pantalla);
+                        setExpresion(expresion.slice(0, -pantalla.length) + '-' + pantalla);
+                    }
+                    setMostrandoResultado(false);
+                } else if (contenido === '%') {
+                    setPantalla(pantalla + '%');
+                    setExpresion(expresion + '%');
+                    setMostrandoResultado(false);
+                }
+            };
+
+            const botones = [
+                ['AC', '+/-', '%', '/'],
+                ['7', '8', '9', '*'],
+                ['4', '5', '6', '-'],
+                ['1', '2', '3', '+'],
+                ['0', '.', '=']
+            ];
+
+            // Calcular el pre-resultado (resultado parcial) solo si la expresión es válida y no termina en operador
+            let preResultado = '';
+            if (expresion && !mostrandoResultado && !['+', '-', '*', '/', '.'].includes(expresion.slice(-1))) {
+                try {
+                    let r = eval(expresion.replace(/%/g, '/100'));
+                    if (typeof r === 'number' && !isNaN(r) && isFinite(r)) {
+                        preResultado = r;
+                    }
+                } catch {}
+            }
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-notch"></div>
+                    <div className="calc-inner">
+                        <div className="calc-display" style={{fontSize: '38px', minHeight: '44px', color: '#fff', padding: '0 24px 0 0', marginBottom: '0', alignItems: 'flex-end', opacity: 1, fontWeight: 500, letterSpacing: '1px'}}>
+                            {mostrandoResultado ? pantalla : (expresion || '0')}
+                        </div>
+                        <div className="calc-display" style={{marginTop: '0', fontSize: '24px', minHeight: '28px', color: '#b3b3b3', padding: '0 24px 8px 0', alignItems: 'flex-end', opacity: 0.7, fontWeight: 400}}>
+                            {mostrandoResultado ? '' : (preResultado !== '' ? preResultado : '')}
+                        </div>
+                        <div className="calc-buttons">
+                            {botones.map((fila, i) => (
+                                <div className="calc-row" key={i}>
+                                    {fila.map((boton, j) => {
+                                        let clase = 'btn ';
+                                        if (boton === 'AC' || boton === '+/-' || boton === '%') clase += 'btn-func';
+                                        else if (['/', '*', '-', '+', '='].includes(boton)) clase += 'btn-op';
+                                        else clase += 'btn-num';
+                                        if (boton === '0') clase += ' btn-zero';
+                                        return (
+                                            <button
+                                                key={boton}
+                                                className={clase}
+                                                onClick={() => manejarClic(boton)}
+                                            >
+                                                {boton}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

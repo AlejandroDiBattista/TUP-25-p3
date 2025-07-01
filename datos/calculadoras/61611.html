@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    /* Poner aca el CSS */
+    body {
+      background-color: #fddba3;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Marco blanco con forma de iPhone */
+    .marco-iphone {
+      width: 300px;
+      height: 600px;
+      background: #fff;
+      border-radius: 50px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    /* Parte de arriba, como el notch del iPhone */
+    .notch {
+      width: 120px;
+      height: 30px;
+      background: #fff;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    /* Pantalla negra de la calculadora */
+    .pantalla {
+      background: black;
+      border-radius: 40px;
+      padding: 30px 20px;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    /* Texto pequeño arriba, muestra la operación escrita */
+    .operacion {
+      color: #aaaaaa;
+      font-size: 20px;
+      text-align: right;
+      min-height: 24px;
+      word-wrap: break-word;
+    }
+    /* Texto grande, muestra el resultado */
+    .display {
+      color: white;
+      font-size: 48px;
+      text-align: right;
+      word-wrap: break-word;
+      min-height: 60px;
+    }
+
+    .teclado {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+    }
+
+    .boton {
+      height: 60px;
+      border-radius: 50%;
+      font-size: 24px;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .boton:active {
+      transform: scale(0.95);
+    }
+    /* Colores específicos de cada grupo de botones */
+    .gris-claro {
+      background-color: #a5a5a5;
+      color: black;
+    }
+
+    .gris-oscuro {
+      background-color: #333333;
+    }
+
+    .naranja {
+      background-color: #ff9f0a;
+    }
+
+    .boton-cero {
+      grid-column: span 2;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="marco-iphone">
+    <div class="notch"></div>
+    <div id="root" class="pantalla"></div>
+  </div>
+
+  <!-- React y ReactDOM desde CDN -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel para JSX en el navegador -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+        // Estado donde se guarda lo que el usuario escribe
+      const [expresion, setExpresion] = useState("");
+
+      // Estado donde se guarda el resultado de la operación
+      const [resultado, setResultado] = useState("0");
+
+    // Esta función agrega el valor al final de la expresión
+      const manejarClick = (valor) => {
+        setExpresion(prev => prev + valor);
+      };
+    // Agrega un punto decimal
+      const manejarDecimal = () => {
+        setExpresion(prev => prev + ".");
+      };
+    // Limpia la calculadora
+      const limpiar = () => {
+        setExpresion("");
+        setResultado("0");
+      };
+
+      // Cambia el signo del número
+      const cambiarSigno = () => {
+        if (expresion !== "") {
+          try {
+            // Reemplaza los símbolos de multiplicación y división para evitar errores
+            const valor = eval(expresion.replace(/×/g, "*").replace(/÷/g, "/"));
+            const invertido = (-valor).toString();
+            setExpresion(invertido);
+            setResultado(invertido);
+          } catch {
+            setResultado("Error");
+          }
+        }
+      };
+    // Calcula el porcentaje del valor actual
+      const porcentaje = () => {
+        if (expresion !== "") {
+          try {
+            const valor = eval(expresion.replace(/×/g, "*").replace(/÷/g, "/")) / 100;
+            setExpresion(valor.toString());
+            setResultado(valor.toString());
+          } catch {
+            setResultado("Error");
+          }
+        }
+      };
+
+      // Calcula el resultado final de la operación
+      const manejarIgual = () => {
+        try {
+        // Cambiamos los símbolos × y ÷ por * y / para poder evaluarlos
+          const expr = expresion.replace(/×/g, "*").replace(/÷/g, "/");
+          const evalResult = eval(expr);
+          setResultado(evalResult.toString());
+          setExpresion(evalResult.toString());
+        } catch {
+          setResultado("Error");
+        }
+      };
+
+        // Renderiza la calculadora con los botones y el display
+      return (
+        <>
+        {/* Muestra lo que el usuario va escribiendo */}
+          <div className="operacion">{expresion}</div>
+          <div className="display">{resultado}</div>
+          {/* Botones de la calculadora */}
+          <div className="teclado">
+            <button className="boton gris-claro" onClick={limpiar}>AC</button>
+            <button className="boton gris-claro" onClick={cambiarSigno}>+/−</button>
+            <button className="boton gris-claro" onClick={porcentaje}>%</button>
+            <button className="boton naranja" onClick={() => manejarClick("÷")}>÷</button>
+
+            <button className="boton gris-oscuro" onClick={() => manejarClick("7")}>7</button>
+            <button className="boton gris-oscuro" onClick={() => manejarClick("8")}>8</button>
+            <button className="boton gris-oscuro" onClick={() => manejarClick("9")}>9</button>
+            <button className="boton naranja" onClick={() => manejarClick("×")}>×</button>
+
+            <button className="boton gris-oscuro" onClick={() => manejarClick("4")}>4</button>
+            <button className="boton gris-oscuro" onClick={() => manejarClick("5")}>5</button>
+            <button className="boton gris-oscuro" onClick={() => manejarClick("6")}>6</button>
+            <button className="boton naranja" onClick={() => manejarClick("-")}>−</button>
+
+            <button className="boton gris-oscuro" onClick={() => manejarClick("1")}>1</button>
+            <button className="boton gris-oscuro" onClick={() => manejarClick("2")}>2</button>
+            <button className="boton gris-oscuro" onClick={() => manejarClick("3")}>3</button>
+            <button className="boton naranja" onClick={() => manejarClick("+")}>+</button>
+
+            <button className="boton gris-oscuro boton-cero" onClick={() => manejarClick("0")}>0</button>
+            <button className="boton gris-oscuro" onClick={manejarDecimal}>.</button>
+            <button className="boton naranja" onClick={manejarIgual}>=</button>
+          </div>
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
+</body>
+</html>
+

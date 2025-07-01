@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      background: #fcdca0;
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .phone {
+      background: #000;
+      border-radius: 40px;
+      width: 300px;
+      padding: 20px 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    .display {
+      color: white;
+      text-align: right;
+      font-size: 48px;
+      padding: 10px;
+      min-height: 60px;
+    }
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    button {
+      font-size: 24px;
+      border: none;
+      border-radius: 50%;
+      padding: 20px;
+      color: white;
+      cursor: pointer;
+    }
+    .gray { background: #a5a5a5; color: black; }
+    .dark { background: #333; }
+    .orange { background: orange; }
+    .zero {
+      grid-column: span 2;
+      border-radius: 40px;
+      text-align: left;
+      padding-left: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React y ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+    
+    function Calculadora() {
+    const [pantalla, setPantalla] = useState("0");
+    const [prevValor, setPrevValor] = useState(null);
+    const [operador, setOperador] = useState(null);
+    const [limpiar, setLimpiar] = useState(false);
+
+    const agregarNumero = (num) => {
+      if (pantalla === "0" || limpiar) {
+        setPantalla(num);
+        setLimpiar(false);
+      } else {
+        setPantalla(pantalla + num);
+      }
+    };
+
+    const agregarPunto = () => {
+      if (!pantalla.includes(".")) {
+        setPantalla(pantalla + ".");
+      }
+    };
+
+    const manejarOperacion = (op) => {
+      setPrevValor(parseFloat(pantalla));
+      setOperador(op);
+      setLimpiar(true);
+    };
+
+    const calcularResultado = () => {
+      if (operador && prevValor !== null) {
+        const actual = parseFloat(pantalla);
+        let resultado;
+        switch (operador) {
+          case "+": resultado = prevValor + actual; break;
+          case "-": resultado = prevValor - actual; break;
+          case "×": resultado = prevValor * actual; break;
+          case "÷": resultado = prevValor / actual; break;
+          default: return;
+        }
+        setPantalla(resultado.toString());
+        setPrevValor(null);
+        setOperador(null);
+        setLimpiar(true);
+      }
+    };
+
+    const limpiarPantalla = () => {
+      setPantalla("0");
+      setPrevValor(null);
+      setOperador(null);
+      setLimpiar(false);
+    };
+
+    const cambiarSigno = () => {
+      setPantalla((prev) => (parseFloat(prev) * -1).toString());
+    };
+
+    const convertirPorcentaje = () => {
+      setPantalla((prev) => (parseFloat(prev) / 100).toString());
+    };
+
+    return (
+      <div className="phone">
+        <div className="display">{pantalla}</div>
+        <div className="button-grid">
+          <button className="gray" onClick={limpiarPantalla}>AC</button>
+          <button className="gray" onClick={cambiarSigno}>±</button>
+          <button className="gray" onClick={convertirPorcentaje}>%</button>
+          <button className="orange" onClick={() => manejarOperacion("÷")}>÷</button>
+
+          <button className="dark" onClick={() => agregarNumero("7")}>7</button>
+          <button className="dark" onClick={() => agregarNumero("8")}>8</button>
+          <button className="dark" onClick={() => agregarNumero("9")}>9</button>
+          <button className="orange" onClick={() => manejarOperacion("×")}>×</button>
+
+          <button className="dark" onClick={() => agregarNumero("4")}>4</button>
+          <button className="dark" onClick={() => agregarNumero("5")}>5</button>
+          <button className="dark" onClick={() => agregarNumero("6")}>6</button>
+          <button className="orange" onClick={() => manejarOperacion("-")}>-</button>
+
+          <button className="dark" onClick={() => agregarNumero("1")}>1</button>
+          <button className="dark" onClick={() => agregarNumero("2")}>2</button>
+          <button className="dark" onClick={() => agregarNumero("3")}>3</button>
+          <button className="orange" onClick={() => manejarOperacion("+")}>+</button>
+
+          <button className="dark zero" onClick={() => agregarNumero("0")}>0</button>
+          <button className="dark" onClick={agregarPunto}>.</button>
+          <button className="orange" onClick={calcularResultado}>=</button>
+        </div>
+      </div>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(<Calculadora />);
+</script>
+
+</body>
+</html>

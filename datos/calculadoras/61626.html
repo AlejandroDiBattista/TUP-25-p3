@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora iPhone 11 - React Replica Exacta</title>
+<style>
+  /* Reset y Body */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background-color: #d2bb88; /* fondo gris típico iOS */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+
+  /* Marco del iPhone */
+  .iphone {
+    position: relative;
+    width: 320px;
+    height: 650px;
+    background: white;
+    border-radius: 46px;
+
+  }
+
+  /* Notch blanco */
+  .notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 180px;
+    height: 34px;
+    background: white;
+    border-radius: 0 0 20px 20px;
+   
+    z-index: 20;
+  }
+
+  /* Botones laterales */
+  .boton-lateral {
+    position: absolute;
+    background: white;
+    border-radius: 10px;
+   
+    z-index: 15;
+  }
+  /* Botón silenciar */
+  .silenciar {
+    position: absolute;
+    top: 82px;
+    left: -3px;
+    width: 9px;
+    height: 28px;
+    background: #ffffff;
+    border-radius: 8px;
+    z-index: 16;
+  }
+  /* Volumen arriba */
+  .volumen-arriba {
+    top: 130px;
+    left: -3px;
+    right: 10px;
+    width: 9px;
+    height: 48px;
+  }
+  /* Volumen abajo */
+  .volumen-abajo {
+    top: 190px;
+    left: -3px;
+    width: 9px;
+    height: 48px;
+  }
+  /* Botón bloqueo */
+  .boton-bloqueo {
+    top: 130px;
+    right: -3px;
+    width: 9px;
+    height: 80px;
+  }
+
+  /* Pantalla calculadora */
+  .calculadora {
+    background: #000000;
+    position: absolute;
+    top: 12px; /* notch */
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    border-radius: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 14px 18px 28px 18px;
+    box-sizing: border-box;
+  }
+
+  /* Pantalla de resultado */
+  .pantalla {
+    color: white;
+    font-size: 44px;
+    text-align: right;
+    font-weight: 200;
+    min-height: 56px;
+    user-select: none;
+    overflow-x: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Grid botones */
+  .botones {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  /* Botones calculadora */
+  button {
+    border: none;
+    border-radius: 50%;
+    font-size: 22px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    height: 54px;
+    width: 54px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.12s ease;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.13);
+  }
+  button:active {
+    filter: brightness(0.7);
+  }
+
+  /* Colores */
+  .btn-gris-claro {
+    background: #a5a5a5;
+    color: black;
+  }
+  .btn-gris-oscuro {
+    background: #333333;
+  }
+  .btn-naranja {
+    background: #ff9500;
+  }
+
+  /* Botón 0 doble ancho y ovalado */
+  .btn-cero {
+    grid-column: span 2;
+    border-radius: 28px;
+    justify-content: flex-start;
+    padding-left: 18px;
+    width: 116px;
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+  const { useState } = React;
+
+function Calculadora() {
+  // Estados para lógica tipo iOS
+  const [valor, setValor] = useState("0"); // pantalla
+  const [operando, setOperando] = useState(null); // número anterior
+  const [operador, setOperador] = useState(null); // operador actual
+  const [esperandoNuevo, setEsperandoNuevo] = useState(false); // espera nuevo número
+  const [ultimoOperador, setUltimoOperador] = useState(null); // para repetir =
+  const [ultimoOperando, setUltimoOperando] = useState(null); // para repetir =
+  const [expresion, setExpresion] = useState(""); // expresión a mostrar arriba tras igual
+  const [mostrarExpresion, setMostrarExpresion] = useState(false); // mostrar arriba solo tras igual
+
+  const botones = [
+    { texto: mostrarExpresion ? "AC" : (valor !== "0" ? "C" : "AC"), clase: "btn-gris-claro" },
+    { texto: "+/-", clase: "btn-gris-claro" },
+    { texto: "%", clase: "btn-gris-claro" },
+    { texto: "÷", clase: "btn-naranja" },
+    { texto: "7", clase: "btn-gris-oscuro" },
+    { texto: "8", clase: "btn-gris-oscuro" },
+    { texto: "9", clase: "btn-gris-oscuro" },
+    { texto: "×", clase: "btn-naranja" },
+    { texto: "4", clase: "btn-gris-oscuro" },
+    { texto: "5", clase: "btn-gris-oscuro" },
+    { texto: "6", clase: "btn-gris-oscuro" },
+    { texto: "-", clase: "btn-naranja" },
+    { texto: "1", clase: "btn-gris-oscuro" },
+    { texto: "2", clase: "btn-gris-oscuro" },
+    { texto: "3", clase: "btn-gris-oscuro" },
+    { texto: "+", clase: "btn-naranja" },
+    { texto: "0", clase: "btn-gris-oscuro btn-cero" },
+    { texto: ".", clase: "btn-gris-oscuro" },
+    { texto: "=", clase: "btn-naranja" }
+  ];
+
+  function manejarClick(texto) {
+    // Si se está mostrando la expresión arriba (tras igual), y se toca un número, limpiar todo
+    if (mostrarExpresion && /^[0-9.]$/.test(texto)) {
+      setValor(texto === "." ? "0." : texto);
+      setExpresion("");
+      setOperando(null);
+      setOperador(null);
+      setEsperandoNuevo(false);
+      setUltimoOperador(null);
+      setUltimoOperando(null);
+      setMostrarExpresion(false);
+      return;
+    }
+
+    // Botón AC/C: borrar uno a uno o todo según contexto
+    if (texto === "AC" || texto === "C") {
+      if (mostrarExpresion) {
+        // Si está mostrando el resultado (después de igual), borra todo
+        setValor("0");
+        setOperando(null);
+        setOperador(null);
+        setEsperandoNuevo(false);
+        setUltimoOperador(null);
+        setUltimoOperando(null);
+        setExpresion("");
+        setMostrarExpresion(false);
+        return;
+      }
+      // Si solo hay un número (sin operadores), borrar de a un carácter el valor
+      if (!/[÷×\-+%]/.test(expresion)) {
+        if (valor.length > 1) {
+          const nuevoValor = valor.slice(0, -1);
+          setValor(nuevoValor);
+          setExpresion(nuevoValor === "0" ? "" : nuevoValor);
+        } else {
+          setValor("0");
+          setExpresion("");
+        }
+        return;
+      }
+      // Borrar de a un carácter la expresión y actualizar el valor mostrado
+      if (expresion.length > 0) {
+        let nuevaExpresion = expresion.slice(0, -1);
+        setExpresion(nuevaExpresion);
+        // Buscar el último número o paréntesis válido
+        let match = nuevaExpresion.match(/(-?\d+(?:\.\d+)?|\(-?\d+(?:\.\d+)?\))$/);
+        if (match) {
+          setValor(match[0]);
+        } else {
+          setValor("0");
+        }
+      } else {
+        setValor("0");
+        setExpresion("");
+      }
+      return;
+    }
+
+    if (texto === "+/-") {
+      if (valor !== "0" && valor !== "Error" && valor !== "") {
+        let nuevoValor = valor;
+        let nuevaExpresion = expresion;
+        // Buscar el último número o paréntesis válido en la expresión
+        let match = expresion.match(/(-?\d+(?:\.\d+)?|\(-?\d+(?:\.\d+)?\))$/);
+        if (match) {
+          let ultimo = match[0];
+          // Alternar el signo en el valor y en la expresión
+          if (/^\(-\d+(?:\.\d+)?\)$/.test(ultimo)) {
+            // Quitar paréntesis y menos: (-8) => 8
+            nuevoValor = ultimo.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1].replace(/^\-/, "");
+            nuevaExpresion = expresion.replace(/(-?\d+(?:\.\d+)?|\(-?\d+(?:\.\d+)?\))$/, nuevoValor);
+          } else if (/^\(-?\d+(?:\.\d+)?\)$/.test(ultimo)) {
+            // Quitar paréntesis: (-8) => 8, (8) => 8
+            nuevoValor = ultimo.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1];
+            nuevaExpresion = expresion.replace(/(-?\d+(?:\.\d+)?|\(-?\d+(?:\.\d+)?\))$/, nuevoValor);
+          } else if (/^-\d+(?:\.\d+)?$/.test(ultimo)) {
+            // Si es negativo simple, ponerlo positivo
+            nuevoValor = ultimo.replace(/^\-/, "");
+            nuevaExpresion = expresion.replace(/(-?\d+(?:\.\d+)?|\(-?\d+(?:\.\d+)?\))$/, nuevoValor);
+          } else if (/^\d+(?:\.\d+)?$/.test(ultimo)) {
+            // Si es positivo, poner - dentro del paréntesis
+            nuevoValor = "(-" + ultimo + ")";
+            nuevaExpresion = expresion.replace(/(-?\d+(?:\.\d+)?|\(-?\d+(?:\.\d+)?\))$/, nuevoValor);
+          }
+          setValor(nuevoValor);
+          setExpresion(nuevaExpresion);
+        } else {
+          // Si no hay match, solo alternar el valor
+          if (/^\(-\d+(?:\.\d+)?\)$/.test(valor)) {
+            nuevoValor = valor.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1].replace(/^\-/, "");
+          } else if (/^\(-?\d+(?:\.\d+)?\)$/.test(valor)) {
+            nuevoValor = valor.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1];
+          } else if (/^-\d+(?:\.\d+)?$/.test(valor)) {
+            nuevoValor = valor.replace(/^\-/, "");
+          } else if (/^\d+(?:\.\d+)?$/.test(valor)) {
+            nuevoValor = "(-" + valor + ")";
+          }
+          setValor(nuevoValor);
+        }
+      }
+      return;
+    }
+
+    if (texto === "%") {
+      if (valor !== "Error") {
+        let nuevaExpresion = expresion;
+        if (valor !== "") {
+          // Si la expresión termina en el valor, no lo agregues de nuevo
+          if (expresion.endsWith(valor)) {
+            nuevaExpresion = expresion + "%";
+          } else {
+            nuevaExpresion = expresion + valor + "%";
+          }
+        } else {
+          nuevaExpresion = expresion + "%";
+        }
+        setExpresion(nuevaExpresion);
+        setOperando(valor);
+        setOperador("%");
+        setValor("");
+        setEsperandoNuevo(true);
+      }
+      return;
+    }
+
+    if (["÷", "×", "-", "+"].includes(texto)) {
+      setMostrarExpresion(false);
+      let nuevaExpresion = expresion;
+      // Si la expresión termina en un operador, reemplazarlo por el nuevo
+      if (/[÷×\-+%]$/.test(expresion)) {
+        nuevaExpresion = expresion.slice(0, -1) + texto;
+      } else if (valor !== "") {
+        // Si ya hay un valor y la expresión termina en ese valor, no lo agregues de nuevo
+        if (expresion.endsWith(valor)) {
+          nuevaExpresion = expresion + texto;
+        } else {
+          nuevaExpresion = expresion + valor + texto;
+        }
+      } else {
+        nuevaExpresion = expresion + texto;
+      }
+      setExpresion(nuevaExpresion);
+      setOperando(valor);
+      setOperador(texto);
+      setValor("");
+      setEsperandoNuevo(true);
+      return;
+    }
+
+    if (texto === "=") {
+      let nuevoValor = valor;
+      let expr = "";
+      // Si el valor está entre paréntesis con signo, evaluar el número interno
+      let valorEval = valor;
+      if (/^\((-?\d+(?:\.\d+)?)\)$/.test(valor)) {
+        valorEval = valor.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1];
+      }
+      if (operador && operando !== null) {
+        let operandoEval = operando;
+        if (/^\((-?\d+(?:\.\d+)?)\)$/.test(operando)) {
+          operandoEval = operando.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1];
+        }
+        if (operador === "%") {
+          // Implementar 8%3 = 2
+          const x = parseFloat(operandoEval);
+          const y = parseFloat(valorEval);
+          if (!isNaN(x) && !isNaN(y)) {
+            nuevoValor = String(x % y);
+            expr = `${operando}%${valor}`;
+          } else {
+            nuevoValor = "Error";
+            expr = `${operando}%${valor}`;
+          }
+        } else {
+          // Operación normal
+          nuevoValor = calcular(operandoEval, valorEval, operador);
+          expr = `${operando}${operador}${valor}`;
+        }
+        setUltimoOperando(valor);
+        setUltimoOperador(operador);
+      } else if (ultimoOperador && ultimoOperando !== null) {
+        let ultimoOperandoEval = ultimoOperando;
+        if (/^\((-?\d+(?:\.\d+)?)\)$/.test(ultimoOperando)) {
+          ultimoOperandoEval = ultimoOperando.match(/^\((-?\d+(?:\.\d+)?)\)$/)[1];
+        }
+        if (ultimoOperador === "%") {
+          const x = parseFloat(valorEval);
+          const y = parseFloat(ultimoOperandoEval);
+          if (!isNaN(x) && !isNaN(y)) {
+            nuevoValor = String(x % y);
+            expr = `${valor}%${ultimoOperando}`;
+          } else {
+            nuevoValor = "Error";
+            expr = `${valor}%${ultimoOperando}`;
+          }
+        } else {
+          nuevoValor = calcular(valorEval, ultimoOperandoEval, ultimoOperador);
+          expr = `${valor}${ultimoOperador}${ultimoOperando}`;
+        }
+      }
+      setValor(nuevoValor);
+      setOperando(null);
+      setOperador(null);
+      setEsperandoNuevo(true);
+      setExpresion(expr);
+      setMostrarExpresion(true);
+      return;
+    }
+
+    // Números y punto
+    setMostrarExpresion(false);
+    if (valor === "Error") {
+      setValor(texto === "." ? "0." : texto);
+      setEsperandoNuevo(false);
+      return;
+    }
+
+    if (esperandoNuevo) {
+      setValor(texto === "." ? "0." : texto);
+      setExpresion(expresion + (texto === "." ? "0." : texto));
+      setEsperandoNuevo(false);
+      return;
+    }
+
+    if (texto === ".") {
+      if (valor.includes(".")) return;
+      setValor(valor + ".");
+      return;
+    }
+
+    if (/^[0-9]$/.test(texto)) {
+      // Permitir construir números negativos con paréntesis: "(-"
+      if (valor === "(-") {
+        setValor("(-" + texto);
+        setExpresion(expresion + texto);
+        return;
+      }
+      // Si el valor es vacío (por ejemplo, tras un %), empezar nuevo número
+      if (valor === "0" || valor === "") {
+        setValor(texto);
+        // Si la expresión termina en "(-", agregar el número a la expresión
+        if (expresion.endsWith("(-")) {
+          setExpresion(expresion + texto);
+        }
+        return;
+      }
+      setValor(valor + texto);
+      // Si la expresión termina en valor antes de este número, agregar el número a la expresión
+      if (expresion.endsWith(valor)) {
+        setExpresion(expresion + texto);
+      }
+      return;
+    }
+  }
+
+  function calcular(a, b, op) {
+    let x = parseFloat(a);
+    let y = parseFloat(b);
+    if (isNaN(x) || isNaN(y)) return "Error";
+    switch (op) {
+      case "+": return String(x + y);
+      case "-": return String(x - y);
+      case "×": return String(x * y);
+      case "÷": return y === 0 ? "Error" : String(x / y);
+      default: return b;
+    }
+  }
+
+  return (
+    <div className="iphone" role="main" aria-label="Calculadora iPhone 11">
+      <div className="notch" aria-hidden="true"></div>
+      <div className="boton-lateral silenciar" aria-hidden="true"></div>
+      <div className="boton-lateral volumen-arriba" aria-hidden="true"></div>
+      <div className="boton-lateral volumen-abajo" aria-hidden="true"></div>
+      <div className="boton-lateral boton-bloqueo" aria-hidden="true"></div>
+      <div className="calculadora">
+        <div className="pantalla" aria-live="polite">
+          {mostrarExpresion && expresion && (
+            <div style={{fontSize: '18px', color: '#aaa', minHeight: '20px', textAlign: 'right', fontWeight: 400}}>{expresion}</div>
+          )}
+          <div style={{fontSize: mostrarExpresion ? '44px' : '44px', color: 'white', minHeight: '56px', textAlign: 'right', fontWeight: 200}}>
+            {mostrarExpresion ? valor : expresion || valor}
+          </div>
+        </div>
+        <div className="botones">
+          {botones.map(({ texto, clase }, i) => (
+            <button
+              key={i}
+              className={clase}
+              onClick={() => manejarClick(texto)}
+              aria-label={`Botón ${texto}`}
+              type="button"
+            >
+              {texto}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(<Calculadora />);
+</script>
+
+</body>
+</html>

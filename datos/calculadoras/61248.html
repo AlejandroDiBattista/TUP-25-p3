@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora</title>
+    <style>
+        html, body {
+          height: 100%;
+          width: 100vw;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+        }
+        body {
+          background: #fbe5c2;
+          margin: 0;
+          padding: 0;
+          font-family: 'SF Pro Display', Arial, sans-serif;
+          height: 100vh;
+          width: 100vw;
+          overflow: hidden;
+        }
+
+        .fondo-calculadora {
+          min-height: 100vh;
+          min-width: 100vw;
+          height: 100vh;
+          width: 100vw;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          overflow: hidden;
+        }
+
+        .iphone-calculadora {
+          background: #fff;
+          border-radius: 40px;
+          width: 350px;
+          height: 700px;
+          box-shadow: 0 4px 32px #0002;
+          position: relative;
+          overflow: hidden;
+          padding: 0 0 20px 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .calculadora {
+          background: #000;
+          border-radius: 36px;
+          width: 320px;
+          height: 640px;
+          margin-top: 40px;
+          box-shadow: 0 0 20px #0005;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          padding: 0 0 24px 0;
+          position: relative;
+        }
+
+        .pantalla {
+          color: #fff;
+          font-size: 64px;
+          text-align: right;
+          padding: 50px 24px 12px 24px;
+          font-family: 'SF Pro Display', Arial, sans-serif;
+          min-height: 100px;
+          word-break: break-all;
+          overflow-x: auto;
+        }
+
+        .teclado {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        }
+
+        .fila {
+          display: flex;
+          margin-bottom: 12px;
+        }
+
+        .boton {
+          flex: 1 1 0;
+          margin: 0 6px;
+          height: 64px;
+          border: none;
+          border-radius: 32px;
+          font-size: 28px;
+          color: #fff;
+          background: #232323;
+          box-shadow: 0 2px 8px #0002;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .gris {
+          background: #a5a5a5;
+          color: #000;
+        }
+
+        .naranja {
+          background: #ff9900;
+          color: #fff;
+        }
+
+        .cero {
+          flex: 2 1 0;
+          text-align: left;
+          padding-left: 32px;
+        }
+
+        .boton:active {
+          filter: brightness(0.85);
+        }
+
+        @media (max-width: 600px) {
+          html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+          }
+          .iphone-calculadora {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+          }
+          .calculadora {
+            width: 100vw;
+            height: 100vh;
+            margin-top: 0;
+            border-radius: 0;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      function Calculadora() {
+        const [pantalla, setPantalla] = useState('0');
+        const [anterior, setAnterior] = useState(null);
+        const [operador, setOperador] = useState(null);
+        const [esperandoNumero, setEsperandoNumero] = useState(false);
+
+        // Manejar números
+        const manejarNumero = n => {
+          if (pantalla.length >= 9 && !esperandoNumero) return;
+          if (esperandoNumero) {
+            setPantalla(n);
+            setEsperandoNumero(false);
+          } else if (pantalla === '0') {
+            setPantalla(n);
+          } else {
+            setPantalla(pantalla + n);
+          }
+        };
+
+        // Manejar punto decimal
+        const manejarPunto = () => {
+          if (esperandoNumero) {
+            setPantalla('0.');
+            setEsperandoNumero(false);
+          } else if (!pantalla.includes('.')) {
+            setPantalla(pantalla + '.');
+          }
+        };
+
+        // Manejar operadores
+        const manejarOperador = (opNuevo) => {
+          if (operador && !esperandoNumero) {
+            const resultado = calcular(anterior, pantalla, operador);
+            setPantalla(resultado.toString());
+            setAnterior(resultado);
+          } else {
+            setAnterior(parseFloat(pantalla));
+          }
+          setOperador(opNuevo);
+          setEsperandoNumero(true);
+        };
+
+        // Igual
+        const manejarIgual = () => {
+          if (operador && anterior !== null && !esperandoNumero) {
+            const resultado = calcular(anterior, pantalla, operador);
+            setPantalla(resultado.toString());
+            setAnterior(null);
+            setOperador(null);
+            setEsperandoNumero(true);
+          }
+        };
+
+        // Limpiar
+        const manejarLimpiar = () => {
+          setPantalla('0');
+          setAnterior(null);
+          setOperador(null);
+          setEsperandoNumero(false);
+        };
+
+        // Cambiar signo
+        const manejarSigno = () => {
+          if (pantalla !== '0') {
+            setPantalla(
+              pantalla.startsWith('-') ? pantalla.slice(1) : '-' + pantalla
+            );
+          }
+        };
+
+        // Porcentaje
+        const manejarPorcentaje = () => {
+          setPantalla((parseFloat(pantalla) / 100).toString());
+        };
+
+        // Cálculo principal
+        function calcular(a, b, operador) {
+          a = parseFloat(a);
+          b = parseFloat(b);
+          switch (operador) {
+            case '+': return a + b;
+            case '-': return a - b;
+            case '×': return a * b;
+            case '÷': return b === 0 ? 'Error' : a / b;
+            default: return b;
+          }
+        }
+
+        const botones = [
+          [
+            {etiqueta: 'AC', alClick: manejarLimpiar, clase: "gris"},
+            {etiqueta: '±', alClick: manejarSigno, clase: "gris"},
+            {etiqueta: '%', alClick: manejarPorcentaje, clase: "gris"},
+            {etiqueta: '÷', alClick: () => manejarOperador('÷'), clase: "naranja"}
+          ],
+          [
+            {etiqueta: '7', alClick: () => manejarNumero('7')},
+            {etiqueta: '8', alClick: () => manejarNumero('8')},
+            {etiqueta: '9', alClick: () => manejarNumero('9')},
+            {etiqueta: '×', alClick: () => manejarOperador('×'), clase: "naranja"}
+          ],
+          [
+            {etiqueta: '4', alClick: () => manejarNumero('4')},
+            {etiqueta: '5', alClick: () => manejarNumero('5')},
+            {etiqueta: '6', alClick: () => manejarNumero('6')},
+            {etiqueta: '-', alClick: () => manejarOperador('-'), clase: "naranja"}
+          ],
+          [
+            {etiqueta: '1', alClick: () => manejarNumero('1')},
+            {etiqueta: '2', alClick: () => manejarNumero('2')},
+            {etiqueta: '3', alClick: () => manejarNumero('3')},
+            {etiqueta: '+', alClick: () => manejarOperador('+'), clase: "naranja"}
+          ],
+          [
+            {etiqueta: '0', alClick: () => manejarNumero('0'), clase: "cero"},
+            {etiqueta: '.', alClick: manejarPunto},
+            {etiqueta: '=', alClick: manejarIgual, clase: "naranja"}
+          ],
+        ];
+
+        return (
+          <div className="fondo-calculadora">
+            <div className="iphone-calculadora">
+              <div className="calculadora">
+                <div className="pantalla">
+                  {pantalla.length > 9 ? parseFloat(pantalla).toExponential(4) : pantalla}
+                </div>
+                <div className="teclado">
+                  {botones.map((fila, i) =>
+                    <div className="fila" key={i}>
+                      {fila.map((b, j) =>
+                        <button
+                          key={j}
+                          className={`boton ${b.clase || ''}`}
+                          onClick={b.alClick}
+                        >
+                          {b.etiqueta}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<Calculadora />);
+    </script>
+</body>
+</html>

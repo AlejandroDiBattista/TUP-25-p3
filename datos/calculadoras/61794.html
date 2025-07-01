@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5deb3, #deb887);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .calculadora {
+            width: 350px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .pantalla {
+            color: white;
+            text-align: right;
+            padding: 20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .expresion {
+            font-size: 20px;
+            font-weight: 300;
+            color: #a6a6a6;
+            margin-bottom: 10px;
+            min-height: 24px;
+            opacity: 0.8;
+        }
+
+        .resultado {
+            font-size: 60px;
+            font-weight: 200;
+            line-height: 1;
+        }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .boton {
+            border: none;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            font-size: 30px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .boton:active {
+            transform: scale(0.95);
+        }
+
+        .numero {
+            background: #333;
+            color: white;
+        }
+
+        .numero:hover {
+            background: #444;
+        }
+
+        .operacion {
+            background: #ff9500;
+            color: white;
+        }
+
+        .operacion:hover {
+            background: #ffb143;
+        }
+
+        .operacion.activo {
+            background: white;
+            color: #ff9500;
+        }
+
+        .funcion {
+            background: #a6a6a6;
+            color: black;
+        }
+
+        .funcion:hover {
+            background: #c4c4c4;
+        }
+
+        .cero {
+            grid-column: span 2;
+            border-radius: 35px;
+            width: 152px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calculadora {
+                width: 300px;
+                padding: 15px;
+            }
+            
+            .boton {
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+            }
+            
+            .cero {
+                width: 132px;
+            }
+            
+            .resultado {
+                font-size: 50px;
+            }
+            
+            .expresion {
+                font-size: 18px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .expresion {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .boton:focus {
+            outline: 2px solid #ff9500;
+            outline-offset: 2px;
+        }
+
+        .boton:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        .boton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .boton:disabled:hover {
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    
+    <script type="text/babel">
+        const { useState } = React;
+
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState('0');
+            const [operacionAnterior, setOperacionAnterior] = useState(null);
+            const [operacion, setOperacion] = useState(null);
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [expresion, setExpresion] = useState('');
+
+            const inputNumero = (num) => {
+                if (esperandoOperando) {
+                    setPantalla(String(num));
+                    setEsperandoOperando(false);
+                } else {
+                    setPantalla(pantalla === '0' ? String(num) : pantalla + num);
+                }
+            };
+
+            const inputDecimal = () => {
+                if (esperandoOperando) {
+                    setPantalla('0.');
+                    setEsperandoOperando(false);
+                } else if (pantalla.indexOf('.') === -1) {
+                    setPantalla(pantalla + '.');
+                }
+            };
+
+            const limpiar = () => {
+                setPantalla('0');
+                setOperacionAnterior(null);
+                setOperacion(null);
+                setEsperandoOperando(false);
+                setExpresion('');
+            };
+
+            const ejecutarOperacion = (siguienteOperacion) => {
+                const inputValue = parseFloat(pantalla);
+
+                if (operacionAnterior === null) {
+                    setOperacionAnterior(inputValue);
+                    if (siguienteOperacion !== '=') {
+                        setExpresion(`${formatNumber(inputValue)} ${siguienteOperacion}`);
+                    }
+                } else if (operacion) {
+                    const valorActual = operacionAnterior || 0;
+                    const nuevoValor = calcular(valorActual, inputValue, operacion);
+
+                    setPantalla(String(nuevoValor));
+                    
+                    if (siguienteOperacion === '=') {
+                        setExpresion(`${formatNumber(valorActual)} ${operacion} ${formatNumber(inputValue)} =`);
+                        setOperacionAnterior(null);
+                        setOperacion(null);
+                        setEsperandoOperando(true);
+                        return;
+                    } else {
+                        setOperacionAnterior(nuevoValor);
+                        setExpresion(`${formatNumber(nuevoValor)} ${siguienteOperacion}`);
+                    }
+                }
+
+                setEsperandoOperando(true);
+                setOperacion(siguienteOperacion);
+            };
+
+            const calcular = (primerOperando, segundoOperando, operacion) => {
+                switch (operacion) {
+                    case '+':
+                        return primerOperando + segundoOperando;
+                    case '-':
+                        return primerOperando - segundoOperando;
+                    case '×':
+                        return primerOperando * segundoOperando;
+                    case '÷':
+                        return segundoOperando !== 0 ? primerOperando / segundoOperando : 0;
+                    case '=':
+                        return segundoOperando;
+                    default:
+                        return segundoOperando;
+                }
+            };
+
+            const toggleSigno = () => {
+                if (pantalla !== '0') {
+                    setPantalla(pantalla.charAt(0) === '-' ? pantalla.slice(1) : '-' + pantalla);
+                }
+            };
+
+            const porcentaje = () => {
+                const valor = parseFloat(pantalla);
+                const nuevoValor = valor / 100;
+                setPantalla(String(nuevoValor));
+                setExpresion(`${formatNumber(valor)}% = ${formatNumber(nuevoValor)}`);
+            };
+
+            const formatNumber = (num) => {
+                if (Number.isInteger(num)) {
+                    return num.toString();
+                } else {
+                    return parseFloat(num.toFixed(8)).toString();
+                }
+            };
+
+            const formatearPantalla = (valor) => {
+                const numero = parseFloat(valor);
+                if (isNaN(numero)) return valor;
+                
+                const valorStr = numero.toString();
+                if (valorStr.length > 9) {
+                    if (numero > 999999999 || numero < -999999999) {
+                        return numero.toExponential(3);
+                    } else {
+                        const parteEntera = valorStr.split('.')[0];
+                        const decimalesPermitidos = 9 - parteEntera.length;
+                        return numero.toFixed(Math.max(0, decimalesPermitidos));
+                    }
+                }
+                return valor;
+            };
+
+            return (
+                <div className="calculadora">
+                    <div className="pantalla">
+                        <div className="expresion">
+                            {expresion}
+                        </div>
+                        <div className="resultado">
+                            {formatearPantalla(pantalla)}
+                        </div>
+                    </div>
+                    <div className="botones">
+                        <button className="boton funcion" onClick={limpiar}>AC</button>
+                        <button className="boton funcion" onClick={toggleSigno}>+/-</button>
+                        <button className="boton funcion" onClick={porcentaje}>%</button>
+                        <button className={`boton operacion ${operacion === '÷' ? 'activo' : ''}`} onClick={() => ejecutarOperacion('÷')} aria-label="Dividir">÷</button>
+
+                        <button className="boton numero" onClick={() => inputNumero(7)}>7</button>
+                        <button className="boton numero" onClick={() => inputNumero(8)}>8</button>
+                        <button className="boton numero" onClick={() => inputNumero(9)}>9</button>
+                        <button className={`boton operacion ${operacion === '×' ? 'activo' : ''}`} onClick={() => ejecutarOperacion('×')} aria-label="Multiplicar">×</button>
+
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(4)}
+                            aria-label="4"
+                        >
+                            4
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(5)}
+                            aria-label="5"
+                        >
+                            5
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(6)}
+                            aria-label="6"
+                        >
+                            6
+                        </button>
+                        <button 
+                            className={`boton operacion ${operacion === '-' ? 'activo' : ''}`}
+                            onClick={() => ejecutarOperacion('-')}
+                            aria-label="Restar"
+                        >
+                            -
+                        </button>
+
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(1)}
+                            aria-label="1"
+                        >
+                            1
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(2)}
+                            aria-label="2"
+                        >
+                            2
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(3)}
+                            aria-label="3"
+                        >
+                            3
+                        </button>
+                        <button 
+                            className={`boton operacion ${operacion === '+' ? 'activo' : ''}`}
+                            onClick={() => ejecutarOperacion('+')}
+                            aria-label="Sumar"
+                        >
+                            +
+                        </button>
+
+                        <button 
+                            className="boton numero cero" 
+                            onClick={() => inputNumero(0)}
+                            aria-label="0"
+                        >
+                            0
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={inputDecimal}
+                            aria-label="Punto decimal"
+                        >
+                            .
+                        </button>
+                        <button 
+                            className="boton operacion" 
+                            onClick={() => ejecutarOperacion('=')}
+                            aria-label="Igual"
+                        >
+                            =
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

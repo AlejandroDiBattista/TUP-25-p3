@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+    <link rel="stylesheet" href="estilos/calculadora.css">
+
+    <style>
+        body {
+    background: #f9deb5;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.phone {
+    background: #fff;
+    border-radius: 50px;
+    box-shadow: 0 0 20px #e0cfa7;
+    width: 370px;
+    height: 760px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border: 8px solid #fff;
+}
+.screen {
+    background: #000;
+    color: #fff;
+    font-size: 90px;
+    text-align: right;
+    border-radius: 35px;
+    width: 90%;
+    height: 140px;
+    margin: 40px 0 25px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 30px 10px 0;
+    box-sizing: border-box;
+    letter-spacing: 2px;
+}
+.buttons {
+    width: 90%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+.btn {
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    font-size: 30px;
+    font-family: inherit;
+    cursor: pointer;
+    background: #222;
+    color: #fff;
+    transition: background 0.2s;
+    box-shadow: 0 2px 4px #0002;
+}
+.btn:active {
+    background: #444;
+}
+.btn.gray {
+    background: #a5a5a5;
+    color: #000;
+}
+.btn.orange {
+    background: #ff9f0a;
+    color: #fff;
+}
+.btn.zero {
+    grid-column: span 2;
+    border-radius: 35px;
+    text-align: left;
+    padding-left: 35px;
+    width: 100%;
+}
+
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script type="text/babel">
+        function Calculadora() {
+            const [valor, setValor] = React.useState("0");
+            const [operador, setOperador] = React.useState(null);
+            const [esperando, setEsperando] = React.useState(false);
+            const [acumulado, setAcumulado] = React.useState(null);
+
+            function clickNumero(n) {
+                if (valor === "0" || esperando) {
+                    setValor(n);
+                    setEsperando(false);
+                } else {
+                    setValor(valor + n);
+                }
+            }
+            function clickAC() {
+                setValor("0");
+                setOperador(null);
+                setAcumulado(null);
+                setEsperando(false);
+            }
+            function clickPorcentaje() {
+                setValor((parseFloat(valor) / 100).toString());
+            }
+            function clickSigno() {
+                setValor((parseFloat(valor) * -1).toString());
+            }
+            function clickOperador(op) {
+                setOperador(op);
+                setAcumulado(parseFloat(valor));
+                setEsperando(true);
+            }
+            function clickIgual() {
+                if (operador && acumulado !== null) {
+                    let resultado = 0;
+                    if (operador === "+") resultado = acumulado + parseFloat(valor);
+                    if (operador === "-") resultado = acumulado - parseFloat(valor);
+                    if (operador === "×") resultado = acumulado * parseFloat(valor);
+                    if (operador === "÷") resultado = acumulado / parseFloat(valor);
+                    setValor(resultado.toString());
+                    setOperador(null);
+                    setAcumulado(null);
+                    setEsperando(true);
+                }
+            }
+            function clickPunto() {
+                if (!valor.includes(".")) setValor(valor + ".");
+            }
+            return (
+                <div className="phone">
+                    <div className="screen">{valor}</div>
+                    <div className="buttons">
+                        <button className="btn gray" onClick={clickAC}>AC</button>
+                        <button className="btn gray" onClick={clickSigno}>±</button>
+                        <button className="btn gray" onClick={clickPorcentaje}>%</button>
+                        <button className="btn orange" onClick={() => clickOperador("÷")}>÷</button>
+                        <button className="btn" onClick={() => clickNumero("7")}>7</button>
+                        <button className="btn" onClick={() => clickNumero("8")}>8</button>
+                        <button className="btn" onClick={() => clickNumero("9")}>9</button>
+                        <button className="btn orange" onClick={() => clickOperador("×")}>×</button>
+                        <button className="btn" onClick={() => clickNumero("4")}>4</button>
+                        <button className="btn" onClick={() => clickNumero("5")}>5</button>
+                        <button className="btn" onClick={() => clickNumero("6")}>6</button>
+                        <button className="btn orange" onClick={() => clickOperador("-")}>-</button>
+                        <button className="btn" onClick={() => clickNumero("1")}>1</button>
+                        <button className="btn" onClick={() => clickNumero("2")}>2</button>
+                        <button className="btn" onClick={() => clickNumero("3")}>3</button>
+                        <button className="btn orange" onClick={() => clickOperador("+")}>+</button>
+                        <button className="btn zero" onClick={() => clickNumero("0")}>0</button>
+                        <button className="btn" onClick={clickPunto}>.</button>
+                        <button className="btn orange" onClick={clickIgual}>=</button>
+                    </div>
+                </div>
+            );
+        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora iPhone</title>
+    <style>
+        /* Reiniciar todos los estilos por defecto */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Estilos del cuerpo de la página */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f4dcc6, #e8c5a0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Contenedor principal que simula el teléfono */
+        .contenedor-iphone {
+            background: #f6f6f6;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            width: 380px;
+            height: 700px;
+            position: relative;
+        }
+
+        /* Simular la muesca del iPhone (Dynamic Island) */
+        .muesca-iphone {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 30px;
+            background: #000000;
+            border-radius: 20px;
+            z-index: 100;
+        }
+
+        /* Contenedor de la calculadora */
+        .calculadora-completa {
+            background: #000000;
+            border-radius: 35px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 50px 25px 20px 25px;
+            position: relative;
+        }
+
+        /* Pantalla donde se muestran los números */
+        .pantalla-numeros {
+            color: #ffffff;
+            font-size: 70px;
+            font-weight: 200;
+            text-align: right;
+            padding: 15px 25px;
+            min-height: 100px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            margin-bottom: 25px;
+            overflow: hidden;
+            letter-spacing: -2px;
+        }
+
+        /* Contenedor de todos los botones */
+        .grupo-botones {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 0 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Cada fila de botones */
+        .fila-de-botones {
+            display: flex;
+            gap: 15px;
+            height: 78px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Estilos base para todos los botones */
+        .boton-calculadora {
+            border: none;
+            border-radius: 50%;
+            font-size: 32px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 78px;
+            width: 78px;
+            font-family: inherit;
+            outline: none;
+            flex-shrink: 0;
+        }
+
+        /* Efecto cuando se presiona un botón */
+        .boton-calculadora:active {
+            transform: scale(0.95);
+            opacity: 0.7;
+        }
+
+        /* Botones de números (0-9) y punto decimal */
+        .boton-numero {
+            background-color: #333333;
+            color: #ffffff;
+        }
+
+        .boton-numero:hover {
+            background-color: #4a4a4a;
+        }
+
+        /* Botones de operaciones matemáticas (+, -, ×, ÷, =) */
+        .boton-operacion {
+            background-color: #ff9500;
+            color: #ffffff;
+        }
+
+        .boton-operacion:hover {
+            background-color: #ffb143;
+        }
+
+        /* Cuando una operación está seleccionada/activa */
+        .boton-operacion.operacion-activa {
+            background-color: #ffffff;
+            color: #ff9500;
+        }
+
+        /* Botones de funciones especiales (AC, +/-, %) */
+        .boton-funcion {
+            background-color: #a6a6a6;
+            color: #000000;
+        }
+
+        .boton-funcion:hover {
+            background-color: #d1d1d1;
+        }
+
+        /* El botón del cero es más ancho */
+        .boton-cero-especial {
+            border-radius: 39px;
+            justify-content: flex-start;
+            padding-left: 30px;
+            width: 171px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor principal que simula un iPhone -->
+    <div class="contenedor-iphone">
+        <!-- La muesca negra del iPhone -->
+        <div class="muesca-iphone"></div>
+        
+        <!-- La calculadora completa -->
+        <div class="calculadora-completa">
+            <!-- Pantalla donde aparecen los números -->
+            <div class="pantalla-numeros" id="pantallaNumeros">0</div>
+            
+            <!-- Todos los botones organizados por filas -->
+            <div class="grupo-botones">
+                
+                <!-- Primera fila: AC, +/-, %, ÷ -->
+                <div class="fila-de-botones">
+                    <button class="boton-calculadora boton-funcion" onclick="limpiarTodoCompletamente()">
+                        AC
+                    </button>
+                    <button class="boton-calculadora boton-funcion" onclick="cambiarSignoDelNumero()">
+                        +/-
+                    </button>
+                    <button class="boton-calculadora boton-funcion" onclick="convertirAPorcentaje()">
+                        %
+                    </button>
+                    <button class="boton-calculadora boton-operacion" onclick="seleccionarOperacion('÷')" id="boton-division">
+                        ÷
+                    </button>
+                </div>
+
+                <!-- Segunda fila: 7, 8, 9, × -->
+                <div class="fila-de-botones">
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('7')">
+                        7
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('8')">
+                        8
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('9')">
+                        9
+                    </button>
+                    <button class="boton-calculadora boton-operacion" onclick="seleccionarOperacion('×')" id="boton-multiplicacion">
+                        ×
+                    </button>
+                </div>
+
+                <!-- Tercera fila: 4, 5, 6, - -->
+                <div class="fila-de-botones">
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('4')">
+                        4
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('5')">
+                        5
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('6')">
+                        6
+                    </button>
+                    <button class="boton-calculadora boton-operacion" onclick="seleccionarOperacion('-')" id="boton-resta">
+                        -
+                    </button>
+                </div>
+
+                <!-- Cuarta fila: 1, 2, 3, + -->
+                <div class="fila-de-botones">
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('1')">
+                        1
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('2')">
+                        2
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarNumeroAPantalla('3')">
+                        3
+                    </button>
+                    <button class="boton-calculadora boton-operacion" onclick="seleccionarOperacion('+')" id="boton-suma">
+                        +
+                    </button>
+                </div>
+
+                <!-- Quinta fila: 0 (botón ancho), ., = -->
+                <div class="fila-de-botones">
+                    <button class="boton-calculadora boton-numero boton-cero-especial" onclick="agregarNumeroAPantalla('0')">
+                        0
+                    </button>
+                    <button class="boton-calculadora boton-numero" onclick="agregarPuntoDecimal()">
+                        .
+                    </button>
+                    <button class="boton-calculadora boton-operacion" onclick="calcularResultadoFinal()" id="boton-igual">
+                        =
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let numeroEnPantalla = '0';
+        let primerNumero = null;
+        let segundoNumero = null;
+        let operacionSeleccionada = null;
+        let esperandoNuevoNumero = false;
+        let listaDeOperaciones = [];
+        let listaDeNumeros = [];
+        const elementoPantalla = document.getElementById('pantallaNumeros');
+
+        function actualizarPantallaCalculadora() {
+            elementoPantalla.textContent = numeroEnPantalla;
+            console.log('Pantalla actualizada a:', numeroEnPantalla);
+        }
+
+        function agregarNumeroAPantalla(numero) {
+            console.log('Agregando número:', numero);
+            if (esperandoNuevoNumero) {
+                numeroEnPantalla = numero;
+                esperandoNuevoNumero = false;
+            } else {
+                if (numeroEnPantalla === '0') {
+                    numeroEnPantalla = numero;
+                } else {
+                    numeroEnPantalla = numeroEnPantalla + numero;
+                }
+            }
+            
+            actualizarPantallaCalculadora();
+        }
+
+        function agregarPuntoDecimal() {
+            console.log('Agregando punto decimal');
+            if (esperandoNuevoNumero) {
+                numeroEnPantalla = '0.';
+                esperandoNuevoNumero = false;
+            } else {
+                if (numeroEnPantalla.indexOf('.') === -1) {
+                    numeroEnPantalla = numeroEnPantalla + '.';
+                }
+            }
+            
+            actualizarPantallaCalculadora();
+        }
+
+        function limpiarTodoCompletamente() {
+            console.log('Limpiando calculadora completamente');
+            
+            numeroEnPantalla = '0';
+            primerNumero = null;
+            segundoNumero = null;
+            operacionSeleccionada = null;
+            esperandoNuevoNumero = false;
+            listaDeOperaciones = [];
+            listaDeNumeros = [];
+            
+            quitarTodasLasOperacionesActivas();
+            actualizarPantallaCalculadora();
+        }
+
+        function cambiarSignoDelNumero() {
+            console.log('Cambiando signo del número');
+            
+            if (numeroEnPantalla !== '0') {
+                if (numeroEnPantalla.charAt(0) === '-') {
+                    numeroEnPantalla = numeroEnPantalla.slice(1);
+                } else {
+                    numeroEnPantalla = '-' + numeroEnPantalla;
+                }
+                actualizarPantallaCalculadora();
+            }
+        }
+
+        function convertirAPorcentaje() {
+            console.log('Convirtiendo a porcentaje');
+            
+            const numeroActual = parseFloat(numeroEnPantalla);
+            const resultado = numeroActual / 100;
+            numeroEnPantalla = resultado.toString();
+            
+            actualizarPantallaCalculadora();
+        }
+
+        function seleccionarOperacion(tipoOperacion) {
+            console.log('Operación seleccionada:', tipoOperacion);
+            
+            const numeroActual = parseFloat(numeroEnPantalla);
+            
+            if (operacionSeleccionada && !esperandoNuevoNumero) {
+                const resultado = realizarCalculoMatematico(primerNumero, numeroActual, operacionSeleccionada);
+                numeroEnPantalla = resultado.toString();
+                primerNumero = resultado;
+                actualizarPantallaCalculadora();
+            } else {
+                primerNumero = numeroActual;
+            }
+            
+            operacionSeleccionada = tipoOperacion;
+            esperandoNuevoNumero = true;
+            
+            marcarOperacionComoActiva(tipoOperacion);
+        }
+
+        function calcularResultadoFinal() {
+            console.log('Calculando resultado final');
+            
+            if (operacionSeleccionada && primerNumero !== null && !esperandoNuevoNumero) {
+                segundoNumero = parseFloat(numeroEnPantalla);
+                
+                const resultado = realizarCalculoMatematico(primerNumero, segundoNumero, operacionSeleccionada);
+                
+                numeroEnPantalla = resultado.toString();
+                primerNumero = null;
+                segundoNumero = null;
+                operacionSeleccionada = null;
+                esperandoNuevoNumero = true;
+                
+                quitarTodasLasOperacionesActivas();
+                actualizarPantallaCalculadora();
+            }
+        }
+
+        function realizarCalculoMatematico(numero1, numero2, operacion) {
+            console.log(`Calculando: ${numero1} ${operacion} ${numero2}`);
+            
+            let resultado;
+            
+            switch (operacion) {
+                case '+':
+                    resultado = numero1 + numero2;
+                    break;
+                case '-':
+                    resultado = numero1 - numero2;
+                    break;
+                case '×':
+                    resultado = numero1 * numero2;
+                    break;
+                case '÷':
+                    if (numero2 !== 0) {
+                        resultado = numero1 / numero2;
+                    } else {
+                        alert('Error: No se puede dividir entre cero');
+                        resultado = 0;
+                    }
+                    break;
+                default:
+                    resultado = numero2;
+            }
+            
+            console.log('Resultado:', resultado);
+            return resultado;
+        }
+        function evaluarConPrecedencia(numeros, operaciones) {
+            console.log('Evaluando con precedencia:', numeros, operaciones);
+            let i = 0;
+            while (i < operaciones.length) {
+                if (operaciones[i] === '×' || operaciones[i] === '÷') {
+                    const numero1 = numeros[i];
+                    const numero2 = numeros[i + 1];
+                    const operacion = operaciones[i];
+                    
+                    const resultado = realizarCalculoMatematico(numero1, numero2, operacion);
+                    numeros.splice(i, 2, resultado);
+                    operaciones.splice(i, 1);
+                } else {
+                    i++;
+                }
+            }
+            
+            i = 0;
+            while (i < operaciones.length) {
+                const numero1 = numeros[i];
+                const numero2 = numeros[i + 1];
+                const operacion = operaciones[i];
+                
+                const resultado = realizarCalculoMatematico(numero1, numero2, operacion);
+                numeros.splice(i, 2, resultado);
+                operaciones.splice(i, 1);
+            }
+            
+            return numeros[0];
+        }
+
+        function marcarOperacionComoActiva(operacion) {
+            quitarTodasLasOperacionesActivas();
+            let idDelBoton;
+            switch (operacion) {
+                case '+':
+                    idDelBoton = 'boton-suma';
+                    break;
+                case '-':
+                    idDelBoton = 'boton-resta';
+                    break;
+                case '×':
+                    idDelBoton = 'boton-multiplicacion';
+                    break;
+                case '÷':
+                    idDelBoton = 'boton-division';
+                    break;
+            }
+            
+            if (idDelBoton) {
+                const boton = document.getElementById(idDelBoton);
+                if (boton) {
+                    boton.classList.add('operacion-activa');
+                }
+            }
+        }
+
+        function quitarTodasLasOperacionesActivas() {
+            const botonesDeOperacion = [
+                'boton-suma', 
+                'boton-resta', 
+                'boton-multiplicacion', 
+                'boton-division'
+            ];
+            
+            botonesDeOperacion.forEach(function(idDelBoton) {
+                const boton = document.getElementById(idDelBoton);
+                if (boton) {
+                    boton.classList.remove('operacion-activa');
+                }
+            });
+        }
+
+        window.addEventListener('load', function() {
+            console.log('Calculadora inicializada');
+            actualizarPantallaCalculadora();
+        });
+
+    </script>
+</body>
+</html>

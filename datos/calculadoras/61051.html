@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora React</title>
+
+    <style>
+      body {
+        margin: 0;
+        background: #f4d5a0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .iphone {
+        position: relative;
+        background: white;
+        border-radius: 50px;
+        padding: 10px;
+        width: 380px;
+        height: 740px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+          0 8px 25px rgba(0, 0, 0, 0.2),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      .notch-white {
+        width: 140px;
+        height: 32px;
+        background: white;
+        border-bottom-left-radius: 18px;
+        border-bottom-right-radius: 18px;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .phone {
+        background: black;
+        border-radius: 42px;
+        padding: 20px;
+        width: 320px;
+        height: 724px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        margin-top: 0;
+      }
+
+      .screen {
+        color: white;
+        text-align: right;
+        font-size: 64px;
+        font-weight: 200;
+        padding: 60px 30px 20px 30px;
+        min-height: 120px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        letter-spacing: -2px;
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        padding: 0 12px 20px 12px;
+      }
+
+      .btn {
+        font-size: 32px;
+        font-weight: 400;
+        border: none;
+        border-radius: 50%;
+        padding: 0;
+        cursor: pointer;
+        color: white;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        transition: all 0.1s ease;
+      }
+
+      .btn:active {
+        transform: scale(0.95);
+      }
+
+      .gray {
+        background: #a6a6a6;
+        color: black;
+        font-weight: 500;
+      }
+
+      .dark {
+        background: #333333;
+        color: white;
+      }
+
+      .orange {
+        background: #ff9f0a;
+        color: white;
+        font-weight: 500;
+      }
+
+      .btn.zero {
+        grid-column: span 2;
+        border-radius: 35px;
+        width: 152px;
+        justify-content: flex-start;
+        padding-left: 25px;
+      }
+
+      .btn-power {
+        position: absolute;
+        right: -3px;
+        top: 140px;
+        width: 4px;
+        height: 80px;
+        background: #7a7a7a;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-vol-up {
+        position: absolute;
+        left: -3px;
+        top: 120px;
+        width: 4px;
+        height: 50px;
+        background: #7a7a7a;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-vol-down {
+        position: absolute;
+        left: -3px;
+        top: 180px;
+        width: 4px;
+        height: 50px;
+        background: #7a7a7a;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iphone">
+      <div class="notch-white"></div>
+      <div class="btn-power"></div>
+      <div class="btn-vol-up"></div>
+      <div class="btn-vol-down"></div>
+
+      <div class="phone">
+        <div id="root"></div>
+      </div>
+    </div>
+    <script
+      crossorigin
+      src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"
+    ></script>
+    <!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      function Calculadora() {
+        const [input, setInput] = useState("");
+
+        const operadores = ["+", "-", "*", "/", "%"];
+
+        function evaluarExpresion(expresion) {
+          try {
+            const tokens = expresion.match(/(\d+(\.\d+)?|[+\-*/%])/g);
+            if (!tokens) return "Error";
+
+            const toNumber = (val) => parseFloat(val);
+
+            for (let i = 0; i < tokens.length; i++) {
+              if (["*", "/", "%"].includes(tokens[i])) {
+                const op = tokens[i];
+                const a = toNumber(tokens[i - 1]);
+                const b = toNumber(tokens[i + 1]);
+
+                if (op === "/" && b === 0) return "Error";
+
+                let res;
+                switch (op) {
+                  case "*":
+                    res = a * b;
+                    break;
+                  case "/":
+                    res = a / b;
+                    break;
+                  case "%":
+                    res = a % b;
+                    break;
+                }
+
+                tokens.splice(i - 1, 3, res.toString());
+                i -= 1;
+              }
+            }
+
+            let resultado = toNumber(tokens[0]);
+            for (let i = 1; i < tokens.length; i += 2) {
+              const op = tokens[i];
+              const num = toNumber(tokens[i + 1]);
+              if (op === "+") resultado += num;
+              if (op === "-") resultado -= num;
+            }
+
+            return resultado.toString();
+          } catch {
+            return "Error";
+          }
+        }
+
+        const handleClick = (value) => {
+          if (value === "AC") {
+            setInput("");
+            return;
+          }
+
+          if (value === "+/-") {
+            if (!input) return;
+            const resultado = evaluarExpresion(input);
+            if (resultado !== "Error") {
+              setInput((-1 * parseFloat(resultado)).toString());
+            }
+            return;
+          }
+
+          if (value === "=") {
+            const resultado = evaluarExpresion(input);
+            setInput(resultado);
+            return;
+          }
+
+          if (operadores.includes(value)) {
+            const ultimo = input.slice(-1);
+            if (input === "" && value !== "-") return;
+            if (operadores.includes(ultimo)) return;
+          }
+
+          if (value === ".") {
+            const partes = input.split(/[\+\-\*\/]/);
+            const ultimaParte = partes[partes.length - 1];
+            if (ultimaParte.includes(".")) return;
+          }
+
+          setInput((prev) => prev + value);
+        };
+
+        const botones = [
+          ["AC", "+/-", "%", "/"],
+          ["7", "8", "9", "*"],
+          ["4", "5", "6", "-"],
+          ["1", "2", "3", "+"],
+          ["0", ".", "="],
+        ];
+
+        const getClass = (value) => {
+          if (["AC", "+/-", "%"].includes(value)) return "btn gray";
+          if (["/", "*", "-", "+", "="].includes(value)) return "btn orange";
+          return "btn dark";
+        };
+
+        return (
+          <>
+            <div className="screen">{input || "0"}</div>
+            <div className="buttons">
+              {botones.flat().map((btn, i) => (
+                <button
+                  key={i}
+                  className={`${getClass(btn)} ${btn === "0" ? "zero" : ""}`}
+                  onClick={() => handleClick(btn)}
+                >
+                  {btn}
+                </button>
+              ))}
+            </div>
+          </>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<Calculadora />);
+    </script>
+  </body>
+</html>

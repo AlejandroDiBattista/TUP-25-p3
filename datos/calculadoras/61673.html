@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        body {
+            background: #b7e6f9;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Forma del celu */
+        .phone-frame {
+            background: #fff;
+            border-radius: 48px;
+            box-shadow: 0 0 0 8px #fff, 0 8px 32px #0002;
+            width: 370px;
+            height: 780px;
+            margin: 0;
+            padding: 16px 0 0 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .calc-container {
+            background: #111;
+            border-radius: 40px;
+            box-shadow: none;
+            width: 340px;
+            height: 700px;
+            padding: 0 0 32px 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .calc-screen {
+            background: transparent;
+            color: #fff;
+            font-size: 64px;
+            text-align: right;
+            border-radius: 0;
+            padding: 40px 32px 12px 16px;
+            min-height: 100px;
+            margin-bottom: 16px;
+            letter-spacing: 2px;
+            overflow-x: auto;
+            font-weight: 400;
+        }
+        .calc-row {
+            display: flex;
+            margin-bottom: 16px;
+            justify-content: center;
+        }
+        .calc-btn {
+            flex: 0 0 64px;
+            width: 64px;
+            height: 64px;
+            margin: 0 8px;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            font-weight: 400;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calc-btn:active {
+            background: #444;
+        }
+        .calc-btn.gray {
+            background: #a5a5a5;
+            color: #111;
+        }
+        .calc-btn.orange {
+            background: #ff9f0a;
+            color: #fff;
+        }
+        .calc-btn.zero {
+            flex: 0 0 144px;
+            width: 144px;
+            border-radius: 32px;
+            text-align: left;
+            padding-left: 32px;
+            justify-content: flex-start;
+        }
+        /* notch del celu */
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 32px;
+            background: #ffffff;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div id="root"></div>
+    </div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState('0');
+            const [operador, setOperador] = useState(null);
+            const [acumulado, setAcumulado] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+
+            const handleClick = (valor) => {
+                if (valor === 'AC') {
+                    setPantalla('0');
+                    setOperador(null);
+                    setAcumulado(null);
+                    setEsperandoNuevo(false);
+                } else if (valor === '+/-') {
+                    setPantalla((prev) => (prev[0] === '-' ? prev.slice(1) : '-' + prev));
+                } else if (valor === '%') {
+                    setPantalla((prev) => {
+                        if (operador && acumulado !== null) {
+                            // Calcula el porcentaje respecto al acumulado
+                            return String(acumulado * (parseFloat(prev) / 100));
+                        } else {
+                            // Si no hay operación previa, solo divide por 100
+                            return String(parseFloat(prev) / 100);
+                        }
+                    });
+                } else if (['+', '-', '×', '÷'].includes(valor)) {
+                    setOperador(valor);
+                    setAcumulado(parseFloat(pantalla));
+                    setEsperandoNuevo(true);
+                } else if (valor === '=') {
+                    if (operador && acumulado !== null) {
+                        const actual = parseFloat(pantalla);
+                        let resultado = 0;
+                        switch (operador) {
+                            case '+': resultado = acumulado + actual; break;
+                            case '-': resultado = acumulado - actual; break;
+                            case '×': resultado = acumulado * actual; break;
+                            case '÷': resultado = actual !== 0 ? acumulado / actual : 'Error'; break;
+                            default: break;
+                        }
+                        setPantalla(String(resultado));
+                        setOperador(null);
+                        setAcumulado(null);
+                        setEsperandoNuevo(true);
+                    }
+                } else {
+                    // Números
+                    if (pantalla.length > 12) return;
+                    if (esperandoNuevo) {
+                        setPantalla(valor === '.' ? '0.' : valor);
+                        setEsperandoNuevo(false);
+                    } else {
+                        if (valor === '.' && pantalla.includes('.')) return;
+                        setPantalla((prev) => (prev === '0' && valor !== '.' ? valor : prev + valor));
+                    }
+                }
+            };
+
+            const botones = [
+                ['AC', '+/-', '%', '÷'],
+                ['7', '8', '9', '×'],
+                ['4', '5', '6', '-'],
+                ['1', '2', '3', '+'],
+                ['0', '.', '=']
+            ];
+
+            return (
+                <div className="calc-container">
+                    <div className="calc-screen">{pantalla}</div>
+                    {botones.map((fila, i) => (
+                        <div className="calc-row" key={i}>
+                            {fila.map((b, j) => (
+                                <button
+                                    key={b}
+                                    className={
+                                        'calc-btn ' +
+                                        (b === 'AC' || b === '+/-' || b === '%' ? 'gray ' : '') +
+                                        (b === '÷' || b === '×' || b === '-' || b === '+' || b === '=' ? 'orange ' : '') +
+                                        (b === '0' ? 'zero' : '')
+                                    }
+                                    onClick={() => handleClick(b)}
+                                >
+                                    {b}
+                                </button>
+                            ))}
+                </div>
+            ))}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

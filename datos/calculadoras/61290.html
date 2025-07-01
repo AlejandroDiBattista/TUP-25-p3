@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fcd49b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+
+    .calculator {
+      background: #000;
+      border-radius: 40px;
+      width: 320px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .display {
+      color: white;
+      font-size: 60px;
+      text-align: right;
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      height: 60px;
+      font-size: 24px;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn.gray {
+      background: #a5a5a5;
+      color: black;
+    }
+
+    .btn.dark {
+      background: #333;
+      color: white;
+    }
+
+    .btn.orange {
+      background: #f1a33c;
+      color: white;
+    }
+
+    .btn.zero {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculator() {
+      const [display, setDisplay] = useState('0');
+      const [firstValue, setFirstValue] = useState(null);
+      const [operator, setOperator] = useState(null);
+      const [waitingForSecond, setWaitingForSecond] = useState(false);
+
+      const handleNumber = (num) => {
+        if (waitingForSecond) {
+          setDisplay(num);
+          setWaitingForSecond(false);
+        } else {
+          setDisplay(display === '0' ? num : display + num);
+        }
+      };
+
+      const handleOperator = (nextOperator) => {
+        const inputValue = parseFloat(display);
+
+        if (firstValue === null) {
+          setFirstValue(inputValue);
+        } else if (operator) {
+          const result = calculate(firstValue, inputValue, operator);
+          setFirstValue(result);
+          setDisplay(String(result));
+        }
+
+        setWaitingForSecond(true);
+        setOperator(nextOperator);
+      };
+
+      const calculate = (a, b, operator) => {
+        switch (operator) {
+          case '+': return a + b;
+          case '-': return a - b;
+          case '*': return a * b;
+          case '/': return b !== 0 ? a / b : 0;
+          default: return b;
+        }
+      };
+
+      const handleEqual = () => {
+        if (operator && firstValue !== null) {
+          const result = calculate(firstValue, parseFloat(display), operator);
+          setDisplay(String(result));
+          setFirstValue(null);
+          setOperator(null);
+          setWaitingForSecond(false);
+        }
+      };
+
+      const handleClear = () => {
+        setDisplay('0');
+        setFirstValue(null);
+        setOperator(null);
+        setWaitingForSecond(false);
+      };
+
+      const handleSignToggle = () => {
+        setDisplay(display.startsWith('-') ? display.slice(1) : '-' + display);
+      };
+
+      const handlePercent = () => {
+        setDisplay(String(parseFloat(display) / 100));
+      };
+
+      const handleDot = () => {
+        if (!display.includes('.')) {
+          setDisplay(display + '.');
+        }
+      };
+
+      return (
+        <div className="calculator">
+          <div className="display">{display}</div>
+          <div className="buttons">
+            <button className="btn gray" onClick={handleClear}>AC</button>
+            <button className="btn gray" onClick={handleSignToggle}>±</button>
+            <button className="btn gray" onClick={handlePercent}>%</button>
+            <button className="btn orange" onClick={() => handleOperator('/')}>÷</button>
+
+            <button className="btn dark" onClick={() => handleNumber('7')}>7</button>
+            <button className="btn dark" onClick={() => handleNumber('8')}>8</button>
+            <button className="btn dark" onClick={() => handleNumber('9')}>9</button>
+            <button className="btn orange" onClick={() => handleOperator('*')}>×</button>
+
+            <button className="btn dark" onClick={() => handleNumber('4')}>4</button>
+            <button className="btn dark" onClick={() => handleNumber('5')}>5</button>
+            <button className="btn dark" onClick={() => handleNumber('6')}>6</button>
+            <button className="btn orange" onClick={() => handleOperator('-')}>−</button>
+
+            <button className="btn dark" onClick={() => handleNumber('1')}>1</button>
+            <button className="btn dark" onClick={() => handleNumber('2')}>2</button>
+            <button className="btn dark" onClick={() => handleNumber('3')}>3</button>
+            <button className="btn orange" onClick={() => handleOperator('+')}>+</button>
+
+            <button className="btn dark zero" onClick={() => handleNumber('0')}>0</button>
+            <button className="btn dark" onClick={handleDot}>.</button>
+            <button className="btn orange" onClick={handleEqual}>=</button>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Calculator />);
+  </script>
+</body>
+</html>

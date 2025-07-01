@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+body {
+      background-color: #f5d7b3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+    }
+
+    
+    .iphone-frame {
+      position: relative;
+      padding: 22px;
+      width: 360px;               /* ⇽ ancho ampliado */
+      background: #ffffff;
+      border-radius: 60px;
+      box-shadow: 0 9px 32px rgba(0, 0, 0, .25);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    
+    .iphone-notch {
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 40px;
+      background: #ffffff;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+    
+    .screen {
+      width: 100%;
+      background: #000;
+      border-radius: 46px;
+      padding: 70px 20px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+   
+    .display {
+      color: #fff;
+      font-size: 72px;           
+      line-height: 2;
+      text-align: right;
+      word-wrap: break-word;
+      min-height: 86px;
+    }
+
+    
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 72px);
+      grid-gap: 16px;
+      margin-top: 28px;
+    }
+
+    
+    .btn {
+      border: none;
+      outline: none;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      font-size: 30px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: filter .15s;
+    }
+    .btn:active { filter: brightness(1.25); }
+
+    
+    .btn-num { background: #333; color: #fff; }
+    .btn-fn  { background: #9e9e9e; color: #000; }
+    .btn-op  { background: #ff9500; color: #fff; }
+
+    
+    .btn-zero {
+      grid-column: span 2;
+      width: 160px;              /* 72 + 16 + 72  */
+      border-radius: 36px;
+      justify-content: flex-start;
+      padding-left: 26px;
+    }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        function calculate({ current, previous, operator }, value) {
+
+      if (!isNaN(value)) {
+        if (current === '0' || current === '∞') {
+          return { current: value, previous, operator };
+        }
+        return { current: current + value, previous, operator };
+      }
+
+      if (value === '.') {
+        if (current.includes('.')) return { current, previous, operator };
+        return { current: current + '.', previous, operator };
+      }
+
+      if (value === 'AC') {
+        return { current: '0', previous: null, operator: null };
+      }
+
+      if (value === '+/-') {
+        return { current: String(parseFloat(current) * -1), previous, operator };
+      }
+
+      if (value === '%') {
+        return { current: String(parseFloat(current) / 100), previous, operator };
+      }
+
+      if (['÷', '×', '−', '+'].includes(value)) {
+        return { current: '0', previous: current, operator: value };
+      }
+
+      
+      if (value === '=') {
+        if (operator == null || previous == null) return { current, previous, operator };
+        const a = parseFloat(previous);
+        const b = parseFloat(current);
+        let result = 0;
+        switch (operator) {
+          case '÷': result = b === 0 ? '∞' : a / b; break;
+          case '×': result = a * b; break;
+          case '−': result = a - b; break;
+          case '+': result = a + b; break;
+          default: break;
+        }
+        return { current: String(result), previous: null, operator: null };
+      }
+
+      return { current, previous, operator };
+    }
+
+
+    function Calculadora() {
+      const [state, setState] = useState({ current: '0', previous: null, operator: null });
+
+      const handleClick = (value) => {
+        setState(prev => calculate(prev, value));
+      };
+
+      return (
+        <div className="iphone-frame">
+          <div className="iphone-notch"></div>
+
+          <div className="screen">
+            <div className="display">{state.current}</div>
+
+            <div className="buttons">
+            
+              <button className="btn btn-fn" onClick={() => handleClick('AC')}>AC</button>
+              <button className="btn btn-fn" onClick={() => handleClick('+/-')}>±</button>
+              <button className="btn btn-fn" onClick={() => handleClick('%')}>%</button>
+              <button className="btn btn-op" onClick={() => handleClick('÷')}>÷</button>
+
+              <button className="btn btn-num" onClick={() => handleClick('7')}>7</button>
+              <button className="btn btn-num" onClick={() => handleClick('8')}>8</button>
+              <button className="btn btn-num" onClick={() => handleClick('9')}>9</button>
+              <button className="btn btn-op"  onClick={() => handleClick('×')}>×</button>
+
+              <button className="btn btn-num" onClick={() => handleClick('4')}>4</button>
+              <button className="btn btn-num" onClick={() => handleClick('5')}>5</button>
+              <button className="btn btn-num" onClick={() => handleClick('6')}>6</button>
+              <button className="btn btn-op"  onClick={() => handleClick('−')}>−</button>
+
+              <button className="btn btn-num" onClick={() => handleClick('1')}>1</button>
+              <button className="btn btn-num" onClick={() => handleClick('2')}>2</button>
+              <button className="btn btn-num" onClick={() => handleClick('3')}>3</button>
+              <button className="btn btn-op"  onClick={() => handleClick('+')}>+</button>
+
+              <button className="btn btn-num btn-zero" onClick={() => handleClick('0')}>0</button>
+              <button className="btn btn-num" onClick={() => handleClick('.')}>·</button>
+              <button className="btn btn-op"  onClick={() => handleClick('=')}>=</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

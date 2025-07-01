@@ -391,6 +391,48 @@ class Program {
         }
     }
 
+    static void CopiarTP7(Clase clase) {
+        clase.VerificaPresentacionPractico(7);
+        
+        var alumnosPresentaron = clase.Presentaron(7);
+        Consola.Escribir($"=== Copiando calculadoras de {alumnosPresentaron.Count()} alumnos que presentaron TP7 ===", ConsoleColor.Cyan);
+        
+        // Crear carpeta calculadoras si no existe
+        string carpetaDestino = "./calculadoras";
+        if (!Directory.Exists(carpetaDestino)) {
+            Directory.CreateDirectory(carpetaDestino);
+        }
+        
+        int copiados = 0;
+        int errores = 0;
+        
+        foreach (var alumno in alumnosPresentaron) {
+            try {
+                string archivoOrigen = Path.Combine($"../TP/{alumno.Carpeta}/tp7/calculadora.html");
+                string archivoDestino = Path.Combine(carpetaDestino, $"{alumno.Legajo}.html");
+                
+                if (File.Exists(archivoOrigen)) {
+                    File.Copy(archivoOrigen, archivoDestino, true);
+                    Consola.Escribir($"✓ Copiado: {alumno.Legajo} - {alumno.NombreCompleto}", ConsoleColor.Green);
+                    copiados++;
+                } else {
+                    Consola.Escribir($"✗ No encontrado: {alumno.Legajo} - {alumno.NombreCompleto} (archivo no existe)", ConsoleColor.Yellow);
+                    errores++;
+                }
+            } catch (Exception ex) {
+                Consola.Escribir($"✗ Error: {alumno.Legajo} - {alumno.NombreCompleto} ({ex.Message})", ConsoleColor.Red);
+                errores++;
+            }
+        }
+        
+        Consola.Escribir($"\n=== Resumen ===", ConsoleColor.Cyan);
+        Consola.Escribir($"Archivos copiados exitosamente: {copiados}", ConsoleColor.Green);
+        if (errores > 0) {
+            Consola.Escribir($"Errores o archivos no encontrados: {errores}", ConsoleColor.Red);
+        }
+        
+        clase.ListarAlumnos();
+    }
 
     static void Main(string[] args)
     {
@@ -431,7 +473,7 @@ class Program {
         // menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
         // menu.Agregar("  P2: Ejecutar", () => ProbarTP6(clase));
         menu.Agregar("  P2: Presentaron", () => clase.Presentaron(6).ListarAlumnos());
-        menu.Agregar("  P2: No presentaron", () => clase.NoPresentaron(6).Continuan().ListarAlumnos());
+        menu.Agregar("  Copiar TP7", () => CopiarTP7(clase));
         // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
         menu.Agregar("  P2: Generar informe", () => InformePractico(clase));
         menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
@@ -442,6 +484,7 @@ class Program {
             var remoto = ExtraerCalculadorasRemoto();
             CompletarTP7(local, remoto);
         });
+
 
         menu.Ejecutar();
 

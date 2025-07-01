@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+
+  <style>
+    body {
+      background-color: #d2b48c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .calculadora {
+      background-color: black;
+      padding: 20px;
+      border-radius: 40px;
+      width: 300px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .pantalla {
+      background-color: black;
+      color: white;
+      font-size: 50px;
+      text-align: right;
+      padding: 20px 10px;
+      border: none;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .botones {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      font-size: 24px;
+      color: white;
+      background-color: #333;
+      cursor: pointer;
+    }
+
+    .gris {
+      background-color: #a5a5a5;
+      color: black;
+    }
+
+    .naranja {
+      background-color: #f1a33c;
+    }
+
+    .cero {
+      grid-column: span 2;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React y ReactDOM -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel para usar JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [pantalla, setPantalla] = useState("");
+
+      const agregar = (valor) => {
+        setPantalla(pantalla + valor);
+      };
+
+      const calcular = () => {
+        try {
+          setPantalla(eval(pantalla).toString());
+        } catch {
+          setPantalla("Error");
+        }
+      };
+
+      const limpiar = () => {
+        setPantalla("");
+      };
+
+      return (
+        <div className="calculadora">
+          <input className="pantalla" type="text" value={pantalla} readOnly />
+          <div className="botones">
+            <button className="gris" onClick={limpiar}>AC</button>
+            <button className="gris" onClick={() => agregar("/")}>÷</button>
+            <button className="gris" onClick={() => agregar("%")}>%</button>
+            <button className="naranja" onClick={() => agregar("+")}>+</button>
+
+            <button onClick={() => agregar("7")}>7</button>
+            <button onClick={() => agregar("8")}>8</button>
+            <button onClick={() => agregar("9")}>9</button>
+            <button className="naranja" onClick={() => agregar("-")}>−</button>
+
+            <button onClick={() => agregar("4")}>4</button>
+            <button onClick={() => agregar("5")}>5</button>
+            <button onClick={() => agregar("6")}>6</button>
+            <button className="naranja" onClick={() => agregar("*")}>×</button>
+
+            <button onClick={() => agregar("1")}>1</button>
+            <button onClick={() => agregar("2")}>2</button>
+            <button onClick={() => agregar("3")}>3</button>
+            <button className="naranja" onClick={() => agregar("/")}>÷</button>
+
+            <button className="cero" onClick={() => agregar("0")}>0</button>
+            <button onClick={() => agregar(".")}>.</button>
+            <button className="naranja" onClick={calcular}>=</button>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
+</body>
+</html>

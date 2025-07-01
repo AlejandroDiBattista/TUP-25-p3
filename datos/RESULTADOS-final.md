@@ -123,7 +123,7 @@
 ### Referencias.
 Para los parciales:
 - 🟢 : Aprobado
-- 🔴 : No aprobado / No presentado
+- 🔴 : No aprobado
 
 Para los trabajo practicos
 - ✅ : Práctico presentado

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5deb3, #daa520);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .iphone-container {
+            background: white;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .iphone-screen {
+            background: #000;
+            border-radius: 42px;
+            width: 300px;
+            height: 650px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 25px;
+            background: white;
+            border-radius: 0 0 16px 16px;
+            z-index: 10;
+        }
+
+        .calculadora {
+            padding: 80px 15px 30px 15px;
+            height: calc(100% - 110px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pantalla {
+            color: white;
+            font-size: 60px;
+            font-weight: 200;
+            text-align: right;
+            padding: 70px 15px 30px 15px; 
+            min-height: 100px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .pantalla.largo { font-size: 45px; }
+        .pantalla.muy-largo { font-size: 32px; }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 0 5px;
+        }
+
+        .boton {
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 26px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .boton:active { transform: scale(0.95); opacity: 0.7; }
+        .boton.gris { background: #a6a6a6; color: #000; }
+        .boton.oscuro { background: #333333; color: white; }
+        .boton.naranja { background: #ff9500; color: white; }
+        .boton.activo { background: white; color: #ff9500; }
+
+        .boton.cero {
+            grid-column: span 2;
+            border-radius: 35px;
+            width: auto;
+            justify-content: flex-start;
+            padding-left: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora() {
+            const [pantalla, setPantalla] = useState('0');
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [operacion, setOperacion] = useState(null);
+            const [esperandoNuevoNumero, setEsperandoNuevoNumero] = useState(false);
+
+            useEffect(() => {
+                const manejarTeclado = (e) => {
+                    const { key } = e;
+                    
+                    if (key >= '0' && key <= '9') {
+                        manejarNumero(parseInt(key));
+                    } else if (['+', '-'].includes(key)) {
+                        manejarOperacion(key);
+                    } else if (['*', 'x', 'X'].includes(key)) {
+                        manejarOperacion('×');
+                    } else if (['/', '÷'].includes(key)) {
+                        e.preventDefault();
+                        manejarOperacion('÷');
+                    } else if (['Enter', '='].includes(key)) {
+                        manejarIgual();
+                    } else if (['.', ','].includes(key)) {
+                        decimal();
+                    } else if (['Escape', 'c', 'C'].includes(key)) {
+                        limpiar();
+                    } else if (key === '%') {
+                        porcentaje();
+                    }
+                };
+
+                window.addEventListener('keydown', manejarTeclado);
+                return () => window.removeEventListener('keydown', manejarTeclado);
+            }, [pantalla, valorAnterior, operacion, esperandoNuevoNumero]);
+
+            const formatearNumero = (numero) => {
+                const n = parseFloat(numero);
+                return Number.isInteger(n) ? n.toString() : n.toFixed(6).replace(/\.?0+$/, '');
+            };
+
+            const obtenerClasePantalla = () => {
+                const len = pantalla.length;
+                return `pantalla ${len > 10 ? 'muy-largo' : len > 7 ? 'largo' : ''}`;
+            };
+
+            const manejarNumero = (numero) => {
+                if (pantalla.length >= 10) return;
+                
+                if (esperandoNuevoNumero) {
+                    setPantalla(numero.toString());
+                    setEsperandoNuevoNumero(false);
+                } else {
+                    setPantalla(pantalla === '0' ? numero.toString() : pantalla + numero);
+                }
+            };
+
+            const manejarOperacion = (nuevaOperacion) => {
+                const actual = parseFloat(pantalla);
+
+                if (valorAnterior === null) {
+                    setValorAnterior(actual);
+                } else if (operacion) {
+                    const resultado = formatearNumero(calcular());
+                    setPantalla(resultado);
+                    setValorAnterior(parseFloat(resultado));
+                }
+
+                setEsperandoNuevoNumero(true);
+                setOperacion(nuevaOperacion);
+            };
+
+            const calcular = () => {
+                const anterior = valorAnterior;
+                const actual = parseFloat(pantalla);
+
+                if (anterior === null || operacion === null) return actual;
+
+                switch (operacion) {
+                    case '+': return anterior + actual;
+                    case '-': return anterior - actual;
+                    case '×': return anterior * actual;
+                    case '÷': return actual !== 0 ? anterior / actual : 0;
+                    default: return actual;
+                }
+            };
+
+            const manejarIgual = () => {
+                if (operacion && valorAnterior !== null) {
+                    const resultado = formatearNumero(calcular());
+                    setPantalla(resultado);
+                    setValorAnterior(null);
+                    setOperacion(null);
+                    setEsperandoNuevoNumero(true);
+                }
+            };
+
+            const limpiar = () => {
+                setPantalla('0');
+                setValorAnterior(null);
+                setOperacion(null);
+                setEsperandoNuevoNumero(false);
+            };
+
+            const cambiarSigno = () => {
+                if (pantalla !== '0') {
+                    setPantalla(formatearNumero(parseFloat(pantalla) * -1));
+                }
+            };
+
+            const porcentaje = () => {
+                setPantalla(formatearNumero(parseFloat(pantalla) / 100));
+            };
+
+            const decimal = () => {
+                if (pantalla.length >= 10) return;
+                
+                if (esperandoNuevoNumero) {
+                    setPantalla('0.');
+                    setEsperandoNuevoNumero(false);
+                } else if (!pantalla.includes('.')) {
+                    setPantalla(pantalla + '.');
+                }
+            };
+
+            const Boton = ({ texto, tipo = 'oscuro', accion, activo = false, especial = false }) => (
+                <button 
+                    className={`boton ${tipo} ${activo ? 'activo' : ''} ${especial ? 'cero' : ''}`}
+                    onClick={accion}
+                >
+                    {texto}
+                </button>
+            );
+
+            return (
+                <div className="iphone-container">
+                    <div className="iphone-screen">
+                        <div className="notch"></div>
+                        <div className="calculadora">
+                            <div className={obtenerClasePantalla()}>{pantalla}</div>
+                            <div className="botones">
+                                <Boton texto="AC" tipo="gris" accion={limpiar} />
+                                <Boton texto="+/-" tipo="gris" accion={cambiarSigno} />
+                                <Boton texto="%" tipo="gris" accion={porcentaje} />
+                                <Boton texto="÷" tipo="naranja" accion={() => manejarOperacion('÷')} activo={operacion === '÷'} />
+
+                                <Boton texto="7" accion={() => manejarNumero(7)} />
+                                <Boton texto="8" accion={() => manejarNumero(8)} />
+                                <Boton texto="9" accion={() => manejarNumero(9)} />
+                                <Boton texto="×" tipo="naranja" accion={() => manejarOperacion('×')} activo={operacion === '×'} />
+
+                                <Boton texto="4" accion={() => manejarNumero(4)} />
+                                <Boton texto="5" accion={() => manejarNumero(5)} />
+                                <Boton texto="6" accion={() => manejarNumero(6)} />
+                                <Boton texto="-" tipo="naranja" accion={() => manejarOperacion('-')} activo={operacion === '-'} />
+
+                                <Boton texto="1" accion={() => manejarNumero(1)} />
+                                <Boton texto="2" accion={() => manejarNumero(2)} />
+                                <Boton texto="3" accion={() => manejarNumero(3)} />
+                                <Boton texto="+" tipo="naranja" accion={() => manejarOperacion('+')} activo={operacion === '+'} />
+
+                                <Boton texto="0" accion={() => manejarNumero(0)} especial={true} />
+                                <Boton texto="." accion={decimal} />
+                                <Boton texto="=" tipo="naranja" accion={manejarIgual} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<Calculadora />);
+    </script>
+</body>
+</html>

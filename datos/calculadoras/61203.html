@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora React</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #f1dcb0;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+    }
+    #root {
+       background: #000;
+       width: 360px;
+      height: 640px;
+      border-radius: 40px;
+  
+      border: 8px solid #fff;
+  
+      padding: 40px 16px; 
+       color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .display {
+      font-size: 4rem;
+      text-align: right;
+      padding: 10px;
+      word-wrap: break-word;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 12px;
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 1.6rem;
+      border: none;
+      border-radius: 50%;
+      padding: 20px;
+      cursor: pointer;
+    }
+    .btn-0 { grid-column: span 2; border-radius: 40px; text-align: left; padding-left: 36px; }
+    .btn-func { background: #a5a5a5; color: #000; }
+    .btn-op { background: #fe9505; }
+    .btn-num { background: #333; }
+    button:active { opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React y ReactDOM desde CDN -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel para JSX en el navegador -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [display, setDisplay] = useState("0");
+      const [prev, setPrev] = useState(null);
+      const [op, setOp] = useState(null);
+      const [resetNext, setResetNext] = useState(false);
+
+      const handleNum = (num) => {
+        if (display === "0" || resetNext) {
+          setDisplay(String(num));
+          setResetNext(false);
+        } else {
+          setDisplay(display + num);
+        }
+      };
+
+      const handleDot = () => {
+        if (resetNext) {
+          setDisplay("0.");
+          setResetNext(false);
+        } else if (!display.includes(".")) {
+          setDisplay(display + ".");
+        }
+      };
+
+      const handleClear = () => {
+        setDisplay("0");
+        setPrev(null);
+        setOp(null);
+        setResetNext(false);
+      };
+
+      const handleToggleSign = () => {
+        setDisplay(
+          display.startsWith("-")
+            ? display.slice(1)
+            : "-" + display
+        );
+      };
+
+      const handlePercent = () => {
+        setDisplay(String(parseFloat(display) / 100));
+      };
+
+      const handleOperation = (nextOp) => {
+        const current = parseFloat(display);
+        if (prev == null) {
+          setPrev(current);
+        } else if (op) {
+          const result = calculate(prev, current, op);
+          setPrev(result);
+          setDisplay(String(result));
+        }
+        setOp(nextOp);
+        setResetNext(true);
+      };
+
+      const calculate = (a, b, oper) => {
+        switch (oper) {
+          case "+": return a + b;
+          case "-": return a - b;
+          case "×": return a * b;
+          case "÷": return b === 0 ? "Error" : a / b;
+          default: return b;
+        }
+      };
+
+      const handleEquals = () => {
+        if (op && prev != null) {
+          const result = calculate(prev, parseFloat(display), op);
+          setDisplay(String(result));
+          setPrev(null);
+          setOp(null);
+          setResetNext(true);
+        }
+      };
+
+      return (
+        <>
+          <div className="display">{display}</div>
+          <div className="buttons">
+            <button className="btn-func" onClick={handleClear}>AC</button>
+            <button className="btn-func" onClick={handleToggleSign}>±</button>
+            <button className="btn-func" onClick={handlePercent}>%</button>
+            <button className="btn-op" onClick={() => handleOperation("÷")}>÷</button>
+
+            <button className="btn-num" onClick={() => handleNum(7)}>7</button>
+            <button className="btn-num" onClick={() => handleNum(8)}>8</button>
+            <button className="btn-num" onClick={() => handleNum(9)}>9</button>
+            <button className="btn-op" onClick={() => handleOperation("×")}>×</button>
+
+            <button className="btn-num" onClick={() => handleNum(4)}>4</button>
+            <button className="btn-num" onClick={() => handleNum(5)}>5</button>
+            <button className="btn-num" onClick={() => handleNum(6)}>6</button>
+            <button className="btn-op" onClick={() => handleOperation("-")}>−</button>
+
+            <button className="btn-num" onClick={() => handleNum(1)}>1</button>
+            <button className="btn-num" onClick={() => handleNum(2)}>2</button>
+            <button className="btn-num" onClick={() => handleNum(3)}>3</button>
+            <button className="btn-op" onClick={() => handleOperation("+")}>+</button>
+
+            <button className="btn-num btn-0" onClick={() => handleNum(0)}>0</button>
+            <button className="btn-num" onClick={handleDot}>.</button>
+            <button className="btn-op" onClick={handleEquals}>=</button>
+          </div>
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
+</body>
+</html>

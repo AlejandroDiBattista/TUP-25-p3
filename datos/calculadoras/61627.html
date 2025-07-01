@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5deb3, #deb887);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .iphone-container {
+            position: relative;
+            width: 375px;
+            height: 812px;
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #333,
+                0 20px 40px rgba(0,0,0,0.3),
+                inset 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        .iphone-screen {
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Notch del iPhone */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        /* Botón de encendido */
+        .power-button {
+            position: absolute;
+            right: -4px;
+            top: 200px;
+            width: 8px;
+            height: 80px;
+            background: #333;
+            border-radius: 4px 0 0 4px;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+        }
+
+        /* Botones de volumen */
+        .volume-up {
+            position: absolute;
+            left: -4px;
+            top: 180px;
+            width: 8px;
+            height: 60px;
+            background: #333;
+            border-radius: 0 4px 4px 0;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+        }
+
+        .volume-down {
+            position: absolute;
+            left: -4px;
+            top: 250px;
+            width: 8px;
+            height: 60px;
+            background: #333;
+            border-radius: 0 4px 4px 0;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+        }
+
+        /* Switch de silencio */
+        .mute-switch {
+            position: absolute;
+            left: -3px;
+            top: 140px;
+            width: 6px;
+            height: 25px;
+            background: #333;
+            border-radius: 0 3px 3px 0;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+        }
+
+        /* Home indicator */
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 3px;
+        }
+
+        .calculadora-container {
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calculadora {
+            background: transparent;
+            border-radius: 0;
+            padding: 60px 20px 40px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .pantalla {
+            color: white;
+            font-size: 5rem;
+            font-weight: 200;
+            text-align: right;
+            margin-bottom: 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            padding: 0 10px;
+        }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .boton {
+            background: #333333;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 2rem;
+            font-weight: 400;
+            height: 75px;
+            width: 75px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .boton:hover {
+            opacity: 0.6;
+        }
+
+        .boton:active {
+            opacity: 0.3;
+        }
+
+        .boton.operacion {
+            background: #FF9500;
+            color: white;
+        }
+
+        .boton.operacion.activo {
+            background: white;
+            color: #FF9500;
+        }
+
+        .boton.funcion {
+            background: #A6A6A6;
+            color: black;
+            font-weight: 500;
+        }
+
+        .boton.cero {
+            grid-column: span 2;
+            border-radius: 37.5px;
+            width: auto;
+            justify-self: stretch;
+            justify-content: flex-start;
+            padding-left: 30px;
+        }
+
+        @media (max-width: 400px) {
+            .iphone-container {
+                width: 320px;
+                height: 690px;
+            }
+            
+            .calculadora {
+                padding: 50px 15px 35px;
+            }
+            
+            .boton {
+                height: 65px;
+                width: 65px;
+                font-size: 1.8rem;
+            }
+            
+            .pantalla {
+                font-size: 3.5rem;
+                min-height: 100px;
+            }
+            
+            .botones {
+                gap: 8px;
+            }
+            
+            .boton.cero {
+                border-radius: 32.5px;
+                padding-left: 25px;
+            }
+
+            .notch {
+                width: 120px;
+                height: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora(){
+            const [pantalla, setPantalla] = useState('0');
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [operacion, setOperacion] = useState(null);
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [ultimoFueOperacion, setUltimoFueOperacion] = useState(false);
+
+            const inputNumero = (num) => {
+                if (pantalla === 'Error') {
+                    setPantalla(String(num));
+                    setValorAnterior(null);
+                    setOperacion(null);
+                    setEsperandoOperando(false);
+                } else if (esperandoOperando) {
+                    setPantalla(String(num));
+                    setEsperandoOperando(false);
+                } else {
+                    setPantalla(pantalla === '0' ? String(num) : pantalla + num);
+                }
+                setUltimoFueOperacion(false);
+            };
+
+            const inputPunto = () => {
+                if (pantalla === 'Error') {
+                    setPantalla('0.');
+                    setValorAnterior(null);
+                    setOperacion(null);
+                    setEsperandoOperando(false);
+                } else if (esperandoOperando) {
+                    setPantalla('0.');
+                    setEsperandoOperando(false);
+                } else if (pantalla.indexOf('.') === -1) {
+                    setPantalla(pantalla + '.');
+                }
+                setUltimoFueOperacion(false);
+            };
+
+            const limpiar = () => {
+                setPantalla('0');
+                setValorAnterior(null);
+                setOperacion(null);
+                setEsperandoOperando(false);
+                setUltimoFueOperacion(false);
+            };
+
+            const cambiarSigno = () => {
+                if (pantalla !== '0') {
+                    setPantalla(pantalla.charAt(0) === '-' ? pantalla.slice(1) : '-' + pantalla);
+                }
+            };
+
+            const porcentaje = () => {
+                const valor = parseFloat(pantalla);
+                setPantalla(String(valor / 100));
+            };
+
+            const ejecutarOperacion = (nuevaOperacion) => {
+                if (pantalla === 'Error') {
+                    return;
+                }
+                
+                // Si el último input fue una operación, mostrar error
+                if (ultimoFueOperacion) {
+                    setPantalla('Error');
+                    setValorAnterior(null);
+                    setOperacion(null);
+                    setEsperandoOperando(true);
+                    setUltimoFueOperacion(false);
+                    return;
+                }
+                
+                const valorActual = parseFloat(pantalla);
+
+                if (valorAnterior === null) {
+                    setValorAnterior(valorActual);
+                } else if (operacion) {
+                    const valorPrevio = valorAnterior || 0;
+                    let resultado;
+
+                    switch (operacion) {
+                        case '+':
+                            resultado = valorPrevio + valorActual;
+                            break;
+                        case '-':
+                            resultado = valorPrevio - valorActual;
+                            break;
+                        case '×':
+                            resultado = valorPrevio * valorActual;
+                            break;
+                        case '÷':
+                            if (valorActual === 0) {
+                                setPantalla('Error');
+                                setValorAnterior(null);
+                                setOperacion(null);
+                                setEsperandoOperando(true);
+                                setUltimoFueOperacion(false);
+                                return;
+                            }
+                            resultado = valorPrevio / valorActual;
+                            break;
+                        default:
+                            return;
+                    }
+
+                    setPantalla(String(resultado));
+                    setValorAnterior(resultado);
+                }
+
+                setEsperandoOperando(true);
+                setOperacion(nuevaOperacion);
+                setUltimoFueOperacion(true);
+            };
+
+            const calcular = () => {
+                ejecutarOperacion(null);
+                setOperacion(null);
+                setValorAnterior(null);
+                setEsperandoOperando(true);
+                setUltimoFueOperacion(false);
+            };
+
+            const formatearPantalla = (valor) => {
+                if (valor === 'Error') {
+                    return valor;
+                }
+                const numero = parseFloat(valor);
+                if (isNaN(numero)) {
+                    return 'Error';
+                }
+                if (numero.toString().length > 9) {
+                    return numero.toExponential(3);
+                }
+                return valor;
+            };
+
+            return (
+                <div className="iphone-container">
+                    {/* Botones físicos del iPhone */}
+                    <div className="power-button"></div>
+                    <div className="volume-up"></div>
+                    <div className="volume-down"></div>
+                    <div className="mute-switch"></div>
+                    
+                    <div className="iphone-screen">
+                        {/* Notch */}
+                        <div className="notch"></div>
+                        
+                        {/* Home indicator */}
+                        <div className="home-indicator"></div>
+                        
+                        <div className="calculadora-container">
+                            <div className="calculadora">
+                                <div className="pantalla">
+                                    {formatearPantalla(pantalla)}
+                                </div>
+                                <div className="botones">
+                                    <button className="boton funcion" onClick={limpiar}>AC</button>
+                                    <button className="boton funcion" onClick={cambiarSigno}>+/-</button>
+                                    <button className="boton funcion" onClick={porcentaje}>%</button>
+                                    <button 
+                                        className={`boton operacion ${operacion === '÷' ? 'activo' : ''}`} 
+                                        onClick={() => ejecutarOperacion('÷')}
+                                    >
+                                        ÷
+                                    </button>
+
+                                    <button className="boton" onClick={() => inputNumero(7)}>7</button>
+                                    <button className="boton" onClick={() => inputNumero(8)}>8</button>
+                                    <button className="boton" onClick={() => inputNumero(9)}>9</button>
+                                    <button 
+                                        className={`boton operacion ${operacion === '×' ? 'activo' : ''}`} 
+                                        onClick={() => ejecutarOperacion('×')}
+                                    >
+                                        ×
+                                    </button>
+
+                                    <button className="boton" onClick={() => inputNumero(4)}>4</button>
+                                    <button className="boton" onClick={() => inputNumero(5)}>5</button>
+                                    <button className="boton" onClick={() => inputNumero(6)}>6</button>
+                                    <button 
+                                        className={`boton operacion ${operacion === '-' ? 'activo' : ''}`} 
+                                        onClick={() => ejecutarOperacion('-')}
+                                    >
+                                        -
+                                    </button>
+
+                                    <button className="boton" onClick={() => inputNumero(1)}>1</button>
+                                    <button className="boton" onClick={() => inputNumero(2)}>2</button>
+                                    <button className="boton" onClick={() => inputNumero(3)}>3</button>
+                                    <button 
+                                        className={`boton operacion ${operacion === '+' ? 'activo' : ''}`} 
+                                        onClick={() => ejecutarOperacion('+')}
+                                    >
+                                        +
+                                    </button>
+
+                                    <button className="boton cero" onClick={() => inputNumero(0)}>0</button>
+                                    <button className="boton" onClick={inputPunto}>.</button>
+                                    <button className="boton operacion" onClick={calcular}>=</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

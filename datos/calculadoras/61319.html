@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <title>Calculadora React</title>
+
+    <style>
+        
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f5deb3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .calculator {
+            background: #000;
+            border: 10px solid #fff;
+            border-radius: 60px;
+            padding: 140px 20px 40px;
+            width: 400px;
+            color: #fff;
+            font-family: sans-serif;
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+        }
+        .notch {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            height: 40px;
+            background: #fff;
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
+            z-index: 2;
+        }
+        .display {
+            text-align: right;
+            font-size: 80px;
+            line-height: 1;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 15px;
+        }
+        .boton {
+            width: 100%;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .boton.zero {
+            grid-column: span 2;
+            border-radius: 40px;
+        }
+        .boton.function {
+            background: #a5a5a5;
+            color: #000;
+        }
+        .boton.operator {
+            background: #f4890e;
+            color: #fff;
+        }
+        .boton.number {
+            background: #333;
+            color: #fff;
+        }
+        .boton:active {
+            filter: brightness(0.6);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [operator, setOperator] = useState(null);
+            const [prevValue, setPrevValue] = useState(null);
+            const [waiting, setWaiting] = useState(false);
+
+            const calculate = (a, b, op) => {
+                const x = parseFloat(a);
+                const y = parseFloat(b);
+                if (op === '+') return (x + y).toString();
+                if (op === '-') return (x - y).toString();
+                if (op === '×') return (x * y).toString();
+                if (op === '÷') return y === 0 ? 'Error' : (x / y).toString();
+                return b;
+            };
+
+            const handleClick = (label) => {
+                if (label === 'AC') {
+                    setDisplay('0'); setPrevValue(null); setOperator(null); setWaiting(false);
+                } else if (label === '±') {
+                    setDisplay((d) => (d.startsWith('-') ? d.slice(1) : '-' + d));
+                } else if (label === '%') {
+                    setDisplay((d) => (parseFloat(d) / 100).toString());
+                } else if (['+', '-', '×', '÷'].includes(label)) {
+                    if (operator && !waiting) {
+                        const result = calculate(prevValue, display, operator);
+                        setDisplay(result);
+                        setPrevValue(result);
+                    } else {
+                        setPrevValue(display);
+                    }
+                    setOperator(label);
+                    setWaiting(true);
+                } else if (label === '=') {
+                    if (operator && prevValue !== null && !waiting) {
+                        const result = calculate(prevValue, display, operator);
+                        setDisplay(result);
+                        setPrevValue(null);
+                        setOperator(null);
+                    }
+                } else if (label === '.') {
+                    if (!display.includes('.')) {
+                        setDisplay(display + '.');
+                        setWaiting(false);
+                    }
+                } else { // numbers
+                    if (display === '0' || waiting) {
+                        setDisplay(label);
+                        setWaiting(false);
+                    } else {
+                        setDisplay(display + label);
+                    }
+                }
+            };
+
+            const botones = [
+                { label: 'AC', type: 'function' },
+                { label: '±', type: 'function' },
+                { label: '%', type: 'function' },
+                { label: '÷', type: 'operator' },
+                { label: '7', type: 'number' },
+                { label: '8', type: 'number' },
+                { label: '9', type: 'number' },
+                { label: '×', type: 'operator' },
+                { label: '4', type: 'number' },
+                { label: '5', type: 'number' },
+                { label: '6', type: 'number' },
+                { label: '-', type: 'operator' },
+                { label: '1', type: 'number' },
+                { label: '2', type: 'number' },
+                { label: '3', type: 'number' },
+                { label: '+', type: 'operator' },
+                { label: '0', type: 'number', zero: true },
+                { label: '.', type: 'number' },
+                { label: '=', type: 'operator' },
+            ];
+
+            return (
+                <div className="calculator">
+                    <div className="notch"></div>
+                    <div className="display">{display}</div>
+                    <div className="botones">
+                        {botones.map((btn, i) => (
+                            <div
+                                key={i}
+                                className={`boton ${btn.type} ${btn.zero ? 'zero' : ''}`}
+                                onClick={() => handleClick(btn.label)}
+                            >{btn.label}</div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

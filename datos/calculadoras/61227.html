@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        /* Poner aca el CSS */
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #F8E2C7;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+
+        }
+
+        .iphone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #000;
+            border-radius: 40px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+
+        }
+
+        .notch {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background-color: #000;
+            border-radius: 0 0 15px 15px;
+
+            z-index: 10;
+        }
+
+        .pantalla {
+            color: #fff;
+            font-size: 5.5em;
+            text-align: right;
+            padding-right: 15px;
+            margin-bottom: 20px;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            overflow: hidden;
+            white-space: nowrap;
+            word-break: break-all;
+
+        }
+
+        .botones-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+
+        }
+
+        .boton {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background-color: #333;
+            color: #fff;
+            font-size: 2.2em;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.15s ease-in-out, transform 0.05s ease-in-out;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .boton:active {
+            transform: scale(0.95);
+        }
+
+
+        .boton.funcion {
+            background-color: #A6A6A6;
+
+            color: #000;
+
+        }
+
+
+        .boton.operador {
+            background-color: #FF9500;
+
+        }
+
+
+        .boton.cero {
+            grid-column: span 2;
+            width: 162px;
+            border-radius: 37.5px;
+            justify-content: flex-start;
+            padding-left: 25px;
+
+        }
+
+        .boton.igual {
+            background-color: #FF9500;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin
+        src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora() {
+            // --- ESTADOS ---
+
+            const [displayValue, setDisplayValue] = useState('0');
+
+            const [primerOperando, setPrimerOperando] = useState(null);
+
+            const [operador, setOperador] = useState(null);
+
+            const [esperandoSegundoOperando, setEsperandoSegundoOperando] = useState(false);
+
+            const [resultadoYaCalculado, setResultadoYaCalculado] = useState(false);
+
+            // --- MÉTODOS DE LA CALCULADORA ---
+
+
+            const manejarEntradaDigito = (digito) => {
+                if (resultadoYaCalculado) {
+                    setDisplayValue(digito);
+                    setResultadoYaCalculado(false);
+                    setEsperandoSegundoOperando(false);
+                } else if (esperandoSegundoOperando) {
+                    setDisplayValue(digito);
+                    setEsperandoSegundoOperando(false);
+                } else {
+                    if (digito === '.' && displayValue.includes('.')) {
+                        return;
+                    }
+                    setDisplayValue(displayValue === '0' && digito !== '.' ? digito : displayValue + digito);
+                }
+            };
+
+            const manejarOperacion = (siguienteOperador) => {
+                const inputValue = parseFloat(displayValue);
+
+                if (primerOperando === null) {
+                    setPrimerOperando(inputValue);
+                } else if (operador) {
+                    const resultado = realizarCalculo[operador](primerOperando, inputValue);
+                    setDisplayValue(String(resultado));
+                    setPrimerOperando(resultado);
+                }
+
+                setEsperandoSegundoOperando(true);
+                setOperador(siguienteOperador);
+                setResultadoYaCalculado(false);
+            };
+
+            const realizarCalculo = {
+                '/': (primerVal, segundoVal) => primerVal / segundoVal,
+                '*': (primerVal, segundoVal) => primerVal * segundoVal,
+                '+': (primerVal, segundoVal) => primerVal + segundoVal,
+                '-': (primerVal, segundoVal) => primerVal - segundoVal,
+                '=': (primerVal, segundoVal) => segundoVal,
+            };
+
+            const manejarIgual = () => {
+                if (primerOperando === null || operador === null) {
+                    return;
+                }
+
+                const inputValue = parseFloat(displayValue);
+                const resultado = realizarCalculo[operador](primerOperando, inputValue);
+
+                setDisplayValue(String(resultado));
+                setPrimerOperando(null);
+                setOperador(null);
+                setEsperandoSegundoOperando(false);
+                setResultadoYaCalculado(true);
+            };
+
+
+            const borrarTodo = () => {
+                setDisplayValue('0');
+                setPrimerOperando(null);
+                setOperador(null);
+                setEsperandoSegundoOperando(false);
+                setResultadoYaCalculado(false);
+            };
+
+            const cambiarSigno = () => {
+                setDisplayValue(prevValue => String(parseFloat(prevValue) * -1));
+            };
+
+            const calcularPorcentaje = () => {
+                setDisplayValue(prevValue => String(parseFloat(prevValue) / 100));
+            };
+
+            // --- RENDERIZADO (JSX) ---
+            return (
+                <div className="iphone-frame">
+                    <div className="notch"></div> {/* La "muesca" del iPhone */}
+                    <div className="pantalla">{displayValue}</div>
+                    <div className="botones-grid">
+
+                        <button className="boton funcion" onClick={borrarTodo}>AC</button>
+                        <button className="boton funcion" onClick={cambiarSigno}>±</button>
+                        <button className="boton funcion" onClick={calcularPorcentaje}>%</button>
+                        <button className="boton operador" onClick={() => manejarOperacion('/')}>÷</button>
+
+
+                        <button className="boton" onClick={() => manejarEntradaDigito('7')}>7</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('8')}>8</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('9')}>9</button>
+                        <button className="boton operador" onClick={() => manejarOperacion('*')}>×</button>
+
+
+                        <button className="boton" onClick={() => manejarEntradaDigito('4')}>4</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('5')}>5</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('6')}>6</button>
+                        <button className="boton operador" onClick={() => manejarOperacion('-')}>-</button>
+
+
+                        <button className="boton" onClick={() => manejarEntradaDigito('1')}>1</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('2')}>2</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('3')}>3</button>
+                        <button className="boton operador" onClick={() => manejarOperacion('+')}>+</button>
+
+
+                        <button className="boton cero" onClick={() => manejarEntradaDigito('0')}>0</button>
+                        <button className="boton" onClick={() => manejarEntradaDigito('.')}>.</button>
+                        <button className="boton igual" onClick={manejarIgual}>=</button>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+
+</html>

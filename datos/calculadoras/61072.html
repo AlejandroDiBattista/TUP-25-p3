@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora React</title>
+  <style>
+    body {
+      background-color: #f5d6a3;
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .phone-frame {
+      background-color: white;
+      border-radius: 50px;
+      padding: 10px 10px 10px;
+      box-sizing: border-box;
+      width: 360px;
+      height: 740px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .notch {
+      position: absolute;
+      top: 2px;
+      width: 160px;
+      height: 30px;
+      background-color: rgb(255, 255, 255);
+      border-radius: 20px;
+    }
+
+    .calculator {
+      background-color: black;
+      width: 100%;
+      height: 100%;
+      border-radius: 40px;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .display {
+      color: white;
+      font-size: 64px;
+      text-align: right;
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 10px 10px 20px;
+      box-sizing: border-box;
+      overflow-x: auto;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 50%;
+      height: 60px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:active {
+      opacity: 0.7;
+    }
+
+    .light {
+      background-color: #a5a5a5;
+      color: black;
+    }
+
+    .dark {
+      background-color: #333333;
+    }
+
+    .orange {
+      background-color: #ff9500;
+    }
+
+    .row:last-child button:first-child {
+      flex: 2;
+      border-radius: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React y ReactDOM desde CDN -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel para JSX en el navegador -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [input, setInput] = useState('');
+
+      const buttons = [
+        ['AC', '+/-', '%', '÷'],
+        ['7', '8', '9', '×'],
+        ['4', '5', '6', '-'],
+        ['1', '2', '3', '+'],
+        ['0', '.', '=']
+      ];
+
+      const handleClick = (value) => {
+        if (value === 'AC') {
+          setInput('');
+        } else if (value === '=') {
+          try {
+            const sanitized = input.replace(/×/g, '*').replace(/÷/g, '/');
+            setInput(eval(sanitized).toString());
+          } catch {
+            setInput('Error');
+          }
+        } else if (value === '+/-') {
+          if (input) {
+            if (input.startsWith('-')) setInput(input.slice(1));
+            else setInput('-' + input);
+          }
+        } else {
+          setInput((prev) => prev + value);
+        }
+      };
+
+      return (
+        <div className="phone-frame">
+          <div className="notch"></div>
+          <div className="calculator">
+            <div className="display">{input || '0'}</div>
+            <div className="buttons">
+              {buttons.map((row, i) => (
+                <div key={i} className="row">
+                  {row.map((btn) => (
+                    <button
+                      key={btn}
+                      className={
+                        btn === 'AC' || btn === '+/-' || btn === '%'
+                          ? 'light'
+                          : btn === '÷' || btn === '×' || btn === '-' || btn === '+' || btn === '='
+                          ? 'orange'
+                          : 'dark'
+                      }
+                      onClick={() => handleClick(btn)}
+                    >
+                      {btn}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Calculadora />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #1b1111;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .calculadora {
+            background-color: #000;
+            border-radius: 40px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .historial {
+            background-color: #000;
+            color: #666;
+            font-size: 20px;
+            font-weight: 300;
+            text-align: right;
+            padding: 10px 20px 0px 20px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+
+        .display {
+            background-color: #000;
+            color: white;
+            font-size: 64px;
+            font-weight: 300;
+            text-align: right;
+            padding: 10px 20px 20px 20px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .boton {
+            border: none;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .boton:active {
+            transform: scale(0.95);
+        }
+
+        .boton.numero {
+            background-color: #333;
+            color: white;
+        }
+
+        .boton.numero:hover {
+            background-color: #555;
+        }
+
+        .boton.funcion {
+            background-color: #a6a6a6;
+            color: black;
+        }
+
+        .boton.funcion:hover {
+            background-color: #bfbfbf;
+        }
+
+        .boton.operacion {
+            background-color: #ff9500;
+            color: white;
+        }
+
+        .boton.operacion:hover {
+            background-color: #ffad33;
+        }
+
+        .boton.operacion.activa {
+            background-color: white;
+            color: #ff9500;
+        }
+
+        .boton.cero {
+            border-radius: 40px;
+            grid-column: span 2;
+            width: 152px;
+            justify-content: flex-start;
+            padding-left: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora(){
+            const [display, setDisplay] = useState('0');
+            const [operacionAnterior, setOperacionAnterior] = useState(null);
+            const [operacion, setOperacion] = useState(null);
+            const [esperandoOperando, setEsperandoOperando] = useState(false);
+            const [historial, setHistorial] = useState('');
+
+            const agregarAlHistorial = (valor) => {
+                setHistorial(prev => prev + valor);
+            };
+
+            const manejarNumero = (numero) => {
+                agregarAlHistorial(numero);
+                if (esperandoOperando) {
+                    setDisplay(String(numero));
+                    setEsperandoOperando(false);
+                } else {
+                    setDisplay(display === '0' ? String(numero) : display + numero);
+                }
+            };
+
+            const manejarOperacion = (proxOperacion) => {
+                agregarAlHistorial(' ' + proxOperacion + ' ');
+                const valor = parseFloat(display);
+
+                if (operacionAnterior === null) {
+                    setOperacionAnterior(valor);
+                } else if (operacion) {
+                    const actual = operacionAnterior || 0;
+                    const resultado = calcular(actual, valor, operacion);
+
+                    setDisplay(String(resultado));
+                    setOperacionAnterior(resultado);
+                }
+
+                setEsperandoOperando(true);
+                setOperacion(proxOperacion);
+            };
+
+            const calcular = (primero, segundo, operacion) => {
+                switch (operacion) {
+                    case '+':
+                        return primero + segundo;
+                    case '-':
+                        return primero - segundo;
+                    case '×':
+                        return primero * segundo;
+                    case '÷':
+                        return segundo !== 0 ? primero / segundo : 0;
+                    default:
+                        return segundo;
+                }
+            };
+
+            const manejarIgual = () => {
+                const valor = parseFloat(display);
+
+                if (operacionAnterior !== null && operacion) {
+                    agregarAlHistorial(' = ');
+                    const resultado = calcular(operacionAnterior, valor, operacion);
+                    setDisplay(String(resultado));
+                    setOperacionAnterior(null);
+                    setOperacion(null);
+                    setEsperandoOperando(true);
+                }
+            };
+
+            const manejarClear = () => {
+                setDisplay('0');
+                setOperacionAnterior(null);
+                setOperacion(null);
+                setEsperandoOperando(false);
+                setHistorial('');
+            };
+
+            const manejarPorcentaje = () => {
+                const valor = parseFloat(display);
+                setDisplay(String(valor / 100));
+            };
+
+            const manejarCambioSigno = () => {
+                const valor = parseFloat(display);
+                setDisplay(String(valor * -1));
+            };
+
+            const manejarDecimal = () => {
+                if (esperandoOperando) {
+                    agregarAlHistorial('0.');
+                    setDisplay('0.');
+                    setEsperandoOperando(false);
+                } else if (display.indexOf('.') === -1) {
+                    agregarAlHistorial('.');
+                    setDisplay(display + '.');
+                }
+            };
+
+            return (
+                <div className="calculadora">
+                    <div className="historial">{historial || '\u00A0'}</div>
+                    <div className="display">{display}</div>
+                    <div className="botones">
+                        <button className="boton funcion" onClick={manejarClear}>AC</button>
+                        <button className="boton funcion" onClick={manejarCambioSigno}>+/-</button>
+                        <button className="boton funcion" onClick={manejarPorcentaje}>%</button>
+                        <button 
+                            className={`boton operacion ${operacion === '÷' ? 'activa' : ''}`} 
+                            onClick={() => manejarOperacion('÷')}>÷</button>
+                        
+                        <button className="boton numero" onClick={() => manejarNumero(7)}>7</button>
+                        <button className="boton numero" onClick={() => manejarNumero(8)}>8</button>
+                        <button className="boton numero" onClick={() => manejarNumero(9)}>9</button>
+                        <button 
+                            className={`boton operacion ${operacion === '×' ? 'activa' : ''}`} 
+                            onClick={() => manejarOperacion('×')}>×</button>
+                        
+                        <button className="boton numero" onClick={() => manejarNumero(4)}>4</button>
+                        <button className="boton numero" onClick={() => manejarNumero(5)}>5</button>
+                        <button className="boton numero" onClick={() => manejarNumero(6)}>6</button>
+                        <button 
+                            className={`boton operacion ${operacion === '-' ? 'activa' : ''}`} 
+                            onClick={() => manejarOperacion('-')}>-</button>
+                        
+                        <button className="boton numero" onClick={() => manejarNumero(1)}>1</button>
+                        <button className="boton numero" onClick={() => manejarNumero(2)}>2</button>
+                        <button className="boton numero" onClick={() => manejarNumero(3)}>3</button>
+                        <button 
+                            className={`boton operacion ${operacion === '+' ? 'activa' : ''}`} 
+                            onClick={() => manejarOperacion('+')}>+</button>
+                        
+                        <button className="boton numero cero" onClick={() => manejarNumero(0)}>0</button>
+                        <button className="boton numero" onClick={manejarDecimal}>.</button>
+                        <button className="boton operacion" onClick={manejarIgual}>=</button>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

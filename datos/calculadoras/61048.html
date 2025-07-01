@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora React</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap');
+
+        body {
+            background-color: #fcefdc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+
+        .phone-container {
+            width: 414px;
+            height: 896px;
+            background: #fff;
+            border-radius: 60px;
+            padding: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 42px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+        }
+
+        .notch {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 210px;
+            height: 34px;
+            background: #fff;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            z-index: 10;
+        }
+        
+        .calculator-body {
+            padding: 0 25px 40px 25px;
+            padding-top: 50px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+        
+        .display {
+            color: #fff;
+            font-size: 96px;
+            font-weight: 300;
+            text-align: right;
+            margin-bottom: 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            overflow: hidden;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .button {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            border: none;
+            font-size: 34px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .button:active {
+            filter: brightness(1.2);
+        }
+
+        .grey {
+            background-color: #a5a5a5;
+            color: #000;
+        }
+
+        .dark-grey {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .orange {
+            background-color: #f1a33c;
+            color: #fff;
+        }
+
+        .span-two {
+            grid-column: span 2;
+            width: 100%;
+            aspect-ratio: auto;
+            height: 100%;
+            border-radius: 50px;
+            justify-content: flex-start;
+            padding-left: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function Calculadora() {
+            const [display, setDisplay] = useState('0');
+            const [prevValue, setPrevValue] = useState(null);
+            const [operator, setOperator] = useState(null);
+            const [waitingForNewValue, setWaitingForNewValue] = useState(true);
+
+            const handleNumber = (num) => {
+                if (waitingForNewValue) {
+                    setDisplay(num);
+                    setWaitingForNewValue(false);
+                } else {
+                    setDisplay(display === '0' ? num : display + num);
+                }
+            };
+
+            const handleDecimal = () => {
+                if (!display.includes('.')) {
+                    setDisplay(display + '.');
+                    setWaitingForNewValue(false);
+                }
+            };
+
+            const handleClear = () => {
+                setDisplay('0');
+                setPrevValue(null);
+                setOperator(null);
+                setWaitingForNewValue(true);
+            };
+
+            const calculate = (val1, op, val2) => {
+                switch (op) {
+                    case '÷': return val1 / val2;
+                    case '×': return val1 * val2;
+                    case '−': return val1 - val2;
+                    case '+': return val1 + val2;
+                    default: return val2;
+                }
+            };
+
+            const handleOperator = (op) => {
+                const currentValue = parseFloat(display);
+                if (prevValue !== null && operator && !waitingForNewValue) {
+                    const result = calculate(prevValue, operator, currentValue);
+                    setDisplay(String(result));
+                    setPrevValue(result);
+                } else {
+                    setPrevValue(currentValue);
+                }
+                setWaitingForNewValue(true);
+                setOperator(op);
+            };
+
+            const handleEquals = () => {
+                if (prevValue === null || operator === null) return;
+                const currentValue = parseFloat(display);
+                const result = calculate(prevValue, operator, currentValue);
+                setDisplay(String(result));
+                setPrevValue(null);
+                setOperator(null);
+                setWaitingForNewValue(true);
+            };
+
+            const handleToggleSign = () => {
+                setDisplay(String(parseFloat(display) * -1));
+            };
+
+            const handlePercentage = () => {
+                setDisplay(String(parseFloat(display) / 100));
+            };
+
+            const getDisplayFontSize = () => {
+                const len = display.length;
+                if (len > 9) return '50px';
+                if (len > 6) return '70px';
+                return '96px';
+            };
+
+            return (
+                <div className="phone-container">
+                    <div className="notch"></div>
+                    <div className="screen">
+                        <div className="calculator-body">
+                            <div className="display" style={{ fontSize: getDisplayFontSize() }}>
+                                {display}
+                            </div>
+                            <div className="buttons-grid">
+                                <button className="button grey" onClick={handleClear}>AC</button>
+                                <button className="button grey" onClick={handleToggleSign}>±</button>
+                                <button className="button grey" onClick={handlePercentage}>%</button>
+                                <button className="button orange" onClick={() => handleOperator('÷')}>÷</button>
+
+                                <button className="button dark-grey" onClick={() => handleNumber('7')}>7</button>
+                                <button className="button dark-grey" onClick={() => handleNumber('8')}>8</button>
+                                <button className="button dark-grey" onClick={() => handleNumber('9')}>9</button>
+                                <button className="button orange" onClick={() => handleOperator('×')}>×</button>
+
+                                <button className="button dark-grey" onClick={() => handleNumber('4')}>4</button>
+                                <button className="button dark-grey" onClick={() => handleNumber('5')}>5</button>
+                                <button className="button dark-grey" onClick={() => handleNumber('6')}>6</button>
+                                <button className="button orange" onClick={() => handleOperator('−')}>−</button>
+
+                                <button className="button dark-grey" onClick={() => handleNumber('1')}>1</button>
+                                <button className="button dark-grey" onClick={() => handleNumber('2')}>2</button>
+                                <button className="button dark-grey" onClick={() => handleNumber('3')}>3</button>
+                                <button className="button orange" onClick={() => handleOperator('+')}>+</button>
+
+                                <button className="button dark-grey span-two" onClick={() => handleNumber('0')}>0</button>
+                                <button className="button dark-grey" onClick={handleDecimal}>.</button>
+                                <button className="button orange" onClick={handleEquals}>=</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

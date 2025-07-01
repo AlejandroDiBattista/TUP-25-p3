@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+
+    <style>
+        /* Poner aca el CSS */
+        body {
+            background-color: #fcd9a3;;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Marco */
+        .marco {
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            border: none;
+            position: relative;
+        }
+
+        /* Notch */
+        .notch {
+            width: 120px;
+            height: 20px;
+            background-color: #ffffff;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .calculadora {
+            background-color: black;
+            padding: 120px 20px 20px;
+            border-radius: 40px;
+            max-width: 320px;
+            /* box-shadow: 0 8px 20px rgba(0,0,0,0.4); */
+            position: relative;
+        }
+
+        .calculadora .pantalla {
+            margin-top: 40px;
+        }
+
+        .pantalla {
+            color: white;
+            font-size: 60px;
+            font-weight: 200;
+            text-align: right;
+            margin-bottom: 20px;
+            min-height: 80px;
+        }
+
+        .botones {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .boton {
+            aspect-ratio: 1/1;
+            height: 60px;
+            font-size: 28px;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            background-color: #333333;
+            cursor: pointer;
+        }
+
+        .boton:active {
+            filter: brightness(1.2)
+        }
+
+        .boton.gris {
+            background-color: #a5a5a5;
+            color: black;
+        }
+
+        .boton.naranja {
+            background-color: orange;
+        }
+
+        .boton.ancho {
+            grid-column: span 2;
+            border-radius: 30px;
+            aspect-ratio: auto;
+            text-align: left;
+            padding-left: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function Calculadora(){
+            // Poner aca el JavaScript
+            const [pantalla, setPantalla] = useState('0');
+            const [operacion, setOperacion] = useState('');
+            const [resultadoMostrado, setResultadoMostrado] = useState(false);
+
+            const esOperador = (valor) => ['+', '−', '×', '÷'].includes(valor);
+
+            const manejarClick = (valor) => {
+                if (valor === 'AC') {
+                    setPantalla('0');
+                    setOperacion('');
+                    resultadoMostrado(false);
+                    return;
+                }
+
+                if (valor === '+/-') {
+                    if (pantalla !== '0') {
+                        const nuevoValor = pantalla.startsWith('-') ? pantalla.slice(1) : '-' + pantalla;
+                        setPantalla(nuevoValor);
+                        setOperacion(nuevoValor);
+                    }
+                    return;
+                }
+
+                if (valor === '%') {
+                    const porcentaje = parseFloat(pantalla) / 100;
+                    setPantalla(porcentaje.toString());
+                    setOperacion(porcentaje.toString());
+                    return;
+                }
+
+                if (valor === '=') {
+                    try {
+                        const resultado = eval(operacion.replace(/÷/g, '/').replace(/×/g, '*').replace(/−/g, '-'));
+                        setPantalla(Number(resultado.toFixed(8)).toString());
+                        setOperacion('');
+                        setResultadoMostrado(true);
+                    } catch (e) {
+                        setPantalla('Error');
+                    }
+                    return;
+                }
+
+                // Si se acaba de mostrar un resultado y se presiona un número se reinicia
+                if (resultadoMostrado && !isNaN(valor)) {
+                    setPantalla(valor);
+                    setOperacion(valor);
+                    setResultadoMostrado(false);
+                    return;
+                }
+
+                // Evitar operadores seguidos
+                if (esOperador(valor) && esOperador(operacion.slice(-1))) {
+                    setOperacion(operacion.slice(0, -1) + valor);
+                    setPantalla(pantalla.slice(0, -1) + valor);
+                    return;
+                }
+
+                // Si todo va bien
+                const nuevaOperacion = operacion + valor;
+                setOperacion(nuevaOperacion);
+                setPantalla(pantalla === '0' && !isNaN(valor) ? valor : pantalla + valor);
+                setResultadoMostrado(false);
+            };
+
+            useEffect(() => {
+                const manejarTecla = (e) => {
+                    const tecla = e.key;
+
+                    if (!isNaN(tecla)) {
+                        manejarClick(tecla);
+                    } else if (['+', '-', '*', '/'].includes(tecla)) {
+                        const simbolo = tecla === '*' ? '×' : tecla === '/' ? '÷' : tecla === '-' ? '−' : tecla;
+                        manejarClick(simbolo);
+                    } else if (tecla === 'Enter') {
+                        manejarClick('=');
+                    } else if (tecla === 'Escape') {
+                        manejarClick('AC');
+                    } else if (tecla === '.') {
+                        manejarClick('.');
+                    } else if (tecla === 'Backspace') {
+                        setPantalla((prev) => {
+                            const nuevaPantalla = prev.length > 1 ? prev.slice(0, -1) : '0';
+                            setOperacion((prevOp) =>
+                                prevOp.length > 1 ? prevOp.slice(0, -1) : ''
+                            );
+                            return nuevaPantalla;
+                        });
+                    }
+                };
+
+                window.addEventListener('keydown', manejarTecla);
+                return () => window.removeEventListener('keydown', manejarTecla);
+            }, [pantalla, operacion]);
+
+            return (
+                <div className="marco">
+                    <div className="calculadora">
+                        <div className="notch"></div>
+                        <div className="pantalla">{pantalla.toString().slice(0, 10)}</div>
+                        <div className="botones">
+                            <button className="boton gris" onClick={() => manejarClick('AC')}>AC</button>
+                            <button className="boton gris" onClick={() => manejarClick('+/-')}>+/-</button>
+                            <button className="boton gris" onClick={() => manejarClick('%')}>%</button>
+                            <button className="boton naranja" onClick={() => manejarClick('÷')}>÷</button>
+
+                            <button className="boton" onClick={() => manejarClick('7')}>7</button>
+                            <button className="boton" onClick={() => manejarClick('8')}>8</button>
+                            <button className="boton" onClick={() => manejarClick('9')}>9</button>
+                            <button className="boton naranja" onClick={() => manejarClick('×')}>×</button>
+
+                            <button className="boton" onClick={() => manejarClick('4')}>4</button>
+                            <button className="boton" onClick={() => manejarClick('5')}>5</button>
+                            <button className="boton" onClick={() => manejarClick('6')}>6</button>
+                            <button className="boton naranja" onClick={() => manejarClick('−')}>−</button>
+
+                            <button className="boton" onClick={() => manejarClick('1')}>1</button>
+                            <button className="boton" onClick={() => manejarClick('2')}>2</button>
+                            <button className="boton" onClick={() => manejarClick('3')}>3</button>
+                            <button className="boton naranja" onClick={() => manejarClick('+')}>+</button>
+
+                            <button className="boton ancho" onClick={() => manejarClick('0')}>0</button>
+                            <button className="boton" onClick={() => manejarClick('.')}>.</button>
+                            <button className="boton naranja" onClick={() => manejarClick('=')}>=</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

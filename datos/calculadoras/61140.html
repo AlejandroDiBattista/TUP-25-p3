@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora</title>
+  <style>
+    body {
+      background-color: #f8dcb6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .phone {
+      background: #fff;
+      border-radius: 40px;
+      width: 300px;
+      padding: 20px 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .screen {
+      background-color: black;
+      color: white;
+      font-size: 48px;
+      text-align: right;
+      padding: 20px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    button {
+      font-size: 24px;
+      padding: 20px;
+      border: none;
+      border-radius: 50%;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+    }
+    .btn-zero {
+      grid-column: span 2;
+      border-radius: 40px;
+    }
+    .gray { background-color: #a5a5a5; color: black; }
+    .orange { background-color: #f1a33c; color: white; }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div id="screen" class="screen">0</div>
+    <div class="buttons">
+      <button class="gray" onclick="clearScreen()">AC</button>
+      <button class="gray" onclick="toggleSign()">+/-</button>
+      <button class="gray" onclick="input('%')">%</button>
+      <button class="orange" onclick="input('/')">&divide;</button>
+
+      <button onclick="input('7')">7</button>
+      <button onclick="input('8')">8</button>
+      <button onclick="input('9')">9</button>
+      <button class="orange" onclick="input('*')">&times;</button>
+
+      <button onclick="input('4')">4</button>
+      <button onclick="input('5')">5</button>
+      <button onclick="input('6')">6</button>
+      <button class="orange" onclick="input('-')">-</button>
+
+      <button onclick="input('1')">1</button>
+      <button onclick="input('2')">2</button>
+      <button onclick="input('3')">3</button>
+      <button class="orange" onclick="input('+')">+</button>
+
+      <button class="btn-zero" onclick="input('0')">0</button>
+      <button onclick="input('.')">.</button>
+      <button class="orange" onclick="calculate()">=</button>
+    </div>
+  </div>
+  <script>
+    let screen = document.getElementById('screen');
+    let current = '';
+
+    function input(val) {
+      if (current === '0' && val !== '.') current = '';
+      current += val;
+      screen.textContent = current;
+    }
+
+    function clearScreen() {
+      current = '';
+      screen.textContent = '0';
+    }
+
+    function toggleSign() {
+      if (current) {
+        if (current.startsWith('-')) current = current.slice(1);
+        else current = '-' + current;
+        screen.textContent = current;
+      }
+    }
+
+    function calculate() {
+      try {
+        current = eval(current).toString();
+        screen.textContent = current;
+      } catch {
+        screen.textContent = 'Error';
+        current = '';
+      }
+    }
+  </script>
+</body>
+</html>

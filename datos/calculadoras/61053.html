@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora React</title>
+    <style>
+        body {
+            background: #ffe4b5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .phone {
+            background: #fff;
+            border-radius: 56px;
+            padding: 16px 6px 12px 6px;
+            box-shadow: 0 0 40px #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* Importante para el notch */
+        }
+        .calculator {
+            background: #000;
+            border-radius: 48px;
+            width: 270px;
+            height: 540px;
+            padding: 38px 18px 24px 18px;
+            box-shadow: 0 0 30px #fff;
+            position: relative;
+        }
+        .notch {
+            width: 160px;
+            height: 40px;
+            background: #fff;
+            border-radius: 0 0 30px 30px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .camera {
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            margin-top: 6px;
+        }
+        .display {
+            color: #fff;
+            font-size: 3.5rem;
+            text-align: right;
+            min-height: 70px;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+        .display-secundario {
+            color: #bbb;
+            font-size: 1.2rem;
+            min-height: 24px;
+            text-align: right;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .btn {
+            height: 65px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            color: #fff;
+            background: #333;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+            filter: none; 
+        }
+        .btn.gray { background: #a5a5a5; color: #000; }
+        .btn.orange { background: #ff9500; }
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 30px;
+            text-align: left;
+            padding-left: 28px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone" style="position: relative;">
+        <div class="notch">
+            <div class="camera"></div>
+        </div>
+        <div id="root"></div>
+    </div>
+    <!-- React y ReactDOM desde CDN -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- Babel para JSX en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function Calculadora() {
+            const [display, setDisplay] = useState("0");
+            const [operador, setOperador] = useState(null);
+            const [valorAnterior, setValorAnterior] = useState(null);
+            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+
+            const botones = [
+                { label: "AC", class: "gray" },
+                { label: "+/-", class: "gray" },
+                { label: "%", class: "gray" },
+                { label: "÷", class: "orange" },
+                { label: "7" },
+                { label: "8" },
+                { label: "9" },
+                { label: "×", class: "orange" },
+                { label: "4" },
+                { label: "5" },
+                { label: "6" },
+                { label: "-", class: "orange" },
+                { label: "1" },
+                { label: "2" },
+                { label: "3" },
+                { label: "+", class: "orange" },
+                { label: "0", class: "zero" },
+                { label: ".", },
+                { label: "=", class: "orange" },
+            ];
+
+            function handleClick(label) {
+                // Aquí va la lógica de la calculadora
+                if (!isNaN(label)) {
+                    if (display === "0" || esperandoNuevo) {
+                        setDisplay(label);
+                        setEsperandoNuevo(false);
+                    } else {
+                        setDisplay(display + label);
+                    }
+                    
+                } else if (label === "AC") {
+                    setDisplay("0");
+                    setOperador(null);
+                    setValorAnterior(null);
+                } else if (label === "+/-") {
+                    setDisplay((parseFloat(display) * -1).toString());
+                } else if (label === "%") {
+                    setDisplay((parseFloat(display) / 100).toString());
+                } else if (["+", "-", "×", "÷"].includes(label)) {
+                    setOperador(label);
+                    setValorAnterior(display);
+                    setEsperandoNuevo(true);
+                } else if (label === ".") {
+                    if (!display.includes(".")) setDisplay(display + ".");
+                } else if (label === "=") {
+                    if (operador && valorAnterior !== null) {
+                        let resultado = 0;
+                        const actual = parseFloat(display);
+                        const anterior = parseFloat(valorAnterior);
+                        switch (operador) {
+                            case "+": resultado = anterior + actual; break;
+                            case "-": resultado = anterior - actual; break;
+                            case "×": resultado = anterior * actual; break;
+                            case "÷": resultado = anterior / actual; break;
+                            default: break;
+                        }
+                        setDisplay(resultado.toString());
+                        setOperador(null);
+                        setValorAnterior(null);
+                        setEsperandoNuevo(true);
+                    }
+                }
+            }
+
+            return (
+                <div className="calculator">
+                    
+                    <div className="display-secundario" style={{
+                        color: "#bbb",
+                        fontSize: "1.2rem",
+                        minHeight: "24px",
+                        textAlign: "right"
+                    }}>
+                        {valorAnterior && operador ? `${valorAnterior} ${operador}` : ""}
+                    </div>
+                    <div className="display">{display}</div>
+                    <div className="buttons">
+                        {botones.map((btn, i) => (
+                            <button
+                                key={i}
+                                className={`btn ${btn.class || ""}`}
+                                onClick={() => handleClick(btn.label)}
+                            >
+                                {btn.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculadora />);
+    </script>
+</body>
+</html>

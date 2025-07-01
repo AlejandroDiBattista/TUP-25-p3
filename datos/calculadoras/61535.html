@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora estilo iPhone</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f5d7a3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: system-ui, sans-serif;
+    }
+
+    .iphone {
+      width: 320px;
+      height: 640px;
+      background: white;
+      border-radius: 50px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #root {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-radius: 40px;
+      overflow: hidden;
+    }
+
+    .calculator {
+      background: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: inset 0 0 15px #222;
+    }
+
+    .display {
+    font-size: 60px;
+    text-align: right;
+    padding: 0 20px;
+    font-weight: 200;
+    user-select: none;
+    height: 120px;
+    display: flex;
+    justify-content: flex-end; 
+    align-items: flex-end;   
+    overflow-x: auto;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 20px;
+    }
+
+    button {
+      border: none;
+      border-radius: 50%;
+      font-size: 26px;
+      height: 64px;
+      width: 64px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.2s ease;
+    }
+
+    button:active {
+      filter: brightness(0.8);
+    }
+
+    .btn-light {
+      background: #a5a5a5;
+      color: black;
+    }
+
+    .btn-dark {
+      background: #333;
+      color: white;
+
+    }
+
+    .btn-orange {
+      background: #ff9f0a;
+      color: white;
+    }
+
+    .zero {
+    grid-column: span 2;
+    width: 100%;
+    border-radius: 35px;
+    text-align: left;
+    padding-left: 28px;
+    justify-content: flex-start;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="iphone">
+    <div id="root"></div>
+  </div>
+
+  <!-- React y Babel -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <!-- Script funcional de la calculadora -->
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+    const [display, setDisplay] = useState("0");
+    const [operator, setOperator] = useState(null);
+    const [firstValue, setFirstValue] = useState(null);
+    const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
+    const [history, setHistory] = useState("");
+
+  function calcular(a, b, op) {
+    const x = parseFloat(a);
+    const y = parseFloat(b);
+    if (isNaN(x) || isNaN(y)) return "0";
+
+    switch(op) {
+      case "+": return (x + y).toString();
+      case "-": return (x - y).toString();
+      case "×": return (x * y).toString();
+      case "÷": return y === 0 ? "Error" : (x / y).toString();
+      default: return b;
+    }
+  }
+
+  function handleClick(label) {
+    if ("0123456789".includes(label)) {
+      if (waitingForSecondValue) {
+        setDisplay(label);
+        setWaitingForSecondValue(false);
+      } else {
+        setDisplay(display === "0" ? label : display + label);
+      }
+      return;
+    }
+
+    if (label === ".") {
+      if (waitingForSecondValue) {
+        setDisplay("0.");
+        setWaitingForSecondValue(false);
+      } else if (!display.includes(".")) {
+        setDisplay(display + ".");
+      }
+      return;
+    }
+
+    if (label === "AC") {
+      setDisplay("0");
+      setFirstValue(null);
+      setOperator(null);
+      setWaitingForSecondValue(false);
+      setHistory("");
+      return;
+    }
+
+    if (label === "±") {
+      if (display !== "0") {
+        setDisplay(display.startsWith("-") ? display.substring(1) : "-" + display);
+      }
+      return;
+    }
+
+    if (label === "%") {
+      const value = parseFloat(display);
+      if (!isNaN(value)) {
+        setDisplay((value / 100).toString());
+      }
+      return;
+    }
+
+    if (["+", "-", "×", "÷"].includes(label)) {
+      if (operator && !waitingForSecondValue) {
+        const result = calcular(firstValue, display, operator);
+        setDisplay(result);
+        setFirstValue(result);
+        setHistory(`${result} ${label}`);
+      } else {
+        setFirstValue(display);
+        setHistory(`${display} ${label}`);
+      }
+      setOperator(label);
+      setWaitingForSecondValue(true);
+      return;
+    }
+
+    if (label === "=") {
+      if (operator && firstValue !== null && !waitingForSecondValue) {
+        const result = calcular(firstValue, display, operator);
+        setDisplay(result);
+        setFirstValue(null);
+        setOperator(null);
+        setWaitingForSecondValue(false);
+        setHistory(""); 
+      }
+    }
+  }
+
+  const buttons = [
+    { label: "AC", type: "light" },
+    { label: "+/-", type: "light" },
+    { label: "%", type: "light" },
+    { label: "÷", type: "orange" },
+    { label: "7", type: "dark" },
+    { label: "8", type: "dark" },
+    { label: "9", type: "dark" },
+    { label: "×", type: "orange" },
+    { label: "4", type: "dark" },
+    { label: "5", type: "dark" },
+    { label: "6", type: "dark" },
+    { label: "-", type: "orange" },
+    { label: "1", type: "dark" },
+    { label: "2", type: "dark" },
+    { label: "3", type: "dark" },
+    { label: "+", type: "orange" },
+    { label: "0", type: "dark", wide: true },
+    { label: ".", type: "dark" },
+    { label: "=", type: "orange" },
+  ];
+
+  return (
+    <div className="calculator">
+      <div className="display" style={{ fontSize: "20px", color: "#aaa", paddingBottom: 0 }}>{history}</div>
+      <div className="display" title={display}>{display}</div>
+      <div className="buttons">
+        {buttons.map((btn, i) => (
+          <button
+            key={i}
+            className={`btn-${btn.type} ${btn.wide ? "zero" : ""}`}
+            onClick={() => handleClick(btn.label)}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
+</body>
+</html>
