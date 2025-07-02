@@ -1,0 +1,122 @@
+@page "/confirmacion"
+@inject cliente.Services.CarritoService CarritoService
+@using cliente.Modelos
+
+<!-- Encabezado -->
+<div class="text-center py-3 mb-4" style="background: linear-gradient(90deg, #2ecc40, #27ae60); border-radius: 1rem;">
+    <h1 style="color: #fff; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px 8px #1a4d1a;">
+        Confirmar Compra
+    </h1>
+</div>
+
+@if (cargando)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-success" role="status"></div>
+        <p class="mt-3">Cargando datos del carrito...</p>
+    </div>
+}
+else if (items is null || !items.Any())
+{
+    <div class="alert alert-warning text-center mt-5">No hay productos en tu carrito.</div>
+}
+else if (compraConfirmada)
+{
+    <div class="alert alert-success text-center mt-5 fs-4 py-4 rounded-4 shadow-sm">
+        ¡Compra confirmada! Gracias por tu pedido :D 🌱🎉
+        <div>
+            <a href="/catalogo" class="btn btn-success mt-4 px-4 fw-bold shadow">Volver al catálogo</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="mb-4 p-3 rounded-4 shadow-sm" style="background: #f3fff4; border: 1.5px solid #b5eab9;">
+        <h5 class="fw-bold text-success">Resumen del carrito:</h5>
+        <ul class="list-unstyled ms-3 mb-3">
+            @foreach (var item in items)
+            {
+                <li>
+                    <span class="fw-bold">@item.Nombre</span>
+                    <span class="text-muted">x @item.Cantidad</span>
+                    <span class="fw-bold ms-2 text-success">— $@(item.Importe)</span>
+                </li>
+            }
+        </ul>
+        <strong class="fs-5">Total: <span class="text-success">$@items.Sum(i => i.Importe)</span></strong>
+    </div>
+    <EditForm Model="form" OnValidSubmit="ConfirmarCompra" class="p-4 rounded-4 shadow-sm bg-white border border-success">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label fw-bold text-success">Nombre</label>
+            <InputText class="form-control form-control-lg" @bind-Value="form.Nombre" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-success">Apellido</label>
+            <InputText class="form-control form-control-lg" @bind-Value="form.Apellido" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold text-success">Email</label>
+            <InputText class="form-control form-control-lg" @bind-Value="form.Email" type="email" />
+        </div>
+        <button class="btn btn-success btn-lg px-4 fw-bold" type="submit" disabled="@enviando">
+            @if (enviando)
+            {
+                <span class="spinner-border spinner-border-sm"></span>
+                <span> Confirmando...</span>
+            }
+            else
+            {
+                <span class="oi oi-check"></span>
+                <span> Confirmar compra</span>
+            }
+        </button>
+    </EditForm>
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #e0ffe0 0%, #b2f7c1 40%, #7be495 100%) !important;
+    }
+    .EditForm input.form-control:focus {
+        border-color: #2ecc40;
+        box-shadow: 0 0 0 0.2rem #2ecc4065;
+    }
+</style>
+
+@code {
+    List<CarritoItem>? items;
+    ConfirmacionCompraDTO form = new();
+    bool cargando = true;
+    bool enviando = false;
+    bool compraConfirmada = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await CarritoService.ObtenerItemsAsync();
+        cargando = false;
+    }
+
+    async Task ConfirmarCompra()
+    {
+        enviando = true;
+        var ok = await CarritoService.ConfirmarCompraAsync(form);
+        enviando = false;
+
+        if (ok)
+        {
+            compraConfirmada = true;
+            await CarritoService.VaciarCarritoAsync();
+        }
+    }
+
+    public class ConfirmacionCompraDTO
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
+    }
+}
+

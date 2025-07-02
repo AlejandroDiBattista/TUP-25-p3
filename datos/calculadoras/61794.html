@@ -318,15 +318,63 @@
                         </div>
                     </div>
                     <div className="botones">
-                        <button className="boton funcion" onClick={limpiar}>AC</button>
-                        <button className="boton funcion" onClick={toggleSigno}>+/-</button>
-                        <button className="boton funcion" onClick={porcentaje}>%</button>
-                        <button className={`boton operacion ${operacion === '÷' ? 'activo' : ''}`} onClick={() => ejecutarOperacion('÷')} aria-label="Dividir">÷</button>
+                        <button 
+                            className="boton funcion" 
+                            onClick={limpiar}
+                            aria-label="Limpiar todo"
+                        >
+                            AC
+                        </button>
+                        <button 
+                            className="boton funcion" 
+                            onClick={toggleSigno}
+                            aria-label="Cambiar signo"
+                        >
+                            +/-
+                        </button>
+                        <button 
+                            className="boton funcion" 
+                            onClick={porcentaje}
+                            aria-label="Porcentaje"
+                        >
+                            %
+                        </button>
+                        <button 
+                            className={`boton operacion ${operacion === '÷' ? 'activo' : ''}`}
+                            onClick={() => ejecutarOperacion('÷')}
+                            aria-label="Dividir"
+                        >
+                            ÷
+                        </button>
 
-                        <button className="boton numero" onClick={() => inputNumero(7)}>7</button>
-                        <button className="boton numero" onClick={() => inputNumero(8)}>8</button>
-                        <button className="boton numero" onClick={() => inputNumero(9)}>9</button>
-                        <button className={`boton operacion ${operacion === '×' ? 'activo' : ''}`} onClick={() => ejecutarOperacion('×')} aria-label="Multiplicar">×</button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(7)}
+                            aria-label="7"
+                        >
+                            7
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(8)}
+                            aria-label="8"
+                        >
+                            8
+                        </button>
+                        <button 
+                            className="boton numero" 
+                            onClick={() => inputNumero(9)}
+                            aria-label="9"
+                        >
+                            9
+                        </button>
+                        <button 
+                            className={`boton operacion ${operacion === '×' ? 'activo' : ''}`}
+                            onClick={() => ejecutarOperacion('×')}
+                            aria-label="Multiplicar"
+                        >
+                            ×
+                        </button>
 
                         <button 
                             className="boton numero" 

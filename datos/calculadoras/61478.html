@@ -1,293 +1,346 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calculadora</title>
-    <style>
-      body {
-        background-color: #f5d7b3;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-      .iphone-frame {
-        background: #fff;
-        border-radius: 60px;
-        box-shadow: 0 8px 32px #0002;
-        padding: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-      .volumen {
-        position: absolute;
-        left: -3px;
-        top: 90px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        z-index: 3;
-      }
-      .vol-btn {
-        width: 8px;
-        height: 48px;
-        background: #e5e5e5;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px #0002;
-      }
-      .vol-btn.short {
-        height: 32px;
-      }
-      .power {
-        position: absolute;
-        right: -1px;
-        top: 115px;
-        width: 8px;
-        height: 64px;
-        background: #e5e5e5;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px #0002;
-        z-index: 3;
-      }
-      .notch {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 160px;
-        height: 38px;
-        background: #fff;
-        border-bottom-left-radius: 28px 18px;
-        border-bottom-right-radius: 28px 18px;
-        z-index: 2;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-      }
-      .calculadora {
-        width: 300px;
-        height: 640px;
-        background-color: black;
-        border-radius: 40px;
-        padding: 20px;
-        font-family: "Segoe UI", sans-serif;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        position: relative;
-        z-index: 1;
-      }
-      .pantalla {
-        color: white;
-        font-size: 64px;
-        text-align: right;
-        height: 110px;
-        padding: 20px;
-        box-sizing: border-box;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        word-wrap: break-word;
-        word-break: break-all;
-      }
-      .fila {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 14px;
-      }
-      .fila:last-child {
-        display: grid;
-        grid-template-columns: 134px 60px 60px;
-        gap: 14px;
-      }
-      .btn {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        font-size: 24px;
-        border: none;
-        color: white;
-        background-color: #333;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      }
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      }
-      .btn:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-        filter: brightness(1.2);
-      }
-      .btn.operador {
-        background-color: #ff9500;
-        color: white;
-        box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
-      }
-      .btn.operador:hover {
-        box-shadow: 0 4px 12px rgba(255, 149, 0, 0.5);
-      }
-      .btn.cero {
-        width: 134px;
-        border-radius: 30px;
-        text-align: left;
-        padding-left: 24px;
-        justify-content: flex-start;
-      }
-      .btn.otros {
-        background-color: #a5a5a5;
-        color: black;
-        box-shadow: 0 2px 8px rgba(165, 165, 165, 0.4);
-      }
-      .btn.otros:hover {
-        box-shadow: 0 4px 12px rgba(165, 165, 165, 0.5);
-      }
-      .icono-signo {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        line-height: 18px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="iphone-frame">
-      <div class="volumen">
-        <div class="vol-btn short"></div>
-        <div class="vol-btn"></div>
-        <div class="vol-btn"></div>
-      </div>
-      <div class="power"></div>
-      <div class="notch"></div>
-      <div id="root"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora</title>
+  <style>
+    body {
+      background-color: #f5d7b3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .iphone-frame {
+      background: #fff;
+      border-radius: 60px;
+      box-shadow: 0 8px 32px #0002;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .volumen {
+      position: absolute;
+      left: -3px;
+      top: 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 3;
+    }
+
+    .vol-btn {
+      width: 8px;
+      height: 48px;
+      background: #e5e5e5;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px #0002;
+    }
+
+    .vol-btn.short {
+      height: 32px;
+    }
+
+    .power {
+      position: absolute;
+      right: -1px;
+      top: 115px;
+      width: 8px;
+      height: 64px;
+      background: #e5e5e5;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px #0002;
+      z-index: 3;
+    }
+
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 38px;
+      background: #fff;
+      border-bottom-left-radius: 28px 18px;
+      border-bottom-right-radius: 28px 18px;
+      z-index: 2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .calculadora {
+      width: 300px;
+      height: 640px;
+      background-color: black;
+      border-radius: 40px;
+      padding: 20px;
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pantalla {
+      color: white;
+      font-size: 64px;
+      text-align: right;
+      height: 110px;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      word-wrap: break-word;
+      word-break: break-all;
+    }
+
+    .fila {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .fila:last-child {
+      display: grid;
+      grid-template-columns: 134px 60px 60px;
+      gap: 14px;
+    }
+
+    .btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 24px;
+      border: none;
+      color: white;
+      background-color: #333;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      filter: brightness(1.2);
+    }
+
+    .btn.operador {
+      background-color: #ff9500;
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
+    }
+
+    .btn.operador:hover {
+      box-shadow: 0 4px 12px rgba(255, 149, 0, 0.5);
+    }
+
+    .btn.cero {
+      width: 134px;
+      border-radius: 30px;
+      text-align: left;
+      padding-left: 24px;
+      justify-content: flex-start;
+    }
+
+    .btn.otros {
+      background-color: #a5a5a5;
+      color: black;
+      box-shadow: 0 2px 8px rgba(165, 165, 165, 0.4);
+    }
+
+    .btn.otros:hover {
+      box-shadow: 0 4px 12px rgba(165, 165, 165, 0.5);
+    }
+
+    .icono-signo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="iphone-frame">
+    <div class="volumen">
+      <div class="vol-btn short"></div>
+      <div class="vol-btn"></div>
+      <div class="vol-btn"></div>
     </div>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <script type="text/babel">
-      const { useState } = React;
-      function Calculadora() {
-        const [input, setInput] = useState("");
-        const pantallaRef = React.useRef(null);
-        const ajustarTamañoFuente = () => {
-          const pantalla = pantallaRef.current;
-          if (pantalla) {
-            const texto = pantalla.textContent;
-            let fontSize = 64;
-            if (texto.length > 6) fontSize = 56;
-            if (texto.length > 8) fontSize = 48;
-            if (texto.length > 10) fontSize = 40;
-            if (texto.length > 12) fontSize = 32;
-            if (texto.length > 14) fontSize = 28;
-            if (texto.length > 16) fontSize = 24;
-            if (texto.length > 18) fontSize = 20;
-            pantalla.style.fontSize = fontSize + 'px';
+    <div class="power"></div>
+    <div class="notch"></div>
+    <div id="root"></div>
+  </div>
+
+  
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Calculadora() {
+      const [input, setInput] = useState("");
+      const pantallaRef = React.useRef(null);
+
+      
+      const ajustarTamañoFuente = () => {
+        const pantalla = pantallaRef.current;
+        if (pantalla) {
+          const texto = pantalla.textContent;
+          let fontSize = 64;
+          
+          
+          if (texto.length > 6) {
+            fontSize = 56;
           }
-        };
-        React.useEffect(() => {
-          ajustarTamañoFuente();
-        }, [input]);
-        const handleClick = valor => {
-          if (valor === "=") {
-            try {
-              const expresion = input.replace(/x/g, '*').replace(/÷/g, '/');
-              setInput(eval(expresion).toString());
-            } catch {
-              setInput("Error");
-            }
-          } else if (valor === "AC") {
-            setInput("");
-          } else if (valor === "+/-") {
-            if (input) {
-              if (input.startsWith("-")) {
-                setInput(input.slice(1));
-              } else {
-                setInput("-" + input);
-              }
-            }
-          } else if (valor === "%") {
-            if (input) setInput((parseFloat(input) / 100).toString());
-          } else {
-            setInput(input + valor);
+          if (texto.length > 8) {
+            fontSize = 48;
           }
-        };
-        const botones = [
-          ["AC", "+/-", "%", "÷"],
-          ["7", "8", "9", "x"],
-          ["4", "5", "6", "-"],
-          ["1", "2", "3", "+"],
-          ["0", ".", "="],
-        ];
-        return (
-          <div className="calculadora">
-            <div className="pantalla" ref={pantallaRef}>{input || "0"}</div>
-            {botones.map((fila, i) => (
-              <div className="fila" key={i}>
-                {i === 4 ? (
-                  <>
-                    <button
-                      key="0"
-                      className="btn cero"
-                      onClick={() => handleClick("0")}
-                    >
-                      0
-                    </button>
-                    <button
-                      key="."
-                      className="btn"
-                      onClick={() => handleClick(".")}
-                    >
-                      .
-                    </button>
-                    <button
-                      key="="
-                      className="btn operador"
-                      onClick={() => handleClick("=")}
-                    >
-                      =
-                    </button>
-                  </>
-                ) : (
-                  fila.map((btn, index) => (
-                    <button
-                      key={btn + index}
-                      className={
-                        "btn " +
-                        (["÷", "x", "-", "+", "="].includes(btn) ? "operador " : "") +
-                        (["AC", "+/-", "%"].includes(btn) ? "otros " : "")
-                      }
-                      onClick={() => handleClick(btn)}
-                    >
-                      {btn === "+/-" ? (
-                        <span className="icono-signo">
-                          <span>+</span>
-                          <span>−</span>
-                        </span>
-                      ) : (
-                        btn
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
-            ))}
-          </div>
-        );
-      }
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<Calculadora />);
-    </script>
-  </body>
+          if (texto.length > 10) {
+            fontSize = 40;
+          }
+          if (texto.length > 12) {
+            fontSize = 32;
+          }
+          if (texto.length > 14) {
+            fontSize = 28;
+          }
+          if (texto.length > 16) {
+            fontSize = 24;
+          }
+          if (texto.length > 18) {
+            fontSize = 20;
+          }
+          
+          pantalla.style.fontSize = fontSize + 'px';
+        }
+      };
+
+      
+      React.useEffect(() => {
+        ajustarTamañoFuente();
+      }, [input]);
+
+      const handleClick = (valor) => {
+        if (valor === "=") {
+          try {
+            
+            const expresion = input.replace(/x/g, '*').replace(/÷/g, '/');
+            setInput(eval(expresion).toString());
+          } catch {
+            setInput("Error");
+          }
+        } else if (valor === "AC") {
+          setInput("");
+        } else if (valor === "+/-") {
+          if (input) {
+            if (input.startsWith("-")) {
+              setInput(input.slice(1));
+            } else {
+              setInput("-" + input);
+            }
+          }
+        } else if (valor === "%") {
+          if (input) {
+            setInput((parseFloat(input) / 100).toString());
+          }
+        } else {
+          setInput(input + valor);
+        }
+      };
+
+      const botones = [
+        ["AC", "+/-", "%", "÷"],
+        ["7", "8", "9", "x"],
+        ["4", "5", "6", "-"],
+        ["1", "2", "3", "+"],
+        ["0", ".", "="],
+      ];
+
+      return (
+        <div className="calculadora">
+          <div className="pantalla" ref={pantallaRef}>{input || "0"}</div>
+          {botones.map((fila, i) => (
+            <div className="fila" key={i}>
+              {i === 4 ? (
+                // Última fila con alineación especial
+                <>
+                  <button
+                    key="0"
+                    className="btn cero"
+                    onClick={() => handleClick("0")}
+                  >
+                    0
+                  </button>
+                  <button
+                    key="."
+                    className="btn"
+                    onClick={() => handleClick(".")}
+                  >
+                    .
+                  </button>
+                  <button
+                    key="="
+                    className="btn operador"
+                    onClick={() => handleClick("=")}
+                  >
+                    =
+                  </button>
+                </>
+              ) : (
+                fila.map((btn, index) => (
+                  <button
+                    key={btn + index}
+                    className={
+                      "btn " +
+                      (["÷", "x", "-", "+", "="].includes(btn) ? "operador " : "") +
+                      (["AC", "+/-", "%"].includes(btn) ? "otros " : "")
+                    }
+                    onClick={() => handleClick(btn)}
+                  >
+                    {btn === "+/-" ? (
+                      <span className="icono-signo">
+                        <span>+</span>
+                        <span>−</span>
+                      </span>
+                    ) : (
+                      btn
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<Calculadora />);
+  </script>
+</body>
 </html>

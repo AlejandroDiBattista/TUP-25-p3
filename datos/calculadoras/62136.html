@@ -159,10 +159,12 @@
                     } else {
                         setPantalla(pantalla + valor);
                     }
+
                 } else if (valor === ".") {
                     if (!pantalla.includes(".")) {
                         setPantalla(pantalla + ".");
-                    }       
+                    }
+                    
                 } else if (["+", "-", "×", "÷"].includes(valor)) {
                     setOperador(valor);
                     setValorAnterior(parseFloat(pantalla));
