@@ -1,0 +1,36 @@
+@baseUrl = https://crudcrud.com/api/b1da457a990a43f4a91c918833b829c2
+
+### Obtener todos los contactos
+GET {{baseUrl}}/contactos
+
+
+### Crear un nuevo contacto
+POST {{baseUrl}}/contactos
+Content-Type: application/json
+
+{
+  "nombre": "Juan Perez",
+  "telefono": "123456789",
+  "email": "juan@ejemplo.com"
+}
+
+@id = {{$response.body._id}}
+
+
+### Obtener un contacto por ID
+GET {{baseUrl}}/contactos/{{id}}
+
+
+### Actualizar un contacto (sin _id en el body)
+PUT {{baseUrl}}/contactos/{{id}}
+Content-Type: application/json
+
+{
+  "nombre": "Juan Actualizado",
+  "telefono": "987654321",
+  "email": "juan@ejemplo.com"
+}
+
+
+### Eliminar un contacto
+DELETE {{baseUrl}}/contactos/{{id}}

@@ -113,12 +113,13 @@
                                           1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣
 61671 Quinteros, Gabriel             28   ✅✅🟢✅✅🟢❓
 61060 Fioretti, Elian Enrique        28   ✅✅🟢✅✅🟢❓
-61535 Mainardi, Facundo              32   ✅✅🟢✅✅🟢❓
-61680 Dziewulski, Karen              33   ✅✅🟢✅✅🟢❓
 62136 Muse, Alejandro                30   ✅✅🟢✅✅🟢❓
 61052 Reynoso, Braian Nicolás        34   ✅✅🟢✅✅🔴❓
 61252 Aguirre Rojas, Lourdes Valenti 24   ✅✅🟢✅✅🔴✅
 61914 Robles, Leandro Gonzalo        17   ✅✅🟢✅✅🔴❓
+
+61535 Mainardi, Facundo              32   ✅✅🟢✅✅🟢❓
+61680 Dziewulski, Karen              33   ✅✅🟢✅✅🟢❓
 ```
 
 ### Referencias.
