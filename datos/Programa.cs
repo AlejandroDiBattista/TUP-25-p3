@@ -391,46 +391,81 @@ class Program {
         }
     }
 
-    static void CopiarTP7(Clase clase) {
+    static void InformeResultadoFinal(Clase clase)
+    {
+        CargarResultados(clase);
+        foreach (var comision in clase.Comisiones)
+        {
+            Consola.Escribir("---");
+            Consola.Escribir($"# Informe de la comisión {comision}");
+            var lista = clase.EnComision(comision).OrdenarPorLegajo();
+            Consola.Escribir("\nAlumnos promocionados", ConsoleColor.Green);
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Promocionado))
+            {
+                Consola.Escribir($"- {a.Legajo} - {a.NombreCompleto}");
+            }
+            Consola.Escribir("\nAlumnos que regularizan", ConsoleColor.Yellow);
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Regular))
+            {
+                Consola.Escribir($"- {a.Legajo} - {a.NombreCompleto}");
+            }
+            Consola.Escribir("\nAlumnos libres", ConsoleColor.Red);
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Libre))
+            {
+                Consola.Escribir($"- {a.Legajo} - {a.NombreCompleto}");
+            }
+        }
+    }
+    static void CopiarTP7(Clase clase)
+    {
         clase.VerificaPresentacionPractico(7);
-        
+
         var alumnosPresentaron = clase.Presentaron(7);
         Consola.Escribir($"=== Copiando calculadoras de {alumnosPresentaron.Count()} alumnos que presentaron TP7 ===", ConsoleColor.Cyan);
-        
+
         // Crear carpeta calculadoras si no existe
         string carpetaDestino = "./calculadoras";
-        if (!Directory.Exists(carpetaDestino)) {
+        if (!Directory.Exists(carpetaDestino))
+        {
             Directory.CreateDirectory(carpetaDestino);
         }
-        
+
         int copiados = 0;
         int errores = 0;
-        
-        foreach (var alumno in alumnosPresentaron) {
-            try {
+
+        foreach (var alumno in alumnosPresentaron)
+        {
+            try
+            {
                 string archivoOrigen = Path.Combine($"../TP/{alumno.Carpeta}/tp7/calculadora.html");
                 string archivoDestino = Path.Combine(carpetaDestino, $"{alumno.Legajo}.html");
-                
-                if (File.Exists(archivoOrigen)) {
+
+                if (File.Exists(archivoOrigen))
+                {
                     File.Copy(archivoOrigen, archivoDestino, true);
                     Consola.Escribir($"✓ Copiado: {alumno.Legajo} - {alumno.NombreCompleto}", ConsoleColor.Green);
                     copiados++;
-                } else {
+                }
+                else
+                {
                     Consola.Escribir($"✗ No encontrado: {alumno.Legajo} - {alumno.NombreCompleto} (archivo no existe)", ConsoleColor.Yellow);
                     errores++;
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Consola.Escribir($"✗ Error: {alumno.Legajo} - {alumno.NombreCompleto} ({ex.Message})", ConsoleColor.Red);
                 errores++;
             }
         }
-        
+
         Consola.Escribir($"\n=== Resumen ===", ConsoleColor.Cyan);
         Consola.Escribir($"Archivos copiados exitosamente: {copiados}", ConsoleColor.Green);
-        if (errores > 0) {
+        if (errores > 0)
+        {
             Consola.Escribir($"Errores o archivos no encontrados: {errores}", ConsoleColor.Red);
         }
-        
+
         clase.ListarAlumnos();
     }
 
@@ -475,7 +510,12 @@ class Program {
         menu.Agregar("  P2: Presentaron", () => clase.Presentaron(6).ListarAlumnos());
         menu.Agregar("  Copiar TP7", () => CopiarTP7(clase));
         // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
-        menu.Agregar("  P2: Generar informe", () => InformePractico(clase));
+        menu.Agregar("  P2: Generar informe", () => {
+            RegistrarPromocion(clase, "C3");
+            RegistrarPromocion(clase, "C5");
+            InformeResultadoFinal(clase);
+        });
+            
         menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
         menu.Agregar("Traer TP7", () =>
         {
@@ -507,18 +547,89 @@ class Program {
                 Consola.Escribir($"Error al procesar archivos: {ex.Message}", ConsoleColor.Red);
             }
         }
-    
-    static List<int> ExtraerCalculadorasRemoto() {
+
+    static void RegistrarPromocion(Clase clase, string comision) {
+    // Ruta del archivo de la comisión
+    string archivo = $"{comision}.md";
+    if (!File.Exists(archivo)) {
+        Consola.Escribir($"No se encontró el archivo {archivo}", ConsoleColor.Red);
+        return;
+    }
+
+    // Leer todas las líneas
+    var lineas = File.ReadAllLines(archivo);
+
+    // Marcadores
+    string marcadorPromo = "Alumnos que Promocionan";
+    string marcadorRegu  = "Alumnos que regularizan";
+    string marcadorLibre = "Alumnos libres";
+
+    // Estados
+    var promoLegajos = new List<int>();
+    var reguLegajos = new List<int>();
+
+    // Estado de búsqueda
+    string estado = "";
+    foreach (var linea in lineas) {
+        string l = linea.Trim();
+        if (l.Contains(marcadorPromo)) {
+            estado = "promo";
+            continue;
+        } else if (l.Contains(marcadorRegu)) {
+            estado = "regu";
+            continue;
+        } else if (l.Contains(marcadorLibre)) {
+            estado = "";
+            continue;
+        }
+
+        // Buscar legajo al inicio de la línea
+        if (estado == "promo" || estado == "regu") {
+            var match = System.Text.RegularExpressions.Regex.Match(l, @"^(\d{5})");
+            if (match.Success) {
+                int legajo = int.Parse(match.Groups[1].Value);
+                if (estado == "promo") {
+                    promoLegajos.Add(legajo);
+                } else if (estado == "regu") {
+                    reguLegajos.Add(legajo);
+                }
+            }
+        }
+    }
+
+    // Actualizar estado en la clase
+    foreach (var legajo in promoLegajos) {
+        var alumno = clase.Buscar(legajo);
+        if (alumno != null) {
+            alumno.ResultadoFinal = ResultadoFinal.Promocionado;
+        }
+    }
+    foreach (var legajo in reguLegajos) {
+        var alumno = clase.Buscar(legajo);
+        if (alumno != null) {
+            alumno.ResultadoFinal = ResultadoFinal.Regular;
+        }
+    }
+
+    Consola.Escribir($"Se actualizaron {promoLegajos.Count} promocionados y {reguLegajos.Count} regularizados para la comisión {comision}.", ConsoleColor.Green);
+}
+
+    static List<int> ExtraerCalculadorasRemoto()
+    {
         List<int> legajos = new();
-        if (!File.Exists("calculadoras.md")) {
+        if (!File.Exists("calculadoras.md"))
+        {
             throw new FileNotFoundException("No se encontró el archivo calculadoras.md");
         }
         string[] lineas = File.ReadAllLines("calculadoras.md");
         Regex regexLegajo = new(@"^(\d{5})");
-        foreach (string linea in lineas) {
+        foreach (string linea in lineas)
+        {
             Match match = regexLegajo.Match(linea.Trim());
-            if (match.Success) {
-                if (int.TryParse(match.Groups[1].Value, out int legajo)) {
+            if (match.Success)
+            {
+                if (int.TryParse(match.Groups[1].Value, out int legajo))
+                {
                     legajos.Add(legajo);
                 }
             }

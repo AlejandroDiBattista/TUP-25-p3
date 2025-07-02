@@ -16,7 +16,15 @@ public enum EstadoMateria {
     Revisar,
 }
 
-public class Alumno {
+public enum ResultadoFinal
+{
+    Promocionado,
+    Regular,
+    Libre
+}
+
+public class Alumno
+{
     readonly int MaxPracticos = 20;
 
     public int Legajo { get; private set; }
@@ -31,14 +39,15 @@ public class Alumno {
     public int Resultado { get; set; } = 0;
     public string GitHub { get; set; } = "";
     public string Observaciones { get; set; } = "";
-
-// INPUT
+    public ResultadoFinal ResultadoFinal { get; set; } = ResultadoFinal.Libre;
+    
+    // INPUT
     // Aprobado
     // EnProgreso
     // Desaprobado
     // Error
     // NoPresentado
-// OUTPUT
+    // OUTPUT
     // Promocionado
     // Recuperar
     // Presentar
@@ -60,7 +69,7 @@ public class Alumno {
             return EstadoMateria.Revisar; // Lógica para determinar el estado de la materia
         }
     }
-    
+
     public double Nota => Math.Round(Math.Min(Parcial + Math.Min(Creditos, 20), 60) / 6.0, 1);
     public string PracticosStr => string.Join("", Practicos.Select(p => p.ToString()));
 
@@ -106,7 +115,7 @@ public class Alumno {
     public string NombreCompleto => $"{Apellido}, {Nombre}".Replace("-", "").Replace("*", "").Trim();
     public string Carpeta => $"{Legajo} - {NombreCompleto}";
     public int CantidadPresentados => Practicos.Count(p => p == EstadoPractico.Aprobado);
-    public bool Abandono  => CantidadPresentados < 3;
+    public bool Abandono => CantidadPresentados < 3;
     public bool Continuan => CantidadPresentados >= 3;
     // public bool Abandono  => Asistencias < 4   && CantidadPresentados == 0;
     // public bool Continuan => Asistencias >= 15 && CantidadPresentados >= 3;
