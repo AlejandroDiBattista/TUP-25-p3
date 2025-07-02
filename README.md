@@ -1,6 +1,6 @@
 # Resultado final Programación III
 
-# COMISIÓN C3
+# Comisión C3
 
 ## Alumnos que Promocionan
 ``` 
@@ -57,8 +57,17 @@
 61956 Leglisé, Laureano                ✅✅🟢✅🟢🟢❌
 ```
 
+## Alumnos libres
+```
+61318 Herrera, Dalma Luján
+61581 Paz, Naim Federico
+61668 Molina, Santiago Nicolas
+61720 Fernández, Luciano
+61730 Diaz, Antonio
+```
+
 ---
-# COMISIÓN C5
+# Comisión C5
 
 ## Alumnos que promocionan
 ```
@@ -104,29 +113,37 @@
 61985 Orqueda, Francisco Nicolás       ✅✅🟢✅✅🟢✅
 61988 Villada, Guillermo Nicolás       ✅✅🟢✅✅🟢✅
 62104 Robledo, Juan Gerardo            ✅✅🟢✅✅🟢✅
+61680 Dziewulski, Karen                ✅✅🟢✅✅🟢✅
 ```
+
+61671 Quinteros, Gabriel               ✅✅🟢✅✅🟢✅
+62136 Muse, Alejandro                  ✅✅🟢✅✅🟢✅
+61535 Mainardi, Facundo                ✅✅🟢✅✅🟢✅
 
 ## Alumnos que regularizan
 ```
 61052 Reynoso, Braian Nicolás          ✅✅🟢✅✅🔴❌
 61252 Aguirre Rojas, Lourdes Valenti   ✅✅🟢✅✅🔴✅
-61535 Mainardi, Facundo                ✅✅🟢✅✅🟢❌
-61671 Quinteros, Gabriel               ✅✅🟢✅✅🟢❌
-61680 Dziewulski, Karen                ✅✅🟢✅✅🟢❌
 61914 Robles, Leandro Gonzalo          ✅✅🟢✅✅🔴❌
-62136 Muse, Alejandro                  ✅✅🟢✅✅🟢❌
 ```
 
-### Referencias.
-Para los parciales:
-- 🟢 : Aprobado
-- 🔴 : No aprobado / No presentado
+## Alumnos libres
+```
+61061 Velardez, Leandro Ivan
+61322 Juarez, Thiago
+61437 Holmquist, Ignacio Tobias
+61566 Medina Costilla, Abigail
+61858 Perez, Facundo Agustin
+62612 Campos, Julieta Antonella
+```
 
-Para los trabajos prácticos
-- ✅ : Práctico presentado
-- ❌ : Práctico no presentado
+#### Referencias:
+**Para los parciales**:
+🟢 : Aprobado
+🔴 : No aprobado / No presentado
 
-### Notas
-Los siguientes trabajos fueron rechazados por ser identicos:
-- 61060, 61671, 62136
-- 61535, 61680
+**Para los trabajos prácticos**:
+✅ : Práctico presentado
+❌ : Práctico no presentado
+
+> **Nota**: Defender el segundo parcial consiste en presentar el mismo funcionando correctamente y poder explicar que hace cada parte del código, así como responder preguntas sobre el mismo.

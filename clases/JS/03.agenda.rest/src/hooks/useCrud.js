@@ -20,7 +20,12 @@ export const useCrud = (recurso = 'contacto') => {
     async function update(id, itemData) {
         const resultado = await service.update(id, itemData);
         const i = data.findIndex(item => item._id === id);
-        dataHandlers.setItem(i, resultado);
+        if (i !== -1) {
+            dataHandlers.setItem(i, resultado);
+        } else {
+            // Si no se encuentra, recarga todos los datos
+            await loadAll();
+        }
         return resultado;
     }
 

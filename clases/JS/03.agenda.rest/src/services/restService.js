@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-// URL original de CrudCrud - Vite interceptará y redirigirá automáticamente en desarrollo
-const URL_Base = 'https://crudcrud.com/api/b1da457a990a43f4a91c918833b829c2';
+// URL que se adapta según el entorno
+// En desarrollo usa el proxy, en producción usa la URL directa
+const URL_Base = 'https://crudcrud.com/api/ad805d9a6be5428abc0c3e8261c642a4';
 
 export default class RestService {
-    constructor(recurso = 'items') {
+    constructor(recurso = 'contactos') {
         this.recurso = recurso;
     }
 

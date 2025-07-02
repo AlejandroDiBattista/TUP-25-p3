@@ -393,27 +393,51 @@ class Program {
 
     static void InformeResultadoFinal(Clase clase)
     {
-        CargarResultados(clase);
         foreach (var comision in clase.Comisiones)
         {
             Consola.Escribir("---");
-            Consola.Escribir($"# Informe de la comisión {comision}");
-            var lista = clase.EnComision(comision).OrdenarPorLegajo();
-            Consola.Escribir("\nAlumnos promocionados", ConsoleColor.Green);
+            Consola.Escribir($"== Informe de la comisión {comision} ==");
+            var lista = clase.EnComision(comision).OrdenandoPorLegajo();
+            Consola.Escribir("*Promocionan*", ConsoleColor.Green);
             foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Promocionado))
             {
-                Consola.Escribir($"- {a.Legajo} - {a.NombreCompleto}");
+                Consola.Escribir($"* {a.Legajo} - {a.NombreCompleto}");
             }
-            Consola.Escribir("\nAlumnos que regularizan", ConsoleColor.Yellow);
+            Consola.Escribir("\n*Regularizan*", ConsoleColor.Yellow);
             foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Regular))
             {
-                Consola.Escribir($"- {a.Legajo} - {a.NombreCompleto}");
+                Consola.Escribir($"* {a.Legajo} - {a.NombreCompleto}");
             }
-            Consola.Escribir("\nAlumnos libres", ConsoleColor.Red);
+            Consola.Escribir("\n*Libres*", ConsoleColor.Red);
             foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Libre))
             {
-                Consola.Escribir($"- {a.Legajo} - {a.NombreCompleto}");
+                Consola.Escribir($"* {a.Legajo} - {a.NombreCompleto}");
             }
+        }
+    }
+
+    static void InformeResultadoFinalWApps(Clase clase)
+    {
+        foreach (var comision in clase.Comisiones)
+        {
+            Consola.Escribir($"*== Resultados {comision} ==*");
+            var lista = clase.EnComision(comision).OrdenandoPorLegajo();
+            Consola.Escribir("*Promocionados*\n```");
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Promocionado))
+            {
+                Consola.Escribir($"{a.Legajo} - {a.NombreCompleto}");
+            }
+            Consola.Escribir("```\n\n*Regulares*\n```");
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Regular))
+            {
+                Consola.Escribir($"{a.Legajo} - {a.NombreCompleto}");
+            }
+            Consola.Escribir("```\n\n*Libres*\n```");
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Libre))
+            {
+                Consola.Escribir($"{a.Legajo} - {a.NombreCompleto}");
+            }
+            Consola.Escribir("```");
         }
     }
     static void CopiarTP7(Clase clase)
@@ -469,68 +493,6 @@ class Program {
         clase.ListarAlumnos();
     }
 
-    static void Main(string[] args)
-    {
-        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-
-        var clase = Clase.Cargar();
-
-        // Si hay argumentos, ejecutar función específica
-        if (args.Length > 0 && args[0] == "test" && args.Length > 1)
-        {
-            int legajo = int.Parse(args[1]);
-            var alumno = clase.Buscar(legajo);
-            if (alumno == null)
-            {
-                Console.WriteLine($"No se encontró el alumno con legajo {legajo}");
-                return;
-            }
-
-            Console.WriteLine($"=== Probando sistema para alumno {legajo} ===");
-            Console.WriteLine($"Alumno: {alumno.NombreCompleto}");
-            Console.WriteLine($"Ejecutando sistema...");
-
-            var resultado = clase.EjecutarSistema(alumno.Legajo);
-            Console.WriteLine($"Resultado: {resultado}");
-            Console.WriteLine("=== Prueba completada ===");
-            return;
-        }
-
-        int practico = 7;
-
-        var menu = new TUP.Menu("Bienvenido al sistema de gestión de alumnos");
-        menu.Agregar("Listar alumnos", () => ListarAlumnos(clase));
-        menu.Agregar("Publicar trabajo práctico", () => CopiarPractico(clase));
-        menu.Agregar("Registrar Asistencia & Notas", () => RegistrarTodo(clase, practico));
-        // menu.Agregar("Registrar Resultados", () => CargarResultados(clase));
-        menu.Agregar("Faltan presentar TP", () => ListarNoPresentaron(clase, practico));
-        // menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
-        // menu.Agregar("  P2: Ejecutar", () => ProbarTP6(clase));
-        menu.Agregar("  P2: Presentaron", () => clase.Presentaron(6).ListarAlumnos());
-        menu.Agregar("  Copiar TP7", () => CopiarTP7(clase));
-        // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
-        menu.Agregar("  P2: Generar informe", () => {
-            RegistrarPromocion(clase, "C3");
-            RegistrarPromocion(clase, "C5");
-            InformeResultadoFinal(clase);
-        });
-            
-        menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
-        menu.Agregar("Traer TP7", () =>
-        {
-            clase.VerificaPresentacionPractico(7);
-            var local = clase.Presentaron(7).Select(a => a.Legajo).ToList();
-            var remoto = ExtraerCalculadorasRemoto();
-            CompletarTP7(local, remoto);
-        });
-
-
-        menu.Ejecutar();
-
-        Consola.Escribir("Saliendo del programa...", ConsoleColor.DarkGray);
-    }
-
     static void CompletarTP7(List<int> local, List<int> remoto) {
             try {
                 string[] lineasResultados = File.ReadAllLines("../RESULTADOS.md");
@@ -550,7 +512,7 @@ class Program {
 
     static void RegistrarPromocion(Clase clase, string comision) {
     // Ruta del archivo de la comisión
-    string archivo = $"{comision}.md";
+    string archivo = $"../{comision}.md";
     if (!File.Exists(archivo)) {
         Consola.Escribir($"No se encontró el archivo {archivo}", ConsoleColor.Red);
         return;
@@ -560,7 +522,7 @@ class Program {
     var lineas = File.ReadAllLines(archivo);
 
     // Marcadores
-    string marcadorPromo = "Alumnos que Promocionan";
+    string marcadorPromo = "Alumnos que promocionan";
     string marcadorRegu  = "Alumnos que regularizan";
     string marcadorLibre = "Alumnos libres";
 
@@ -599,19 +561,20 @@ class Program {
 
     // Actualizar estado en la clase
     foreach (var legajo in promoLegajos) {
-        var alumno = clase.Buscar(legajo);
-        if (alumno != null) {
+        if (clase.Buscar(legajo) is { } alumno) {
             alumno.ResultadoFinal = ResultadoFinal.Promocionado;
         }
     }
+    
     foreach (var legajo in reguLegajos) {
-        var alumno = clase.Buscar(legajo);
-        if (alumno != null) {
+        if (clase.Buscar(legajo) is { } alumno) {
             alumno.ResultadoFinal = ResultadoFinal.Regular;
         }
     }
 
-    Consola.Escribir($"Se actualizaron {promoLegajos.Count} promocionados y {reguLegajos.Count} regularizados para la comisión {comision}.", ConsoleColor.Green);
+    var libres = clase.EnComision(comision).Where(a => a.ResultadoFinal == ResultadoFinal.Libre);
+
+    Consola.Escribir($"Se actualizaron en {comision}:\n  {promoLegajos.Count,2} promocionados\n  {reguLegajos.Count,2} regularizados\n  {libres.Count(),2} libres.", ConsoleColor.Green);
 }
 
     static List<int> ExtraerCalculadorasRemoto()
@@ -667,4 +630,54 @@ class Program {
         // Devuelve una lista de legajos de alumnos que presentaron el TP7
         return clase.Presentaron(7).Select(a => a.Legajo).ToList();
     }
+
+    static void Main(string[] args)
+    {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+        var clase = Clase.Cargar();
+
+        int practico = 7;
+
+        var menu = new TUP.Menu("Bienvenido al sistema de gestión de alumnos");
+        menu.Agregar("Listar alumnos", () => ListarAlumnos(clase));
+        // menu.Agregar("Publicar trabajo práctico", () => CopiarPractico(clase));
+        // menu.Agregar("Registrar Asistencia & Notas", () => RegistrarTodo(clase, practico));
+        // menu.Agregar("Registrar Resultados", () => CargarResultados(clase));
+        // menu.Agregar("Faltan presentar TP", () => ListarNoPresentaron(clase, practico));
+        // menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
+        // menu.Agregar("  P2: Ejecutar", () => ProbarTP6(clase));
+        // menu.Agregar("  P2: Presentaron", () => clase.Presentaron(6).ListarAlumnos());
+        // menu.Agregar("  Copiar TP7", () => CopiarTP7(clase));
+        // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
+        menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
+        menu.Agregar("Generar informe Final", () =>
+        {
+            RegistrarPromocion(clase, "C3");
+            RegistrarPromocion(clase, "C5");
+            InformeResultadoFinal(clase);
+        });
+        menu.Agregar("Generar informe Final por WhatApps", () =>
+        {
+            RegistrarPromocion(clase, "C3");
+            RegistrarPromocion(clase, "C5");
+            InformeResultadoFinalWApps(clase);
+        });
+
+
+        // menu.Agregar("Traer TP7", () =>
+        // {
+        //     clase.VerificaPresentacionPractico(7);
+        //     var local = clase.Presentaron(7).Select(a => a.Legajo).ToList();
+        //     var remoto = ExtraerCalculadorasRemoto();
+        //     CompletarTP7(local, remoto);
+        // });
+
+
+        menu.Ejecutar();
+
+        Consola.Escribir("Saliendo del programa...", ConsoleColor.DarkGray);
+    }
+
 }
