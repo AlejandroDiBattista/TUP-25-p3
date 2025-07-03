@@ -19,8 +19,10 @@ public enum EstadoMateria {
 public enum ResultadoFinal
 {
     Promocionado,
+    Pendiente,
     Regular,
-    Libre
+    Libre,
+    Error,
 }
 
 public class Alumno

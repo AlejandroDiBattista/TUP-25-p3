@@ -94,6 +94,8 @@ class Clase : IEnumerable<Alumno>
     public Clase Continuan() => new(alumnos.Where(a => a.Continuan));
     public Clase ConResultado(EstadoMateria estado) => new(alumnos.Where(a => a.Estado == estado));
     public Clase Completar() => new(alumnos.Where(a => a.Faltantes > 0 && a.Faltantes <= 3 && a.Continuan));
+    public Clase ConResultadoFinal(ResultadoFinal resultado) => new(alumnos.Where(a => a.ResultadoFinal == resultado));
+
     // Métodos de modificación
     public void Agregar(Alumno alumno)
     {

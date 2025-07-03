@@ -396,10 +396,15 @@ class Program {
         foreach (var comision in clase.Comisiones)
         {
             Consola.Escribir("---");
-            Consola.Escribir($"== Informe de la comisión {comision} ==");
+            Consola.Escribir($"*=== Resultado PIII en {comision} ===*\n");
             var lista = clase.EnComision(comision).OrdenandoPorLegajo();
             Consola.Escribir("*Promocionan*", ConsoleColor.Green);
             foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Promocionado))
+            {
+                Consola.Escribir($"* {a.Legajo} - {a.NombreCompleto}");
+            }
+            Consola.Escribir("\n*Pendientes*", ConsoleColor.Green);
+            foreach (var a in lista.Where(a => a.ResultadoFinal == ResultadoFinal.Pendiente))
             {
                 Consola.Escribir($"* {a.Legajo} - {a.NombreCompleto}");
             }
@@ -413,6 +418,13 @@ class Program {
             {
                 Consola.Escribir($"* {a.Legajo} - {a.NombreCompleto}");
             }
+            Consola.Escribir("""
+
+            > NOTA: 
+            > Por cuestiones administrativas, que no dependen de mí, existen alumnos que *no están en condiciones administrativas de promocionar* la materia y, por lo tanto, la misma no puede ser cargada al sistema.
+            > En esos casos, y como un compromiso estrictamente personal y sin que esto implique ningún compromiso por parte de la institución, estoy dispuesto a mantener *pendiente* la *promoción* hasta el día que tomen el examen final.
+            > En dicho caso, el alumno deberá inscribirse al examen final y se le pondrá la nota sin necesidad de rendir el mismo. 
+            """);
         }
     }
 
@@ -510,73 +522,111 @@ class Program {
             }
         }
 
-    static void RegistrarPromocion(Clase clase, string comision) {
-    // Ruta del archivo de la comisión
-    string archivo = $"../{comision}.md";
-    if (!File.Exists(archivo)) {
-        Consola.Escribir($"No se encontró el archivo {archivo}", ConsoleColor.Red);
-        return;
-    }
-
-    // Leer todas las líneas
-    var lineas = File.ReadAllLines(archivo);
-
-    // Marcadores
-    string marcadorPromo = "Alumnos que promocionan";
-    string marcadorRegu  = "Alumnos que regularizan";
-    string marcadorLibre = "Alumnos libres";
-
-    // Estados
-    var promoLegajos = new List<int>();
-    var reguLegajos = new List<int>();
-
-    // Estado de búsqueda
-    string estado = "";
-    foreach (var linea in lineas) {
-        string l = linea.Trim();
-        if (l.Contains(marcadorPromo)) {
-            estado = "promo";
-            continue;
-        } else if (l.Contains(marcadorRegu)) {
-            estado = "regu";
-            continue;
-        } else if (l.Contains(marcadorLibre)) {
-            estado = "";
-            continue;
+    static void CargarResultadosReadme(Clase clase) {
+        // Ruta del archivo README.md
+        string archivo = "../README.md";
+        if (!File.Exists(archivo)) {
+            Consola.Escribir($"No se encontró el archivo {archivo}", ConsoleColor.Red);
+            return;
         }
 
-        // Buscar legajo al inicio de la línea
-        if (estado == "promo" || estado == "regu") {
-            var match = System.Text.RegularExpressions.Regex.Match(l, @"^(\d{5})");
+        // Leer todas las líneas
+        var lineas = File.ReadAllLines(archivo);
+
+        // Marcadores
+        string marcadorPromo = "Alumnos que Promocionan";
+        string marcadorPend  = "Alumnos con promoción pendiente";
+        string marcadorRegu  = "Alumnos que regularizan";
+        string marcadorLibre = "Alumnos libres";
+
+        ResultadoFinal resultado = ResultadoFinal.Error;
+        
+        foreach (var linea in lineas) {
+            string l = linea.Trim();
+            
+            if (l.Contains(marcadorPromo)) {
+                Consola.Escribir($"Procesando línea: {l}", ConsoleColor.Cyan);
+                resultado = ResultadoFinal.Promocionado;
+            } else if (l.Contains(marcadorPend)) {
+                Consola.Escribir($"Procesando línea: {l}", ConsoleColor.Cyan);
+                resultado = ResultadoFinal.Pendiente;
+            } else if (l.Contains(marcadorRegu)) {
+                Consola.Escribir($"Procesando línea: {l}", ConsoleColor.Cyan);
+                resultado = ResultadoFinal.Regular;
+            } else if (l.Contains(marcadorLibre)) {
+                Consola.Escribir($"Procesando línea: {l}", ConsoleColor.Cyan);
+                resultado = ResultadoFinal.Libre;
+            }
+
+            // Buscar legajo al inicio de la línea
+            var match = System.Text.RegularExpressions.Regex.Match(l, @"^(\d{5})\s+");
             if (match.Success) {
                 int legajo = int.Parse(match.Groups[1].Value);
-                if (estado == "promo") {
-                    promoLegajos.Add(legajo);
-                } else if (estado == "regu") {
-                    reguLegajos.Add(legajo);
+                var alumno = clase.Buscar(legajo);
+                if (alumno == null) {
+                    Consola.Escribir($"No se encontró un alumno con el legajo {legajo}.", ConsoleColor.Red);
+                    continue;
+                }
+                alumno.ResultadoFinal = resultado;
+            }
+        }
+
+        var promoLegajos = clase.ConResultadoFinal(ResultadoFinal.Promocionado);
+        var pendLegajos  = clase.ConResultadoFinal(ResultadoFinal.Pendiente);
+        var reguLegajos  = clase.ConResultadoFinal(ResultadoFinal.Regular);
+        var libres       = clase.ConResultadoFinal(ResultadoFinal.Libre);
+        var errores     = clase.ConResultadoFinal(ResultadoFinal.Error);
+
+        Consola.Escribir($"""
+        Se actualizaron...:
+          {promoLegajos.Count(),2} promocionados
+          {pendLegajos.Count(),2} pendientes
+          {reguLegajos.Count(),2} regularizados
+          {libres.Count(),2} libres.
+          {errores.Count(),2} errores.
+        """, ConsoleColor.Green);
+    }
+
+    static void RegistrarHabilitacion(Clase clase)
+    {
+        string archivoHabilitados = "habilitados.csv";
+        if (!File.Exists(archivoHabilitados)) {
+            Consola.Escribir($"No se encontró el archivo {archivoHabilitados}", ConsoleColor.Red);
+            return;
+        }
+
+        var lineas = File.ReadAllLines(archivoHabilitados);
+        var habilitados = new Dictionary<int, bool>();
+
+        // Procesar el archivo CSV (saltear la primera línea que es el encabezado)
+        for (int i = 1; i < lineas.Length; i++) {
+            var partes = lineas[i].Split(';');
+            if (partes.Length >= 4) {
+                if (int.TryParse(partes[0], out int legajo)) {
+                    string habilitado = partes[3].Trim().ToLower();
+                    habilitados[legajo] = habilitado == "si";
                 }
             }
         }
-    }
 
-    // Actualizar estado en la clase
-    foreach (var legajo in promoLegajos) {
-        if (clase.Buscar(legajo) is { } alumno) {
-            alumno.ResultadoFinal = ResultadoFinal.Promocionado;
+        int actualizados = 0;
+        var promocionados = clase.Where(a => a.ResultadoFinal == ResultadoFinal.Promocionado);
+
+        foreach (var alumno in promocionados) {
+            if (habilitados.TryGetValue(alumno.Legajo, out bool estaHabilitado)) {
+                if (!estaHabilitado) {
+                    alumno.ResultadoFinal = ResultadoFinal.Pendiente;
+                    actualizados++;
+                    Consola.Escribir($"Alumno {alumno.Legajo} - {alumno.NombreCompleto} marcado como PENDIENTE (no habilitado)", ConsoleColor.Yellow);
+                }
+            } else {
+                Consola.Escribir($"Alumno {alumno.Legajo} - {alumno.NombreCompleto} no encontrado en archivo de habilitados", ConsoleColor.Red);
+            }
         }
+
+        Consola.Escribir($"\nSe actualizaron {actualizados} alumnos promocionados a estado PENDIENTE por no estar habilitados.", ConsoleColor.Green);
+        clase.Guardar();
     }
-    
-    foreach (var legajo in reguLegajos) {
-        if (clase.Buscar(legajo) is { } alumno) {
-            alumno.ResultadoFinal = ResultadoFinal.Regular;
-        }
-    }
-
-    var libres = clase.EnComision(comision).Where(a => a.ResultadoFinal == ResultadoFinal.Libre);
-
-    Consola.Escribir($"Se actualizaron en {comision}:\n  {promoLegajos.Count,2} promocionados\n  {reguLegajos.Count,2} regularizados\n  {libres.Count(),2} libres.", ConsoleColor.Green);
-}
-
     static List<int> ExtraerCalculadorasRemoto()
     {
         List<int> legajos = new();
@@ -638,41 +688,19 @@ class Program {
 
         var clase = Clase.Cargar();
 
-        int practico = 7;
-
         var menu = new TUP.Menu("Bienvenido al sistema de gestión de alumnos");
         menu.Agregar("Listar alumnos", () => ListarAlumnos(clase));
-        // menu.Agregar("Publicar trabajo práctico", () => CopiarPractico(clase));
-        // menu.Agregar("Registrar Asistencia & Notas", () => RegistrarTodo(clase, practico));
-        // menu.Agregar("Registrar Resultados", () => CargarResultados(clase));
-        // menu.Agregar("Faltan presentar TP", () => ListarNoPresentaron(clase, practico));
-        // menu.Agregar("Faltan Github", () => ListarUsuariosGithub(clase));
-        // menu.Agregar("  P2: Ejecutar", () => ProbarTP6(clase));
-        // menu.Agregar("  P2: Presentaron", () => clase.Presentaron(6).ListarAlumnos());
-        // menu.Agregar("  Copiar TP7", () => CopiarTP7(clase));
-        // menu.Agregar("  P2: Con error ", () => clase.ConError(6).ListarAlumnos());
         menu.Agregar("Probar por Legajo", () => ProbarPorLegajo(clase));
-        menu.Agregar("Generar informe Final", () =>
-        {
-            RegistrarPromocion(clase, "C3");
-            RegistrarPromocion(clase, "C5");
+        menu.Agregar("Registrar Habilitación", () => RegistrarHabilitacion(clase));
+        menu.Agregar("Generar informe Final", () => {
+            CargarResultadosReadme(clase);
             InformeResultadoFinal(clase);
         });
-        menu.Agregar("Generar informe Final por WhatApps", () =>
-        {
-            RegistrarPromocion(clase, "C3");
-            RegistrarPromocion(clase, "C5");
-            InformeResultadoFinalWApps(clase);
+        menu.Agregar("Listar Alumnos con Errores", () =>{
+            CargarResultadosReadme(clase);
+            clase.ConResultadoFinal(ResultadoFinal.Error).Informar("Alumnos con errores");
         });
-
-
-        // menu.Agregar("Traer TP7", () =>
-        // {
-        //     clase.VerificaPresentacionPractico(7);
-        //     var local = clase.Presentaron(7).Select(a => a.Legajo).ToList();
-        //     var remoto = ExtraerCalculadorasRemoto();
-        //     CompletarTP7(local, remoto);
-        // });
+        menu.Agregar("Copiar Calculadoras TP7", () => CopiarTP7(clase));
 
 
         menu.Ejecutar();
