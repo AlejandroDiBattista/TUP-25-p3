@@ -8,13 +8,31 @@
   <style>
     /* --- Reset & background --- */
     *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-    body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#1c1c1e}
+    body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#f8dcb0}
 
     /* Teléfono */
     .iphone{
       width:320px;height:640px;padding:25px 20px 45px;border-radius:40px;
       background:#000;display:flex;flex-direction:column;justify-content:flex-end;
       box-shadow:0 0 35px rgba(0,0,0,.6);
+      border:10px solid #fff;
+      position:relative;
+      box-sizing:border-box;
+    }
+
+    /* Notch superior estilo iPhone */
+    .iphone::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 22px;
+      background: #000;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      z-index: 2;
     }
 
     .screen{
@@ -53,6 +71,26 @@
       const [op,setOp]=useState(null);
       const [wait,setWait]=useState(false);
 
+      // Soporte para teclado
+      React.useEffect(()=>{
+        const handleKeyDown = (e) => {
+          const key = e.key;
+          if (key >= "0" && key <= "9") inputDigit(key);
+          else if (key === "." || key === ",") inputDot();
+          else if (key === "+") operate("+");
+          else if (key === "-") operate("-");
+          else if (key === "*" || key === "x" || key === "X") operate("*");
+          else if (key === "/") operate("/");
+          else if (key === "Enter" || key === "=") equal();
+          else if (key === "%") percent();
+          else if (key === "Escape" || key === "Delete") clearAll();
+          else if (key === "±" || key === "F9") toggleSign();
+          else if (key === "Backspace") backspace();
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+      }, [display, wait, op, first]);
+
       /* --- helpers --- */
       const inputDigit=d=>{
         if(wait){setDisplay(d);setWait(false);}
@@ -65,6 +103,16 @@
       const clearAll=()=>{setDisplay("0");setFirst(null);setOp(null);setWait(false);};
       const toggleSign=()=>setDisplay(display.startsWith("-")?display.slice(1):"-"+display);
       const percent=()=>setDisplay(String(parseFloat(display)/100));
+
+      // Borra el último dígito del display
+      const backspace = () => {
+        if (wait) return; // No borra si espera nuevo número
+        if (display.length === 1 || (display.length === 2 && display.startsWith("-"))) {
+          setDisplay("0");
+        } else {
+          setDisplay(display.slice(0, -1));
+        }
+      };
 
       const operate=next=>{
         const val=parseFloat(display);
