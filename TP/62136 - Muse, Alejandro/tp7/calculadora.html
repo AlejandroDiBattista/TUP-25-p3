@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora React</title>
+    <title>Calculadora React Alternativa</title>
     <style>
         body {
-            background: #f9d9aa;
+            background: #ffdca8;
             min-height: 100vh;
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .celular-fondo {
+        .fondo-celu {
             background: #fff;
-            border-radius: 45px;
-            box-shadow: 0 4px 40px #0004;
-            width: 360px;
-            height: 780px;
+            border-radius: 40px;
+            box-shadow: 0 8px 32px #0002;
+            width: 370px;
+            height: 790px;
             padding: 0;
             position: relative;
             display: flex;
@@ -26,25 +26,26 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            border: none;
         }
-        .notch {
+        .notch-celu {
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 180px;
-            height: 36px;
+            width: 160px;
+            height: 32px;
             background: #fff;
-            border-bottom-left-radius: 28px;
-            border-bottom-right-radius: 28px;
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
             z-index: 2;
+            box-shadow: 0 2px 8px #0001;
         }
-
-        .calculadora-fondo {
+        .fondo-calc {
             background: #000;
-            border-radius: 45px;
-            width: 340px;
-            height: 760px;
+            border-radius: 38px;
+            width: 330px;
+            height: 750px;
             margin: 0;
             padding: 0;
             display: flex;
@@ -54,25 +55,28 @@
             position: relative;
             overflow: hidden;
             box-sizing: border-box;
+            border: none;
         }
-        .calculadora-pantalla {
+        .pantalla-calc {
             color: #fff;
-            font-size: 80px;
+            font-size: 64px;
             text-align: right;
-            min-height: 110px;
-            margin: 0 28px 0 28px;
+            min-height: 90px;
+            margin: 0 18px 0 18px;
             font-family: 'Segoe UI', Arial, sans-serif;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             overflow-x: auto;
             background: transparent;
+            border-radius: 0;
             border: none;
             outline: none;
-            width: calc(100% - 56px);
+            width: calc(100% - 36px);
             display: flex;
             align-items: flex-end;
             justify-content: flex-end;
+            box-shadow: none;
         }
-        .calculadora-botones {
+        .botonera-calc {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 14px;
@@ -80,7 +84,7 @@
             padding-top: 18px;
             padding-bottom: 32px;
         }
-        .boton {
+        .btn-calc {
             height: 62px;
             width: 62px;
             border-radius: 50%;
@@ -88,29 +92,29 @@
             font-size: 28px;
             font-family: inherit;
             cursor: pointer;
-            background: #333;
+            background: #222;
             color: #fff;
-            transition: filter 0.1s;
+            transition: filter 0.1s, background 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: none;
             outline: none;
         }
-
-        .boton:active {
-            filter: brightness(1.2);
+        .btn-calc:active {
+            filter: brightness(1.3);
+            background: #444;
         }
-
-        .boton.gris {
+        .btn-gris {
             background: #a5a5a5;
             color: #000;
         }
-        .boton.naranja {
+        .btn-naranja {
             background: #ff9f0a;
             color: #fff;
+            box-shadow: none;
         }
-        .boton.cero {
+        .btn-cero {
             grid-column: span 2;
             border-radius: 31px;
             width: 140px;
@@ -118,116 +122,147 @@
             padding-left: 28px;
         }
         @media (max-width: 420px) {
-            .celular-fondo {
+            .fondo-celu {
                 width: 100vw;
                 height: 100vh;
                 border-radius: 0;
             }
-            .calculadora-fondo {
+            .fondo-calc {
                 border-radius: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div class="celular-fondo">
-        <div class="notch"></div>
+    <div class="fondo-celu">
+        <div class="notch-celu"></div>
         <div style="flex:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
             <div id="root" style="width:auto;height:auto;"></div>
         </div>
     </div>
-<!-- React y ReactDOM desde CDN -->
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<!-- Babel para JSX en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
-        function Calculadora() {
-            const [pantalla, setPantalla] = useState("0");
-            const [operador, setOperador] = useState(null);
-            const [valorAnterior, setValorAnterior] = useState(null);
-            const [esperandoNuevo, setEsperandoNuevo] = useState(false);
+        function operar(num1, num2, op) {
+            if (op === "+") return num1 + num2;
+            if (op === "-") return num1 - num2;
+            if (op === "×") return num1 * num2;
+            if (op === "÷") return num2 === 0 ? "Error" : num1 / num2;
+            return num2;
+        }
 
-            const accion = (valor) => {
-                if (!isNaN(valor)) {
-                    if (pantalla === "0" || esperandoNuevo) {
-                        setPantalla(valor);
-                        setEsperandoNuevo(false);
+        function CalculadoraApp() {
+            const [calcState, setCalcState] = useState({
+                display: "0",
+                operand: null,
+                operator: null,
+                waiting: false
+            });
+
+            function clickBoton(b) {
+                if (/^\d$/.test(b)) {
+                    if (calcState.display === "0" || calcState.waiting) {
+                        setCalcState(s => ({ ...s, display: b, waiting: false }));
                     } else {
-                        setPantalla(pantalla + valor);
+                        setCalcState(s => ({ ...s, display: s.display + b }));
                     }
-
-                } else if (valor === ".") {
-                    if (!pantalla.includes(".")) {
-                        setPantalla(pantalla + ".");
-                    }
-                    
-                } else if (["+", "-", "×", "÷"].includes(valor)) {
-                    setOperador(valor);
-                    setValorAnterior(parseFloat(pantalla));
-                    setEsperandoNuevo(true);
-                } else if (valor === "=") {
-                    if (operador && valorAnterior !== null) {
-                        const actual = parseFloat(pantalla);
-                        let resultado = 0;
-                        switch (operador) {
-                            case "+": resultado = valorAnterior + actual; break;
-                            case "-": resultado = valorAnterior - actual; break;
-                            case "×": resultado = valorAnterior * actual; break;
-                            case "÷": resultado = actual === 0 ? "Error" : valorAnterior / actual; break;
-                            default: break;
-                        }
-                        setPantalla(resultado.toString().length > 10 ? resultado.toPrecision(10) : resultado.toString());
-                        setOperador(null);
-                        setValorAnterior(null);
-                        setEsperandoNuevo(true);
-                    }
-                } else if (valor === "AC" || valor === "C") {
-                    setPantalla("0");
-                    setOperador(null);
-                    setValorAnterior(null);
-                    setEsperandoNuevo(false);
-                } else if (valor === "+/-" || valor === "±") {
-                    setPantalla((parseFloat(pantalla) * -1).toString());
-                } else if (valor === "%") {
-                    setPantalla((parseFloat(pantalla) / 100).toString());
                 }
-            };
-            const textoAC = pantalla !== "0" ? "C" : "AC";
+                else if (b === ".") {
+                    setCalcState(s => ({
+                        ...s,
+                        display: s.waiting ? "0." : (s.display.includes(".") ? s.display : s.display + "."),
+                        waiting: false
+                    }));
+                }
+                else if (["+", "-", "×", "÷"].includes(b)) {
+                    setCalcState(s => ({
+                        operand: parseFloat(s.display),
+                        operator: b,
+                        display: s.display,
+                        waiting: true
+                    }));
+                }
+                else if (b === "=") {
+                    setCalcState(s => {
+                        if (s.operator && s.operand !== null) {
+                            const a = s.operand;
+                            const b = parseFloat(s.display);
+                            let res = s.operator === "+" ? a + b :
+                                      s.operator === "-" ? a - b :
+                                      s.operator === "×" ? a * b :
+                                      s.operator === "÷" ? (b === 0 ? "Error" : a / b) : b;
+                            res = typeof res === "number" && res.toString().length > 10 ? res.toPrecision(10) : res.toString();
+                            return { display: res, operand: null, operator: null, waiting: true };
+                        }
+                        return s;
+                    });
+                }
+                else if (b === "AC" || b === "C") {
+                    setCalcState({ display: "0", operand: null, operator: null, waiting: false });
+                }
+                else if (b === "±") {
+                    setCalcState(s => ({
+                        ...s,
+                        display: (parseFloat(s.display) * -1).toString()
+                    }));
+                }
+                else if (b === "%") {
+                    setCalcState(s => ({
+                        ...s,
+                        display: (parseFloat(s.display) / 100).toString()
+                    }));
+                }
+            }
+
+            useEffect(() => {
+                function handleKey(e) {
+                    let key = e.key;
+                    if (key >= "0" && key <= "9") clickBoton(key);
+                    else if (key === ".") clickBoton(".");
+                    else if (key === "+" || key === "-") clickBoton(key);
+                    else if (key === "*" || key === "x" || key === "X") clickBoton("×");
+                    else if (key === "/" || key === "÷") clickBoton("÷");
+                    else if (key === "%" ) clickBoton("%");
+                    else if (key === "Enter" || key === "=") clickBoton("=");
+                    else if (key === "Escape") clickBoton("AC");
+                    else if (key === "Backspace") clickBoton("C");
+                }
+                window.addEventListener("keydown", handleKey);
+                return () => window.removeEventListener("keydown", handleKey);
+            });
+
+            const textoBorrar = calcState.display !== "0" ? "C" : "AC";
 
             return (
-                <div className="calculadora-fondo">
-                    <div className="calculadora-pantalla">{pantalla}</div>
-                    <div className="calculadora-botones">
-                        <button className="boton gris" onClick={() => accion(textoAC)}>{textoAC}</button>
-                        <button className="boton gris" onClick={() => accion("±")}>±</button>
-                        <button className="boton gris" onClick={() => accion("%")}>%</button>
-                        <button className="boton naranja" onClick={() => accion("÷")}>÷</button>
-                        <button className="boton" onClick={() => accion("7")}>7</button>
-                        <button className="boton" onClick={() => accion("8")}>8</button>
-                        <button className="boton" onClick={() => accion("9")}>9</button>
-                        <button className="boton naranja" onClick={() => accion("×")}>×</button>
-                        <button className="boton" onClick={() => accion("4")}>4</button>
-                        <button className="boton" onClick={() => accion("5")}>5</button>
-                        <button className="boton" onClick={() => accion("6")}>6</button>
-                        <button className="boton naranja" onClick={() => accion("-")}>-</button>
-                        <button className="boton" onClick={() => accion("1")}>1</button>
-                        <button className="boton" onClick={() => accion("2")}>2</button>
-                        <button className="boton" onClick={() => accion("3")}>3</button>
-                        <button className="boton naranja" onClick={() => accion("+")}>+</button>
-                        <button className="boton cero" onClick={() => accion("0")}>0</button>
-                        <button className="boton" onClick={() => accion(".")}>.</button>
-                        <button className="boton naranja" onClick={() => accion("=")}>=</button>
+                <div className="fondo-calc">
+                    <div className="pantalla-calc">{calcState.display}</div>
+                    <div className="botonera-calc">
+                        {[
+                            ["AC", "±", "%", "÷"],
+                            ["7", "8", "9", "×"],
+                            ["4", "5", "6", "-"],
+                            ["1", "2", "3", "+"],
+                            ["0", ".", "="]
+                        ].flat().map((btn, i) => {
+                            let clase = "btn-calc";
+                            if (["AC", "±", "%"].includes(btn)) clase += " btn-gris";
+                            if (["÷", "×", "-", "+", "="].includes(btn)) clase += " btn-naranja";
+                            if (btn === "0") clase += " btn-cero";
+                            return (
+                                <button key={i} className={clase} onClick={() => clickBoton(btn)}>
+                                    {btn === "AC" && calcState.display !== "0" ? "C" : btn}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculadora />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<CalculadoraApp />);
     </script>
 </body>
 </html>
