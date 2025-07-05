@@ -146,6 +146,8 @@
 
 > **Nota 1**: Los alumnos que regularizan deben rendir el final. Este consiste en "defender el segundo parcial", es decir, presentar el mismo funcionando correctamente y poder explicar qué hace cada parte del código, así como responder preguntas sobre el mismo.
 
+[Ver cómo rendir](como_rendir.md)
+
 > **Nota 2**: Los alumnos que están en _condiciones académicas_ de promocionar pero _no están en condiciones administrativas_ de hacerlo, mantienen la _promoción pendiente_ hasta que regularicen su situación administrativa. En ese caso, deberán inscribirse al examen final y se les pondrá la nota sin necesidad de rendir el mismo. (Este es un compromiso estrictamente personal y no implica ningún compromiso por parte de la institución).
 
 #### Referencias:
