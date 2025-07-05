@@ -5,7 +5,7 @@
 
 borrar_directorios_obj_bin() {
   # Buscar y eliminar todos los directorios bin y obj de forma más eficiente
-  find /Users/adibattista/Documents/GitHub/tup-25-p3/TP -type d \( -name "obj" -o -name "bin" \) | while read dir; do
+  find /Users/adibattista/Documents/GitHub/tup-25-p3 -type d \( -name "obj" -o -name "bin" \) | while read dir; do
     echo "Eliminando directorio: $dir"
     rm -rf "$dir"
   done
@@ -13,7 +13,7 @@ borrar_directorios_obj_bin() {
 
 eliminar_node_modules() {
   echo "Buscando y eliminando carpetas node_modules..."
-  find /Users/adibattista/Documents/GitHub/tup-25-p3/TP -type d -name "node_modules" | while read nm_dir; do
+  find /Users/adibattista/Documents/GitHub/tup-25-p3 -type d -name "node_modules" | while read nm_dir; do
     echo "Eliminando carpeta: $nm_dir"
     rm -rf "$nm_dir"
   done
