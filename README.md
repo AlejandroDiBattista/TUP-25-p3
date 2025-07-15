@@ -28,13 +28,13 @@
 ## Alumnos con promoción pendiente
 ```
 61037 Paz, Rodrigo Federico            ✅✅🟢✅✅🟢✅
-61059 Palavecino, Fabricio Gaston      ✅✅🟢✅✅🟢🟢
+61059 Palavecino, Fabricio Gaston      ✅✅🟢✅✅🟢✅ 🚩
 61113 Oriz Caballero, Juan José        ✅✅🟢✅✅🟢✅
 61129 Tello, Abril María Agostina      ✅✅🟢✅✅🟢✅
 61136 Sosa, Oscar Ignacio              ✅✅🟢✅✅🟢✅
 61139 Gallo, María Matilde             ✅✅🟢✅✅🟢✅
 61141 Di Clemente, María Antonela      ✅✅🟢✅✅🟢✅
-61200 Gauna Serrano, Martín Javier     ✅✅🟢✅🟢🟢✅
+61200 Gauna Serrano, Martín Javier     ✅✅🟢✅✅🟢✅
 61221 Duclós, Marcelo Ezequiel         ✅✅🟢✅✅🟢✅
 61572 Parrado Navarrete, Alex Daniel   ✅✅🟢✅✅🟢✅
 61579 Marti, Gonzalo                   ✅✅🟢✅✅🟢✅
@@ -50,27 +50,28 @@
 
 ## Alumnos que regularizan
 ```
-61352 García Moya, José Ignacio        ✅✅🟢✅✅🟢❌
-61624 Godoy, Alan                      ✅✅🟢✅✅🟢❌
+61118 Barrios, Santiago Alexis         ✅✅🟢🅰️🅰️🔴🅰️
 61203 Acevedo Costello, Juan Ignacio   ✅✅🟢✅✅🔴✅
-61862 Zerda, Thomas                    ✅✅🟢✅✅🔴❌
-61319 Carabajal, José Gabriel          ✅✅🟢✅❌🔴✅
-61562 Helguera, Agustina Elizabeth     ✅✅🟢✅❌🔴✅
-61595 González Patti, Valentín         ✅✅🟢✅❌🔴✅
-61118 Barrios, Santiago Alexis         ✅✅🟢❌❌🔴❌
-61596 Zamora, Gonzalo Alejandro        ✅✅🟢❌❌🔴❌
+61319 Carabajal, José Gabriel          ✅✅🟢✅🅰️🔴✅
+61352 García Moya, José Ignacio        ✅✅🟢✅✅🟢🅰️ 🚩
+61562 Helguera, Agustina Elizabeth     ✅✅🟢✅🅰️🔴✅
+61595 González Patti, Valentín         ✅✅🟢✅🅰️🔴✅
+61596 Zamora, Gonzalo Alejandro        ✅✅🟢🅰️🅰️🔴🅰️
+61624 Godoy, Alan                      ✅✅🟢✅✅🟢🅰️
+61862 Zerda, Thomas                    ✅✅🟢✅✅🔴🅰️
 ```
 
 ## Alumnos libres
 ```
 61318 Herrera, Dalma Luján
-61581 Paz, Naim Federico
+61581 Paz, Naim Federico                            🚩
 61668 Molina, Santiago Nicolas
-61720 Fernández, Luciano
-61730 Diaz, Antonio
+61720 Fernández, Luciano                            🚩
+61730 Diaz, Antonio                                 🚩
 ```
 
 ---
+
 # Comisión C5
 
 ## Alumnos que Promocionan
@@ -90,14 +91,14 @@
 61422 Pedraza, Estaban Daniel          ✅✅🟢✅✅🟢✅
 61491 Acuña, Alejo Gabriel             ✅✅🟢✅✅🟢✅
 61652 Heredia, Juan Pablo              ✅✅🟢✅✅🟢✅
+61671 Quinteros, Gabriel               ✅✅🟢✅✅🟢✅
 61673 Delgado, Augusto Emanuel         ✅✅🟢✅✅🟢✅
+61680 Dziewulski, Karen                ✅✅🟢✅✅🟢✅
 61688 García Romano, Lucas             ✅✅🟢✅✅🟢✅
 61732 Paz, Mikael                      ✅✅🟢✅✅🟢✅
 61985 Orqueda, Francisco Nicolás       ✅✅🟢✅✅🟢✅
 61988 Villada, Guillermo Nicolás       ✅✅🟢✅✅🟢✅
-61680 Dziewulski, Karen                ✅✅🟢✅✅🟢✅
 62136 Muse, Alejandro                  ✅✅🟢✅✅🟢✅
-61671 Quinteros, Gabriel               ✅✅🟢✅✅🟢✅
 ```
 ## Alumnos con promoción pendiente
 ```
@@ -114,7 +115,7 @@
 61345 Caro, Tobias                     ✅✅🟢✅✅🟢✅
 61496 Parache, Ariana Agustina         ✅✅🟢✅✅🟢✅
 61535 Mainardi, Facundo                ✅✅🟢✅✅🟢✅
-61540 Garcia Mc Guiness, Gonzalo       ✅✅🟢✅✅🟢✅
+61540 Garcia Mc Guiness, Gonzalo       ✅✅🟢✅✅🟢✅ 🚩
 61588 Mussa, Agustín                   ✅✅🟢✅✅🟢✅
 61611 Coronel, Julieta Antonella       ✅✅🟢✅✅🟢✅
 61644 Ortega, Fernando Nicolas         ✅✅🟢✅✅🟢✅
@@ -129,24 +130,32 @@
 
 ## Alumnos que regularizan
 ```
+61052 Reynoso, Braian Nicolás          ✅✅🟢✅✅🔴🅰️
 61252 Aguirre Rojas, Lourdes Valenti   ✅✅🟢✅✅🔴✅
-61052 Reynoso, Braian Nicolás          ✅✅🟢✅✅🔴❌
-61914 Robles, Leandro Gonzalo          ✅✅🟢✅✅🔴❌
+61914 Robles, Leandro Gonzalo          ✅✅🟢✅✅🔴🅰️
 ```
 
 ## Alumnos libres
 ```
-61061 Velardez, Leandro Ivan
-61322 Juarez, Thiago
+61061 Velardez, Leandro Ivan                        🚩
+61322 Juarez, Thiago                                🚩
 61437 Holmquist, Ignacio Tobias
-61566 Medina Costilla, Abigail
+61566 Medina Costilla, Abigail                      🚩
 61858 Perez, Facundo Agustin
-62612 Campos, Julieta Antonella
+62612 Campos, Julieta Antonella                     🚩
 ```
 
-> **Nota 1**: Los alumnos que regularizan deben rendir el final. Este consiste en "defender el segundo parcial", es decir, presentar el mismo funcionando correctamente y poder explicar qué hace cada parte del código, así como responder preguntas sobre el mismo.
+## Alumnos inscripto sin registrar 
+```
+62564 Sanchez, Santiago Sebastián
+```
 
-[Ver cómo rendir](como_rendir.md)
+> **Nota 1**: Los alumnos que regularizan deben rendir el final. Este consiste en **defender el segundo parcial**, es decir, _presentar el mismo funcionando correctamente y poder explicar qué hace cada parte del código, así como responder preguntas sobre el mismo_.
+
+## En que consiste el segundo parcial? 
+Consiste en desarrollar un **Tienda Online** que muestre el manejo de un *Desarrollo full‑stack con C#, Frontend: Blazor WASM, Backend: Minimal API + EF Core/SQLite*
+
+[Ver aca el enunciado](como_rendir.md)
 
 > **Nota 2**: Los alumnos que están en _condiciones académicas_ de promocionar pero _no están en condiciones administrativas_ de hacerlo, mantienen la _promoción pendiente_ hasta que regularicen su situación administrativa. En ese caso, deberán inscribirse al examen final y se les pondrá la nota sin necesidad de rendir el mismo. (Este es un compromiso estrictamente personal y no implica ningún compromiso por parte de la institución).
 
@@ -157,5 +166,7 @@
 
 **Para los trabajos prácticos**:
 ✅ : Práctico presentado  
-❌ : Práctico no presentado
-❌ : Práctico no presentado
+🅰️ : Práctico no presentado
+
+**Alumnos sin inscripción registrada**:
+🚩 No aparece en SysAcad
